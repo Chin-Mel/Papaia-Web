@@ -1,7 +1,6 @@
 import "./Register.css";
 import HeaderStart from "../../components/Header/HeaderStart";
 import FooterMain from "../../components/Footer/FooterMain";
-
 import sidePic from '../../assets/login-backgroundpic.jpg';
 import logo from '../../assets/papaia-logo.png';
 import userIcon from '../../assets/user.png';
@@ -15,22 +14,18 @@ function Register() {
     <>
       <HeaderStart />
 
-      {/* Main Content: Split View */}
       <main className="register-content-wrapper">
         <div className="register-page-container">
 
-          {/* Left Side: Static Image */}
           <div className="side-container">
             <img src={sidePic} alt="Papaia Background" className="sidepic" />
           </div>
 
-          {/* Right Side: Form */}
           <div className="side-register">
             <div className="form-container">
               <img src={logo} alt="Papaia Logo" className="form-logo" />
               <h2>Register</h2>
 
-              {/* Name Fields */}
               <div className="double-row">
                 <div className="input-wrapper">
                   <img src={userIcon} alt="User Icon" className="input-icon" />
@@ -53,19 +48,16 @@ function Register() {
                 </div>
               </div>
 
-              {/* Username */}
               <div className="input-wrapper full">
                 <img src={userIcon} alt="User Icon" className="input-icon" />
                 <input type="text" placeholder="Enter Username" />
               </div>
 
-              {/* Email */}
               <div className="input-wrapper full">
                 <img src={emailIcon} alt="Email Icon" className="input-icon" />
                 <input type="email" placeholder="Enter Email Address" />
               </div>
 
-              {/* Phone & DOB */}
               <div className="double-row">
                 <div className="input-wrapper">
                   <img src={phoneIcon} alt="Phone Icon" className="input-icon" />
@@ -77,7 +69,6 @@ function Register() {
                 </div>
               </div>
 
-              {/* Passwords */}
               <div className="input-wrapper full">
                 <img src={lockIcon} alt="Lock Icon" className="input-icon" />
                 <input type="password" placeholder="Create Password" />
@@ -87,7 +78,6 @@ function Register() {
                 <input type="password" placeholder="Confirm Password" />
               </div>
 
-              {/* Submit Button */}
               <button className="submit-button">Register</button>
               <p className="login-link">Already have an account?</p>
             </div>

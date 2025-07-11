@@ -10,7 +10,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 2rem;
-  padding-left: 100px; /* Move all columns slightly to the right */
+  padding-left: 100px;
   padding-right: 40px;
 }
 
@@ -27,13 +27,12 @@
   vertical-align: middle;
 }
 
-/* Footer bottom section: logo left, copyright right */
 .footer-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
-  padding: 0 100px; /* Space from left and right */
+  padding: 0 100px; 
   flex-wrap: wrap;
 }
 

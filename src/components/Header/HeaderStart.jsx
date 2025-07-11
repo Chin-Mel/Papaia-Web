@@ -1,5 +1,6 @@
 import './HeaderStart.css';
 import logo from '../../assets/papaia-logo.png';
+
 function HeaderStart() {
   return (
     <header className="headerstart">
@@ -14,4 +15,5 @@ function HeaderStart() {
     </header>
   );
 }
+
 export default HeaderStart;

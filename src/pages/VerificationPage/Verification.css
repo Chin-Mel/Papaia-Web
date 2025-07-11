@@ -1,11 +1,10 @@
 .verification-page-container {
   display: flex;
   width: 100vw;
-  height: calc(100vh - 60px); /* Adjust based on header height */
+  height: calc(100vh - 60px);
   overflow-x: hidden;
 }
 
-/* Left: Background image */
 .side-container {
   width: 50%;
   height: 100%;
@@ -20,7 +19,6 @@
   opacity: 0.75;
 }
 
-/* Right: Verification Form */
 .side-verification {
   width: 50%;
   display: flex;
@@ -29,7 +27,6 @@
   background-color: #ffffff;
 }
 
-/* Container Box */
 .logo-container-verification {
   text-align: center;
   width: 100%;
@@ -39,21 +36,18 @@
   align-items: center;
 }
 
-/* Logo */
 .logo-verification {
   width: 150px;
   height: auto;
   margin: -30px 0 0.5rem 0;
 }
 
-/* Headings */
 .logo-container-verification h3 {
   font-size: 1.5rem;
   margin-bottom: 1.5rem;
   color: #333;
 }
 
-/* Label */
 .logo-container-verification h4 {
   font-size: 1rem;
   color: #333;
@@ -63,15 +57,13 @@
   text-align: left;
 }
 
-/* OTP Inputs Container */
 .input-wrapper {
   display: flex;
   justify-content: center;
-  gap: 30px; /* Increased from 10px to 20px */
+  gap: 30px;
   margin: 10px auto 15px auto;
 }
 
-/* OTP Input Styles */
 .input-wrapper input {
   width: 60px;
   height: 60px;
@@ -84,7 +76,6 @@
   outline: none;
 }
 
-/* Resend link */
 .send-code {
   margin-left: 5px;
   color: #4CAF50;
@@ -95,7 +86,6 @@
   text-decoration: underline;
 }
 
-/* Verify Button */
 .verifycode-button {
   display: block;
   width: 300px;

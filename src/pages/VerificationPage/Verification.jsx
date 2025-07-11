@@ -10,12 +10,9 @@ function Verification() {
       <HeaderStart />
 
       <div className="verification-page-container">
-        {/* Left: Image */}
         <div className="side-container">
           <img src={sidePic} alt="Papaia Side Picture" className="sidepic" />
         </div>
-
-        {/* Right: Forgot Password Form */}
         <div className="side-verification">
           <div className="logo-container-verification">
             <img src={logo} alt="papaia-logo" className="logo-verification" />

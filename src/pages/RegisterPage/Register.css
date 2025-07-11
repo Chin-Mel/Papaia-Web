@@ -1,11 +1,9 @@
-/* Main Wrapper Excluding Header & Footer */
 .register-content-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Inner Content Split View */
 .register-page-container {
   display: flex;
   flex: 1;
@@ -14,7 +12,6 @@
   overflow: hidden;
 }
 
-/* ========== Left Side: Image ========== */
 .side-container {
   width: 50%;
   height: 100%;
@@ -31,7 +28,6 @@
   opacity: 0.75;
 }
 
-/* ========== Right Side: Form ========== */
 .side-register {
   width: 50%;
   height: 100%;
@@ -51,14 +47,12 @@
   align-items: center;
 }
 
-/* ========== Logo ========== */
 .form-logo {
   width: 140px;
   height: auto;
   margin-bottom: 10px;
 }
 
-/* ========== Heading ========== */
 .form-container h2 {
   font-size: 1.8rem;
   font-weight: bold;
@@ -66,7 +60,6 @@
   color: #000;
 }
 
-/* ========== Form Layout ========== */
 .double-row {
   display: flex;
   gap: 12px;
@@ -89,7 +82,6 @@
   margin-bottom: 15px;
 }
 
-/* ========== Input Fields ========== */
 .input-icon {
   position: absolute;
   top: 50%;
@@ -117,7 +109,6 @@
   color: #bbb;
 }
 
-/* ========== Submit Button ========== */
 .submit-button {
   width: 100%;
   max-width: 440px;
@@ -136,7 +127,6 @@
   background-color: #6A442B;
 }
 
-/* ========== Login Link ========== */
 .login-link {
   font-size: 0.9rem;
   color: #2f8a2f;

@@ -17,7 +17,6 @@ function Login() {
           <img src={sidePic} alt="Papaia Side Picture" className="sidepic" />
         </div>
 
-        {/* Right: Login Form */}
         <div className="side-login">
           <div className="logo-container-login">
             <img src={logo} alt="papaia-logo" className="logo-login" />

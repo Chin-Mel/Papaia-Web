@@ -10,12 +10,10 @@ function NewPassword() {
       <HeaderStart />
 
       <div className="newpassword-page-container">
-        {/* Left Side: Background Image */}
         <div className="side-container">
           <img src={sidePic} alt="Papaia Side" className="sidepic" />
         </div>
 
-        {/* Right Side: Password Form */}
         <div className="side-newpassword">
           <div className="form-container">
             <img src={logo} alt="Papaia Logo" className="form-logo" />
