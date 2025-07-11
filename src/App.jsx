@@ -1,10 +1,10 @@
-import Welcome from "./pages/WelcomePage/Welcome";
+import Register from "./pages/RegisterPage/Register";
 
 
 function App() {
   return (
     <>
-      <Welcome/>
+      <Register />
     </>
   );
 }
