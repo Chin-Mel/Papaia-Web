@@ -1,0 +1,65 @@
+/* Fullscreen background image container */
+.welcome-background {
+  width: 100vw;
+  height: 130vh;
+  background-image: url('../../assets/papaia-welcomepic.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  display: flex;
+  align-items: flex-start;         /* Align content to top */
+  justify-content: flex-start;     /* Align content to left */
+  text-align: left;
+  padding: 8vh 8vw 0 8vw;          /* Top & horizontal spacing */
+}
+
+/* Overlay text block */
+.welcome-overlay-text {
+  color: white;
+  z-index: 2;
+  max-width: 700px;
+}
+
+/* Main heading */
+.welcome-overlay-text h1 {
+  font-size: 7rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+/* Tagline (italic and slightly smaller) */
+.welcome-overlay-text p {
+  font-size: 1.1rem;
+  font-style: italic;
+  font-weight: 300;
+  margin-bottom: 1rem;
+}
+
+/* Description text */
+.welcome-overlay-text h4 {
+  font-size: 1.3rem;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+/* "Get Started" Button */
+.get-started-button {
+  width: 230px;
+  padding: 1rem 3rem;             /* Bigger padding */
+  font-size: 1.3rem;              /* Larger text */
+  font-weight: 400;               /* Slightly bolder */
+  background-color: #00712D;
+  color: white;
+  border: none;         /* Bigger corners */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.get-started-button:hover {
+  background-color: #527a3b;
+}
+
