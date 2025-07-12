@@ -1,5 +1,6 @@
 import './HeaderStart.css';
 import logo from '../../assets/papaia-logo.png';
+import { Link } from 'react-router-dom'; // ✅ Import Link
 
 function HeaderStart() {
   return (
@@ -8,9 +9,9 @@ function HeaderStart() {
         <img src={logo} alt="papaia-logo" className="logo" />
       </div>
       <nav className="nav-links">
-        <a href="#" className="home">Home</a>
-        <a href="#" className="login">Login</a>
-        <a href="#" className="register">Register</a>
+        <Link to="/" className="home">Home</Link>
+        <Link to="/login" className="login">Login</Link>
+        <Link to="/register" className="register">Register</Link>
       </nav>
     </header>
   );

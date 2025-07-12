@@ -5,6 +5,7 @@ import sidePic from '../../assets/login-backgroundpic.jpg';
 import logo from '../../assets/papaia-logo.png';
 import userIcon from '../../assets/user.png';
 import lockIcon from '../../assets/password.png';
+import { Link } from 'react-router-dom'; // ✅ Added this
 
 function Login() {
   return (
@@ -12,7 +13,6 @@ function Login() {
       <HeaderStart />
 
       <div className="login-page-container">
-        {/* Left: Image */}
         <div className="side-container">
           <img src={sidePic} alt="Papaia Side Picture" className="sidepic" />
         </div>
@@ -33,10 +33,12 @@ function Login() {
               <img src={lockIcon} alt="Lock Icon" className="input-icon" />
               <input type="password" placeholder="Password" className="login-input" />
             </div>
+
             <div className="helper-links">
-                <a href="#" className="forgot-password">Forgot Password?</a>
-                <a href="#" className="register">Register</a>
+              <Link to="/forgot-password" className="forgot-password">Forgot Password?</Link>
+              <Link to="/register" className="register">Register</Link>
             </div>
+
             <button className="login-button">Log In</button>
           </div>
         </div>

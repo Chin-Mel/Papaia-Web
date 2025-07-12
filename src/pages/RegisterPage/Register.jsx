@@ -8,6 +8,8 @@ import emailIcon from '../../assets/mail.png';
 import phoneIcon from '../../assets/call.png';
 import dobIcon from '../../assets/calendar.png';
 import lockIcon from '../../assets/password.png';
+import { Link } from 'react-router-dom';
+
 
 function Register() {
   return (
@@ -79,7 +81,10 @@ function Register() {
               </div>
 
               <button className="submit-button">Register</button>
-              <p className="login-link">Already have an account?</p>
+              <p className="login-link">
+                Already have an account? <Link to="/login">Login</Link>
+              </p>
+
             </div>
           </div>
         </div>
