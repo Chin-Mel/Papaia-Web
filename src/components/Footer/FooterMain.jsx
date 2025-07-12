@@ -43,8 +43,6 @@ function FooterMain() {
         <img src={logo} alt="papaia-logo" className="logo" />
         <p className="copyright">© 2025 Papaia Technologies. All rights reserved.</p>
       </div>
-
-
     </footer>
   );
 }

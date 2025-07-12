@@ -1,4 +1,3 @@
-/* Fullscreen background image container */
 .welcome-background {
   width: 100vw;
   height: 130vh;
@@ -8,20 +7,18 @@
   background-repeat: no-repeat;
   position: relative;
   display: flex;
-  align-items: flex-start;         /* Align content to top */
-  justify-content: flex-start;     /* Align content to left */
+  align-items: flex-start;         
+  justify-content: flex-start;    
   text-align: left;
-  padding: 8vh 8vw 0 8vw;          /* Top & horizontal spacing */
+  padding: 8vh 8vw 0 8vw;          
 }
 
-/* Overlay text block */
 .welcome-overlay-text {
   color: white;
   z-index: 2;
   max-width: 700px;
 }
 
-/* Main heading */
 .welcome-overlay-text h1 {
   font-size: 7rem;
   font-weight: 700;
@@ -29,7 +26,6 @@
   letter-spacing: 1px;
 }
 
-/* Tagline (italic and slightly smaller) */
 .welcome-overlay-text p {
   font-size: 1.1rem;
   font-style: italic;
@@ -37,7 +33,6 @@
   margin-bottom: 1rem;
 }
 
-/* Description text */
 .welcome-overlay-text h4 {
   font-size: 1.3rem;
   font-style: italic;
@@ -46,15 +41,14 @@
   margin-bottom: 2rem;
 }
 
-/* "Get Started" Button */
 .get-started-button {
   width: 230px;
-  padding: 1rem 3rem;             /* Bigger padding */
-  font-size: 1.3rem;              /* Larger text */
-  font-weight: 400;               /* Slightly bolder */
+  padding: 1rem 3rem;             
+  font-size: 1.3rem;              
+  font-weight: 400;               
   background-color: #00712D;
   color: white;
-  border: none;         /* Bigger corners */
+  border: none;         
   cursor: pointer;
   transition: background-color 0.3s ease;
 }

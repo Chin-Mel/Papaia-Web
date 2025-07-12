@@ -1,8 +1,15 @@
 import './Welcome.css'; 
 import HeaderStart from "../../components/Header/HeaderStart";
 import FooterMain from "../../components/Footer/FooterMain";
+import { useNavigate } from 'react-router-dom'; // ✅ import navigation hook
 
 function Welcome () {
+    const navigate = useNavigate(); // ✅ create navigate function
+
+    const handleGetStarted = () => {
+        navigate('/register'); // ✅ go to Register page
+    };
+
     return (
         <>
             <HeaderStart />
@@ -18,7 +25,9 @@ function Welcome () {
                         camera, the app identifies specific diseases and provides suggested 
                         treatments, enabling early intervention and improved crop health.
                     </h4>
-                    <button className="get-started-button">Get Started</button>
+                    <button className="get-started-button" onClick={handleGetStarted}>
+                        Get Started
+                    </button>
                 </div>
             </div>
 
