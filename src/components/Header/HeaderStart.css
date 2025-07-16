@@ -1,9 +1,8 @@
-/* Layout the header */
 .headerstart {
   width: 100%;
-  position: sticky;   /* <-- Add this line */
-  top: 0;             /* <-- Required for sticky */
-  z-index: 1000;      /* <-- Keeps it above other elements */
+  position: fixed;  
+  top: 0;             
+  z-index: 1000;     
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -14,20 +13,16 @@
   box-sizing: border-box;
 }
 
-
-/* Logo + title container */
 .logo-container {
   display: flex;
   align-items: center;
 }
 
-/* Logo image */
 .logo {
   height: 30px;
   margin-right: 1rem;
 }
 
-/* Nav links (default style for Home and Login) */
 .home {
   color: black;
   margin-left: 1.5rem;
@@ -47,10 +42,9 @@
   text-decoration: underline;
 }
 
-/* Register link with different style */
 .register {
-  background-color: #8B4513; /* brown */
+  background-color: #8B4513;
   padding: 6px 12px;
   border-radius: 8px;
-  color: white; /* White text inside the brown box */
+  color: white;
 }
