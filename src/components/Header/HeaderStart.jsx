@@ -1,6 +1,6 @@
 import './HeaderStart.css';
 import logo from '../../assets/papaia-logo.png';
-import { Link } from 'react-router-dom'; // ✅ Import Link
+import { Link } from 'react-router-dom'; 
 
 function HeaderStart() {
   return (

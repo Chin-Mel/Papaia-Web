@@ -1,7 +1,6 @@
 import "./ForgotPassword.css";
 import HeaderStart from "../../components/Header/HeaderStart";
-import FooterMain from "../../components/Footer/FooterMain";
-import sidePic from '../../assets/login-backgroundpic.jpg';
+import sidePic from '../../assets/sidepic.jpg';
 import logo from '../../assets/papaia-logo.png';
 import mailIcon from '../../assets/mail.png';
 
@@ -10,28 +9,33 @@ function ForgotPassword() {
     <>
       <HeaderStart />
 
-      <div className="forgotpassword-page-container">
-        <div className="side-container">
-          <img src={sidePic} alt="Papaia Side Picture" className="sidepic" />
-        </div>
+      <main className="forgotpassword-content-wrapper">
+        <div className="forgotpassword-page-container">
+          <div className="forgotpassword-side-container">
+            <img src={sidePic} alt="Papaia Side Picture" className="forgotpassword-sidepic" />
+          </div>
 
-        <div className="side-forgotpassword">
-          <div className="logo-container-forgotpassword">
-            <img src={logo} alt="papaia-logo" className="logo-forgotpassword" />
-            <h3>Forgot Password</h3>
+          <div className="forgotpassword-side-form">
+            <div className="forgotpassword-form-container">
+              <img src={logo} alt="papaia-logo" className="forgotpassword-logo" />
+              <h2 className="forgotpassword-heading">Forgot Password</h2>
 
-            <h4>Email Address</h4>
-            <div className="input-wrapper">
-              <img src={mailIcon} alt="Mail Icon" className="input-icon" />
-              <input type="text" placeholder="Enter Email" className="email-input" />
+              <form>
+                <div className="forgotpassword-input-wrapper forgotpassword-full">
+                  <img src={mailIcon} alt="Mail Icon" className="forgotpassword-input-icon" />
+                  <input
+                    type="email"
+                    placeholder="Enter Email"
+                    className="forgotpassword-input"
+                  />
+                </div>
+
+                <button type="submit" className="forgotpassword-submit-button">Send OTP</button>
+              </form>
             </div>
-
-            <button className="sendcode-button">Send OTP</button>
           </div>
         </div>
-      </div>
-
-      <FooterMain />
+      </main>
     </>
   );
 }

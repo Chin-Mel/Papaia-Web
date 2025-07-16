@@ -1,13 +1,12 @@
 import './Welcome.css'; 
 import HeaderStart from "../../components/Header/HeaderStart";
-import FooterMain from "../../components/Footer/FooterMain";
-import { useNavigate } from 'react-router-dom'; // ✅ import navigation hook
+import { useNavigate } from 'react-router-dom'; 
 
 function Welcome () {
-    const navigate = useNavigate(); // ✅ create navigate function
+    const navigate = useNavigate(); 
 
     const handleGetStarted = () => {
-        navigate('/register'); // ✅ go to Register page
+        navigate('/register'); 
     };
 
     return (
@@ -30,8 +29,6 @@ function Welcome () {
                     </button>
                 </div>
             </div>
-
-            <FooterMain />
         </>
     );
 }
