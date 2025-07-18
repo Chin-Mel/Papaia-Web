@@ -15,79 +15,71 @@ import locationIcon from "../../assets/location.png";
 
 function Register() {
   const navigate = useNavigate();
+
   function getMaxDate() {
     const today = new Date();
-    today.setFullYear(today.getFullYear() - 18); // Subtract 18 years
+    today.setFullYear(today.getFullYear() - 18);
     const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+    const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   }
+
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
 
   const handleEmailChange = (e) => {
     const value = e.target.value;
     setEmail(value);
-
-    // Simple email format regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailRegex.test(value)) {
-      setEmailError("Please enter a valid email address.");
-    } else {
-      setEmailError("");
-    }
+    setEmailError(
+      emailRegex.test(value) ? "" : "Please enter a valid email address."
+    );
   };
+
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
 
   const handlePhoneChange = (e) => {
     const value = e.target.value;
     setPhone(value);
-
     const phoneRegex = /^9\d{9}$/;
-
-    if (!phoneRegex.test(value)) {
-      setPhoneError("Phone number must start with 9 and be 10 digits long.");
-    } else {
-      setPhoneError("");
-    }
+    setPhoneError(
+      phoneRegex.test(value)
+        ? ""
+        : "Phone number must start with 9 and be 10 digits long."
+    );
   };
+
   const finalPhoneNumber = "0" + phone;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
     setPassword(value);
-
-    if (value.length < 8) {
-      setPasswordError("Password must be at least 8 characters.");
-    } else {
-      setPasswordError("");
-    }
-
-    // Also validate confirm password on password change
-    if (confirmPassword && value !== confirmPassword) {
-      setConfirmPasswordError("Passwords do not match.");
-    } else {
-      setConfirmPasswordError("");
-    }
+    setPasswordError(
+      value.length < 8 ? "Password must be at least 8 characters." : ""
+    );
+    setConfirmPasswordError(
+      confirmPassword && value !== confirmPassword
+        ? "Passwords do not match."
+        : ""
+    );
   };
 
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
     setConfirmPassword(value);
-
-    if (value !== password) {
-      setConfirmPasswordError("Passwords do not match.");
-    } else {
-      setConfirmPasswordError("");
-    }
+    setConfirmPasswordError(
+      value !== password ? "Passwords do not match." : ""
+    );
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -111,10 +103,8 @@ function Register() {
       profilePicture: "",
     };
 
-    // ✅ Validation check
     let hasError = false;
     if (!email || emailError) hasError = true;
-    if (!phone || phoneError) hasError = true;
     if (!phone || phoneError) hasError = true;
     if (!form.zipcode.value || !/^\d{4}$/.test(form.zipcode.value))
       hasError = true;
@@ -138,7 +128,9 @@ function Register() {
       const result = await response.json();
 
       if (response.ok) {
-        alert("Registration successful! Redirecting to login...");
+        alert(
+          "Registration successful! Please check your email to verify your account."
+        );
         navigate("/login");
       } else {
         alert(result.message || "Registration failed. Please try again.");
@@ -169,7 +161,6 @@ function Register() {
               <h2 className="register-heading">Register</h2>
 
               <form onSubmit={handleSubmit}>
-                {/* Name Fields */}
                 <div className="register-double-row">
                   <div className="register-input-wrapper">
                     <label htmlFor="lastName">Last Name</label>
@@ -180,6 +171,7 @@ function Register() {
                     />
                     <input
                       id="lastName"
+                      name="lastName"
                       type="text"
                       placeholder="Enter Last Name"
                       required
@@ -194,6 +186,7 @@ function Register() {
                     />
                     <input
                       id="firstName"
+                      name="firstName"
                       type="text"
                       placeholder="Enter First Name"
                       required
@@ -211,6 +204,7 @@ function Register() {
                     />
                     <input
                       id="middleName"
+                      name="middleName"
                       type="text"
                       placeholder="Enter Middle Name"
                     />
@@ -224,13 +218,13 @@ function Register() {
                     />
                     <input
                       id="suffix"
+                      name="suffix"
                       type="text"
                       placeholder="Enter Suffix Jr., III..."
                     />
                   </div>
                 </div>
 
-                {/* Username & Email */}
                 <div className="register-input-wrapper register-full">
                   <label htmlFor="username">Username</label>
                   <img
@@ -240,6 +234,7 @@ function Register() {
                   />
                   <input
                     id="username"
+                    name="username"
                     type="text"
                     placeholder="Enter Username"
                     required
@@ -255,6 +250,7 @@ function Register() {
                   />
                   <input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="Enter Email Address"
                     value={email}
@@ -266,7 +262,6 @@ function Register() {
                   <span className="error-message">{emailError}</span>
                 )}
 
-                {/* Phone & DOB */}
                 <div className="register-double-row">
                   <div className="register-input-wrapper">
                     <label htmlFor="phone">Phone Number</label>
@@ -277,6 +272,7 @@ function Register() {
                     />
                     <input
                       id="phone"
+                      name="phone"
                       type="tel"
                       maxLength={10}
                       placeholder="9XXXXXXXXX"
@@ -292,14 +288,19 @@ function Register() {
                       alt="Calendar Icon"
                       className="register-input-icon"
                     />
-                    <input type="date" name="dob" max={getMaxDate()} required />
+                    <input
+                      type="date"
+                      id="dob"
+                      name="dob"
+                      max={getMaxDate()}
+                      required
+                    />
                   </div>
                 </div>
                 {phoneError && (
                   <span className="error-message">{phoneError}</span>
                 )}
 
-                {/* Address Fields */}
                 <div className="register-input-wrapper register-full">
                   <label htmlFor="street">Street</label>
                   <img
@@ -309,6 +310,7 @@ function Register() {
                   />
                   <input
                     id="street"
+                    name="street"
                     type="text"
                     placeholder="Enter Street"
                     required
@@ -325,6 +327,7 @@ function Register() {
                     />
                     <input
                       id="barangay"
+                      name="barangay"
                       type="text"
                       placeholder="Enter Barangay"
                       required
@@ -339,6 +342,7 @@ function Register() {
                     />
                     <input
                       id="municipality"
+                      name="municipality"
                       type="text"
                       placeholder="Enter Municipality"
                       required
@@ -356,6 +360,7 @@ function Register() {
                     />
                     <input
                       id="province"
+                      name="province"
                       type="text"
                       placeholder="Enter Province"
                       required
@@ -370,6 +375,7 @@ function Register() {
                     />
                     <input
                       id="zipcode"
+                      name="zipcode"
                       type="text"
                       placeholder="Enter Zip Code"
                       pattern="^\d{4}$"
@@ -379,54 +385,67 @@ function Register() {
                   </div>
                 </div>
 
-                {/* Password Fields */}
                 <div className="register-input-wrapper register-full">
-                  <label htmlFor="password">Create Password</label>
-                  <img
-                    src={lockIcon}
-                    alt="Lock Icon"
-                    className="register-input-icon"
-                  />
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Create Password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    required
-                    className={passwordError ? "input-error" : ""}
-                  />
+                  <div className="register-input-wrapper register-full password-wrapper">
+                    <label htmlFor="password">Create Password</label>
+                    <img
+                      src={lockIcon}
+                      alt="Lock Icon"
+                      className="register-input-icon"
+                    />
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Create Password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      required
+                      className={passwordError ? "input-error" : ""}
+                    />
+                    <span
+                      className="toggle-password"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </span>
+                  </div>
                 </div>
                 {passwordError && (
                   <span className="error-message">{passwordError}</span>
                 )}
+
                 <div className="register-input-wrapper register-full">
-                  <label htmlFor="confirmPassword">Confirm Password</label>
-                  <img
-                    src={lockIcon}
-                    alt="Lock Icon"
-                    className="register-input-icon"
-                  />
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={handleConfirmPasswordChange}
-                    required
-                    className={confirmPasswordError ? "input-error" : ""}
-                  />
+                  <div className="register-input-wrapper register-full password-wrapper">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <img
+                      src={lockIcon}
+                      alt="Lock Icon"
+                      className="register-input-icon"
+                    />
+                    <input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm Password"
+                      value={confirmPassword}
+                      onChange={handleConfirmPasswordChange}
+                      required
+                      className={confirmPasswordError ? "input-error" : ""}
+                    />
+                    <span
+                      className="toggle-password"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </span>
+                  </div>
                 </div>
                 {confirmPasswordError && (
                   <span className="error-message">{confirmPasswordError}</span>
                 )}
 
-                {/* Submit Button */}
                 <button type="submit" className="register-submit-button">
                   Register
                 </button>
-
-                {/* Link to Login */}
                 <p className="register-login-link">
                   Already have an account? <Link to="/login">Login</Link>
                 </p>
