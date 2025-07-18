@@ -8,22 +8,11 @@ import sidePic from "../../assets/sidepic.jpg";
 import logo from "../../assets/papaia-logo.png";
 import userIcon from "../../assets/user.png";
 import emailIcon from "../../assets/mail.png";
-import phoneIcon from "../../assets/call.png";
-import dobIcon from "../../assets/calendar.png";
 import lockIcon from "../../assets/password.png";
 import locationIcon from "../../assets/location.png";
 
 function Register() {
   const navigate = useNavigate();
-
-  function getMaxDate() {
-    const today = new Date();
-    today.setFullYear(today.getFullYear() - 18);
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
-  }
 
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -37,21 +26,6 @@ function Register() {
     );
   };
 
-  const [phone, setPhone] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-
-  const handlePhoneChange = (e) => {
-    const value = e.target.value;
-    setPhone(value);
-    const phoneRegex = /^9\d{9}$/;
-    setPhoneError(
-      phoneRegex.test(value)
-        ? ""
-        : "Phone number must start with 9 and be 10 digits long."
-    );
-  };
-
-  const finalPhoneNumber = "0" + phone;
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -93,8 +67,6 @@ function Register() {
       middleName: form.middleName.value || "",
       lastName: form.lastName.value,
       suffix: form.suffix.value || "",
-      dob: form.dob.value,
-      phone: finalPhoneNumber,
       street: form.street.value,
       barangay: form.barangay.value,
       municipality: form.municipality.value,
@@ -105,7 +77,6 @@ function Register() {
 
     let hasError = false;
     if (!email || emailError) hasError = true;
-    if (!phone || phoneError) hasError = true;
     if (!form.zipcode.value || !/^\d{4}$/.test(form.zipcode.value))
       hasError = true;
     if (!password || passwordError) hasError = true;
@@ -144,7 +115,6 @@ function Register() {
   return (
     <>
       <HeaderStart />
-
       <main className="register-content-wrapper">
         <div className="register-page-container">
           <div className="register-side-container">
@@ -154,12 +124,10 @@ function Register() {
               className="register-sidepic"
             />
           </div>
-
           <div className="register-side-form">
             <div className="register-form-container">
               <img src={logo} alt="Papaia Logo" className="register-logo" />
               <h2 className="register-heading">Register</h2>
-
               <form onSubmit={handleSubmit}>
                 <div className="register-double-row">
                   <div className="register-input-wrapper">
@@ -262,45 +230,6 @@ function Register() {
                   <span className="error-message">{emailError}</span>
                 )}
 
-                <div className="register-double-row">
-                  <div className="register-input-wrapper">
-                    <label htmlFor="phone">Phone Number</label>
-                    <img
-                      src={phoneIcon}
-                      alt="Phone Icon"
-                      className="register-input-icon"
-                    />
-                    <input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      maxLength={10}
-                      placeholder="9XXXXXXXXX"
-                      value={phone}
-                      onChange={handlePhoneChange}
-                      required
-                    />
-                  </div>
-                  <div className="register-input-wrapper">
-                    <label htmlFor="dob">Date of Birth</label>
-                    <img
-                      src={dobIcon}
-                      alt="Calendar Icon"
-                      className="register-input-icon"
-                    />
-                    <input
-                      type="date"
-                      id="dob"
-                      name="dob"
-                      max={getMaxDate()}
-                      required
-                    />
-                  </div>
-                </div>
-                {phoneError && (
-                  <span className="error-message">{phoneError}</span>
-                )}
-
                 <div className="register-input-wrapper register-full">
                   <label htmlFor="street">Street</label>
                   <img
@@ -386,58 +315,54 @@ function Register() {
                 </div>
 
                 <div className="register-input-wrapper register-full">
-                  <div className="register-input-wrapper register-full password-wrapper">
-                    <label htmlFor="password">Create Password</label>
-                    <img
-                      src={lockIcon}
-                      alt="Lock Icon"
-                      className="register-input-icon"
-                    />
-                    <input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Create Password"
-                      value={password}
-                      onChange={handlePasswordChange}
-                      required
-                      className={passwordError ? "input-error" : ""}
-                    />
-                    <span
-                      className="toggle-password"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                    >
-                      {showPassword ? "Hide" : "Show"}
-                    </span>
-                  </div>
+                  <label htmlFor="password">Create Password</label>
+                  <img
+                    src={lockIcon}
+                    alt="Lock Icon"
+                    className="register-input-icon"
+                  />
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Create Password"
+                    value={password}
+                    onChange={handlePasswordChange}
+                    required
+                    className={passwordError ? "input-error" : ""}
+                  />
+                  <span
+                    className="toggle-password"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                  >
+                    {showPassword ? "Hide" : "Show"}
+                  </span>
                 </div>
                 {passwordError && (
                   <span className="error-message">{passwordError}</span>
                 )}
 
                 <div className="register-input-wrapper register-full">
-                  <div className="register-input-wrapper register-full password-wrapper">
-                    <label htmlFor="confirmPassword">Confirm Password</label>
-                    <img
-                      src={lockIcon}
-                      alt="Lock Icon"
-                      className="register-input-icon"
-                    />
-                    <input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
-                      onChange={handleConfirmPasswordChange}
-                      required
-                      className={confirmPasswordError ? "input-error" : ""}
-                    />
-                    <span
-                      className="toggle-password"
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                    >
-                      {showConfirmPassword ? "Hide" : "Show"}
-                    </span>
-                  </div>
+                  <label htmlFor="confirmPassword">Confirm Password</label>
+                  <img
+                    src={lockIcon}
+                    alt="Lock Icon"
+                    className="register-input-icon"
+                  />
+                  <input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    required
+                    className={confirmPasswordError ? "input-error" : ""}
+                  />
+                  <span
+                    className="toggle-password"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                  >
+                    {showConfirmPassword ? "Hide" : "Show"}
+                  </span>
                 </div>
                 {confirmPasswordError && (
                   <span className="error-message">{confirmPasswordError}</span>
