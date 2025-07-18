@@ -120,3 +120,16 @@
 .verification-submit-button:hover {
   background-color: #6A442B;
 }
+
+.verification-error {
+  margin-top: 10px;
+  font-size: 14px;
+  color: red;
+}
+
+.verification-success {
+  margin-top: 10px;
+  font-size: 14px;
+  color: green;
+}
+

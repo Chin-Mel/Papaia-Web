@@ -1,7 +1,7 @@
 import './HeaderMain.css';
 import logo from '../../assets/papaia-logo.png';
 import bellIcon from '../../assets/notif-icon.png';
-import profileImage from '../../assets/profile.png';
+import profileImage from '../../assets/default-user.png';
 
 function HeaderMain() {
   return (
