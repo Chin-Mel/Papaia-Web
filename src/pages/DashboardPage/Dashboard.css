@@ -1,0 +1,181 @@
+/* Dashboard layout wrapper */
+.dashboard-content-wrapper {
+  padding: 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fffdf5;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 2rem;
+}
+
+/* Dashboard heading */
+.dashboard-content-wrapper h1 {
+  grid-column: 1 / -1;
+  font-size: 2rem;
+}
+
+/* Top tiles section */
+.update-tiles {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  margin-top: -20px;
+}
+
+.tile {
+  width: 350px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  border-radius: 12px;
+  color: #000;
+  font-weight: 600;
+  flex: 0 0 auto; /* prevent shrinking */
+}
+
+
+/* Image icons in tiles */
+/* Image icons in tiles */
+.tile-icon img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+/* Tile text alignment */
+.tile-text {
+  text-align: right;
+}
+
+.tile-label {
+  font-size: 1.5rem;
+  color: #555;
+  margin-bottom: 0.2rem;
+}
+
+.tile-number {
+  font-size: 2rem;
+}
+
+/* Individual tile backgrounds */
+.farmer-count {
+  background-color: #fcd9a9;
+}
+
+.farm-count {
+  background-color: #d3f6cd;
+}
+
+.scan-count {
+  background-color: #f2c9ad;
+}
+
+/* My Farms Section */
+.my-farms-section {
+  grid-column: 1;
+}
+
+.my-farms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.my-farms-header h2 {
+  font-size: 1.4rem;
+}
+
+.add-farm-button {
+  background-color: #004d26;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Farm cards layout */
+.farm-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.farm-card {
+  background-color: #fff9dd;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.farm-user {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.farm-name {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.farm-location {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.location-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+/* Recent Activities Sidebar */
+.recent-activities {
+  grid-column: 2;
+  background-color: #fff;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  height: fit-content;
+}
+
+.recent-activities h2 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+  font-size: 0.95rem;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 0.5rem;
+}
+
+.activity-status {
+  color: green;
+  flex: 1;
+  margin-left: 0.5rem;
+}
+
+.activity-date {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Optional: Responsive layout for smaller screens */
