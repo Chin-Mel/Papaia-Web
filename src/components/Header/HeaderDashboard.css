@@ -1,0 +1,56 @@
+/* Layout the header */
+.headerstart {
+  width: 100%;
+  position: sticky;   /* <-- Add this line */
+  top: 0;             /* <-- Required for sticky */
+  z-index: 1000;      /* <-- Keeps it above other elements */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #FFFBE6;
+  color: black;
+  padding: 0 2rem;
+  height: 43px;
+  box-sizing: border-box;
+}
+
+
+/* Logo + title container */
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo image */
+.logo {
+  height: 30px;
+  margin-right: 1rem;
+}
+
+/* Nav links (default style for Home and Login) */
+.home {
+  color: black;
+  margin-left: 1.5rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.login {
+  color: black;
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+/* Register link with different style */
+.register {
+  background-color: #8B4513; /* brown */
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white; /* White text inside the brown box */
+}

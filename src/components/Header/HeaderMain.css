@@ -1,0 +1,62 @@
+.headermain {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #FFFBE6;
+  color: black;
+  padding: 0 2rem;
+  height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo-nav-container {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 35px;
+  margin-right: 1rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.dashboard,
+.scanhistory,
+.about {
+  color: black;
+  margin-left: 1.5rem;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.nav-links a:hover {
+  text-decoration: underline;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.notification-icon {
+  height: 24px;
+  width: 24px;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.profile-pic {
+  height: 35px;
+  width: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+}
