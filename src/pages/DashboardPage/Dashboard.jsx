@@ -1,5 +1,5 @@
 import './Dashboard.css';
-import HeaderStart from "../../components/Header/HeaderStart";
+import HeaderDashboard from "../../components/Header/HeaderDashboard";
 import FooterMain from "../../components/Footer/FooterMain";
 
 const Dashboard = () => {
@@ -99,7 +99,7 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <div className="dashboard-inner">
         <div className="dashboard-content">
-          <HeaderStart />
+          <HeaderDashboard />
 
           <div className="dashboard-main">
             <div className="dashboard-title">Dashboard</div>

@@ -1,17 +1,17 @@
-import './HeaderStart.css';
+import './HeaderDashboard.css';
 import logo from '../../assets/papaia-logo.png';
-function HeaderStart() {
+function HeaderDashboard() {
   return (
-    <header className="headerstart">
+    <header className="headerdashboard">
       <div className="logo-container">
         <img src={logo} alt="papaia-logo" className="logo" />
       </div>
       <nav className="nav-links">
-        <a href="#" className="home">Home</a>
-        <a href="#" className="login">Login</a>
-        <a href="#" className="register">Register</a>
+        <a href="#" className="dashboard">Dashboard</a>
+        <a href="#" className="scan-history">Scan History</a>
+        <a href="#" className="about">About</a>
       </nav>
     </header>
   );
 }
-export default HeaderStart;
+export default HeaderDashboard;

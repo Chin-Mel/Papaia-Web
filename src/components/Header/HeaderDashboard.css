@@ -1,5 +1,5 @@
 /* Layout the header */
-.headerstart {
+.headerdashboard {
   width: 100%;
   position: sticky;   /* <-- Add this line */
   top: 0;             /* <-- Required for sticky */
@@ -28,14 +28,14 @@
 }
 
 /* Nav links (default style for Home and Login) */
-.home {
+.dashboard {
   color: black;
   margin-left: 1.5rem;
   text-decoration: none;
   font-weight: 500;
 }
 
-.login {
+.scan-history {
   color: black;
   margin-left: 1.5rem;
   margin-right: 1.5rem;
@@ -48,9 +48,8 @@
 }
 
 /* Register link with different style */
-.register {
-  background-color: #8B4513; /* brown */
+.about {
   padding: 6px 12px;
   border-radius: 8px;
-  color: white; /* White text inside the brown box */
+  color: black; /* White text inside the brown box */
 }
