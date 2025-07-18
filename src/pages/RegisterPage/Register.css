@@ -168,3 +168,14 @@
   margin-bottom: 15px;
   display: block;
 }
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  margin-top: 10px;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: green;
+  cursor: pointer;
+  user-select: none;
+}
