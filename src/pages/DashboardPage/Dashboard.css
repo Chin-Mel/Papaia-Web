@@ -1,221 +1,288 @@
-:root {
-  --global-bg-1: #000000;
-  --global-bg-2: #d7ffe7;
-  --global-bg-3: #d9d9d9;
-  --global-bg-4: #edcaaf;
-  --global-bg-5: #ffdeb4;
-  --global-bg-6: #fffbe6;
-  --global-bg-7: #ffffff;
-  --global-text-1: #000000;
-  --global-text-2: #00712d;
-  --global-text-3: #8f8f8f;
-  --global-text-4: #ababab;
-  --button-bg-1: #00712d;
-  --button-text-1: #ffffff;
-  --footer-bg-1: #492f1a;
-  --footer-text-1: #fffbe6;
+  body, html {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
+  
+  .dashboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
 
-/* ========== Layout ========== */
-.dashboard-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.dashboard-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.dashboard-content {
-  display: flex;
-  flex-direction: column;
-  gap: 34px;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  padding: 0 1rem;
-}
-
-@media (min-width: 640px) {
+  .dashboard-container,
   .dashboard-content {
-    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
   }
-}
 
-@media (min-width: 1024px) {
-  .dashboard-content {
-    padding-left: 86px;
-    padding-right: 6rem;
+  .dashboard-box {
+    display: flex;
+    flex-direction: column;
+    gap: 100px;
+    width: 100%;
   }
-}
 
-/* ========== Typography ========== */
-.dashboard-title {
-  color: var(--global-text-1);
-  font-family: 'Inter', sans-serif;
-  font-size: 1.875rem;
-  font-weight: 600;
-  line-height: 59px;
-  text-align: center;
-}
+  .dashboard-main {
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+  }
 
-@media (min-width: 640px) {
+  @media (min-width: 1024px) {
+    .dashboard-main {
+      padding: 0 86px 0 86px;
+    }
+  }
+
+  .dashboard-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   .dashboard-title {
-    font-size: 2.25rem;
+    color: #000000;
+    font-family: 'Inter', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: left;
   }
-}
 
-@media (min-width: 1024px) {
-  .dashboard-title {
-    font-size: 3rem;
+  .stats-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5rem;
   }
-}
 
-/* ========== Stats Card ========== */
-.stats-card {
+  @media (min-width: 640px) {
+    .stats-row {
+      flex-direction: row;
+    }
+  }
+
+  .stat-card {
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 100%;
+  }
+
+  .stat-card.farmers {
+    background-color: #ffdeb4;
+  }
+  .stat-card.farms {
+    background-color: #d7ffe7;
+  }
+  .stat-card.scans {
+    background-color: #edcaaf;
+  }
+
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .stat-top {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .stat-top img {
+    width: 72px;
+    height: 72px;
+  }
+
+  .stat-number {
+    font-size: 3.8rem;
+    margin-top: 0.5rem;
+    margin-right: 3rem;
+    color: #000000;
+  }
+
+  .stat-label {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    margin-left: 0.5rem;
+  }
+
+  .dashboard-body {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  border-radius: 1rem;
-  padding: 1rem;
-  width: 100%;
-  background-color: var(--global-bg-6);
+  flex-direction: row;
+  gap: 1rem; /* consistent spacing */
 }
 
-.stats-card-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  width: 100%;
-  padding: 0 14px;
-}
-
-.stats-number {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.875rem;
-  font-weight: 400;
-  line-height: 72px;
-  text-align: center;
-  margin-top: 0.375rem;
-  margin-right: 52px;
-  color: var(--global-text-1);
-}
-
-@media (min-width: 640px) {
-  .stats-number {
-    font-size: 2.25rem;
+  @media (min-width: 1024px) {
+    .dashboard-body {
+      flex-direction: row;
+    }
   }
-}
 
-@media (min-width: 1024px) {
-  .stats-number {
-    font-size: 3rem;
+  .my-farms {
+    flex: 1;
   }
-}
 
-.stats-label {
-  font-family: 'Poppins', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 2.25rem;
-  text-align: left;
-  color: var(--global-text-1);
-  margin-top: -0.25rem;
-  margin-left: 0.25rem;
-}
-
-/* ========== Utilities ========== */
-.my-farms-header {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: var(--global-text-1);
-}
-
-.my-farms-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
-  width: 100%;
-}
-
-@media (min-width: 640px) {
-  .my-farms-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
   }
-}
 
-@media (min-width: 1024px) {
-  .my-farms-grid {
-    grid-template-columns: repeat(3, 1fr);
+  .divider {
+    flex: 1;
+    height: 1px;
+    background-color: #233D4D;
   }
-}
 
-/* ========== Cards ========== */
-.farm-card {
-  border-radius: 0.75rem;
-  background-color: var(--global-bg-7);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  padding: 1rem;
-  transition: transform 0.2s ease;
-}
+  .add-farm-btn {
+    background-color: #00712D;
+    color: #ffffff;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
 
-.farm-card:hover {
-  transform: translateY(-4px);
-}
+  .farms-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 
-/* ========== Activities ========== */
-.recent-activities {
-  width: 100%;
-  margin-top: 2rem;
-}
+  @media (min-width: 768px) {
+    .farms-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 
-.activity-item {
-  border-left: 4px solid var(--global-text-2);
-  padding-left: 1rem;
-  margin-bottom: 1rem;
-  font-family: 'Poppins', sans-serif;
-  color: var(--global-text-3);
-}
+  @media (min-width: 1024px) {
+    .farms-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
 
-/* ========== Buttons ========== */
-.btn {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 500;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  transition: background-color 0.2s ease, opacity 0.2s ease;
+  .farm-card {
+    background-color: #FFFBE6;
+    border-radius: 1rem;
+    padding: 0.75rem;
+  }
+
+  .farm-content {
+    padding: 1rem;
+  }
+
+  .farm-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .farm-users {
+    display: flex;
+    align-items: center;
+  }
+
+  .farm-users img {
+    width: 1rem;
+    height: 1.125rem;
+  }
+
+  .farm-users span {
+    margin-left: 0.5rem;
+    font-size: 1rem;
+    color: #233D4D;
+  }
+
+  .farm-location {
+    display: flex;
+    align-items: center;
+    margin-top: 0.5rem;
+  }
+
+  .farm-location img {
+    width: 14px;
+    height: 14px;
+  }
+
+  .farm-location span {
+    margin-left: 1rem;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .recent-activities {
+    width: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    .recent-activities {
+      width: 30%;
+    }
+  }
+
+  .dot-menu {
+  width: 20px;
+  height: auto;
   cursor: pointer;
-}
+  }
 
-.btn-primary {
-  background-color: var(--button-bg-1);
-  color: var(--button-text-1);
-}
+  .user-activity{
+    width: 10px;
+    height: 10px;
+    cursor: pointer;
+  }
 
-.btn-primary:hover {
-  background-color: #005a24;
-}
+  .activities-box {
+    background-color: #ffffff;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-left: 0;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  }
 
-.btn-primary:disabled {
-  background-color: gray;
-  cursor: not-allowed;
-  opacity: 0.6;
-}
+  .activities-box h2 {
+    font-size: 1.5rem;
+    text-align: center;
+  }
 
-.btn-outline {
-  border: 1px solid #ccc;
-  background-color: transparent;
-  color: #333;
-}
+  .activities-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-.btn-outline:hover {
-  background-color: #f4f4f4;
-}
+  .activity {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .activity-status {
+    display: flex;
+    align-items: center;
+  }
+
+  .activity-status img {
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+  }
+
+  .activity-status span {
+    margin-left: 0.75rem;
+    font-size: 0.75rem;
+    color: #4CAF50;
+  }
+
+  .activity-date {
+    font-size: 0.5rem;
+    color: #888;
+  }
