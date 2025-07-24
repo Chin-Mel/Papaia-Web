@@ -1,0 +1,133 @@
+.scan-history-page {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.scan-history-content {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-grow: 1;
+}
+
+.scan-container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.scan-header {
+  margin-bottom: 2rem;
+}
+
+.scan-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 1rem;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  color: #000000;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #111827;
+}
+
+.back-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+.scan-card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  max-width: 900px;
+  margin: 0 auto;
+  margin-bottom: 5rem;
+}
+
+.scan-card-content {
+  display: flex; /* This remains for mobile-first approach */
+  flex-direction: column;
+  gap: 2rem;
+  padding: 3rem;
+}
+
+@media (min-width: 1024px) {
+  .scan-card-content {
+    display: grid; /* Use Grid for desktop layout */
+    grid-template-columns: auto 1fr; /* First column sized to image, second takes rest of space */
+    align-items: start;
+    gap: 2rem 3rem; /* 2rem row-gap, 3rem column-gap */
+  }
+
+  .scan-description {
+    grid-column: 1 / -1; /* Make description span all columns */
+  }
+}
+
+.scan-image img {
+  width: 233px;
+  height: 187px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.scan-info {
+  flex: 1;
+}
+
+.scan-info h2 {
+  font-size: 2.5rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  color: black;
+}
+
+.no-disease-badge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #D5ED9F;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  margin-bottom: 2rem;
+}
+
+.badge-icon {
+  width: 14px;
+  height: 14px;
+  background-color: #00712D;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+}
+
+.check-icon {
+  width: 10px;
+  height: 10px;
+  color: white;
+  stroke-width: 3;
+}
+
+.scan-description {
+  color: black;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.scan-description p {
+  margin-bottom: 1rem;
+}
