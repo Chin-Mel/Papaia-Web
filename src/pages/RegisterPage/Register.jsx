@@ -62,7 +62,7 @@ function Register() {
       username: form.username.value,
       email: email,
       password: password,
-      role: "farmer owner",
+      role: "farm owner",
       firstName: form.firstName.value,
       middleName: form.middleName.value || "",
       lastName: form.lastName.value,
