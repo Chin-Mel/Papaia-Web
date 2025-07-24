@@ -61,7 +61,7 @@ function Login() {
             return;
           }
 
-          if (decoded.role !== "farm-owner") {
+          if (decoded.role !== "owner") {
             setError("You are not authorized to access the web platform.");
             return;
           }
