@@ -80,11 +80,9 @@ function NewPassword() {
         "https://papaiaapi.onrender.com/api/reset-password",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId,
+            userId, // obtained from previous /verify-otp step
             newPassword,
           }),
         }

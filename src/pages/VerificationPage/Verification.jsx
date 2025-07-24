@@ -103,17 +103,15 @@ function Verification() {
       setResendCountdown(30);
 
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/send-otp",
+        "https://papaiaapi.onrender.com/api/verify-otp",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, otp }),
         }
       );
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
         setMessage("A new OTP has been sent to your email.");
