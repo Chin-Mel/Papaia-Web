@@ -59,8 +59,8 @@ function Register() {
 
     const form = e.target;
     const formData = {
-      email: email,
       username: form.username.value,
+      email: email,
       password: password,
       role: "farmer owner",
       firstName: form.firstName.value,
@@ -72,7 +72,6 @@ function Register() {
       municipality: form.municipality.value,
       province: form.province.value,
       zipCode: form.zipcode.value,
-      profilePicture: "",
     };
 
     let hasError = false;
