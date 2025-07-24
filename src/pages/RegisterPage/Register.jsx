@@ -62,7 +62,7 @@ function Register() {
       username: form.username.value,
       email: email,
       password: password,
-      role: "farm owner",
+      role: "farmer",
       firstName: form.firstName.value,
       middleName: form.middleName.value || "",
       lastName: form.lastName.value,
@@ -87,6 +87,8 @@ function Register() {
     }
 
     try {
+      console.log("Submitting formData:", formData); // ✅ Log what you're sending
+
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
         headers: {
@@ -95,7 +97,8 @@ function Register() {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      const responseText = await response.text(); // ← works even if it's not valid JSON
+      console.log("Raw backend response:", responseText);
 
       if (response.ok) {
         alert(
@@ -103,7 +106,7 @@ function Register() {
         );
         navigate("/login");
       } else {
-        alert(result.message || "Registration failed. Please try again.");
+        alert("Registration failed. Check console for backend error.");
       }
     } catch (error) {
       console.error("Error during registration:", error);
