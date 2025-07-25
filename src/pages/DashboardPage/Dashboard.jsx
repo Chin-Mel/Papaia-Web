@@ -21,10 +21,26 @@ function Dashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ farmName, location: farmLocation }),
+        body: JSON.stringify({
+          farmName: farmName.trim(),
+          location: farmLocation.trim(),
+        }),
       });
 
-      const data = await response.json();
+      // Read response as text first for debugging
+      const rawResponse = await response.text();
+      console.log("Raw Response:", rawResponse);
+
+      // Parse JSON only if it's not an HTML error page
+      let data;
+      try {
+        data = JSON.parse(rawResponse);
+      } catch (jsonError) {
+        throw new Error(
+          "Response was not valid JSON. Possibly an HTML error page."
+        );
+      }
+
       if (response.ok && data.status === "success") {
         const newFarm = {
           name: farmName,
