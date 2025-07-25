@@ -16,16 +16,19 @@ function Dashboard() {
     if (!farmName.trim() || !farmLocation.trim()) return;
 
     try {
-      const response = await fetch("https://papaiaapi.onrender.com/api/farm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          farmName: farmName.trim(),
-          location: farmLocation.trim(),
-        }),
-      });
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farm",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            farmName: farmName.trim(),
+            location: farmLocation.trim(),
+          }),
+        }
+      );
 
       // Read response as text first for debugging
       const rawResponse = await response.text();
