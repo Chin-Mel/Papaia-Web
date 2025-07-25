@@ -3,7 +3,7 @@
   padding: 2rem;
   font-family: 'Segoe UI', sans-serif;
   background-color: #fffdf5;
-  height: 100vh;
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 300px;
   gap: 2rem;
@@ -13,6 +13,7 @@
 .dashboard-content-wrapper h1 {
   grid-column: 1 / -1;
   font-size: 2rem;
+  margin-bottom: 1rem;
 }
 
 /* Top tiles section */
@@ -20,44 +21,42 @@
   display: flex;
   gap: 1.5rem;
   margin-bottom: 2rem;
-  margin-top: -20px;
 }
 
 .tile {
-  width: 350px;
-  height: 100px;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 3rem;
+  padding: 1.2rem 1.5rem;
   border-radius: 12px;
   color: #000;
   font-weight: 600;
-  flex: 0 0 auto; /* prevent shrinking */
 }
 
+.tile-icon {
+  font-size: 2rem;
+}
 
-/* Image icons in tiles */
-/* Image icons in tiles */
 .tile-icon img {
   width: 100px;
   height: 100px;
   object-fit: contain;
 }
 
-/* Tile text alignment */
+
 .tile-text {
   text-align: right;
 }
 
 .tile-label {
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: #555;
   margin-bottom: 0.2rem;
 }
 
 .tile-number {
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
 /* Individual tile backgrounds */
@@ -123,17 +122,8 @@
 }
 
 .farm-location {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
   font-size: 0.9rem;
   color: #666;
-}
-
-.location-icon {
-  width: 16px;
-  height: 16px;
-  object-fit: contain;
 }
 
 /* Recent Activities Sidebar */
@@ -178,4 +168,59 @@
   color: #888;
 }
 
-/* Optional: Responsive layout for smaller screens */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-box {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 320px;
+  max-width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.popup-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #888;
+}
+
+.popup-box h3 {
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.popup-box input {
+  display: block;
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.popup-add-button {
+  width: 100%;
+  padding: 0.6rem;
+  background-color: #004d26;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
