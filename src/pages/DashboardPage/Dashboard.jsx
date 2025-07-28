@@ -16,7 +16,7 @@ function Dashboard() {
     if (!farmName.trim() || !farmLocation.trim()) return;
 
     try {
-      const response = await fetch("https://papaiaapi.onrender.com/farm", {
+      const response = await fetch("https://papaiaapi.onrender.com/api/farm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
