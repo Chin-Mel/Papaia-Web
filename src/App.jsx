@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Welcome from './pages/WelcomePage/Welcome';
 import Dashboard from './pages/DashboardPage/Dashboard';
 import AboutPage from './pages/AboutPage/About';
-import ScanHistoryDetailsPage from './pages/ScanHistoryPage/ScanHistoryDetailsPage';
+import ScanHistoryDetailsPage from './pages/ScanHistoryPage/ScanHistory';
 
 
    function App() {
