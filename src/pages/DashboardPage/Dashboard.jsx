@@ -15,7 +15,7 @@ function Dashboard() {
   const [farmLocation, setFarmLocation] = useState("");
   const navigate = useNavigate();
 
-  // ✅ Check token validity on mount
+  // Check token on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -30,13 +30,13 @@ function Dashboard() {
         localStorage.removeItem("token");
         navigate("/login");
       }
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       navigate("/login");
     }
   }, [navigate]);
 
-  // ✅ Fetch farms on component mount with token
+  // Fetch farms
   useEffect(() => {
     const fetchFarms = async () => {
       const token = localStorage.getItem("token");
@@ -44,7 +44,7 @@ function Dashboard() {
 
       try {
         const response = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
+          "https://papaiaapi.onrender.com/api/owner/farm",
           {
             method: "GET",
             headers: {
@@ -68,7 +68,7 @@ function Dashboard() {
     fetchFarms();
   }, []);
 
-  // ✅ Add farm with token in POST request
+  // Add a farm
   const handleAddFarm = async () => {
     if (!farmName.trim() || !farmLocation.trim()) return;
 
@@ -80,7 +80,7 @@ function Dashboard() {
 
     try {
       const response = await fetch(
-        "https://papaiaapi.onrender.com/owner/farm",
+        "https://papaiaapi.onrender.com/api/owner/farm",
         {
           method: "POST",
           headers: {
@@ -97,11 +97,11 @@ function Dashboard() {
       const data = await response.json();
       if (response.ok && data.status === "success") {
         const newFarm = {
-          id: data.farmId,
+          id: data.farmId || Date.now(), // fallback ID
           farmName,
           location: farmLocation,
         };
-        setFarms([...farms, newFarm]);
+        setFarms((prev) => [...prev, newFarm]);
         setFarmName("");
         setFarmLocation("");
         setShowPopup(false);
@@ -189,14 +189,12 @@ function Dashboard() {
                 placeholder="Enter Farm Name"
                 value={farmName}
                 onChange={(e) => setFarmName(e.target.value)}
-                required
               />
               <input
                 type="text"
                 placeholder="Enter Farm Location"
                 value={farmLocation}
                 onChange={(e) => setFarmLocation(e.target.value)}
-                required
               />
               <button className="popup-add-button" onClick={handleAddFarm}>
                 Add Farm
@@ -211,7 +209,7 @@ function Dashboard() {
             {Array.from({ length: 8 }).map((_, i) => (
               <li key={i} className="activity-item">
                 <img
-                  src="/path-to-avatar.jpg"
+                  src="https://i.pravatar.cc/40?img=1"
                   alt="Avatar"
                   className="avatar"
                 />
