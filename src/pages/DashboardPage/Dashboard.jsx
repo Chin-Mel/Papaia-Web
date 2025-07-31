@@ -44,7 +44,7 @@ function Dashboard() {
 
       try {
         const response = await fetch(
-          "https://papaiaapi.onrender.com/owner/farms",
+          "https://papaiaapi.onrender.com/api/owner/farms",
           {
             method: "GET",
             headers: {
