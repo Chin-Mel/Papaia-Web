@@ -6,7 +6,7 @@ import farmerIcon from "../../assets/farmer-count.png";
 import farmIcon from "../../assets/farm-count.png";
 import scanIcon from "../../assets/scan-count.png";
 import { MoreVertical } from "lucide-react";
-import jwtDecode from "jwt-decode"; // Make sure jwt-decode is installed
+import { jwtDecode } from "jwt-decode";
 
 function Dashboard() {
   const [farms, setFarms] = useState([]);
