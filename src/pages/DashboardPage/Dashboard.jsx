@@ -1,51 +1,105 @@
-import "./Dashboard.css";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import HeaderMain from "../../components/Header/HeaderMain";
 import farmerIcon from "../../assets/farmer-count.png";
 import farmIcon from "../../assets/farm-count.png";
 import scanIcon from "../../assets/scan-count.png";
-import { useState } from "react";
 import { MoreVertical } from "lucide-react";
+import jwtDecode from "jwt-decode"; // Make sure jwt-decode is installed
+import "./Dashboard.css";
 
 function Dashboard() {
   const [farms, setFarms] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [farmName, setFarmName] = useState("");
   const [farmLocation, setFarmLocation] = useState("");
+  const navigate = useNavigate();
 
+  // ✅ Check token validity on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const decoded = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime || decoded.role !== "owner") {
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    } catch (error) {
+      localStorage.removeItem("token");
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  // ✅ Fetch farms on component mount with token
+  useEffect(() => {
+    const fetchFarms = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const response = await fetch(
+          "https://papaiaapi.onrender.com/owner/farms",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+        if (response.ok && data.status === "success") {
+          setFarms(data.farms);
+        } else {
+          console.error("Failed to fetch farms:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching farms:", error);
+      }
+    };
+
+    fetchFarms();
+  }, []);
+
+  // ✅ Add farm with token in POST request
   const handleAddFarm = async () => {
     if (!farmName.trim() || !farmLocation.trim()) return;
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You are not authenticated.");
+      return;
+    }
+
     try {
-      const response = await fetch("https://papaiaapi.onrender.com/farm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          farmName: farmName.trim(),
-          location: farmLocation.trim(),
-        }),
-      });
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/owner/farm",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            farmName: farmName.trim(),
+            location: farmLocation.trim(),
+          }),
+        }
+      );
 
-      // Read response as text first for debugging
-      const rawResponse = await response.text();
-      console.log("Raw Response:", rawResponse);
-
-      // Parse JSON only if it's not an HTML error page
-      let data;
-      try {
-        data = JSON.parse(rawResponse);
-      } catch (jsonError) {
-        throw new Error(
-          "Response was not valid JSON. Possibly an HTML error page."
-        );
-      }
-
+      const data = await response.json();
       if (response.ok && data.status === "success") {
         const newFarm = {
-          name: farmName,
-          location: farmLocation,
           id: data.farmId,
+          farmName,
+          location: farmLocation,
         };
         setFarms([...farms, newFarm]);
         setFarmName("");
@@ -112,7 +166,7 @@ function Dashboard() {
             {farms.map((farm, i) => (
               <div className="farm-card" key={farm.id || i}>
                 <div className="farm-card-header">
-                  <p className="farm-name">{farm.name}</p>
+                  <p className="farm-name">{farm.farmName}</p>
                   <div className="farm-menu-icon">
                     <MoreVertical size={16} />
                   </div>
