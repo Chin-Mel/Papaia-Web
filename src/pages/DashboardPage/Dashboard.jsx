@@ -1,3 +1,4 @@
+import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderMain from "../../components/Header/HeaderMain";
@@ -6,7 +7,6 @@ import farmIcon from "../../assets/farm-count.png";
 import scanIcon from "../../assets/scan-count.png";
 import { MoreVertical } from "lucide-react";
 import jwtDecode from "jwt-decode"; // Make sure jwt-decode is installed
-import "./Dashboard.css";
 
 function Dashboard() {
   const [farms, setFarms] = useState([]);
