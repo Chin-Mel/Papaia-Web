@@ -1,4 +1,9 @@
 /* Dashboard layout wrapper */
+body, html {
+  height: 100%;
+  overflow-y: auto;
+}
+
 .dashboard-content-wrapper {
   padding: 2rem;
   font-family: 'Segoe UI', sans-serif;
@@ -170,7 +175,6 @@
 }
 
 .popup-overlay {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
