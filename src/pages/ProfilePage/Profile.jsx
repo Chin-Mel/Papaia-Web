@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
 
 function Profile() {
   return (
@@ -29,18 +29,20 @@ function Profile() {
         <div className="grid grid-cols-2 gap-4 mb-6">
           <InputField icon={<FaUser />} placeholder="Dela Cruz" />
           <InputField placeholder="Juan" />
-
           <InputField placeholder="Middle Name" />
           <InputField placeholder="Suffix" />
 
           <InputField icon={<FaUser />} placeholder="@juandelacruz" />
-          <InputField icon={<FaCalendarAlt />} placeholder="2/3/2003" />
-
           <InputField
             icon={<FaEnvelope />}
             placeholder="juandelacruz@gmail.com"
           />
-          <InputField icon={<FaPhone />} placeholder="09283492834" />
+
+          <InputField icon={<FaMapMarkerAlt />} placeholder="Street" />
+          <InputField placeholder="Barangay" />
+          <InputField placeholder="Municipality" />
+          <InputField placeholder="Province" />
+          <InputField placeholder="Zip Code" />
         </div>
 
         {/* Buttons */}
