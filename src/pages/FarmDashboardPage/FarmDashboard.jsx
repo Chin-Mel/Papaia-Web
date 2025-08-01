@@ -20,7 +20,6 @@ const FarmDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
 
-  // Fetch farms and farmers on component mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -79,8 +78,8 @@ const FarmDashboard = () => {
           const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
 
           return {
-            id: f.id, // 👈 This is the farmerId (correct for delete/view)
-            userId: f.userId, // 👈 Store this if you ever need it for add logic
+            id: f.id,
+            userId: f.userId,
             name: fullName.trim(),
             contact: f.contact || "N/A",
             age: f.age || "N/A",
@@ -88,7 +87,10 @@ const FarmDashboard = () => {
           };
         });
 
-        setFarmers(formattedFarmers);
+        // Optional: sort alphabetically
+        setFarmers(
+          formattedFarmers.sort((a, b) => a.name.localeCompare(b.name))
+        );
       } catch (error) {
         console.error("❌ Error fetching farmers:", error);
         alert(error.message);
@@ -137,7 +139,6 @@ const FarmDashboard = () => {
       return;
     }
 
-    // Prevent adding the same farmer to the same farm
     const alreadyAdded = farmers.some((f) => f.id === farmerId);
     if (alreadyAdded) {
       alert("This farmer is already added to this farm.");
@@ -150,8 +151,6 @@ const FarmDashboard = () => {
     };
 
     try {
-      console.log("🚀 Adding farmer:", farmerId, "to farm:", farmId);
-
       const addResponse = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
         {
@@ -165,7 +164,6 @@ const FarmDashboard = () => {
       );
 
       const addData = await addResponse.json();
-      console.log("📨 Add farmer response:", addResponse.status, addData);
 
       if (!addResponse.ok) {
         throw new Error(addData.message || "Failed to add farmer.");
@@ -191,8 +189,8 @@ const FarmDashboard = () => {
       }${f.lastname} ${f.suffix || ""}`;
       const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
       const newFarmer = {
-        id: f.id, // 👈 farmerId, not userId
-        userId: f.userId, // 👈 add this if needed later
+        id: f.id,
+        userId: f.userId,
         name: fullName.trim(),
         contact: f.contact || "N/A",
         age: f.age || "N/A",
@@ -352,22 +350,23 @@ const FarmDashboard = () => {
           </table>
         </div>
 
+        {/* Add Farmer Modal */}
         {showModal && (
           <div className="modal-overlay">
             <div className="modal">
               <button
                 className="modal-close"
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setFarmerId("");
+                }}
               >
                 ×
               </button>
               <h2>Add a farmer</h2>
               <input
-                type="text"
-                id="farmer-id"
-                name="farmerId"
+                type="number"
                 placeholder="Enter Farmer ID"
-                autoComplete="off"
                 value={farmerId}
                 onChange={(e) => setFarmerId(e.target.value)}
               />
@@ -377,6 +376,8 @@ const FarmDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* Confirm Delete Modal */}
         {showDeleteConfirm && (
           <div className="modal-overlay">
             <div className="modal">
@@ -391,7 +392,10 @@ const FarmDashboard = () => {
                 }}
               >
                 <button
-                  onClick={() => setShowDeleteConfirm(false)}
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setFarmerToDelete(null);
+                  }}
                   className="cancel-button"
                 >
                   Cancel
@@ -404,6 +408,7 @@ const FarmDashboard = () => {
           </div>
         )}
 
+        {/* View Farmer Details Modal */}
         {showFarmerDetails && selectedFarmer && (
           <div className="modal-overlay">
             <div className="modal">
