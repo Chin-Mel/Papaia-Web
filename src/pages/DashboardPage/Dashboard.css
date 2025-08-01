@@ -16,14 +16,10 @@ body, html {
 
 /* Dashboard heading */
 .dashboard-content-wrapper h1 {
-  background: none;
-  box-shadow: none;
-  font-weight: 500;
-  margin: 1rem 0;
-  padding: 0;
-  color: #333; /* or any text color you prefer */
+  grid-column: 1 / -1;
+  font-size: 2rem;
+  margin-bottom: 1rem;
 }
-
 
 /* Top tiles section */
 .update-tiles {
