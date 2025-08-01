@@ -275,48 +275,33 @@ const FarmDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {farmers.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="5"
-                    style={{
-                      textAlign: "center",
-                      padding: "1rem",
-                      color: "#aaa",
-                    }}
-                  >
-                    No farmers added yet.
+              {farmers.map((farmer, i) => (
+                <tr key={i}>
+                  <td>{farmer.name}</td>
+                  <td>{farmer.contact}</td>
+                  <td>{farmer.age}</td>
+                  <td>{farmer.address}</td>
+                  <td className="actions">
+                    <button
+                      className="edit"
+                      title="View Details"
+                      onClick={() => handleViewFarmer(farmer.id)}
+                    >
+                      👁
+                    </button>
+                    <button
+                      className="delete"
+                      title="Delete Farmer"
+                      onClick={() => {
+                        setFarmerToDelete(farmer.id);
+                        setShowDeleteConfirm(true);
+                      }}
+                    >
+                      🗑
+                    </button>
                   </td>
                 </tr>
-              ) : (
-                farmers.map((farmer, i) => (
-                  <tr key={i}>
-                    <td>{farmer.name}</td>
-                    <td>{farmer.contact}</td>
-                    <td>{farmer.age}</td>
-                    <td>{farmer.address}</td>
-                    <td className="actions">
-                      <button
-                        className="edit"
-                        title="View Details"
-                        onClick={() => handleViewFarmer(farmer.id)}
-                      >
-                        👁
-                      </button>
-                      <button
-                        className="delete"
-                        title="Delete Farmer"
-                        onClick={() => {
-                          setFarmerToDelete(farmer.id);
-                          setShowDeleteConfirm(true);
-                        }}
-                      >
-                        🗑
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
