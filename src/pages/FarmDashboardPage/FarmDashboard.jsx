@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "./FarmDashboard.css";
+import { useParams, useNavigate } from "react-router-dom";
+
 import HeaderMain from "../../components/Header/HeaderMain";
-import { useNavigate } from "react-router-dom";
 
 const FarmDashboard = () => {
+  const { farmId } = useParams();
   const navigate = useNavigate();
+
+  const [farmName, setFarmName] = useState("");
+  const [farmLocation, setFarmLocation] = useState("");
   const [farmers, setFarmers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
-  const [farmId, setFarmId] = useState(null); // fetched dynamically
 
   // Fetch farms on component mount
   useEffect(() => {
-    const fetchFarmId = async () => {
+    const fetchFarmDetails = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("Authentication required. Please log in again.");
@@ -31,25 +35,27 @@ const FarmDashboard = () => {
         );
 
         const data = await response.json();
-        if (!response.ok) {
+        if (!response.ok || !data.farms) {
           throw new Error(data.message || "Failed to fetch farms.");
         }
 
-        if (data.farms.length === 0) {
-          alert("No farms found. Please add one first.");
+        const selectedFarm = data.farms.find((f) => f.id === farmId);
+        if (!selectedFarm) {
+          alert("Farm not found.");
+          navigate("/dashboard");
           return;
         }
 
-        // Default to first farm
-        setFarmId(data.farms[0].id);
+        setFarmName(selectedFarm.farmName);
+        setFarmLocation(selectedFarm.location);
       } catch (error) {
-        console.error("❌ Error fetching farm ID:", error);
+        console.error("❌ Error fetching farm details:", error);
         alert(error.message);
       }
     };
 
-    fetchFarmId();
-  }, [navigate]);
+    fetchFarmDetails();
+  }, [farmId, navigate]);
 
   const handleAddFarmer = async () => {
     const token = localStorage.getItem("token");
@@ -60,13 +66,13 @@ const FarmDashboard = () => {
     }
 
     if (!farmId) {
-      alert("Farm not loaded. Please try again.");
+      alert("Farm ID is missing.");
       return;
     }
 
     const payload = {
       userId: farmerId,
-      farmId,
+      selectedFarmId: farmId,
     };
 
     try {
@@ -91,10 +97,8 @@ const FarmDashboard = () => {
         throw new Error(addData.message || "Failed to add farmer.");
       }
 
-      // Try to get the farmerId from the response
       let createdFarmerId = addData.farmerId || addData.id;
 
-      // If the API doesn't return the farmerId, fetch all farmers and find by userId
       if (!createdFarmerId) {
         const farmersResponse = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
@@ -111,7 +115,6 @@ const FarmDashboard = () => {
         }
 
         const match = farmersData.farmers.find((f) => f.userId === farmerId);
-
         if (!match) {
           throw new Error("Farmer added but could not retrieve their details.");
         }
@@ -119,7 +122,6 @@ const FarmDashboard = () => {
         createdFarmerId = match.id;
       }
 
-      // Now fetch full farmer details using the correct farmerId
       const detailsResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${createdFarmerId}`,
         {
@@ -165,7 +167,7 @@ const FarmDashboard = () => {
         </button>
 
         <h1 className="title">
-          KD Farm 1 <span className="location">Cogon, Gamuay, Danao</span>
+          {farmName} <span className="location">{farmLocation}</span>
         </h1>
 
         <div className="timeframe-buttons">
@@ -273,7 +275,6 @@ const FarmDashboard = () => {
                 value={farmerId}
                 onChange={(e) => setFarmerId(e.target.value)}
               />
-
               <button className="submit-button" onClick={handleAddFarmer}>
                 Add Farmer
               </button>
