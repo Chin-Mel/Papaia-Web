@@ -8,13 +8,14 @@ const FarmDashboard = () => {
   const [farmers, setFarmers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
-  const [farmId, setFarmId] = useState(null);
+  const [farmId, setFarmId] = useState(null); // fetched dynamically
 
-  // 🔄 Fetch farm ID when component mounts
+  // Fetch farms on component mount
   useEffect(() => {
     const fetchFarmId = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
+        alert("Authentication required. Please log in again.");
         navigate("/login");
         return;
       }
@@ -30,18 +31,20 @@ const FarmDashboard = () => {
         );
 
         const data = await response.json();
-
-        if (!response.ok)
-          throw new Error(data.message || "Failed to fetch farms");
-
-        if (data.farms.length > 0) {
-          setFarmId(data.farms[0]._id); // Use first farm for now
-        } else {
-          alert("No farms found for this user.");
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch farms.");
         }
+
+        if (data.farms.length === 0) {
+          alert("No farms found. Please add one first.");
+          return;
+        }
+
+        // Default to first farm
+        setFarmId(data.farms[0].id);
       } catch (error) {
         console.error("❌ Error fetching farm ID:", error);
-        alert(error.message || "Could not retrieve farm information.");
+        alert(error.message);
       }
     };
 
@@ -50,21 +53,25 @@ const FarmDashboard = () => {
 
   const handleAddFarmer = async () => {
     const token = localStorage.getItem("token");
-    if (!token || !farmId) {
-      alert("Missing token or farm ID. Please refresh or log in.");
+    if (!token) {
+      alert("Authentication required. Please log in again.");
       navigate("/login");
+      return;
+    }
+
+    if (!farmId) {
+      alert("Farm not loaded. Please try again.");
       return;
     }
 
     const payload = {
       userId: farmerId,
-      farmId: farmId,
+      farmId,
     };
 
     try {
       console.log("🚀 Adding farmer:", farmerId, "to farm:", farmId);
 
-      // Step 1: Add farmer to farm
       const addResponse = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
         {
@@ -84,7 +91,6 @@ const FarmDashboard = () => {
         throw new Error(addData.message || "Failed to add farmer.");
       }
 
-      // Step 2: Fetch full farmer details
       const detailsResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
         {
@@ -95,19 +101,11 @@ const FarmDashboard = () => {
       );
 
       const detailsData = await detailsResponse.json();
-      console.log(
-        "📦 Farmer details response:",
-        detailsResponse.status,
-        detailsData
-      );
-
       if (!detailsResponse.ok) {
         throw new Error(detailsData.message || "Failed to get farmer details.");
       }
 
       const f = detailsData.farmer;
-
-      // Step 3: Transform data to match table format
       const fullName = `${f.firstname} ${
         f.middlename ? f.middlename + " " : ""
       }${f.lastname} ${f.suffix || ""}`;
