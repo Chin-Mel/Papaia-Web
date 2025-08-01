@@ -91,8 +91,37 @@ const FarmDashboard = () => {
         throw new Error(addData.message || "Failed to add farmer.");
       }
 
+      // Try to get the farmerId from the response
+      let createdFarmerId = addData.farmerId || addData.id;
+
+      // If the API doesn't return the farmerId, fetch all farmers and find by userId
+      if (!createdFarmerId) {
+        const farmersResponse = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const farmersData = await farmersResponse.json();
+        if (!farmersResponse.ok) {
+          throw new Error(farmersData.message || "Failed to get farmers list.");
+        }
+
+        const match = farmersData.farmers.find((f) => f.userId === farmerId);
+
+        if (!match) {
+          throw new Error("Farmer added but could not retrieve their details.");
+        }
+
+        createdFarmerId = match.id;
+      }
+
+      // Now fetch full farmer details using the correct farmerId
       const detailsResponse = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        `https://papaiaapi.onrender.com/api/owner/farmer/${createdFarmerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
