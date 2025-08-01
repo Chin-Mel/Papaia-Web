@@ -72,7 +72,7 @@ const FarmDashboard = () => {
 
     const payload = {
       userId: farmerId,
-      selectedFarmId: farmId,
+      farmId: farmId, // ✅ Correct key expected by backend
     };
 
     try {
