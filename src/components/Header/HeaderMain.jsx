@@ -1,7 +1,8 @@
-import './HeaderMain.css';
-import logo from '../../assets/papaia-logo.png';
-import bellIcon from '../../assets/notif-icon.png';
-import profileImage from '../../assets/default-user.png';
+import "./HeaderMain.css";
+import logo from "../../assets/papaia-logo.png";
+import bellIcon from "../../assets/notif-icon.png";
+import profileImage from "../../assets/default-user.png";
+import { Link } from "react-router-dom";
 
 function HeaderMain() {
   return (
@@ -9,9 +10,15 @@ function HeaderMain() {
       <div className="logo-nav-container">
         <img src={logo} alt="Papaia Logo" className="logo" />
         <nav className="nav-links">
-          <a href="#" className="dashboard">Dashboard</a>
-          <a href="#" className="scanhistory">Scan History</a>
-          <a href="#" className="about">About</a>
+          <Link to="/" className="dashboard">
+            Dashboard
+          </Link>
+          <Link to="/scan-history" className="scanhistory">
+            Scan History
+          </Link>
+          <Link to="/about" className="about">
+            About
+          </Link>
         </nav>
       </div>
 
