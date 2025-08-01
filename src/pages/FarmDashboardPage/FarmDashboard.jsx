@@ -5,31 +5,51 @@ import { useNavigate } from "react-router-dom";
 
 const FarmDashboard = () => {
   const navigate = useNavigate();
-
   const [farmers, setFarmers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
 
+  const farmId = "farm456"; // TODO: Replace with dynamic value if needed
+
   const handleAddFarmer = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authentication required. Please log in again.");
+      navigate("/login");
+      return;
+    }
+
     const payload = {
       userId: farmerId,
-      farmId: "farm456",
+      farmId: farmId,
     };
 
     try {
       // Step 1: Add farmer to farm
-      const addResponse = await fetch("/owner/farmer", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const addResponse = await fetch(
+        "https://papaiaapi.onrender.com/owner/farmer",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!addResponse.ok) throw new Error("Failed to add farmer");
 
       // Step 2: Fetch full farmer details
-      const detailsResponse = await fetch(`/owner/farmer/${farmerId}`);
+      const detailsResponse = await fetch(
+        `https://papaiaapi.onrender.com/owner/farmer/${farmerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!detailsResponse.ok) throw new Error("Failed to get farmer details");
 
       const detailsData = await detailsResponse.json();
@@ -43,9 +63,9 @@ const FarmDashboard = () => {
 
       const newFarmer = {
         name: fullName.trim(),
-        contact: "N/A", // replace if your backend returns it
-        age: "N/A", // replace if your backend returns it
-        address: address,
+        contact: f.contact || "N/A",
+        age: f.age || "N/A",
+        address,
       };
 
       setFarmers([...farmers, newFarmer]);
@@ -53,6 +73,7 @@ const FarmDashboard = () => {
       setFarmerId("");
     } catch (error) {
       console.error("Error adding farmer:", error);
+      alert("An error occurred while adding the farmer.");
     }
   };
 
