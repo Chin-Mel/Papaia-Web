@@ -1,7 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import "./FarmDashboard.css";
 
 const FarmDashboard = () => {
+  const [farmers, setFarmers] = useState([]);
+
+  const handleAddFarmer = async () => {
+    const payload = {
+      userId: "user123",
+      farmId: "farm456",
+    };
+
+    try {
+      const response = await fetch("/owner/farmer", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to add farmer");
+
+      const newFarmer = await response.json();
+      setFarmers([...farmers, newFarmer]);
+    } catch (error) {
+      console.error("Error adding farmer:", error);
+    }
+  };
+
   return (
     <div className="dashboard">
       <a href="#" className="back-button">
@@ -45,7 +71,16 @@ const FarmDashboard = () => {
       </div>
 
       <div className="farmers-section">
-        <h2>Farmers</h2>
+        <div className="farmers-header">
+          <h2>Farmers</h2>
+          <button
+            className="add-farmer"
+            title="Add Farmer"
+            onClick={handleAddFarmer}
+          >
+            ➕
+          </button>
+        </div>
         <table>
           <thead>
             <tr>
@@ -57,20 +92,33 @@ const FarmDashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {Array(6)
-              .fill(null)
-              .map((_, i) => (
+            {farmers.length === 0 ? (
+              <tr>
+                <td
+                  colSpan="5"
+                  style={{
+                    textAlign: "center",
+                    padding: "1rem",
+                    color: "#aaa",
+                  }}
+                >
+                  No farmers added yet.
+                </td>
+              </tr>
+            ) : (
+              farmers.map((farmer, i) => (
                 <tr key={i}>
-                  <td>Juan Dela Cruz</td>
-                  <td>09283485038</td>
-                  <td>45</td>
-                  <td>Cogon, Quinoy, Danao</td>
+                  <td>{farmer.name}</td>
+                  <td>{farmer.contact}</td>
+                  <td>{farmer.age}</td>
+                  <td>{farmer.address}</td>
                   <td className="actions">
                     <button className="edit">✎</button>
                     <button className="delete">🗑</button>
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
