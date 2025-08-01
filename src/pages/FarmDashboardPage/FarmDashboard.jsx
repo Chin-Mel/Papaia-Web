@@ -5,6 +5,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import HeaderMain from "../../components/Header/HeaderMain";
 
 const FarmDashboard = () => {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [farmerToDelete, setFarmerToDelete] = useState(null);
+
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [showFarmerDetails, setShowFarmerDetails] = useState(false);
+
   const { farmId } = useParams();
   const navigate = useNavigate();
 
@@ -91,6 +97,31 @@ const FarmDashboard = () => {
     fetchFarmers();
   }, [farmId, navigate]);
 
+  const handleDeleteFarmer = async () => {
+    const token = localStorage.getItem("token");
+    if (!token || !farmerToDelete) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerToDelete}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to delete farmer.");
+
+      setFarmers((prev) => prev.filter((f) => f.id !== farmerToDelete));
+      setShowDeleteConfirm(false);
+      setFarmerToDelete(null);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleAddFarmer = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -171,6 +202,37 @@ const FarmDashboard = () => {
     } catch (error) {
       console.error("❌ Error adding farmer:", error);
       alert(error.message || "An error occurred while adding the farmer.");
+    }
+  };
+
+  const handleViewFarmer = async (farmerId) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || "Failed to fetch farmer.");
+
+      const f = data.farmer;
+      setSelectedFarmer({
+        id: f.id,
+        username: f.userId,
+        name: `${f.firstname} ${f.middlename ? f.middlename + " " : ""}${
+          f.lastname
+        } ${f.suffix || ""}`.trim(),
+        address: `${f.street}, ${f.barangay}, ${f.municipality}, ${f.province}, ${f.zipcode}`,
+      });
+      setShowFarmerDetails(true);
+    } catch (err) {
+      alert(err.message);
     }
   };
 
@@ -262,8 +324,23 @@ const FarmDashboard = () => {
                     <td>{farmer.age}</td>
                     <td>{farmer.address}</td>
                     <td className="actions">
-                      <button className="edit">✎</button>
-                      <button className="delete">🗑</button>
+                      <button
+                        className="edit"
+                        title="View Details"
+                        onClick={() => handleViewFarmer(farmer.id)}
+                      >
+                        👁
+                      </button>
+                      <button
+                        className="delete"
+                        title="Delete Farmer"
+                        onClick={() => {
+                          setFarmerToDelete(farmer.id);
+                          setShowDeleteConfirm(true);
+                        }}
+                      >
+                        🗑
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -294,6 +371,58 @@ const FarmDashboard = () => {
               <button className="submit-button" onClick={handleAddFarmer}>
                 Add Farmer
               </button>
+            </div>
+          </div>
+        )}
+        {showDeleteConfirm && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>
+                Are you sure you want to delete this farmer from the farm?
+              </h3>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "1rem",
+                }}
+              >
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="cancel-button"
+                >
+                  Cancel
+                </button>
+                <button onClick={handleDeleteFarmer} className="confirm-button">
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showFarmerDetails && selectedFarmer && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <button
+                className="modal-close"
+                onClick={() => setShowFarmerDetails(false)}
+              >
+                ×
+              </button>
+              <h2>Farmer Profile</h2>
+              <p>
+                <strong>Full Name:</strong> {selectedFarmer.name}
+              </p>
+              <p>
+                <strong>Farmer ID:</strong> {selectedFarmer.id}
+              </p>
+              <p>
+                <strong>Username:</strong> {selectedFarmer.username}
+              </p>
+              <p>
+                <strong>Address:</strong> {selectedFarmer.address}
+              </p>
             </div>
           </div>
         )}

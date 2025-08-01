@@ -209,3 +209,21 @@
 .submit-button:hover {
   background-color: #095429;
 }
+
+.cancel-button {
+  background: #ccc;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.confirm-button {
+  background: #e74c3c;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
