@@ -164,7 +164,12 @@ function Dashboard() {
           </div>
           <div className="farm-cards">
             {farms.map((farm, i) => (
-              <div className="farm-card" key={farm.id || i}>
+              <div
+                className="farm-card"
+                key={farm.id || i}
+                onClick={() => navigate(`/farm/${farm.id}`)}
+                style={{ cursor: "pointer" }}
+              >
                 <div className="farm-card-header">
                   <p className="farm-name">{farm.farmName}</p>
                   <div className="farm-menu-icon">
