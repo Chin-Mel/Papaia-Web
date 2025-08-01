@@ -1,4 +1,3 @@
-import "./Dashboard.css";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderMain from "../../components/Header/HeaderMain";
@@ -112,41 +111,6 @@ function Dashboard() {
     } catch (error) {
       console.error("Error adding farm:", error);
       alert("Something went wrong while adding the farm.");
-    }
-  };
-  const handleUpdateFarm = (farmId) => {
-    // Example: navigate to an edit page or show a modal
-    console.log("Update farm:", farmId);
-    // navigate(`/editfarm/${farmId}`);
-  };
-
-  const handleDeleteFarm = async (farmId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this farm?"
-    );
-    if (!confirmDelete) return;
-
-    const token = localStorage.getItem("token");
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.ok) {
-        setFarms(farms.filter((farm) => farm.id !== farmId));
-        alert("Farm deleted successfully.");
-      } else {
-        alert("Failed to delete farm.");
-      }
-    } catch (err) {
-      console.error("Error deleting farm:", err);
-      alert("Something went wrong.");
     }
   };
 

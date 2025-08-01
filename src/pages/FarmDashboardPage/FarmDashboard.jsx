@@ -25,6 +25,8 @@ const FarmDashboard = () => {
     };
 
     try {
+      console.log("🚀 Adding farmer:", farmerId, "to farm:", farmId);
+
       // Step 1: Add farmer to farm
       const addResponse = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
@@ -38,7 +40,12 @@ const FarmDashboard = () => {
         }
       );
 
-      if (!addResponse.ok) throw new Error("Failed to add farmer");
+      const addData = await addResponse.json();
+      console.log("📨 Add farmer response:", addResponse.status, addData);
+
+      if (!addResponse.ok) {
+        throw new Error(addData.message || "Failed to add farmer.");
+      }
 
       // Step 2: Fetch full farmer details
       const detailsResponse = await fetch(
@@ -50,9 +57,17 @@ const FarmDashboard = () => {
         }
       );
 
-      if (!detailsResponse.ok) throw new Error("Failed to get farmer details");
-
       const detailsData = await detailsResponse.json();
+      console.log(
+        "📦 Farmer details response:",
+        detailsResponse.status,
+        detailsData
+      );
+
+      if (!detailsResponse.ok) {
+        throw new Error(detailsData.message || "Failed to get farmer details.");
+      }
+
       const f = detailsData.farmer;
 
       // Step 3: Transform data to match table format
@@ -72,8 +87,8 @@ const FarmDashboard = () => {
       setShowModal(false);
       setFarmerId("");
     } catch (error) {
-      console.error("Error adding farmer:", error);
-      alert("An error occurred while adding the farmer.");
+      console.error("❌ Error adding farmer:", error);
+      alert(error.message || "An error occurred while adding the farmer.");
     }
   };
 
