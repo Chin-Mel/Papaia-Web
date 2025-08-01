@@ -13,7 +13,8 @@ const FarmDashboard = () => {
     };
 
     try {
-      const response = await fetch("/owner/farmer", {
+      // Step 1: Add farmer to farm
+      const addResponse = await fetch("/owner/farmer", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,9 +22,28 @@ const FarmDashboard = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("Failed to add farmer");
+      if (!addResponse.ok) throw new Error("Failed to add farmer");
 
-      const newFarmer = await response.json();
+      // Step 2: Fetch full farmer details
+      const detailsResponse = await fetch(`/owner/farmer/${farmerId}`);
+      if (!detailsResponse.ok) throw new Error("Failed to get farmer details");
+
+      const detailsData = await detailsResponse.json();
+      const f = detailsData.farmer;
+
+      // Step 3: Transform data to match table format
+      const fullName = `${f.firstname} ${
+        f.middlename ? f.middlename + " " : ""
+      }${f.lastname} ${f.suffix || ""}`;
+      const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
+
+      const newFarmer = {
+        name: fullName.trim(),
+        contact: "N/A", // replace if your backend returns it
+        age: "N/A", // replace if your backend returns it
+        address: address,
+      };
+
       setFarmers([...farmers, newFarmer]);
       setShowModal(false);
       setFarmerId("");
