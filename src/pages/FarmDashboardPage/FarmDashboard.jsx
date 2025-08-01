@@ -3,10 +3,12 @@ import "./FarmDashboard.css";
 
 const FarmDashboard = () => {
   const [farmers, setFarmers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [farmerId, setFarmerId] = useState("");
 
   const handleAddFarmer = async () => {
     const payload = {
-      userId: "user123",
+      userId: farmerId,
       farmId: "farm456",
     };
 
@@ -23,6 +25,8 @@ const FarmDashboard = () => {
 
       const newFarmer = await response.json();
       setFarmers([...farmers, newFarmer]);
+      setShowModal(false);
+      setFarmerId("");
     } catch (error) {
       console.error("Error adding farmer:", error);
     }
@@ -76,7 +80,7 @@ const FarmDashboard = () => {
           <button
             className="add-farmer"
             title="Add Farmer"
-            onClick={handleAddFarmer}
+            onClick={() => setShowModal(true)}
           >
             ➕
           </button>
@@ -122,6 +126,26 @@ const FarmDashboard = () => {
           </tbody>
         </table>
       </div>
+
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <button className="modal-close" onClick={() => setShowModal(false)}>
+              ×
+            </button>
+            <h2>Add a farmer</h2>
+            <input
+              type="text"
+              placeholder="Enter Farmer ID"
+              value={farmerId}
+              onChange={(e) => setFarmerId(e.target.value)}
+            />
+            <button className="submit-button" onClick={handleAddFarmer}>
+              Add Farmer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
