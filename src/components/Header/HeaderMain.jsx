@@ -24,7 +24,7 @@ function HeaderMain() {
 
       <div className="header-right">
         <img src={bellIcon} alt="Notifications" className="notification-icon" />
-        <Link to="/about" className="about">
+        <Link to="/profile" className="profile">
           <img src={profileImage} alt="User Profile" className="profile-pic" />
         </Link>
       </div>
