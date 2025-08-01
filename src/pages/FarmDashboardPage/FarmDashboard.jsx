@@ -58,6 +58,13 @@ const FarmDashboard = () => {
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
+
+        // Gracefully handle "no farmers" case
+        if (res.status === 404) {
+          setFarmers([]); // No farmers — don't throw or alert
+          return;
+        }
+
         const data = await res.json();
         if (!res.ok || !data.farmers) {
           throw new Error(data.message || "Failed to fetch farmers.");
@@ -77,7 +84,8 @@ const FarmDashboard = () => {
         setFarmers(formattedFarmers);
       } catch (error) {
         console.error("❌ Error fetching farmers:", error);
-        alert(error.message);
+        // Don't alert on expected empty state
+        setFarmers([]); // fallback to empty array
       }
     };
 
