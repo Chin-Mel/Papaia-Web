@@ -7,7 +7,7 @@ import ForgotPassword from "./pages/ForgotPasswordPage/ForgotPassword";
 import Verification from "./pages/VerificationPage/Verification";
 import NewPassword from "./pages/NewPasswordPage/NewPassword";
 import Dashboard from "./pages/DashboardPage/Dashboard";
-import FarmDashboard from "./pages/FarmsDashboardPage/FarmsDashboard";
+import FarmsDashboard from "./pages/FarmDashboardPage/FarmsDashboard";
 import AboutPage from "./pages/AboutPage/About";
 
 function App() {
