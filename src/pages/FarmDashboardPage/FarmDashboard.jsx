@@ -14,23 +14,21 @@ const FarmDashboard = () => {
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
 
-  // Fetch farms on component mount
+  // Fetch farms and farmers on component mount
   useEffect(() => {
-    const fetchFarmDetails = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Authentication required. Please log in again.");
-        navigate("/login");
-        return;
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Authentication required. Please log in again.");
+      navigate("/login");
+      return;
+    }
 
+    const fetchFarmDetails = async () => {
       try {
         const response = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -54,7 +52,42 @@ const FarmDashboard = () => {
       }
     };
 
+    const fetchFarmers = async () => {
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const data = await res.json();
+        if (!res.ok || !data.farmers) {
+          throw new Error(data.message || "Failed to fetch farmers.");
+        }
+
+        const formattedFarmers = data.farmers.map((f) => {
+          const fullName = `${f.firstname} ${
+            f.middlename ? f.middlename + " " : ""
+          }${f.lastname} ${f.suffix || ""}`;
+          const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
+          return {
+            name: fullName.trim(),
+            contact: f.contact || "N/A",
+            age: f.age || "N/A",
+            address,
+          };
+        });
+
+        setFarmers(formattedFarmers);
+      } catch (error) {
+        console.error("❌ Error fetching farmers:", error);
+        alert(error.message);
+      }
+    };
+
     fetchFarmDetails();
+    fetchFarmers();
   }, [farmId, navigate]);
 
   const handleAddFarmer = async () => {
@@ -72,7 +105,7 @@ const FarmDashboard = () => {
 
     const payload = {
       userId: farmerId,
-      farmId: farmId, // ✅ Correct key expected by backend
+      farmId: farmId,
     };
 
     try {
@@ -97,37 +130,12 @@ const FarmDashboard = () => {
         throw new Error(addData.message || "Failed to add farmer.");
       }
 
-      let createdFarmerId = addData.farmerId || addData.id;
-
-      if (!createdFarmerId) {
-        const farmersResponse = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        const farmersData = await farmersResponse.json();
-        if (!farmersResponse.ok) {
-          throw new Error(farmersData.message || "Failed to get farmers list.");
-        }
-
-        const match = farmersData.farmers.find((f) => f.userId === farmerId);
-        if (!match) {
-          throw new Error("Farmer added but could not retrieve their details.");
-        }
-
-        createdFarmerId = match.id;
-      }
+      const createdFarmerId = addData.farmerId || addData.id;
 
       const detailsResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${createdFarmerId}`,
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -141,7 +149,6 @@ const FarmDashboard = () => {
         f.middlename ? f.middlename + " " : ""
       }${f.lastname} ${f.suffix || ""}`;
       const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
-
       const newFarmer = {
         name: fullName.trim(),
         contact: f.contact || "N/A",
@@ -149,7 +156,7 @@ const FarmDashboard = () => {
         address,
       };
 
-      setFarmers([...farmers, newFarmer]);
+      setFarmers((prev) => [...prev, newFarmer]);
       setShowModal(false);
       setFarmerId("");
     } catch (error) {
