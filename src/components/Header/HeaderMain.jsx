@@ -10,7 +10,7 @@ function HeaderMain() {
       <div className="logo-nav-container">
         <img src={logo} alt="Papaia Logo" className="logo" />
         <nav className="nav-links">
-          <Link to="/" className="dashboard">
+          <Link to="/dashboard" className="dashboard">
             Dashboard
           </Link>
           <Link to="/scan-history" className="scanhistory">

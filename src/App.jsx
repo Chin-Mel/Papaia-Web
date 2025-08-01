@@ -9,6 +9,7 @@ import NewPassword from "./pages/NewPasswordPage/NewPassword";
 import Dashboard from "./pages/DashboardPage/Dashboard";
 import FarmDashboard from "./pages/FarmDashboardPage/FarmDashboard";
 import About from "./pages/AboutPage/About";
+import Profile from "./pages/ProfilePage/Profile";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/farmdashboard/:farmId" element={<FarmDashboard />} />
       <Route path="/about" element={<About />} />
+      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }
