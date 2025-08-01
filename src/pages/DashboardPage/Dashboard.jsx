@@ -167,7 +167,7 @@ function Dashboard() {
               <div
                 className="farm-card"
                 key={farm.id || i}
-                onClick={() => navigate(`/farm/${farm.id}`)}
+                onClick={() => navigate(`/farmdashboard/${farm.id}`)}
                 style={{ cursor: "pointer" }}
               >
                 <div className="farm-card-header">
