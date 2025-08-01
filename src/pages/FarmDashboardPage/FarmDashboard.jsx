@@ -365,7 +365,7 @@ const FarmDashboard = () => {
               </button>
               <h2>Add a farmer</h2>
               <input
-                type="number"
+                type="text"
                 placeholder="Enter Farmer ID"
                 value={farmerId}
                 onChange={(e) => setFarmerId(e.target.value)}
