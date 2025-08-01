@@ -266,10 +266,14 @@ const FarmDashboard = () => {
               <h2>Add a farmer</h2>
               <input
                 type="text"
+                id="farmer-id"
+                name="farmerId"
                 placeholder="Enter Farmer ID"
+                autoComplete="off"
                 value={farmerId}
                 onChange={(e) => setFarmerId(e.target.value)}
               />
+
               <button className="submit-button" onClick={handleAddFarmer}>
                 Add Farmer
               </button>
