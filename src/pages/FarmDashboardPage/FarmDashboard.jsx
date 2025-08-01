@@ -27,7 +27,7 @@ const FarmDashboard = () => {
     try {
       // Step 1: Add farmer to farm
       const addResponse = await fetch(
-        "https://papaiaapi.onrender.com/owner/farmer",
+        "https://papaiaapi.onrender.com/api/owner/farmer",
         {
           method: "POST",
           headers: {
@@ -42,7 +42,7 @@ const FarmDashboard = () => {
 
       // Step 2: Fetch full farmer details
       const detailsResponse = await fetch(
-        `https://papaiaapi.onrender.com/owner/farmer/${farmerId}`,
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
