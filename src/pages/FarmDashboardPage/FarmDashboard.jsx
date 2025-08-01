@@ -77,8 +77,10 @@ const FarmDashboard = () => {
             f.middlename ? f.middlename + " " : ""
           }${f.lastname} ${f.suffix || ""}`;
           const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
+
           return {
-            id: f.id, // userId
+            id: f.id, // 👈 This is the farmerId (correct for delete/view)
+            userId: f.userId, // 👈 Store this if you ever need it for add logic
             name: fullName.trim(),
             contact: f.contact || "N/A",
             age: f.age || "N/A",
@@ -189,7 +191,8 @@ const FarmDashboard = () => {
       }${f.lastname} ${f.suffix || ""}`;
       const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
       const newFarmer = {
-        id: f.id, // store userId
+        id: f.id, // 👈 farmerId, not userId
+        userId: f.userId, // 👈 add this if needed later
         name: fullName.trim(),
         contact: f.contact || "N/A",
         age: f.age || "N/A",
