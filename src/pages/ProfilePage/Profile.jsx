@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUser, FaEnvelope, FaCalendarAlt, FaPhone } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 
 function Profile() {
   return (
