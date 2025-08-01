@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./FarmDashboard.css";
 import HeaderMain from "../../components/Header/HeaderMain";
 import { useNavigate } from "react-router-dom";
@@ -8,13 +8,50 @@ const FarmDashboard = () => {
   const [farmers, setFarmers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [farmerId, setFarmerId] = useState("");
+  const [farmId, setFarmId] = useState(null);
 
-  const farmId = "farm456"; // TODO: Replace with dynamic value if needed
+  // 🔄 Fetch farm ID when component mounts
+  useEffect(() => {
+    const fetchFarmId = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/farms",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok)
+          throw new Error(data.message || "Failed to fetch farms");
+
+        if (data.farms.length > 0) {
+          setFarmId(data.farms[0]._id); // Use first farm for now
+        } else {
+          alert("No farms found for this user.");
+        }
+      } catch (error) {
+        console.error("❌ Error fetching farm ID:", error);
+        alert(error.message || "Could not retrieve farm information.");
+      }
+    };
+
+    fetchFarmId();
+  }, [navigate]);
 
   const handleAddFarmer = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Authentication required. Please log in again.");
+    if (!token || !farmId) {
+      alert("Missing token or farm ID. Please refresh or log in.");
       navigate("/login");
       return;
     }
