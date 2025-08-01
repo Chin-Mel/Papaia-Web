@@ -21,6 +21,5 @@ a {
 }
 
 a:hover {
-  color: darkgray;
   text-decoration: underline;
 }
