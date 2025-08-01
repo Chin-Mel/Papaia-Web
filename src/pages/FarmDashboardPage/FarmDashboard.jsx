@@ -72,6 +72,7 @@ const FarmDashboard = () => {
           }${f.lastname} ${f.suffix || ""}`;
           const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
           return {
+            id: f.id, // userId
             name: fullName.trim(),
             contact: f.contact || "N/A",
             age: f.age || "N/A",
@@ -100,6 +101,13 @@ const FarmDashboard = () => {
 
     if (!farmId) {
       alert("Farm ID is missing.");
+      return;
+    }
+
+    // Prevent adding the same farmer to the same farm
+    const alreadyAdded = farmers.some((f) => f.id === farmerId);
+    if (alreadyAdded) {
+      alert("This farmer is already added to this farm.");
       return;
     }
 
@@ -150,6 +158,7 @@ const FarmDashboard = () => {
       }${f.lastname} ${f.suffix || ""}`;
       const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
       const newFarmer = {
+        id: f.id, // store userId
         name: fullName.trim(),
         contact: f.contact || "N/A",
         age: f.age || "N/A",
