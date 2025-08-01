@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./FarmDashboard.css";
 import { useParams, useNavigate } from "react-router-dom";
-
 import HeaderMain from "../../components/Header/HeaderMain";
 
 const FarmDashboard = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [farmerToDelete, setFarmerToDelete] = useState(null);
-
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [showFarmerDetails, setShowFarmerDetails] = useState(false);
 
@@ -18,7 +16,7 @@ const FarmDashboard = () => {
   const [farmLocation, setFarmLocation] = useState("");
   const [farmers, setFarmers] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [farmerId, setFarmerId] = useState("");
+  const [farmerUserId, setFarmerUserId] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -32,11 +30,8 @@ const FarmDashboard = () => {
       try {
         const response = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         const data = await response.json();
         if (!response.ok || !data.farms) {
           throw new Error(data.message || "Failed to fetch farms.");
@@ -61,36 +56,25 @@ const FarmDashboard = () => {
       try {
         const res = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
         const data = await res.json();
         if (!res.ok || !data.farmers) {
           throw new Error(data.message || "Failed to fetch farmers.");
         }
 
-        const formattedFarmers = data.farmers.map((f) => {
-          const fullName = `${f.firstname} ${
-            f.middlename ? f.middlename + " " : ""
-          }${f.lastname} ${f.suffix || ""}`;
-          const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
+        const formattedFarmers = data.farmers.map((f) => ({
+          id: f.id,
+          userId: f.userId,
+          name: `${f.firstname} ${f.middlename ? f.middlename + " " : ""}${
+            f.lastname
+          } ${f.suffix || ""}`.trim(),
+          contact: f.contact || "N/A",
+          age: f.age || "N/A",
+          address: `${f.street}, ${f.barangay}, ${f.municipality}`,
+        }));
 
-          return {
-            id: f.id,
-            userId: f.userId,
-            name: fullName.trim(),
-            contact: f.contact || "N/A",
-            age: f.age || "N/A",
-            address,
-          };
-        });
-
-        // Optional: sort alphabetically
-        setFarmers(
-          formattedFarmers.sort((a, b) => a.name.localeCompare(b.name))
-        );
+        setFarmers(formattedFarmers);
       } catch (error) {
         console.error("❌ Error fetching farmers:", error);
         alert(error.message);
@@ -113,7 +97,6 @@ const FarmDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.message || "Failed to delete farmer.");
@@ -134,21 +117,17 @@ const FarmDashboard = () => {
       return;
     }
 
-    if (!farmId) {
-      alert("Farm ID is missing.");
+    if (!farmId || !farmerUserId.trim()) {
+      alert("Please enter a valid Farmer User ID.");
       return;
     }
 
-    const alreadyAdded = farmers.some((f) => f.id === farmerId);
-    if (alreadyAdded) {
+    if (farmers.some((f) => f.userId === farmerUserId.trim())) {
       alert("This farmer is already added to this farm.");
       return;
     }
 
-    const payload = {
-      userId: farmerId,
-      farmId: farmId,
-    };
+    const payload = { userId: farmerUserId.trim(), farmId };
 
     try {
       const addResponse = await fetch(
@@ -164,7 +143,6 @@ const FarmDashboard = () => {
       );
 
       const addData = await addResponse.json();
-
       if (!addResponse.ok) {
         throw new Error(addData.message || "Failed to add farmer.");
       }
@@ -173,33 +151,28 @@ const FarmDashboard = () => {
 
       const detailsResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${createdFarmerId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-
       const detailsData = await detailsResponse.json();
       if (!detailsResponse.ok) {
         throw new Error(detailsData.message || "Failed to get farmer details.");
       }
 
       const f = detailsData.farmer;
-      const fullName = `${f.firstname} ${
-        f.middlename ? f.middlename + " " : ""
-      }${f.lastname} ${f.suffix || ""}`;
-      const address = `${f.street}, ${f.barangay}, ${f.municipality}`;
       const newFarmer = {
         id: f.id,
         userId: f.userId,
-        name: fullName.trim(),
+        name: `${f.firstname} ${f.middlename ? f.middlename + " " : ""}${
+          f.lastname
+        } ${f.suffix || ""}`.trim(),
         contact: f.contact || "N/A",
         age: f.age || "N/A",
-        address,
+        address: `${f.street}, ${f.barangay}, ${f.municipality}`,
       };
 
       setFarmers((prev) => [...prev, newFarmer]);
       setShowModal(false);
-      setFarmerId("");
+      setFarmerUserId("");
     } catch (error) {
       console.error("❌ Error adding farmer:", error);
       alert(error.message || "An error occurred while adding the farmer.");
@@ -217,15 +190,13 @@ const FarmDashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
       const data = await response.json();
       if (!response.ok)
         throw new Error(data.message || "Failed to fetch farmer.");
 
       const f = data.farmer;
       setSelectedFarmer({
-        id: f.id,
-        username: f.userId,
+        id: f.userId, // Display user ID as Farmer ID
         name: `${f.firstname} ${f.middlename ? f.middlename + " " : ""}${
           f.lastname
         } ${f.suffix || ""}`.trim(),
@@ -279,7 +250,7 @@ const FarmDashboard = () => {
 
         <div className="summary">
           <h2>Summary</h2>
-          <p>Lorem ipsum dolor sit amet... (truncated for brevity)</p>
+          <p>Lorem ipsum dolor sit amet... (truncated)</p>
         </div>
 
         <div className="farmers-section">
@@ -350,25 +321,21 @@ const FarmDashboard = () => {
           </table>
         </div>
 
-        {/* Add Farmer Modal */}
         {showModal && (
           <div className="modal-overlay">
             <div className="modal">
               <button
                 className="modal-close"
-                onClick={() => {
-                  setShowModal(false);
-                  setFarmerId("");
-                }}
+                onClick={() => setShowModal(false)}
               >
                 ×
               </button>
               <h2>Add a farmer</h2>
               <input
                 type="text"
-                placeholder="Enter Farmer ID"
-                value={farmerId}
-                onChange={(e) => setFarmerId(e.target.value)}
+                placeholder="Enter Farmer User ID"
+                value={farmerUserId}
+                onChange={(e) => setFarmerUserId(e.target.value)}
               />
               <button className="submit-button" onClick={handleAddFarmer}>
                 Add Farmer
@@ -377,7 +344,6 @@ const FarmDashboard = () => {
           </div>
         )}
 
-        {/* Confirm Delete Modal */}
         {showDeleteConfirm && (
           <div className="modal-overlay">
             <div className="modal">
@@ -392,10 +358,7 @@ const FarmDashboard = () => {
                 }}
               >
                 <button
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setFarmerToDelete(null);
-                  }}
+                  onClick={() => setShowDeleteConfirm(false)}
                   className="cancel-button"
                 >
                   Cancel
@@ -408,7 +371,6 @@ const FarmDashboard = () => {
           </div>
         )}
 
-        {/* View Farmer Details Modal */}
         {showFarmerDetails && selectedFarmer && (
           <div className="modal-overlay">
             <div className="modal">
@@ -424,9 +386,6 @@ const FarmDashboard = () => {
               </p>
               <p>
                 <strong>Farmer ID:</strong> {selectedFarmer.id}
-              </p>
-              <p>
-                <strong>Username:</strong> {selectedFarmer.username}
               </p>
               <p>
                 <strong>Address:</strong> {selectedFarmer.address}
