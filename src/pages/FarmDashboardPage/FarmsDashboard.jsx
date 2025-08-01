@@ -1,9 +1,9 @@
-import "./FarmDashboard.css";
+import "./FarmsDashboard.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import HeaderMain from "../../components/Header/HeaderMain";
 
-function FarmDashboard() {
+function FarmsDashboard() {
   const { farmId } = useParams();
   const [farm, setFarm] = useState(null);
   const navigate = useNavigate();

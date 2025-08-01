@@ -7,7 +7,7 @@ import ForgotPassword from "./pages/ForgotPasswordPage/ForgotPassword";
 import Verification from "./pages/VerificationPage/Verification";
 import NewPassword from "./pages/NewPasswordPage/NewPassword";
 import Dashboard from "./pages/DashboardPage/Dashboard";
-import FarmDashboard from "./pages/Owner/FarmDashboard";
+import FarmDashboard from "./pages/FarmsDashboardPage/FarmsDashboard";
 import AboutPage from "./pages/AboutPage/About";
 
 function App() {
@@ -20,7 +20,7 @@ function App() {
       <Route path="/verify-otp" element={<Verification />} />
       <Route path="/new-password" element={<NewPassword />} />
       <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/farm/:farmId" element={<FarmDashboard />} />
+      <Route path="/farm/:farmId" element={<FarmsDashboard />} />
       <Route path="/about" element={<AboutPage />} />
     </Routes>
   );
