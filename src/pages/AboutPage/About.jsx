@@ -1,5 +1,5 @@
 import React from "react";
-import "./AboutPage.css";
+import "./About.css";
 import HeaderMain from "../../components/Header/HeaderMain";
 import aboutUserImg from "../../assets/aboutuser.png";
 
