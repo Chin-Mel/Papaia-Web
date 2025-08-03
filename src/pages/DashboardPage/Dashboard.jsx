@@ -214,9 +214,7 @@ function Dashboard() {
                   <div
                     onClick={() => navigate(`/farmdashboard/${farm.id}`)}
                     style={{ marginTop: "0.5rem" }}
-                  >
-                    <p className="farm-location">📍{farm.location}</p>
-                  </div>
+                  ></div>
                 </div>
 
                 <p className="farm-location">📍{farm.location}</p>
