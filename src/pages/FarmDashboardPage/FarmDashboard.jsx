@@ -224,9 +224,15 @@ const FarmDashboard = () => {
           &larr; Back
         </button>
 
-        <h1 className="title">
-          {farmName} <span className="location">{farmLocation}</span>
-        </h1>
+        <div className="title-with-menu">
+          <h1 className="title">
+            {farmName}
+            <span className="location">{farmLocation}</span>
+          </h1>
+          <button className="menu-button" title="Options">
+            ⋮
+          </button>
+        </div>
 
         <div className="timeframe-buttons">
           <button className="active">Weekly</button>
