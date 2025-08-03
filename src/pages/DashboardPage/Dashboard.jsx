@@ -19,13 +19,9 @@ function Dashboard() {
   const [deletePopupVisible, setDeletePopupVisible] = useState(false);
   const [selectedFarm, setSelectedFarm] = useState(null);
 
-  // Check token on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    if (!token) return navigate("/login");
 
     try {
       const decoded = jwtDecode(token);
@@ -40,100 +36,70 @@ function Dashboard() {
     }
   }, [navigate]);
 
-  // Fetch farms
   useEffect(() => {
     const fetchFarms = async () => {
       const token = localStorage.getItem("token");
       if (!token) return;
 
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        const data = await response.json();
-        if (response.ok && data.status === "success") {
-          setFarms(data.farms);
-        } else {
-          console.error("Failed to fetch farms:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching farms:", error);
+        const data = await res.json();
+        if (res.ok && data.status === "success") setFarms(data.farms);
+        else console.error("Fetch failed:", data.message);
+      } catch (err) {
+        console.error("Error:", err);
       }
     };
-
     fetchFarms();
   }, []);
 
   useEffect(() => {
     const handleOutsideClick = (e) => {
-      if (!e.target.closest(".farm-menu-icon")) {
-        setActiveMenuIndex(null);
-      }
+      if (!e.target.closest(".farm-menu-icon")) setActiveMenuIndex(null);
     };
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  // Add a farm
   const handleAddFarm = async () => {
     if (!farmName.trim() || !farmLocation.trim()) return;
-
     const token = localStorage.getItem("token");
-    if (!token) {
-      alert("You are not authenticated.");
-      return;
-    }
+    if (!token) return alert("Not authenticated.");
 
     try {
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/farm",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            farmName: farmName.trim(),
-            location: farmLocation.trim(),
-          }),
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok && data.status === "success") {
-        const newFarm = {
-          id: data.farmId || Date.now(), // fallback ID
-          farmName,
-          location: farmLocation,
-        };
-        setFarms((prev) => [...prev, newFarm]);
+      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ farmName, location: farmLocation }),
+      });
+      const data = await res.json();
+      if (res.ok && data.status === "success") {
+        setFarms((prev) => [
+          ...prev,
+          { id: data.farmId, farmName, location: farmLocation },
+        ]);
         setFarmName("");
         setFarmLocation("");
         setShowPopup(false);
-      } else {
-        alert(data.message || "Failed to add farm.");
-      }
-    } catch (error) {
-      console.error("Error adding farm:", error);
-      alert("Something went wrong while adding the farm.");
+      } else alert(data.message);
+    } catch (err) {
+      alert("Error adding farm");
     }
   };
 
   const handleUpdateFarm = async () => {
     const token = localStorage.getItem("token");
     if (!token || !selectedFarm) return;
-
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${selectedFarm.id}`,
         {
           method: "PUT",
@@ -141,16 +107,11 @@ function Dashboard() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            farmName: farmName.trim(),
-            location: farmLocation.trim(),
-          }),
+          body: JSON.stringify({ farmName, location: farmLocation }),
         }
       );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
       setFarms((prev) =>
         prev.map((f) =>
           f.id === selectedFarm.id
@@ -168,21 +129,16 @@ function Dashboard() {
   const handleDeleteFarm = async () => {
     const token = localStorage.getItem("token");
     if (!token || !selectedFarm) return;
-
     try {
-      const response = await fetch(
+      const res = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${selectedFarm.id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message);
-
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
       setFarms((prev) => prev.filter((f) => f.id !== selectedFarm.id));
       setDeletePopupVisible(false);
       setSelectedFarm(null);
@@ -203,28 +159,26 @@ function Dashboard() {
               <img src={farmerIcon} alt="Farmer Icon" />
             </div>
             <div className="tile-text">
-              <p className="tile-label">All Farmers</p>
-              <p className="tile-number">25</p>
+              <p>All Farmers</p>
+              <p>25</p>
             </div>
           </div>
-
           <div className="tile farm-count">
             <div className="tile-icon">
               <img src={farmIcon} alt="Farm Icon" />
             </div>
             <div className="tile-text">
-              <p className="tile-label">All Farms</p>
-              <p className="tile-number">{farms.length}</p>
+              <p>All Farms</p>
+              <p>{farms.length}</p>
             </div>
           </div>
-
           <div className="tile scan-count">
             <div className="tile-icon">
               <img src={scanIcon} alt="Scan Icon" />
             </div>
             <div className="tile-text">
-              <p className="tile-label">Today's Scan</p>
-              <p className="tile-number">25</p>
+              <p>Today's Scan</p>
+              <p>25</p>
             </div>
           </div>
         </div>
@@ -244,56 +198,48 @@ function Dashboard() {
               <div
                 className="farm-card"
                 key={farm.id || i}
-                onClick={() => navigate(`/farmdashboard/${farm.id}`)}
-                style={{ cursor: "pointer" }}
+                style={{ position: "relative" }}
               >
-                <div
-                  className="farm-card"
-                  key={farm.id || i}
-                  style={{ cursor: "default", position: "relative" }}
-                >
-                  <div className="farm-card-header">
-                    <p className="farm-name">{farm.farmName}</p>
-                    <button
-                      className="farm-menu-icon"
-                      onClick={(e) => {
-                        e.stopPropagation(); // prevent card navigation
-                        setActiveMenuIndex(activeMenuIndex === i ? null : i);
-                      }}
-                    >
-                      <MoreVertical size={18} />
-                    </button>
-                    {activeMenuIndex === i && (
-                      <div className="farm-menu-dropdown">
-                        <button
-                          onClick={() => {
-                            setSelectedFarm(farm);
-                            setFarmName(farm.farmName);
-                            setFarmLocation(farm.location);
-                            setEditPopupVisible(true);
-                          }}
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            setSelectedFarm(farm);
-                            setDeletePopupVisible(true);
-                          }}
-                        >
-                          🗑️ Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div
-                    onClick={() => navigate(`/farmdashboard/${farm.id}`)}
-                    style={{ marginTop: "0.5rem" }}
-                  ></div>
+                <div className="farm-card-header">
+                  <p className="farm-name">{farm.farmName}</p>
+                  <button
+                    className="farm-menu-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenuIndex(activeMenuIndex === i ? null : i);
+                    }}
+                  >
+                    <MoreVertical size={18} />
+                  </button>
+                  {activeMenuIndex === i && (
+                    <div className="farm-menu-dropdown">
+                      <button
+                        onClick={() => {
+                          setSelectedFarm(farm);
+                          setFarmName(farm.farmName);
+                          setFarmLocation(farm.location);
+                          setEditPopupVisible(true);
+                        }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedFarm(farm);
+                          setDeletePopupVisible(true);
+                        }}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                <p className="farm-location">📍{farm.location}</p>
+                <div
+                  onClick={() => navigate(`/farmdashboard/${farm.id}`)}
+                  style={{ cursor: "pointer", marginTop: "0.5rem" }}
+                >
+                  <p className="farm-location">📍{farm.location}</p>
+                </div>
               </div>
             ))}
           </div>
