@@ -15,6 +15,9 @@ function Dashboard() {
   const [farmName, setFarmName] = useState("");
   const [farmLocation, setFarmLocation] = useState("");
   const navigate = useNavigate();
+  const [editPopupVisible, setEditPopupVisible] = useState(false);
+  const [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  const [selectedFarm, setSelectedFarm] = useState(null);
 
   // Check token on mount
   useEffect(() => {
@@ -125,6 +128,69 @@ function Dashboard() {
     }
   };
 
+  const handleUpdateFarm = async () => {
+    const token = localStorage.getItem("token");
+    if (!token || !selectedFarm) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${selectedFarm.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            farmName: farmName.trim(),
+            location: farmLocation.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setFarms((prev) =>
+        prev.map((f) =>
+          f.id === selectedFarm.id
+            ? { ...f, farmName, location: farmLocation }
+            : f
+        )
+      );
+      setEditPopupVisible(false);
+      setSelectedFarm(null);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteFarm = async () => {
+    const token = localStorage.getItem("token");
+    if (!token || !selectedFarm) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${selectedFarm.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+
+      setFarms((prev) => prev.filter((f) => f.id !== selectedFarm.id));
+      setDeletePopupVisible(false);
+      setSelectedFarm(null);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <>
       <HeaderMain />
@@ -199,11 +265,21 @@ function Dashboard() {
                     </button>
                     {activeMenuIndex === i && (
                       <div className="farm-menu-dropdown">
-                        <button onClick={() => alert(`Edit ${farm.farmName}`)}>
+                        <button
+                          onClick={() => {
+                            setSelectedFarm(farm);
+                            setFarmName(farm.farmName);
+                            setFarmLocation(farm.location);
+                            setEditPopupVisible(true);
+                          }}
+                        >
                           ✏️ Edit
                         </button>
                         <button
-                          onClick={() => alert(`Delete ${farm.farmName}`)}
+                          onClick={() => {
+                            setSelectedFarm(farm);
+                            setDeletePopupVisible(true);
+                          }}
                         >
                           🗑️ Delete
                         </button>
@@ -245,6 +321,60 @@ function Dashboard() {
               <button className="popup-add-button" onClick={handleAddFarm}>
                 Add Farm
               </button>
+            </div>
+          </div>
+        )}
+
+        {editPopupVisible && (
+          <div className="popup-overlay">
+            <div className="popup-box">
+              <span
+                className="popup-close"
+                onClick={() => setEditPopupVisible(false)}
+              >
+                &times;
+              </span>
+              <h3>Edit Farm</h3>
+              <input
+                type="text"
+                value={farmName}
+                onChange={(e) => setFarmName(e.target.value)}
+                placeholder="Farm Name"
+              />
+              <input
+                type="text"
+                value={farmLocation}
+                onChange={(e) => setFarmLocation(e.target.value)}
+                placeholder="Farm Location"
+              />
+              <button className="popup-add-button" onClick={handleUpdateFarm}>
+                Update Farm
+              </button>
+            </div>
+          </div>
+        )}
+
+        {deletePopupVisible && (
+          <div className="popup-overlay">
+            <div className="popup-box">
+              <h3>Are you sure you want to delete this farm?</h3>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  marginTop: "1rem",
+                }}
+              >
+                <button
+                  className="cancel-button"
+                  onClick={() => setDeletePopupVisible(false)}
+                >
+                  Cancel
+                </button>
+                <button className="confirm-button" onClick={handleDeleteFarm}>
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         )}
