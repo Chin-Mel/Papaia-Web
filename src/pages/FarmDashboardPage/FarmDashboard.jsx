@@ -8,6 +8,7 @@ const FarmDashboard = () => {
   const [farmerToDelete, setFarmerToDelete] = useState(null);
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [showFarmerDetails, setShowFarmerDetails] = useState(false);
+  const [showMenuOptions, setShowMenuOptions] = useState(false);
 
   const { farmId } = useParams();
   const navigate = useNavigate();
@@ -25,6 +26,18 @@ const FarmDashboard = () => {
       navigate("/login");
       return;
     }
+    useEffect(() => {
+      const handleClickOutside = (e) => {
+        const menu = document.querySelector(".menu-container");
+        if (menu && !menu.contains(e.target)) {
+          setShowMenuOptions(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const fetchFarmDetails = async () => {
       try {
@@ -229,9 +242,32 @@ const FarmDashboard = () => {
             {farmName}
             <span className="location">{farmLocation}</span>
           </h1>
-          <button className="menu-button" title="Options">
-            ⋮
-          </button>
+          <div className="menu-container">
+            <button
+              className="menu-button"
+              title="Options"
+              onClick={() => setShowMenuOptions((prev) => !prev)}
+            >
+              ⋮
+            </button>
+
+            {showMenuOptions && (
+              <div className="menu-popup">
+                <button
+                  className="menu-item"
+                  onClick={() => alert("Edit clicked")}
+                >
+                  ✏️ Edit
+                </button>
+                <button
+                  className="menu-item"
+                  onClick={() => alert("Delete clicked")}
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="timeframe-buttons">
