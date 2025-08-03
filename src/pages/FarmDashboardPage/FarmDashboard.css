@@ -3,8 +3,6 @@
   font-family: Arial, sans-serif;
   padding: 2rem;
   color: #333;
-  max-width: 1400px; /* NEW: expand this as needed */
-  margin: 0 auto;
 }
 
 .back-button {
@@ -17,28 +15,6 @@
 .title {
   font-size: 2rem;
   margin-bottom: 0.5rem;
-  display: flex;
-  flex-direction: column;
-}
-
-.title-with-menu {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.menu-button {
-  background: none;
-  border: none;
-  font-size: 1.8rem;
-  cursor: pointer;
-  color: #555;
-  padding: 0;
-}
-
-.menu-button:hover {
-  color: #000;
 }
 
 .location {
@@ -65,7 +41,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-  gap: 3rem; /* increase spacing if you want more breathing room */
+  gap: 2rem;
 }
 
 .graph-section {
@@ -74,7 +50,6 @@
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  flex: 3;
 }
 
 .graph-placeholder {
@@ -94,7 +69,6 @@
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
-  flex: 2;
 }
 
 .recent-scans ul {
@@ -250,37 +224,4 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.menu-container {
-  position: relative;
-}
-
-.menu-popup {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  margin-top: 0.5rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  min-width: 120px;
-}
-
-.menu-item {
-  padding: 0.75rem 1rem;
-  background: none;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  font-size: 0.95rem;
-  color: #333;
-}
-
-.menu-item:hover {
-  background-color: #f3f4f6;
 }

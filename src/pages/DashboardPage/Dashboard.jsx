@@ -69,6 +69,16 @@ function Dashboard() {
     fetchFarms();
   }, []);
 
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest(".farm-menu-icon")) {
+        setActiveMenuIndex(null);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
   // Add a farm
   const handleAddFarm = async () => {
     if (!farmName.trim() || !farmLocation.trim()) return;
@@ -171,12 +181,44 @@ function Dashboard() {
                 onClick={() => navigate(`/farmdashboard/${farm.id}`)}
                 style={{ cursor: "pointer" }}
               >
-                <div className="farm-card-header">
-                  <p className="farm-name">{farm.farmName}</p>
-                  <div className="farm-menu-icon">
-                    <MoreVertical size={16} />
+                <div
+                  className="farm-card"
+                  key={farm.id || i}
+                  style={{ cursor: "default", position: "relative" }}
+                >
+                  <div className="farm-card-header">
+                    <p className="farm-name">{farm.farmName}</p>
+                    <button
+                      className="farm-menu-icon"
+                      onClick={(e) => {
+                        e.stopPropagation(); // prevent card navigation
+                        setActiveMenuIndex(activeMenuIndex === i ? null : i);
+                      }}
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+                    {activeMenuIndex === i && (
+                      <div className="farm-menu-dropdown">
+                        <button onClick={() => alert(`Edit ${farm.farmName}`)}>
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => alert(`Delete ${farm.farmName}`)}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    onClick={() => navigate(`/farmdashboard/${farm.id}`)}
+                    style={{ marginTop: "0.5rem" }}
+                  >
+                    <p className="farm-location">📍{farm.location}</p>
                   </div>
                 </div>
+
                 <p className="farm-location">📍{farm.location}</p>
               </div>
             ))}

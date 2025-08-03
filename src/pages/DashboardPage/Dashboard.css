@@ -105,7 +105,7 @@ body, html {
 /* Farm cards layout */
 .farm-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* wider */
   gap: 1rem;
 }
 
@@ -229,4 +229,46 @@ body, html {
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
+}
+
+.farm-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.farm-menu-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  position: relative;
+}
+
+.farm-menu-dropdown {
+  position: absolute;
+  top: 2.2rem;
+  right: 1rem;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 0.5rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.farm-menu-dropdown button {
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.farm-menu-dropdown button:hover {
+  background-color: #f0f0f0;
 }
