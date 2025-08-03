@@ -3,6 +3,8 @@
   font-family: Arial, sans-serif;
   padding: 2rem;
   color: #333;
+  max-width: 1400px; /* NEW: expand this as needed */
+  margin: 0 auto;
 }
 
 .back-button {
@@ -41,7 +43,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 2rem;
-  gap: 2rem;
+  gap: 3rem; /* increase spacing if you want more breathing room */
 }
 
 .graph-section {
@@ -50,6 +52,7 @@
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  flex: 3;
 }
 
 .graph-placeholder {
@@ -69,6 +72,7 @@
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 0 10px rgba(0,0,0,0.05);
+  flex: 2;
 }
 
 .recent-scans ul {
