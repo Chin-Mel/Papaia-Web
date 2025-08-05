@@ -1,0 +1,153 @@
+.profile-page-main {
+  background-color: #f8f9fa;
+  padding: 2rem 0;
+}
+
+.profile-container {
+  max-width: 900px;
+  margin: auto;
+  padding: 0 1rem;
+}
+
+.profile-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.profile-card {
+  background-color: #ffffff;
+  border-radius: 25px;
+  border: 1px solid #e9ecef;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+}
+
+.profile-header-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-picture-container {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-picture {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.profile-username {
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem 2rem;
+}
+
+.input-container {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #adb5bd;
+  width: 20px;
+  height: 20px;
+  pointer-events: none; /* Prevents the icon from being clickable */
+}
+
+.input-field {
+  width: 100%;
+
+  padding: 12px 2px;
+  text-indent: 40px;
+  border: 1px solid #77dd77;
+  border-radius: 10px;
+  background-color: #fff;
+  font-size: 1rem;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-field:focus {
+  border-color: #009e60;
+  box-shadow: 0 0 0 3px rgba(0, 158, 96, 0.2);
+}
+
+.input-field.placeholder-text {
+  color: #adb5bd;
+}
+
+/* (The rest of the CSS is unchanged) */
+
+.action-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.btn {
+  padding: 12px 28px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-deactivate {
+  background-color: #FF9100;
+  color: white;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+.btn-logout {
+  background-color: #A7C957;
+}
+
+.btn-change-password {
+  background-color: #8B5E3C;
+}
+
+.btn-edit-profile {
+  background-color: #00712D;
+}
