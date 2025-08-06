@@ -4,7 +4,7 @@ import Dashboard from './pages/DashboardPage/Dashboard';
 import AboutPage from './pages/AboutPage/About';
 import ScanHistoryDetailsPage from './pages/ScanHistoryPage/ScanHistoryDetailsPage';
 import ScanHistory from './pages/ScanHistoryPage/ScanHistory';
-import EditProfilePage from './pages/ProfilePage/EditProfilePage';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 
 
    function App() {
@@ -15,7 +15,7 @@ import EditProfilePage from './pages/ProfilePage/EditProfilePage';
          <Route path="/about" element={<AboutPage />} />
          <Route path="/scan-history-details" element={<ScanHistoryDetailsPage />} />
          <Route path="/scan-history" element={<ScanHistory />} />
-         <Route path="/edit-profile" element={<EditProfilePage />} />
+         <Route path="/profile" element={<ProfilePage />} />
        </Routes>
      );
    }
