@@ -147,6 +147,18 @@ function Dashboard() {
     }
   };
 
+  const closeEditPopup = () => {
+    setEditPopupVisible(false);
+    setSelectedFarm(null);
+    setFarmName("");
+    setFarmLocation("");
+  };
+
+  const closeDeletePopup = () => {
+    setDeletePopupVisible(false);
+    setSelectedFarm(null);
+  };
+
   return (
     <>
       <HeaderMain />
@@ -197,7 +209,7 @@ function Dashboard() {
             {farms.map((farm, i) => (
               <div
                 className="farm-card"
-                key={farm.id || i}
+                key={farm.id}
                 style={{ position: "relative" }}
               >
                 <div className="farm-card-header">
@@ -211,22 +223,28 @@ function Dashboard() {
                   >
                     <MoreVertical size={18} />
                   </button>
+
+                  {/* Dropdown menu */}
                   {activeMenuIndex === i && (
                     <div className="farm-menu-dropdown">
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedFarm(farm);
                           setFarmName(farm.farmName);
                           setFarmLocation(farm.location);
                           setEditPopupVisible(true);
+                          setActiveMenuIndex(null); // CLOSE MENU
                         }}
                       >
                         ✏️ Edit
                       </button>
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setSelectedFarm(farm);
                           setDeletePopupVisible(true);
+                          setActiveMenuIndex(null); // CLOSE MENU
                         }}
                       >
                         🗑️ Delete
@@ -234,6 +252,7 @@ function Dashboard() {
                     </div>
                   )}
                 </div>
+
                 <div
                   onClick={() => navigate(`/farmdashboard/${farm.id}`)}
                   style={{ cursor: "pointer", marginTop: "0.5rem" }}
@@ -274,10 +293,7 @@ function Dashboard() {
         {editPopupVisible && (
           <div className="popup-overlay">
             <div className="popup-box">
-              <span
-                className="popup-close"
-                onClick={() => setEditPopupVisible(false)}
-              >
+              <span className="popup-close" onClick={closeEditPopup}>
                 &times;
               </span>
               <h3>Edit Farm</h3>
@@ -311,10 +327,7 @@ function Dashboard() {
                   marginTop: "1rem",
                 }}
               >
-                <button
-                  className="cancel-button"
-                  onClick={() => setDeletePopupVisible(false)}
-                >
+                <button className="cancel-button" onClick={closeDeletePopup}>
                   Cancel
                 </button>
                 <button className="confirm-button" onClick={handleDeleteFarm}>
