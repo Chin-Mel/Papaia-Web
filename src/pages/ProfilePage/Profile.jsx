@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaMapMarkerAlt, FaCamera } from "react-icons/fa";
 import "./Profile.css";
+import HeaderMain from "../../components/Header/HeaderMain";
 
 function Profile() {
   const navigate = useNavigate();
@@ -45,73 +46,76 @@ function Profile() {
   };
 
   return (
-    <div className="profile-container">
-      <h2 className="profile-heading">Profile</h2>
+    <>
+      <HeaderMain />
+      <div className="profile-container">
+        <h2 className="profile-heading">Profile</h2>
 
-      <div className="profile-card">
-        {/* Deactivate Button */}
-        <button className="deactivate-button" onClick={handleDeactivate}>
-          Deactivate Account
-        </button>
+        <div className="profile-card">
+          {/* Deactivate Button */}
+          <button className="deactivate-button" onClick={handleDeactivate}>
+            Deactivate Account
+          </button>
 
-        {/* Profile Header */}
-        <div className="profile-header">
-          <div
-            className="profile-image-container"
-            onClick={handleProfileImageClick}
-          >
-            <img src={profileImage} alt="Profile" className="profile-image" />
-            <div className="camera-icon">
-              <FaCamera />
+          {/* Profile Header */}
+          <div className="profile-header">
+            <div
+              className="profile-image-container"
+              onClick={handleProfileImageClick}
+            >
+              <img src={profileImage} alt="Profile" className="profile-image" />
+              <div className="camera-icon">
+                <FaCamera />
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                style={{ display: "none" }}
+                onChange={handleImageChange}
+              />
             </div>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputRef}
-              style={{ display: "none" }}
-              onChange={handleImageChange}
+            <div>
+              <h3 className="profile-name">Juan Dela Cruz</h3>
+              <p className="profile-username">@juandelacruz</p>
+            </div>
+          </div>
+
+          {/* Form */}
+          <div className="profile-form">
+            <InputField icon={<FaUser />} placeholder="Dela Cruz" />
+            <InputField placeholder="Juan" />
+            <InputField placeholder="Middle Name" />
+            <InputField placeholder="Suffix" />
+
+            <InputField icon={<FaUser />} placeholder="@juandelacruz" />
+            <InputField
+              icon={<FaEnvelope />}
+              placeholder="juandelacruz@gmail.com"
             />
+
+            <InputField icon={<FaMapMarkerAlt />} placeholder="Street" />
+            <InputField placeholder="Barangay" />
+            <InputField placeholder="Municipality" />
+            <InputField placeholder="Province" />
+            <InputField placeholder="Zip Code" />
           </div>
-          <div>
-            <h3 className="profile-name">Juan Dela Cruz</h3>
-            <p className="profile-username">@juandelacruz</p>
+
+          {/* Buttons */}
+          <div className="profile-buttons">
+            <button className="logout-button" onClick={handleLogout}>
+              Logout
+            </button>
+            <button className="password-button" onClick={handleChangePassword}>
+              Change Password
+            </button>
+            <button className="edit-button" onClick={handleEditProfile}>
+              Edit Profile
+            </button>
           </div>
-        </div>
-
-        {/* Form */}
-        <div className="profile-form">
-          <InputField icon={<FaUser />} placeholder="Dela Cruz" />
-          <InputField placeholder="Juan" />
-          <InputField placeholder="Middle Name" />
-          <InputField placeholder="Suffix" />
-
-          <InputField icon={<FaUser />} placeholder="@juandelacruz" />
-          <InputField
-            icon={<FaEnvelope />}
-            placeholder="juandelacruz@gmail.com"
-          />
-
-          <InputField icon={<FaMapMarkerAlt />} placeholder="Street" />
-          <InputField placeholder="Barangay" />
-          <InputField placeholder="Municipality" />
-          <InputField placeholder="Province" />
-          <InputField placeholder="Zip Code" />
-        </div>
-
-        {/* Buttons */}
-        <div className="profile-buttons">
-          <button className="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
-          <button className="password-button" onClick={handleChangePassword}>
-            Change Password
-          </button>
-          <button className="edit-button" onClick={handleEditProfile}>
-            Edit Profile
-          </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
