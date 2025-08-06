@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaMapMarkerAlt, FaCamera } from "react-icons/fa";
 import "./Profile.css";
@@ -11,8 +11,22 @@ function Profile() {
   const [profileImage, setProfileImage] = useState(
     "https://via.placeholder.com/80"
   );
+  const [userData, setUserData] = useState({
+    firstName: "",
+    lastName: "",
+    middleName: "",
+    suffix: "",
+    username: "",
+    email: "",
+    address: {
+      street: "",
+      barangay: "",
+      municipality: "",
+      province: "",
+      zipCode: "",
+    },
+  });
 
-  // Handlers for popups
   const handleDeactivate = () => {
     if (window.confirm("Are you sure you want to deactivate your account?")) {
       navigate("/login");
@@ -31,6 +45,10 @@ function Profile() {
 
   const handleEditProfile = () => {
     navigate("/edit-profile");
+  };
+
+  const handleProfileImageClick = () => {
+    fileInputRef.current.click();
   };
 
   const handleImageChange = async (e) => {
@@ -54,7 +72,7 @@ function Profile() {
 
       if (!res.ok) throw new Error("Failed to upload");
 
-      const data = await res.json(); // assuming your backend returns: { imageUrl: "..." }
+      const data = await res.json(); // { imageUrl: "..." }
       setProfileImage(data.imageUrl);
       localStorage.setItem("profileImage", data.imageUrl);
     } catch (err) {
@@ -63,16 +81,9 @@ function Profile() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("profileImage");
-    if (saved) {
-      setProfilePic(saved);
-    }
-  }, []);
-
-  useEffect(() => {
     const fetchProfile = async () => {
       const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId"); // make sure you store this on login
+      const userId = localStorage.getItem("userId");
 
       try {
         const res = await fetch(
@@ -87,8 +98,10 @@ function Profile() {
         if (!res.ok) throw new Error("User not found");
 
         const user = await res.json();
-        setProfileImage(user.profilePicture); // image URL returned from API
-        localStorage.setItem("profileImage", user.profilePicture);
+        if (user.profilePicture) {
+          setProfileImage(user.profilePicture);
+          localStorage.setItem("profileImage", user.profilePicture);
+        }
       } catch (err) {
         console.error("Failed to fetch profile:", err);
       }
@@ -97,14 +110,14 @@ function Profile() {
     const savedImage = localStorage.getItem("profileImage");
     if (savedImage) {
       setProfileImage(savedImage);
-    } else {
-      fetchProfile(); // only fetch if nothing stored
     }
+
+    fetchProfile();
   }, []);
 
-  const handleProfileImageClick = () => {
-    fileInputRef.current.click();
-  };
+  const fullAddress = `${userData.street || ""}, ${userData.barangay || ""}, ${
+    userData.municipality || ""
+  }, ${userData.province || ""}, ${userData.zipCode || ""}`;
 
   return (
     <>
@@ -113,12 +126,10 @@ function Profile() {
         <h2 className="profile-heading">Profile</h2>
 
         <div className="profile-card">
-          {/* Deactivate Button */}
           <button className="deactivate-button" onClick={handleDeactivate}>
             Deactivate Account
           </button>
 
-          {/* Profile Header */}
           <div className="profile-header">
             <div
               className="profile-image-container"
@@ -137,32 +148,26 @@ function Profile() {
               />
             </div>
             <div>
-              <h3 className="profile-name">Juan Dela Cruz</h3>
-              <p className="profile-username">@juandelacruz</p>
+              <h3 className="profile-name">
+                {userData.firstName} {userData.lastName}
+              </h3>
+              <p className="profile-username">@{userData.username}</p>
             </div>
           </div>
 
-          {/* Form */}
           <div className="profile-form">
-            <InputField icon={<FaUser />} placeholder="Dela Cruz" />
-            <InputField placeholder="Juan" />
-            <InputField placeholder="Middle Name" />
-            <InputField placeholder="Suffix" />
-
-            <InputField icon={<FaUser />} placeholder="@juandelacruz" />
+            <InputField icon={<FaUser />} value={userData.lastName} />
+            <InputField value={userData.firstName} />
+            <InputField value={userData.middleName} />
+            <InputField value={userData.suffix} />
+            <InputField icon={<FaUser />} value={userData.username} />
+            <InputField icon={<FaEnvelope />} value={userData.email} />
             <InputField
-              icon={<FaEnvelope />}
-              placeholder="juandelacruz@gmail.com"
+              icon={<FaMapMarkerAlt />}
+              value={`${userData.address?.street}, ${userData.address?.barangay}, ${userData.address?.municipality}, ${userData.address?.province}, ${userData.address?.zipCode}`}
             />
-
-            <InputField icon={<FaMapMarkerAlt />} placeholder="Street" />
-            <InputField placeholder="Barangay" />
-            <InputField placeholder="Municipality" />
-            <InputField placeholder="Province" />
-            <InputField placeholder="Zip Code" />
           </div>
 
-          {/* Buttons */}
           <div className="profile-buttons">
             <button className="logout-button" onClick={handleLogout}>
               Logout
@@ -180,13 +185,14 @@ function Profile() {
   );
 }
 
-function InputField({ icon, placeholder }) {
+function InputField({ icon, value }) {
   return (
     <div className="input-field">
       {icon && <span className="input-icon">{icon}</span>}
       <input
         type="text"
-        placeholder={placeholder}
+        value={value}
+        readOnly
         className={`input ${icon ? "input-with-icon" : ""}`}
       />
     </div>
