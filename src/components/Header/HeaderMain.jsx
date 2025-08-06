@@ -1,19 +1,20 @@
 import "./HeaderMain.css";
 import logo from "../../assets/papaia-logo.png";
 import bellIcon from "../../assets/notif-icon.png";
-import profileImage from "../../assets/default-user.png";
+import defaultProfileImage from "../../assets/default-user.png";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 function HeaderMain() {
-  const [profilePic, setProfilePic] = useState(profileImage); // default
+  const [profilePic, setProfilePic] = useState(defaultProfileImage);
 
   useEffect(() => {
     const saved = localStorage.getItem("profileImage");
-    if (saved) {
+    if (saved && saved !== "undefined" && saved !== "null") {
       setProfilePic(saved);
     }
   }, []);
+
   return (
     <header className="headermain">
       <div className="logo-nav-container">
