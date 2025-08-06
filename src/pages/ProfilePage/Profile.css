@@ -1,0 +1,167 @@
+.profile-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.profile-heading {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.profile-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  position: relative;
+}
+
+.deactivate-button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background-color: #f97316;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.deactivate-button:hover {
+  background-color: #ea580c;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.profile-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.profile-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.profile-username {
+  color: #6b7280;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.input-field {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  pointer-events: none;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  padding-left: 0.75rem;
+  border: 2px solid #4ade80;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.input-with-icon {
+  padding-left: 2.5rem;
+}
+
+.input:focus {
+  border-color: #22c55e;
+}
+
+.profile-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.profile-buttons button {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button {
+  background-color: #84cc16;
+}
+
+.logout-button:hover {
+  background-color: #65a30d;
+}
+
+.password-button {
+  background-color: #8c6239;
+}
+
+.password-button:hover {
+  background-color: #a9744d;
+}
+
+.edit-button {
+  background-color: #065f46;
+}
+
+.edit-button:hover {
+  background-color: #064e3b;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+}
+
+.camera-icon {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #4ade80;
+  color: white;
+  border-radius: 50%;
+  padding: 0.3rem;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image-container:hover .camera-icon {
+  background-color: #22c55e;
+}

@@ -1,32 +1,85 @@
-import React from "react";
-import { FaUser, FaEnvelope, FaMapMarkerAlt } from "react-icons/fa";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaEnvelope, FaMapMarkerAlt, FaCamera } from "react-icons/fa";
+import "./Profile.css";
 
 function Profile() {
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-semibold mb-6">Profile</h2>
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
-      <div className="bg-white rounded-xl shadow-md p-6 relative">
+  const [profileImage, setProfileImage] = useState(
+    "https://via.placeholder.com/80"
+  );
+
+  // Handlers for popups
+  const handleDeactivate = () => {
+    if (window.confirm("Are you sure you want to deactivate your account?")) {
+      navigate("/login");
+    }
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      navigate("/login");
+    }
+  };
+
+  const handleChangePassword = () => {
+    navigate("/change-password");
+  };
+
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setProfileImage(imageUrl);
+    }
+  };
+
+  const handleProfileImageClick = () => {
+    fileInputRef.current.click();
+  };
+
+  return (
+    <div className="profile-container">
+      <h2 className="profile-heading">Profile</h2>
+
+      <div className="profile-card">
         {/* Deactivate Button */}
-        <button className="absolute top-4 right-4 bg-orange-400 text-white px-4 py-2 rounded hover:bg-orange-500">
+        <button className="deactivate-button" onClick={handleDeactivate}>
           Deactivate Account
         </button>
 
         {/* Profile Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <img
-            src="https://via.placeholder.com/80"
-            alt="Profile"
-            className="w-20 h-20 rounded-full object-cover"
-          />
+        <div className="profile-header">
+          <div
+            className="profile-image-container"
+            onClick={handleProfileImageClick}
+          >
+            <img src={profileImage} alt="Profile" className="profile-image" />
+            <div className="camera-icon">
+              <FaCamera />
+            </div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleImageChange}
+            />
+          </div>
           <div>
-            <h3 className="text-xl font-semibold">Juan Dela Cruz</h3>
-            <p className="text-gray-600">@juandelacruz</p>
+            <h3 className="profile-name">Juan Dela Cruz</h3>
+            <p className="profile-username">@juandelacruz</p>
           </div>
         </div>
 
         {/* Form */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="profile-form">
           <InputField icon={<FaUser />} placeholder="Dela Cruz" />
           <InputField placeholder="Juan" />
           <InputField placeholder="Middle Name" />
@@ -46,14 +99,14 @@ function Profile() {
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-center gap-4">
-          <button className="bg-lime-400 hover:bg-lime-500 text-white px-6 py-2 rounded">
+        <div className="profile-buttons">
+          <button className="logout-button" onClick={handleLogout}>
             Logout
           </button>
-          <button className="bg-[#8C6239] hover:bg-[#A9744D] text-white px-6 py-2 rounded">
+          <button className="password-button" onClick={handleChangePassword}>
             Change Password
           </button>
-          <button className="bg-green-800 hover:bg-green-900 text-white px-6 py-2 rounded">
+          <button className="edit-button" onClick={handleEditProfile}>
             Edit Profile
           </button>
         </div>
@@ -64,18 +117,12 @@ function Profile() {
 
 function InputField({ icon, placeholder }) {
   return (
-    <div className="relative">
-      {icon && (
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-          {icon}
-        </span>
-      )}
+    <div className="input-field">
+      {icon && <span className="input-icon">{icon}</span>}
       <input
         type="text"
         placeholder={placeholder}
-        className={`w-full border-2 border-green-400 rounded px-10 py-2 text-sm focus:outline-none focus:border-green-600 ${
-          icon ? "pl-10" : "pl-3"
-        }`}
+        className={`input ${icon ? "input-with-icon" : ""}`}
       />
     </div>
   );
