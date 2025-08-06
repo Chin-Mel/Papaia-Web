@@ -230,6 +230,7 @@ function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          console.log("Edit clicked:", farm); // Add this
                           setSelectedFarm(farm);
                           setFarmName(farm.farmName);
                           setFarmLocation(farm.location);
@@ -242,6 +243,7 @@ function Dashboard() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          console.log("Edit clicked:", farm); // Add this
                           setSelectedFarm(farm);
                           setDeletePopupVisible(true);
                           setActiveMenuIndex(null); // CLOSE MENU
