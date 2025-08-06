@@ -71,7 +71,7 @@ function Profile() {
 
       if (!res.ok) throw new Error("Failed to upload");
 
-      const data = await res.json(); // { imageUrl: "..." }
+      const data = await res.json();
       setProfileImage(data.imageUrl);
       localStorage.setItem("profileImage", data.imageUrl);
     } catch (err) {
@@ -117,9 +117,12 @@ function Profile() {
     fetchProfile();
   }, []);
 
-  const fullAddress = `${userData.street || ""}, ${userData.barangay || ""}, ${
-    userData.municipality || ""
-  }, ${userData.province || ""}, ${userData.zipCode || ""}`;
+  const { firstName, lastName, middleName, suffix, username, email, address } =
+    userData;
+
+  const fullAddress = `${address.street || ""}, ${address.barangay || ""}, ${
+    address.municipality || ""
+  }, ${address.province || ""}, ${address.zipCode || ""}`;
 
   return (
     <>
@@ -151,26 +154,43 @@ function Profile() {
             </div>
             <div>
               <h3 className="profile-name">
-                {userData.firstName} {userData.lastName}
+                {firstName} {lastName}
               </h3>
-              <p className="profile-username">@{userData.username}</p>
+              <p className="profile-username">@{username}</p>
             </div>
           </div>
 
           <div className="profile-form">
-            <InputField icon={<FaUser />} value={userData.lastName} />
-            <InputField value={userData.firstName} />
-            <InputField value={userData.middleName} />
-            <InputField value={userData.suffix} />
-            <InputField icon={<FaUser />} value={userData.username} />
-            <InputField icon={<FaEnvelope />} value={userData.email} />
+            <InputField
+              icon={<FaUser />}
+              value={lastName}
+              label="Last Name"
+              name="lastName"
+            />
+            <InputField value={firstName} label="First Name" name="firstName" />
+            <InputField
+              value={middleName}
+              label="Middle Name"
+              name="middleName"
+            />
+            <InputField value={suffix} label="Suffix" name="suffix" />
+            <InputField
+              icon={<FaUser />}
+              value={username}
+              label="Username"
+              name="username"
+            />
+            <InputField
+              icon={<FaEnvelope />}
+              value={email}
+              label="Email"
+              name="email"
+            />
             <InputField
               icon={<FaMapMarkerAlt />}
-              value={`${userData.address?.street || ""}, ${
-                userData.address?.barangay || ""
-              }, ${userData.address?.municipality || ""}, ${
-                userData.address?.province || ""
-              }, ${userData.address?.zipCode || ""}`}
+              value={fullAddress}
+              label="Full Address"
+              name="address"
             />
           </div>
 
@@ -191,7 +211,7 @@ function Profile() {
   );
 }
 
-function InputField({ icon, value }) {
+function InputField({ icon, value, label, name }) {
   return (
     <div className="input-field">
       {icon && <span className="input-icon">{icon}</span>}
@@ -199,6 +219,9 @@ function InputField({ icon, value }) {
         type="text"
         value={value}
         readOnly
+        id={name}
+        name={name}
+        placeholder={label}
         className={`input ${icon ? "input-with-icon" : ""}`}
       />
     </div>
