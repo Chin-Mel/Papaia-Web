@@ -33,13 +33,74 @@ function Profile() {
     navigate("/edit-profile");
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setProfileImage(imageUrl);
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("profilePicture", file);
+
+    try {
+      const res = await fetch(
+        "https://papaiaapi.onrender.com/api/profile-picture",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to upload");
+
+      const data = await res.json(); // assuming your backend returns: { imageUrl: "..." }
+      setProfileImage(data.imageUrl);
+      localStorage.setItem("profileImage", data.imageUrl);
+    } catch (err) {
+      console.error("Upload failed:", err);
     }
   };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("profileImage");
+    if (saved) {
+      setProfilePic(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId"); // make sure you store this on login
+
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) throw new Error("User not found");
+
+        const user = await res.json();
+        setProfileImage(user.profilePicture); // image URL returned from API
+        localStorage.setItem("profileImage", user.profilePicture);
+      } catch (err) {
+        console.error("Failed to fetch profile:", err);
+      }
+    };
+
+    const savedImage = localStorage.getItem("profileImage");
+    if (savedImage) {
+      setProfileImage(savedImage);
+    } else {
+      fetchProfile(); // only fetch if nothing stored
+    }
+  }, []);
 
   const handleProfileImageClick = () => {
     fileInputRef.current.click();

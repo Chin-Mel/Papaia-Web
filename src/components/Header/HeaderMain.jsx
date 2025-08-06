@@ -3,8 +3,17 @@ import logo from "../../assets/papaia-logo.png";
 import bellIcon from "../../assets/notif-icon.png";
 import profileImage from "../../assets/default-user.png";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 function HeaderMain() {
+  const [profilePic, setProfilePic] = useState(profileImage); // default
+
+  useEffect(() => {
+    const saved = localStorage.getItem("profileImage");
+    if (saved) {
+      setProfilePic(saved);
+    }
+  }, []);
   return (
     <header className="headermain">
       <div className="logo-nav-container">
@@ -25,7 +34,7 @@ function HeaderMain() {
       <div className="header-right">
         <img src={bellIcon} alt="Notifications" className="notification-icon" />
         <Link to="/profile" className="profile">
-          <img src={profileImage} alt="User Profile" className="profile-pic" />
+          <img src={profilePic} alt="User Profile" className="profile-pic" />
         </Link>
       </div>
     </header>
