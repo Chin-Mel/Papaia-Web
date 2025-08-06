@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { FaUser, FaEnvelope, FaMapMarkerAlt, FaCamera } from "react-icons/fa";
 import "./Profile.css";
 import HeaderMain from "../../components/Header/HeaderMain";
+import defaultUser from "../../assets/default-user.png";
 
 function Profile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const [profileImage, setProfileImage] = useState(
-    "https://via.placeholder.com/80"
-  );
+  const [profileImage, setProfileImage] = useState(defaultUser);
   const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
@@ -85,6 +84,8 @@ function Profile() {
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
 
+      if (!token || !userId) return;
+
       try {
         const res = await fetch(
           `https://papaiaapi.onrender.com/api/user/${userId}`,
@@ -98,10 +99,11 @@ function Profile() {
         if (!res.ok) throw new Error("User not found");
 
         const user = await res.json();
-        if (user.profilePicture) {
-          setProfileImage(user.profilePicture);
-          localStorage.setItem("profileImage", user.profilePicture);
-        }
+        setUserData(user);
+
+        const profilePic = user.profilePicture || defaultUser;
+        setProfileImage(profilePic);
+        localStorage.setItem("profileImage", profilePic);
       } catch (err) {
         console.error("Failed to fetch profile:", err);
       }
@@ -164,7 +166,11 @@ function Profile() {
             <InputField icon={<FaEnvelope />} value={userData.email} />
             <InputField
               icon={<FaMapMarkerAlt />}
-              value={`${userData.address?.street}, ${userData.address?.barangay}, ${userData.address?.municipality}, ${userData.address?.province}, ${userData.address?.zipCode}`}
+              value={`${userData.address?.street || ""}, ${
+                userData.address?.barangay || ""
+              }, ${userData.address?.municipality || ""}, ${
+                userData.address?.province || ""
+              }, ${userData.address?.zipCode || ""}`}
             />
           </div>
 
