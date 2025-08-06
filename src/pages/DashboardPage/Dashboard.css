@@ -273,7 +273,6 @@ body, html {
   background-color: #f0f0f0;
 }
 
-/* Cancel and Confirm Buttons for Delete Popup */
 .cancel-button, .confirm-button {
   padding: 0.5rem 1.2rem;
   border-radius: 6px;
@@ -282,19 +281,16 @@ body, html {
   border: none;
 }
 
-/* Cancel Button */
 .cancel-button {
   background-color: #ccc;
   color: #333;
 }
 
-/* Confirm (Delete) Button */
 .confirm-button {
   background-color: #c0392b;
   color: white;
 }
 
-/* Optional: Slight animation on hover */
 .cancel-button:hover {
   background-color: #bbb;
 }
