@@ -12,7 +12,12 @@ function Profile() {
 
     try {
       const decoded = jwtDecode(token);
-      const userId = decoded.id;
+      console.log("Decoded Token:", decoded);
+
+      const userId = decoded.id || decoded.user?.id || decoded._id; // adjust based on your token structure
+      if (!userId) {
+        throw new Error("User ID not found in token");
+      }
 
       fetch(`https://papaiaapi.onrender.com/api/user/${userId}`, {
         method: "GET",
@@ -21,11 +26,21 @@ function Profile() {
         },
       })
         .then((res) => {
-          if (!res.ok) throw new Error("User not found");
+          if (!res.ok) {
+            return res.json().then((err) => {
+              console.error("API Error:", err);
+              throw new Error(err.message || "User not found");
+            });
+          }
           return res.json();
         })
-        .then((data) => setUser(data))
-        .catch((err) => console.error("Failed to fetch user:", err));
+        .then((data) => {
+          console.log("User fetched:", data);
+          setUser(data);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch user:", err);
+        });
     } catch (err) {
       console.error("Invalid token:", err);
     }
