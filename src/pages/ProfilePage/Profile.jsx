@@ -2,7 +2,7 @@ import React from "react";
 import "./Profile.css";
 import HeaderMain from "../../components/Header/HeaderMain";
 
-const Profile = () => {
+function Profile() {
   return (
     <HeaderMain>
       <div className="container">
@@ -54,6 +54,6 @@ const Profile = () => {
       </div>
     </HeaderMain>
   );
-};
+}
 
 export default Profile;
