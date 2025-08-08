@@ -49,8 +49,20 @@ function Dashboard() {
           }
         );
         const data = await res.json();
-        if (res.ok && data.status === "success") setFarms(data.farms);
-        else console.error("Fetch failed:", data.message);
+
+        if (res.ok && data.status === "success") {
+          console.log("Fetched farms:", data.farms);
+
+          // ✅ Map _id → id
+          const normalizedFarms = data.farms.map((f) => ({
+            id: f._id, // 👈 critical fix
+            farmName: f.farmName,
+            location: f.location,
+          }));
+          setFarms(normalizedFarms);
+        } else {
+          console.error("Fetch failed:", data.message);
+        }
       } catch (err) {
         console.error("Error:", err);
       }
