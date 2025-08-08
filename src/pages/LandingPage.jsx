@@ -7,9 +7,9 @@ function LandingPage() {
       {/* Hero Section */}
       <div
         className="relative h-screen bg-cover bg-center"
-        style={{ backgroundImage: `url('/your-papaya-bg.jpg')` }}
+        style={{ backgroundImage: `url('/papaia1.png')` }} // ✅ CORRECT path
       >
-        <div className="absolute inset-0 bg-black bg-opacity-40 flex flex-col justify-between">
+        <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between">
           {/* Navbar */}
           <div className="flex justify-between items-center px-8 py-4">
             <div className="flex items-center gap-2">
@@ -70,8 +70,8 @@ function LandingPage() {
             <FaStethoscope className="text-green-500 text-4xl mb-4" />
             <h4 className="text-lg font-semibold">Disease Identification</h4>
             <p className="text-sm text-gray-600 mt-2">
-              Real-time disease identification with suggested treatments for
-              disease control and maximize yield
+              Real-time disease identification with suggested treatments to
+              control disease and maximize yield
             </p>
           </div>
           <div className="flex flex-col items-center">
