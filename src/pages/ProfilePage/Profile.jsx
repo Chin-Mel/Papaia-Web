@@ -5,48 +5,44 @@ import HeaderMain from "../../components/Header/HeaderMain";
 const Profile = () => {
   return (
     <HeaderMain>
-      <div className="container">
-        <h1>Profile</h1>
+      <div className="profile-container">
+        <h1 className="profile-heading">Profile</h1>
         <div className="profile-card">
-          <div className="top-section">
-            <img
-              src="/assets/default-user.png"
-              alt="Profile"
-              className="avatar"
-            />
-            <div className="user-info">
-              <h2>Juan Dela Cruz</h2>
-              <p>@juandelacruz</p>
+          <button className="deactivate-button">Deactivate Account</button>
+          <div className="profile-header">
+            <div className="profile-image-container">
+              <img
+                src="/assets/default-user.png"
+                alt="Profile"
+                className="profile-image"
+              />
+              <span className="camera-icon">📷</span>
             </div>
-            <button className="deactivate">Deactivate Account</button>
+            <div>
+              <div className="profile-name">Juan Dela Cruz</div>
+              <div className="profile-username">@juandelacruz</div>
+            </div>
           </div>
 
           <form className="profile-form">
-            <div className="form-row">
-              <input type="text" placeholder="Dela Cruz" />
-              <input type="text" placeholder="Juan" />
-            </div>
-            <div className="form-row">
-              <input type="text" placeholder="Middle Name" />
-              <input type="text" placeholder="Suffix" />
-            </div>
-            <div className="form-row">
-              <input type="text" placeholder="@juandelacruz" />
-              <input
-                type="email"
-                placeholder="juandelacruz@gmail.com"
-                disabled
-              />
-            </div>
-            <div className="form-row full">
-              <input type="text" placeholder="Full Address" />
-            </div>
+            <input type="text" placeholder="Dela Cruz" className="input" />
+            <input type="text" placeholder="Juan" className="input" />
+            <input type="text" placeholder="Middle Name" className="input" />
+            <input type="text" placeholder="Suffix" className="input" />
+            <input type="text" placeholder="@juandelacruz" className="input" />
+            <input
+              type="email"
+              placeholder="juandelacruz@gmail.com"
+              className="input"
+              disabled
+            />
+            <input type="text" placeholder="Full Address" className="input" />
           </form>
 
-          <div className="button-group">
-            <button className="logout">Logout</button>
-            <button className="change">Change Password</button>
-            <button className="edit">Edit Profile</button>
+          <div className="profile-buttons">
+            <button className="logout-button">Logout</button>
+            <button className="password-button">Change Password</button>
+            <button className="edit-button">Edit Profile</button>
           </div>
         </div>
       </div>
