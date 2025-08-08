@@ -158,6 +158,21 @@ function Dashboard() {
     setDeletePopupVisible(false);
     setSelectedFarm(null);
   };
+  const handleEditClick = (farm) => {
+    console.log("Editing farm:", farm);
+    setSelectedFarm(farm);
+    setFarmName(farm.farmName);
+    setFarmLocation(farm.location);
+    setEditPopupVisible(true);
+    setActiveMenuIndex(null);
+  };
+
+  const handleDeleteClick = (farm) => {
+    console.log("Deleting farm:", farm);
+    setSelectedFarm(farm);
+    setDeletePopupVisible(true);
+    setActiveMenuIndex(null);
+  };
 
   return (
     <>
@@ -227,28 +242,10 @@ function Dashboard() {
                   {/* Dropdown menu */}
                   {activeMenuIndex === i && (
                     <div className="farm-menu-dropdown">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("Edit clicked:", farm); // Add this
-                          setSelectedFarm(farm);
-                          setFarmName(farm.farmName);
-                          setFarmLocation(farm.location);
-                          setEditPopupVisible(true);
-                          setActiveMenuIndex(null); // CLOSE MENU
-                        }}
-                      >
+                      <button onClick={() => handleEditClick(farm)}>
                         ✏️ Edit
                       </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          console.log("Edit clicked:", farm); // Add this
-                          setSelectedFarm(farm);
-                          setDeletePopupVisible(true);
-                          setActiveMenuIndex(null); // CLOSE MENU
-                        }}
-                      >
+                      <button onClick={() => handleDeleteClick(farm)}>
                         🗑️ Delete
                       </button>
                     </div>
