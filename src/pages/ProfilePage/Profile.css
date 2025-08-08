@@ -165,30 +165,3 @@
 .profile-image-container:hover .camera-icon {
   background-color: #22c55e;
 }
-
-.logout {
-  background: #a1c94d;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.change {
-  background: #a57441;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.edit {
-  background: #007a3d;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 8px;
-  cursor: pointer;
-}
