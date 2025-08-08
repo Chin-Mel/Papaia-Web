@@ -1,53 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./Profile.css";
 import HeaderMain from "../../components/Header/HeaderMain";
-import { jwtDecode } from "jwt-decode";
 
 function Profile() {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      const decoded = jwtDecode(token);
-      console.log("Decoded Token:", decoded);
-
-      const userId = decoded.id || decoded.user?.id || decoded._id; // adjust based on your token structure
-      if (!userId) {
-        throw new Error("User ID not found in token");
-      }
-
-      fetch(`https://papaiaapi.onrender.com/api/user/${userId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => {
-          if (!res.ok) {
-            return res.json().then((err) => {
-              console.error("API Error:", err);
-              throw new Error(err.message || "User not found");
-            });
-          }
-          return res.json();
-        })
-        .then((data) => {
-          console.log("User fetched:", data);
-          setUser(data);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch user:", err);
-        });
-    } catch (err) {
-      console.error("Invalid token:", err);
-    }
-  }, []);
-
-  if (!user) return <p>Loading user profile...</p>;
-
   return (
     <>
       <HeaderMain />

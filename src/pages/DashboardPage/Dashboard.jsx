@@ -159,33 +159,6 @@ function Dashboard() {
     }
   };
 
-  const closeEditPopup = () => {
-    setEditPopupVisible(false);
-    setSelectedFarm(null);
-    setFarmName("");
-    setFarmLocation("");
-  };
-
-  const closeDeletePopup = () => {
-    setDeletePopupVisible(false);
-    setSelectedFarm(null);
-  };
-  const handleEditClick = (farm) => {
-    console.log("Editing farm:", farm);
-    setSelectedFarm(farm);
-    setFarmName(farm.farmName);
-    setFarmLocation(farm.location);
-    setEditPopupVisible(true);
-    setActiveMenuIndex(null);
-  };
-
-  const handleDeleteClick = (farm) => {
-    console.log("Deleting farm:", farm);
-    setSelectedFarm(farm);
-    setDeletePopupVisible(true);
-    setActiveMenuIndex(null);
-  };
-
   return (
     <>
       <HeaderMain />
