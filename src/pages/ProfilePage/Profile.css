@@ -1,167 +1,117 @@
-.profile-container {
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-  font-family: 'Segoe UI', sans-serif;
+.container {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 0 20px;
 }
 
-.profile-heading {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+h1 {
+  font-size: 28px;
+  margin-bottom: 20px;
 }
 
 .profile-card {
-  background-color: #ffffff;
-  border-radius: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  position: relative;
 }
 
-.deactivate-button {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  background-color: #f97316;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.4rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  font-size: 0.9rem;
-}
-
-.deactivate-button:hover {
-  background-color: #ea580c;
-}
-
-.profile-header {
+.top-section {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
-.profile-image {
+.avatar {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-.profile-name {
-  font-size: 1.25rem;
-  font-weight: 600;
+.user-info {
+  flex: 1;
+  min-width: 150px;
 }
 
-.profile-username {
-  color: #6b7280;
+.user-info h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.user-info p {
+  margin: 5px 0 0;
+  color: #444;
+}
+
+.deactivate {
+  background: orange;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .profile-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  margin-bottom: 2rem;
+  margin-top: 30px;
 }
 
-.input-field {
-  position: relative;
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
-.input-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #6b7280;
-  pointer-events: none;
-}
-
-.input {
-  width: 100%;
-  padding: 0.5rem 0.75rem;
-  padding-left: 0.75rem;
-  border: 2px solid #4ade80;
-  border-radius: 0.4rem;
-  font-size: 0.9rem;
+.form-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid green;
+  border-radius: 4px;
   outline: none;
-  transition: border-color 0.3s ease;
 }
 
-.input-with-icon {
-  padding-left: 2.5rem;
+input[disabled] {
+  background: #f2f2f2;
+  color: #888;
 }
 
-.input:focus {
-  border-color: #22c55e;
+.form-row.full input {
+  width: 100%;
 }
 
-.profile-buttons {
+.button-group {
   display: flex;
-  justify-content: center;
-  gap: 1rem;
+  justify-content: space-between;
+  margin-top: 30px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
-.profile-buttons button {
-  padding: 0.5rem 1.5rem;
+.logout {
+  background: #a1c94d;
+  color: white;
   border: none;
-  border-radius: 0.4rem;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.logout-button {
-  background-color: #84cc16;
-}
-
-.logout-button:hover {
-  background-color: #65a30d;
-}
-
-.password-button {
-  background-color: #8c6239;
-}
-
-.password-button:hover {
-  background-color: #a9744d;
-}
-
-.edit-button {
-  background-color: #065f46;
-}
-
-.edit-button:hover {
-  background-color: #064e3b;
-}
-
-.profile-image-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
+  padding: 10px 24px;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-.camera-icon {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  background-color: #4ade80;
+.change {
+  background: #a57441;
   color: white;
-  border-radius: 50%;
-  padding: 0.3rem;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.profile-image-container:hover .camera-icon {
-  background-color: #22c55e;
+.edit {
+  background: #007a3d;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 8px;
+  cursor: pointer;
 }
