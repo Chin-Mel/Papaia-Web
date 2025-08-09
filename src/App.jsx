@@ -1,5 +1,6 @@
 // App.jsx
 import { Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
 import Welcome from "./pages/WelcomePage/Welcome";
 import Login from "./pages/LoginPage/Login";
 import Register from "./pages/RegisterPage/Register";
@@ -20,10 +21,34 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verify-otp" element={<Verification />} />
       <Route path="/new-password" element={<NewPassword />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/farmdashboard/:farmId" element={<FarmDashboard />} />
+
+      {/* Protected routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/farmdashboard/:farmId"
+        element={
+          <ProtectedRoute>
+            <FarmDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="/about" element={<About />} />
-      <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }
