@@ -1,103 +1,67 @@
-// OtpVerificationPage.jsx
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { FaCheckCircle, FaRedo } from "react-icons/fa";
-import Header from "../components/Header/HeaderStart";
+// src/pages/NewPasswordPage/NewPasswordPage.jsx
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Header from "../../components/Header/HeaderStart";
+import { FaSignInAlt } from "react-icons/fa";
 
-export default function OtpVerificationPage() {
-  const navigate = useNavigate();
+export default function NewPasswordPage() {
   const location = useLocation();
-  const { email } = location.state || {};
+  const navigate = useNavigate();
+  const userId = location.state?.userId || ""; // ✅ From Verify OTP page
 
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [countdown, setCountdown] = useState(60);
-  const [isResending, setIsResending] = useState(false);
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  // Countdown for resend
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
+  const validateForm = () => {
+    if (!password || !confirmPassword) {
+      setError("All fields are required.");
+      return false;
     }
-  }, [countdown]);
-
-  const handleChange = (value, index) => {
-    if (/^[0-9]?$/.test(value)) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-      // Auto-focus next input
-      if (value && index < otp.length - 1) {
-        document.getElementById(`otp-${index + 1}`).focus();
-      }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return false;
     }
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return false;
+    }
+    return true;
   };
 
-  const handleVerify = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setSuccessMessage("");
+    setSuccess("");
 
-    const enteredOtp = otp.join("");
-    if (enteredOtp.length !== 6) {
-      setError("Please enter the full 6-digit OTP.");
-      return;
-    }
+    if (!validateForm()) return;
 
     try {
+      setLoading(true);
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/verify-otp",
+        "https://papaiaapi.onrender.com/api/reset-password",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp: enteredOtp }),
+          body: JSON.stringify({ userId, newPassword: password }),
         }
       );
 
       const data = await response.json();
-
       if (response.ok) {
-        setSuccessMessage("OTP verified successfully!");
-        // Navigate to new password page with userId from backend
-        navigate("/new-password", { state: { userId: data.userId } });
+        setSuccess("Password updated successfully. Redirecting to login...");
+        setTimeout(() => navigate("/login"), 2000);
       } else {
-        setError(data.message || "Invalid OTP. Please try again.");
+        setError(data.message || "Failed to update password.");
       }
     } catch (err) {
-      console.error("OTP verification error:", err);
+      console.error("Error updating password:", err);
       setError("Failed to connect to server.");
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleResend = async () => {
-    if (countdown > 0 || isResending) return;
-
-    setIsResending(true);
-    setError("");
-    try {
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/forgot-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        setSuccessMessage("A new OTP has been sent to your email.");
-        setCountdown(60);
-      } else {
-        setError(data.message || "Failed to resend OTP.");
-      }
-    } catch (err) {
-      console.error("Resend OTP error:", err);
-      setError("Failed to connect to server.");
-    }
-    setIsResending(false);
   };
 
   return (
@@ -110,7 +74,6 @@ export default function OtpVerificationPage() {
         <div className="absolute inset-0 backdrop-blur-sm"></div>
 
         <div className="relative z-10 w-full max-w-md rounded-2xl shadow-lg overflow-hidden">
-          {/* Header */}
           <div
             className="flex flex-col items-center justify-center text-white p-6"
             style={{
@@ -118,64 +81,59 @@ export default function OtpVerificationPage() {
             }}
           >
             <div className="bg-white rounded-full p-4 shadow-lg mb-4">
-              <FaCheckCircle className="w-8 h-8 text-orange-500" />
+              <FaSignInAlt className="w-8 h-8 text-orange-500" />
             </div>
-            <h2 className="text-xl font-bold">Verify OTP</h2>
+            <h2 className="text-xl font-bold">Set New Password</h2>
             <p className="text-sm text-center opacity-90 mt-1">
-              Enter the 6-digit OTP sent to {email}
+              Enter your new password below.
             </p>
           </div>
 
-          {/* Form */}
-          <div className="bg-white p-6">
-            <form
-              onSubmit={handleVerify}
-              className="flex flex-col items-center gap-4"
+          <form onSubmit={handleSubmit} className="bg-white p-6">
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            {success && (
+              <p className="text-green-500 text-sm mb-2">{success}</p>
+            )}
+
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter new password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border-2 mt-1 border-[#E5E7EB] placeholder-[#ADAEBC] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+
+            <label className="block text-sm font-medium text-gray-700 mt-4 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              placeholder="Confirm new password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full px-4 py-2 border-2 mt-1 border-[#E5E7EB] placeholder-[#ADAEBC] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-6 w-full flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow disabled:opacity-50"
+              style={{
+                backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
+              }}
             >
-              <div className="flex gap-2">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    id={`otp-${index}`}
-                    type="text"
-                    value={digit}
-                    onChange={(e) => handleChange(e.target.value, index)}
-                    maxLength={1}
-                    className="w-12 h-12 text-center text-lg border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
-                  />
-                ))}
-              </div>
-
-              {error && <p className="text-red-500 text-sm">{error}</p>}
-              {successMessage && (
-                <p className="text-green-500 text-sm">{successMessage}</p>
+              {loading ? (
+                "Updating..."
+              ) : (
+                <>
+                  <FaSignInAlt /> Update Password
+                </>
               )}
-
-              <button
-                type="submit"
-                className="mt-4 w-full text-white font-medium py-2 rounded-md shadow"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to right, #F0820B, #F97316)",
-                }}
-              >
-                Verify OTP
-              </button>
-
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={countdown > 0}
-                className={`flex items-center gap-2 mt-2 text-sm ${
-                  countdown > 0
-                    ? "text-gray-400 cursor-not-allowed"
-                    : "text-orange-500"
-                }`}
-              >
-                <FaRedo /> Resend OTP {countdown > 0 && `(${countdown}s)`}
-              </button>
-            </form>
-          </div>
+            </button>
+          </form>
         </div>
       </div>
     </>
