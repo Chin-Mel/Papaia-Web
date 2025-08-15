@@ -5,17 +5,18 @@
     <link rel="icon" type="image/png" href="/papaia-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Content Security Policy -->
     <meta
       http-equiv="Content-Security-Policy"
       content="
-    default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com;
-    font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data:;
-    connect-src 'self' https://papaiaapi.onrender.com;
-  "
+        default-src 'self' 'unsafe-inline' 'unsafe-eval' data: https:;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data:;
+        connect-src 'self' https://papaiaapi.onrender.com;
+      "
     />
 
     <!-- Google Fonts -->
@@ -30,6 +31,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- No need to manually add <script src="/src/main.jsx"> — Vite injects it automatically -->
+    <!-- Vite automatically injects main.jsx, do not manually add -->
   </body>
 </html>
