@@ -4,8 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/LoginPage/Login";
 import Register from "./pages/RegisterPage/Register";
-import ForgotPasswordPage from "./pages/ForgotPassword";
-
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import OtpVerificationPage from "./pages/OtpVerificationPage";
 import NewPasswordPage from "./pages/NewPasswordPage";
 import Dashboard from "./pages/DashboardPage/Dashboard";
