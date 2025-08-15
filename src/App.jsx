@@ -9,7 +9,6 @@ import OtpVerificationPage from "./pages/OtpVerificationPage";
 import NewPasswordPage from "./pages/NewPasswordPage";
 import Dashboard from "./pages/DashboardPage/Dashboard";
 import FarmDashboard from "./pages/FarmDashboardPage/FarmDashboard";
-import AboutPage from "./pages/AboutPage";
 import Profile from "./pages/ProfilePage/Profile";
 
 function App() {
@@ -44,14 +43,6 @@ function App() {
         element={
           <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/about"
-        element={
-          <ProtectedRoute>
-            <AboutPage />
           </ProtectedRoute>
         }
       />
