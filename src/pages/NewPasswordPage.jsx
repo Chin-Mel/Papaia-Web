@@ -1,4 +1,3 @@
-// src/pages/NewPasswordPage/NewPasswordPage.jsx
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import HeaderStart from "../../components/Header/HeaderStart";
