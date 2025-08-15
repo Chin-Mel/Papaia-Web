@@ -1,7 +1,7 @@
 // src/pages/NewPasswordPage/NewPasswordPage.jsx
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../../components/Header/HeaderStart";
+import HeaderStart from "../../components/Header/HeaderStart";
 import { FaSignInAlt } from "react-icons/fa";
 
 export default function NewPasswordPage() {
@@ -66,7 +66,7 @@ export default function NewPasswordPage() {
 
   return (
     <>
-      <Header />
+      <HeaderStart />
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
         style={{ backgroundImage: "url('/hero-background.png')" }}
