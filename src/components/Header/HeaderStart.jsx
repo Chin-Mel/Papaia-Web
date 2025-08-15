@@ -1,7 +1,7 @@
 import { useState } from "react";
 import papaiaLogo from "../../assets/papaia-logo.png"; // Make sure this path is correct
 
-export default function Header() {
+export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
