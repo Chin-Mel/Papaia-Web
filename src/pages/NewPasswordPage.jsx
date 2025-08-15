@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import HeaderStart from "../../components/Header/HeaderStart";
+import HeaderStart from "../components/Header/HeaderStart";
 import { FaSignInAlt } from "react-icons/fa";
 
 export default function NewPasswordPage() {
