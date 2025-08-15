@@ -1,4 +1,3 @@
-import "./HeaderMain.css";
 import logo from "../../assets/papaia-logo.png";
 import bellIcon from "../../assets/notif-icon.png";
 import defaultProfileImage from "../../assets/default-user.png";
