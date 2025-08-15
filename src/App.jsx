@@ -4,9 +4,10 @@ import ProtectedRoute from "./ProtectedRoute";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/LoginPage/Login";
 import Register from "./pages/RegisterPage/Register";
-import ForgotPassword from "./pages/ForgotPasswordPage/ForgotPassword";
-import Verification from "./pages/VerificationPage/Verification";
-import NewPassword from "./pages/NewPasswordPage/NewPassword";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+
+import OtpVerificationPage from "./pages/OtpVerificationPage";
+import NewPasswordPage from "./pages/NewPasswordPage";
 import Dashboard from "./pages/DashboardPage/Dashboard";
 import FarmDashboard from "./pages/FarmDashboardPage/FarmDashboard";
 import AboutPage from "./pages/AboutPage";
@@ -18,9 +19,9 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/sign-in" element={<Login />} />
       <Route path="/sign-up" element={<Register />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/verify-otp" element={<Verification />} />
-      <Route path="/new-password" element={<NewPassword />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/otp-verification" element={<OtpVerificationPage />} />
+      <Route path="/new-password" element={<NewPasswordPage />} />
 
       {/* Protected routes */}
       <Route

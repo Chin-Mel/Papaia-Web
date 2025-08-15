@@ -5,7 +5,7 @@ import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
 
-export default function ForgotPasswordPage() {
+export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [emailFormatError, setEmailFormatError] = useState("");
