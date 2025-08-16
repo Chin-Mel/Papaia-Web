@@ -66,10 +66,12 @@ export default function Index() {
             harvest smarter, and cultivate the future of sustainable farming.
           </p>
 
-          <button className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] text-white px-12 py-4 rounded-full text-lg font-semibold hover:shadow-2xl transition-shadow inline-flex items-center gap-3">
-            Get Started
-            <ArrowIcon />
-          </button>
+          <Link to="/sign-up">
+            <button className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] text-white px-12 py-4 rounded-full text-lg font-semibold hover:shadow-2xl transition-shadow inline-flex items-center gap-3">
+              Get Started
+              <ArrowIcon />
+            </button>
+          </Link>
         </div>
       </section>
 

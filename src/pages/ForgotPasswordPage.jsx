@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"; // ✅ Import this
 import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
+import heroBg from "../assets/hero-background.png";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -57,7 +58,7 @@ export default function ForgotPasswordPage() {
       <Header />
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
-        style={{ backgroundImage: "url('/hero-background.png')" }}
+        style={{ backgroundImage: `url(${heroBg})` }}
       >
         <div className="absolute inset-0 backdrop-blur-sm"></div>
 
