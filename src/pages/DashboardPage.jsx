@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
-import AddFarmModal from "../components/AddFarmModal";
+import AddFarmModal from "../components/Popups/AddFarmModal";
 
 export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
