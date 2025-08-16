@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
-import Header from "../components/Header/HeaderStart-signin";
+import HeaderStart from "../components/Header/HeaderStart";
 
 // Import all necessary images from the 'assets' folder
 import BackgroundImage from "../assets/hero-background.png";
@@ -20,7 +20,7 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header />
+      <HeaderStart />
 
       <main className="flex-1 relative">
         <div

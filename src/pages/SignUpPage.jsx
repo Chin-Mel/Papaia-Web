@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import Header from "../components/Header/HeaderStart";
+import HeaderStart from "../components/Header/HeaderStart";
 import Footer from "../components/Footer/FooterMain";
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
@@ -54,7 +54,7 @@ export default function SignUp() {
       />
 
       {/* Header */}
-      <Header />
+      <HeaderStart />
 
       {/* Main Content */}
       <main className="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">

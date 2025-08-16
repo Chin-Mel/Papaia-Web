@@ -9,6 +9,7 @@ export default function HeaderStart() {
     { id: "home", label: "Home", href: "/" },
     { id: "about", label: "About", href: "/about" },
     { id: "signin", label: "Sign In", href: "/sign-in" },
+    { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
   const handleNavClick = (navId) => {
