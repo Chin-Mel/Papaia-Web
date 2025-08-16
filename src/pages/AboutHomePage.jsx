@@ -181,4 +181,4 @@ const AboutHomePage = () => {
   );
 };
 
-export default AboutPage;
+export default AboutHomePage;
