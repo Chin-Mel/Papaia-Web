@@ -1,28 +1,32 @@
 import HeaderStart from "../components/Header/HeaderStart";
 import Footer from "../components/Footer/FooterMain";
+import ebordaImage from "../assets/eborda.png";
+import estomoImage from "../assets/estomo.jpg";
+import duarteImage from "../assets/duarte.png";
+import igotImage from "../assets/igot.png";
 
 const developers = [
   {
     name: "John Michael Eborda",
-    image: "/src/assets/eborda.png",
+    image: ebordaImage,
     description:
       "John Michael Eborda is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, currently serving as the Project Manager for the Papaia App development team. As a driven and organized individual, John Michael takes charge of overseeing the entire project lifecycle—from planning and scheduling to coordination and execution. He ensures that milestones are met on time, team collaboration remains smooth, and deliverables adhere to the scope and quality standards of the capstone project.\nBeyond his managerial responsibilities, John Michael also plays a hands-on role in the technical development of the Papaia App. He contributes to coding key features, troubleshooting issues, and integrating functional components of the system. His dual role as both manager and developer allows him to bridge the gap between planning and execution, ensuring that the vision of the Papaia App is realized both strategically and technically.\nHis leadership, dedication, and technical insight are instrumental in driving the project forward, making him a vital asset to the team.",
   },
   {
     name: "Erika Estomo",
-    image: "/src/assets/estomo.jpg",
+    image: estomoImage,
     description:
       "Erika Estomo is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, serving as the Technical Writer of the Papaia App development team. She is responsible for creating and maintaining clear, accurate, and well-structured documentation, including user manuals, system specifications, and project reports. Erika ensures that all written materials effectively convey the app's features, purpose, and technical workflows to both users and stakeholders.\nAside from her documentation duties, Erika also contributes to the web development of the Papaia App. She assists in building and refining the web-based interface, testing features, and supporting front-end improvements. Her dual strength in communication and technical implementation makes her a key bridge between design, development, and end-user clarity—making her an essential asset in both the writing and web development aspects of the project.",
   },
   {
     name: "Francine Mecolle Duarte",
-    image: "/src/assets/duarte.png",
+    image: duarteImage,
     description:
       "Francine Mecolla Duarte is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, serving as the Front-End Developer of the Papaia App development team. She is in charge of building the user interface of the application, ensuring that the design is responsive, intuitive, and accessible across devices. Her work focuses on translating design concepts into interactive, functional components that provide a seamless user experience for both farmers and administrators.\nIn addition to front-end development, Francine also contributes ideas to the app's user flow, design consistency, and usability improvements. Her attention to detail and understanding of user needs play a key role in making the Papaia App not only visually appealing but also easy to use in real-world agricultural settings.",
   },
   {
     name: "Went Ruzel Igot",
-    image: "/src/assets/igot.png",
+    image: igotImage,
     description:
       "Went is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, and the Programmer and Back-End Developer of the Papaia App development team. He is primarily responsible for developing and maintaining the server-side logic, database structures, and core functionalities that power both the mobile and web versions of the app.\nWent ensures that user actions—such as scanning images, retrieving results, saving logs, and managing user accounts—are handled efficiently and securely behind the scenes. He also works closely with the front-end developers to integrate the user interface with the system's logic, enabling real-time communication between the app and its backend services. His strong technical skills and attention to system performance make him the backbone of the Papaia App's functionality, ensuring that it runs reliably and responds accurately to user needs.",
   },
