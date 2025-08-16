@@ -7,7 +7,7 @@ import SignUp from "./pages/SignUpPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import OtpVerificationPage from "./pages/OtpVerificationPage.jsx";
 import NewPasswordPage from "./pages/NewPasswordPage.jsx";
-import Dashboard from "./pages/DashboardPages.jsx";
+import Dashboard from "./pages/DashboardPage.jsx";
 
 function App() {
   return (
