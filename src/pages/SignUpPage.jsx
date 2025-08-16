@@ -419,7 +419,7 @@ export default function SignUp() {
                 <p className="text-gray-600 font-poppins">
                   Already have an account?{" "}
                   <Link
-                    to="/signin"
+                    to="/sign-in"
                     className="text-[#FF8C42] hover:underline font-medium"
                   >
                     Sign in here

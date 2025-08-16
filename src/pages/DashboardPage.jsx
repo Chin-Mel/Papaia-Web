@@ -10,8 +10,11 @@ import {
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
+import AddFarmModal from "../components/AddFarmModal";
 
 export default function DashboardPage() {
+  const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+
   // Example data for activities
   const activities = [
     {
@@ -117,6 +120,14 @@ export default function DashboardPage() {
     },
   ];
 
+  const handleAddFarm = () => {
+    setShowAddFarmModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddFarmModal(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
@@ -216,7 +227,10 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
-                <button className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md">
+                <button
+                  onClick={handleAddFarm}
+                  className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                >
                   <Plus size={16} />
                   Add Farm
                 </button>
@@ -267,6 +281,9 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
+
+      {/* Add Farm Modal */}
+      {showAddFarmModal && <AddFarmModal onClose={handleCloseModal} />}
 
       <Footer />
     </div>
