@@ -58,7 +58,7 @@ export default function SignUp() {
 
       {/* Main Content */}
       <main className="relative z-10 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-6xl backdrop-blur-md bg-white/20 rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+        <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
           {/* Form Header */}
           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-8 text-center text-white">
             <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-white rounded-full">
@@ -67,27 +67,27 @@ export default function SignUp() {
             <h1 className="text-2xl font-bold font-poppins mb-2">
               Papaya Farm
             </h1>
-            <p className="text-papaya-cream text-sm">
+            <p className="text-white/80 text-sm">
               Welcome back to your farm dashboard
             </p>
           </div>
 
           {/* Form Content */}
           <div className="p-8 bg-white">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
               {/* Row 1: Name Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {/* Last Name */}
                 <div className="space-y-2">
                   <label
                     htmlFor="lastName"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={UserIcon} alt="User" className="w-3 h-3" />
                     Last Name
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="lastName"
                     placeholder="Enter last name"
                     value={formData.lastName}
@@ -100,13 +100,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="firstName"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={UserIcon} alt="User" className="w-3 h-3" />
                     First Name
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="firstName"
                     placeholder="Enter first name"
                     value={formData.firstName}
@@ -119,13 +119,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="middleName"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={UserIcon} alt="User" className="w-3 h-3" />
                     Middle Name
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="middleName"
                     placeholder="Enter middle name"
                     value={formData.middleName}
@@ -138,13 +138,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="suffix"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={TagIcon} alt="Tag" className="w-3 h-3" />
                     Suffix
                   </label>
                   <select
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00712D] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     onChange={(e) =>
                       handleInputChange("suffix", e.target.value)
                     }
@@ -161,7 +161,7 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="dateOfBirth"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img
                       src={CalendarIcon}
@@ -171,7 +171,7 @@ export default function SignUp() {
                     Date of Birth
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="dateOfBirth"
                     placeholder="mm/dd/yyyy"
                     type="date"
@@ -189,13 +189,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="username"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={AtsignIcon} alt="User" className="w-3 h-3" />
                     Username
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="username"
                     placeholder="Choose username"
                     value={formData.username}
@@ -208,13 +208,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="email"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={MailIcon} alt="Mail" className="w-3 h-3" />
                     Email Address
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="email"
                     type="email"
                     placeholder="Enter email address"
@@ -226,13 +226,13 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="phoneNumber"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={PhoneIcon} alt="Phone" className="w-3 h-3" />
                     Phone Number
                   </label>
                   <input
-                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="phoneNumber"
                     type="tel"
                     placeholder="Enter phone number"
@@ -250,14 +250,14 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="password"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={LockIcon} alt="Lock" className="w-3 h-3" />
                     Password
                   </label>
                   <div className="relative">
                     <input
-                      className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter password"
@@ -291,14 +291,14 @@ export default function SignUp() {
                 <div className="space-y-2">
                   <label
                     htmlFor="confirmPassword"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-gray-700 font-poppins"
                   >
                     <img src={LockIcon} alt="Lock" className="w-3 h-3" />
                     Confirm Password
                   </label>
                   <div className="relative">
                     <input
-                      className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                      className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm password"
@@ -341,11 +341,11 @@ export default function SignUp() {
                   onChange={(e) =>
                     handleInputChange("agreeToTerms", e.target.checked)
                   }
-                  className="peer h-4 w-4 shrink-0 rounded-sm border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground border-2 border-black"
+                  className="peer h-4 w-4 shrink-0 rounded-sm border-2 border-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-[#00712D] data-[state=checked]:text-white"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-papaya-text-light font-poppins"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-gray-600 font-poppins"
                 >
                   I agree to the{" "}
                   <Link to="/terms" className="text-[#FF8C42] hover:underline">
@@ -365,7 +365,7 @@ export default function SignUp() {
               <div className="pt-4">
                 <button
                   type="submit"
-                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#F97316] px-6 py-3 font-poppins text-lg font-semibold text-white shadow-lg transition-colors duration-300 hover:bg-orange-600 disabled:pointer-events-none "
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#FF8C42] to-[#F97316] px-6 py-3 font-poppins text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:shadow-xl disabled:pointer-events-none disabled:opacity-50"
                   disabled={!formData.agreeToTerms}
                 >
                   <img
@@ -379,7 +379,7 @@ export default function SignUp() {
 
               {/* Sign In Link */}
               <div className="text-center pt-4">
-                <p className="text-papaya-text-light font-poppins">
+                <p className="text-gray-600 font-poppins">
                   Already have an account?{" "}
                   <Link
                     to="/signin"
