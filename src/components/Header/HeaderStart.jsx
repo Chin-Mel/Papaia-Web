@@ -3,6 +3,17 @@ import papaiaLogo from "../../assets/papaia-logo.png"; // Make sure this path is
 
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState("home");
+
+  const navItems = [
+    { id: "home", label: "Home", href: "/" },
+    { id: "about", label: "About", href: "/about" },
+    { id: "signin", label: "Sign In", href: "/sign-in" },
+  ];
+
+  const handleNavClick = (navId) => {
+    setActiveNav(navId);
+  };
 
   return (
     <header className="absolute top-0 left-0 right-0 z-50">
@@ -29,27 +40,41 @@ export default function HeaderStart() {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-7">
-            <a
-              href="/"
-              className="text-papaia-green-400 hover:text-papaia-green-500 transition-colors"
-            >
-              Home
-            </a>
-            <a
-              href="/about"
-              className="text-papaia-green-400 hover:text-papaia-green-500 transition-colors"
-            >
-              About
-            </a>
-            <a
-              href="/sign-in"
-              className="text-papaia-green-400 hover:text-papaia-green-500 transition-colors"
-            >
-              Sign In
-            </a>
-            {/* --- MODIFIED SIGN UP BUTTON (Desktop) --- */}
-            <button className="bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white px-6 py-2.5 rounded-full hover:shadow-lg transition-shadow">
+          <nav className="hidden lg:flex items-center gap-7 relative">
+            {/* Sliding indicator */}
+            <div
+              className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
+              style={{
+                width: "80px",
+                transform: `translateX(${
+                  activeNav === "home"
+                    ? "0px"
+                    : activeNav === "about"
+                    ? "87px"
+                    : activeNav === "signin"
+                    ? "174px"
+                    : "0px"
+                })`,
+              }}
+            />
+
+            {navItems.map((item, index) => (
+              <a
+                key={item.id}
+                href={item.href}
+                onClick={() => handleNavClick(item.id)}
+                className={`relative z-10 px-4 py-2 rounded-full transition-all duration-300 ${
+                  activeNav === item.id
+                    ? "text-white font-medium"
+                    : "text-papaia-green-400 hover:text-papaia-green-500"
+                }`}
+              >
+                {item.label}
+              </a>
+            ))}
+
+            {/* Sign Up Button */}
+            <button className="bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white px-6 py-2.5 rounded-full hover:shadow-lg transition-shadow ml-4">
               Sign Up
             </button>
           </nav>
@@ -81,16 +106,21 @@ export default function HeaderStart() {
         {isMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-white/20 p-4">
             <div className="flex flex-col gap-4">
-              <a href="/" className="text-papaia-green-400 py-2">
-                Home
-              </a>
-              <a href="/about" className="text-papaia-green-400 py-2">
-                About
-              </a>
-              <a href="/sign-in" className="text-papaia-green-400 py-2">
-                Sign In
-              </a>
-              {/* --- MODIFIED SIGN UP BUTTON (Mobile) --- */}
+              {navItems.map((item) => (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  className={`py-2 px-4 rounded-lg transition-all duration-300 ${
+                    activeNav === item.id
+                      ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
+                      : "text-papaia-green-400"
+                  }`}
+                  onClick={() => handleNavClick(item.id)}
+                >
+                  {item.label}
+                </a>
+              ))}
+              {/* Sign Up Button */}
               <button className="bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white px-6 py-2.5 rounded-full mt-2">
                 Sign Up
               </button>
