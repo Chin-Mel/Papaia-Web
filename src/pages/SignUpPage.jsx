@@ -47,7 +47,7 @@ export default function SignUp() {
     <div className="min-h-screen bg-gradient-to-br flex flex-col pt-20">
       {/* Background Image */}
       <div
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${BackgroundImage})`,
         }}
@@ -57,7 +57,7 @@ export default function SignUp() {
       <HeaderStart />
 
       {/* Main Content */}
-      <main className="relative z-10 flex items-center justify-center flex-1 px-4 py-12">
+      <main className="relative z-10 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-6xl backdrop-blur-md bg-white/20 rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
           {/* Form Header */}
           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-8 text-center text-white">
