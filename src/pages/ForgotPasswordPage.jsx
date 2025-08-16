@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
         className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
-        <div className="absolute inset-0 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 backdrop-blur-sm w-[750px] h-[550px]"></div>
 
         <div className="relative z-10 w-full max-w-md rounded-2xl shadow-lg overflow-hidden">
           <div
