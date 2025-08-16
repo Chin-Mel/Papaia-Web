@@ -168,17 +168,52 @@ export default function SignUp() {
                       alt="Calendar"
                       className="w-3 h-3"
                     />
-                    Date of Birth
+                    Date of Birth (Must be 18+)
                   </label>
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="dateOfBirth"
                     placeholder="mm/dd/yyyy"
                     type="date"
+                    max={(() => {
+                      const today = new Date();
+                      const maxDate = new Date(
+                        today.getFullYear() - 18,
+                        today.getMonth(),
+                        today.getDate()
+                      );
+                      return maxDate.toISOString().split("T")[0];
+                    })()}
                     value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      handleInputChange("dateOfBirth", e.target.value)
-                    }
+                    onChange={(e) => {
+                      const selectedDate = new Date(e.target.value);
+                      const today = new Date();
+                      const age =
+                        today.getFullYear() - selectedDate.getFullYear();
+                      const monthDiff =
+                        today.getMonth() - selectedDate.getMonth();
+
+                      if (
+                        monthDiff < 0 ||
+                        (monthDiff === 0 &&
+                          today.getDate() < selectedDate.getDate())
+                      ) {
+                        // If birthday hasn't occurred this year, subtract 1 from age
+                        if (age - 1 < 18) {
+                          alert(
+                            "You must be at least 18 years old to use this website."
+                          );
+                          return;
+                        }
+                      } else if (age < 18) {
+                        alert(
+                          "You must be at least 18 years old to use this website."
+                        );
+                        return;
+                      }
+
+                      handleInputChange("dateOfBirth", e.target.value);
+                    }}
                   />
                 </div>
               </div>
@@ -245,7 +280,7 @@ export default function SignUp() {
               </div>
 
               {/* Row 3: Password Fields */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Password */}
                 <div className="space-y-2">
                   <label
@@ -330,6 +365,8 @@ export default function SignUp() {
                     </button>
                   </div>
                 </div>
+                {/* Empty div to maintain grid alignment */}
+                <div></div>
               </div>
 
               {/* Terms Checkbox */}
