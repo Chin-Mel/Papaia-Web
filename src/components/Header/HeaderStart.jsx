@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import papaiaLogo from "../../assets/papaia-logo.png"; // Make sure this path is correct
 
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("home");
+  const location = useLocation();
 
   const navItems = [
     { id: "home", label: "Home", href: "/" },
@@ -11,6 +13,15 @@ export default function HeaderStart() {
     { id: "signin", label: "Sign In", href: "/sign-in" },
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
+
+  // Sync active nav with current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const currentNav = navItems.find((item) => item.href === currentPath);
+    if (currentNav) {
+      setActiveNav(currentNav.id);
+    }
+  }, [location.pathname]);
 
   const handleNavClick = (navId) => {
     setActiveNav(navId);
@@ -62,9 +73,9 @@ export default function HeaderStart() {
             />
 
             {navItems.map((item, index) => (
-              <a
+              <Link
                 key={item.id}
-                href={item.href}
+                to={item.href}
                 onClick={() => handleNavClick(item.id)}
                 className={`relative z-10 px-4 py-2 rounded-full transition-all duration-300 ${
                   activeNav === item.id
@@ -73,7 +84,7 @@ export default function HeaderStart() {
                 }`}
               >
                 {item.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -105,9 +116,9 @@ export default function HeaderStart() {
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-white/20 p-4">
             <div className="flex flex-col gap-4">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.id}
-                  href={item.href}
+                  to={item.href}
                   className={`py-2 px-4 rounded-lg transition-all duration-300 ${
                     activeNav === item.id
                       ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
@@ -116,7 +127,7 @@ export default function HeaderStart() {
                   onClick={() => handleNavClick(item.id)}
                 >
                   {item.label}
-                </a>
+                </Link>
               ))}
             </div>
           </div>
