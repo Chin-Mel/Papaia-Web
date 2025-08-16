@@ -1,10 +1,401 @@
-const SignUpPage = () => {
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import Header from "../components/Header/HeaderStart";
+import Footer from "../components/Footer/FooterMain";
+import BackgroundImage from "../assets/hero-background.png";
+import PapayaLogo from "../assets/papaia-logo.png";
+
+// Import all your icons from the assets folder
+import UserIcon from "../assets/user-icon.png";
+import CreateUserIcon from "../assets/create-user.png";
+import TagIcon from "../assets/tag-icon.png";
+import MailIcon from "../assets/mail-icon.png";
+import AtsignIcon from "../assets/atsign-icon.png";
+import LockIcon from "../assets/lock-icon.png";
+import EyeIcon from "../assets/eye-icon.png";
+import EyeOffIcon from "../assets/eye-off-icon.png";
+import CalendarIcon from "../assets/calendar-icon.png";
+import PhoneIcon from "../assets/phone-icon.png";
+
+export default function SignUp() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    lastName: "",
+    firstName: "",
+    middleName: "",
+    suffix: "",
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    dateOfBirth: "",
+    phoneNumber: "",
+    agreeToTerms: false,
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Form submitted:", formData);
+  };
+
   return (
-    <div>
-      <h1>Sign Up</h1>
-      {/* Your sign in form here */}
+    <div className="min-h-screen bg-gradient-to-br flex flex-col pt-20">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${BackgroundImage})`,
+        }}
+      />
+
+      {/* Header */}
+      <Header />
+
+      {/* Main Content */}
+      <main className="relative z-10 flex items-center justify-center min-h-[calc(100vh-80px)] px-4 py-12">
+        <div className="w-full max-w-6xl backdrop-blur-md bg-white/20 rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+          {/* Form Header */}
+          <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-8 text-center text-white">
+            <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center bg-white rounded-full">
+              <img src={PapayaLogo} alt="Papaia Logo" className="w-13 h-14" />
+            </div>
+            <h1 className="text-2xl font-bold font-poppins mb-2">
+              Papaya Farm
+            </h1>
+            <p className="text-papaya-cream text-sm">
+              Welcome back to your farm dashboard
+            </p>
+          </div>
+
+          {/* Form Content */}
+          <div className="p-8 bg-white">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Row 1: Name Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="lastName"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={UserIcon} alt="User" className="w-3 h-3" />
+                    Last Name
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="lastName"
+                    placeholder="Enter last name"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      handleInputChange("lastName", e.target.value)
+                    }
+                  />
+                </div>
+                {/* First Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="firstName"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={UserIcon} alt="User" className="w-3 h-3" />
+                    First Name
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="firstName"
+                    placeholder="Enter first name"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      handleInputChange("firstName", e.target.value)
+                    }
+                  />
+                </div>
+                {/* Middle Name */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="middleName"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={UserIcon} alt="User" className="w-3 h-3" />
+                    Middle Name
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="middleName"
+                    placeholder="Enter middle name"
+                    value={formData.middleName}
+                    onChange={(e) =>
+                      handleInputChange("middleName", e.target.value)
+                    }
+                  />
+                </div>
+                {/* Suffix */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="suffix"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={TagIcon} alt="Tag" className="w-3 h-3" />
+                    Suffix
+                  </label>
+                  <select
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    onChange={(e) =>
+                      handleInputChange("suffix", e.target.value)
+                    }
+                    value={formData.suffix}
+                  >
+                    <option value="">Select suffix</option>
+                    <option value="jr">Jr.</option>
+                    <option value="sr">Sr.</option>
+                    <option value="ii">II</option>
+                    <option value="iii">III</option>
+                  </select>
+                </div>
+                {/* Date of Birth */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="dateOfBirth"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img
+                      src={CalendarIcon}
+                      alt="Calendar"
+                      className="w-3 h-3"
+                    />
+                    Date of Birth
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="dateOfBirth"
+                    placeholder="mm/dd/yyyy"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) =>
+                      handleInputChange("dateOfBirth", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: User, Email, Phone */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Username */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="username"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={AtsignIcon} alt="User" className="w-3 h-3" />
+                    Username
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="username"
+                    placeholder="Choose username"
+                    value={formData.username}
+                    onChange={(e) =>
+                      handleInputChange("username", e.target.value)
+                    }
+                  />
+                </div>
+                {/* Email Address */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={MailIcon} alt="Mail" className="w-3 h-3" />
+                    Email Address
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="email"
+                    type="email"
+                    placeholder="Enter email address"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                  />
+                </div>
+                {/* Phone Number */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="phoneNumber"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={PhoneIcon} alt="Phone" className="w-3 h-3" />
+                    Phone Number
+                  </label>
+                  <input
+                    className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      handleInputChange("phoneNumber", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Row 3: Password Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Password */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="password"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={LockIcon} alt="Lock" className="w-3 h-3" />
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Enter password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        handleInputChange("password", e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? (
+                        <img
+                          src={EyeOffIcon}
+                          alt="Hide Password"
+                          className="w-4 h-3"
+                        />
+                      ) : (
+                        <img
+                          src={EyeIcon}
+                          alt="Show Password"
+                          className="w-4 h-3"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                {/* Confirm Password */}
+                <div className="space-y-2">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex items-center gap-2 text-papaya-text-gray font-poppins"
+                  >
+                    <img src={LockIcon} alt="Lock" className="w-3 h-3" />
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      className="flex h-10 w-full rounded-md border border-[#ADAEBC] bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="Confirm password"
+                      value={formData.confirmPassword}
+                      onChange={(e) =>
+                        handleInputChange("confirmPassword", e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showConfirmPassword ? (
+                        <img
+                          src={EyeOffIcon}
+                          alt="Hide Password"
+                          className="w-4 h-4"
+                        />
+                      ) : (
+                        <img
+                          src={EyeIcon}
+                          alt="Show Password"
+                          className="w-4 h-3"
+                        />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms Checkbox */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={formData.agreeToTerms}
+                  onChange={(e) =>
+                    handleInputChange("agreeToTerms", e.target.checked)
+                  }
+                  className="peer h-4 w-4 shrink-0 rounded-sm border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground border-2 border-black"
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-papaya-text-light font-poppins"
+                >
+                  I agree to the{" "}
+                  <Link to="/terms" className="text-[#FF8C42] hover:underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/privacy"
+                    className="text-[#FF8C42] hover:underline"
+                  >
+                    Privacy Policy
+                  </Link>
+                </label>
+              </div>
+
+              {/* Submit Button */}
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#F97316] px-6 py-3 font-poppins text-lg font-semibold text-white shadow-lg transition-colors duration-300 hover:bg-orange-600 disabled:pointer-events-none "
+                  disabled={!formData.agreeToTerms}
+                >
+                  <img
+                    src={CreateUserIcon}
+                    alt="Create Account"
+                    className="w-7 h-5"
+                  />
+                  Create Account
+                </button>
+              </div>
+
+              {/* Sign In Link */}
+              <div className="text-center pt-4">
+                <p className="text-papaya-text-light font-poppins">
+                  Already have an account?{" "}
+                  <Link
+                    to="/signin"
+                    className="text-[#FF8C42] hover:underline font-medium"
+                  >
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+
+      {/* Renders the imported Footer component */}
+      <Footer />
     </div>
   );
-};
-
-export default SignUpPage;
+}
