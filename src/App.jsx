@@ -18,32 +18,7 @@ function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/otp-verification" element={<OtpVerificationPage />} />
       <Route path="/new-password" element={<NewPasswordPage />} />
-
-      {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/farmdashboard/:farmId"
-        element={
-          <ProtectedRoute>
-            <FarmDashboard />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   );
 }
