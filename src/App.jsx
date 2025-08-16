@@ -10,6 +10,7 @@ import FarmDashboardPage from "./pages/FarmDashboardPage";
 import ScanHistoryPage from "./pages/ScanHistoryPage";
 import ScanDetailsPage from "./pages/ScanDetailsPage";
 import AboutPage from "./pages/AboutPage";
+import AboutHomePage from "./pages/AboutHomePage";
 import AuthGuard from "./components/AuthGuard";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -20,8 +21,11 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SignInPage />} />
+        <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/about-home" element={<AboutHomePage />} />
 
         {/* Protected Routes */}
         <Route
