@@ -47,7 +47,7 @@ export default function SignUp() {
     <div className="min-h-screen bg-gradient-to-br flex flex-col pt-20">
       {/* Background Image */}
       <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: `url(${BackgroundImage})`,
         }}

@@ -7,6 +7,7 @@ import SignUp from "./pages/SignUpPage.jsx";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage.jsx";
 import OtpVerificationPage from "./pages/OtpVerificationPage.jsx";
 import NewPasswordPage from "./pages/NewPasswordPage.jsx";
+import AboutHomePage from "./pages/AboutHomePage.jsx";
 import Dashboard from "./pages/DashboardPage.jsx";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
+      <Route path="/about-home" element={<AboutHomePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/otp-verification" element={<OtpVerificationPage />} />
       <Route path="/new-password" element={<NewPasswordPage />} />

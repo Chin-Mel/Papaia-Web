@@ -9,16 +9,16 @@ export default function HeaderStart() {
 
   const navItems = [
     { id: "home", label: "Home", href: "/" },
-    { id: "about", label: "About", href: "/about" },
+    { id: "about", label: "About", href: "/about-home" },
     { id: "signin", label: "Sign In", href: "/sign-in" },
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
-  // Sync active nav with current route
+  // Sync active nav with current route only on initial load
   useEffect(() => {
     const currentPath = location.pathname;
     const currentNav = navItems.find((item) => item.href === currentPath);
-    if (currentNav) {
+    if (currentNav && activeNav === "home") {
       setActiveNav(currentNav.id);
     }
   }, [location.pathname]);
@@ -55,7 +55,7 @@ export default function HeaderStart() {
           <nav className="hidden lg:flex items-center gap-7 relative">
             {/* Sliding indicator */}
             <div
-              className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
+              className="absolute top-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
               style={{
                 width: "80px",
                 transform: `translateX(${

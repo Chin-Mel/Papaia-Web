@@ -28,7 +28,7 @@ const developers = [
   },
 ];
 
-const AboutPage = () => {
+const AboutHomePage = () => {
   return (
     <div className="flex flex-col min-h-screen bg-[#f8f9fa]">
       <HeaderStart />
