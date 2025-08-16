@@ -54,6 +54,8 @@ export default function HeaderStart() {
                     ? "87px"
                     : activeNav === "signin"
                     ? "174px"
+                    : activeNav === "signup"
+                    ? "261px"
                     : "0px"
                 })`,
               }}
@@ -73,11 +75,6 @@ export default function HeaderStart() {
                 {item.label}
               </a>
             ))}
-
-            {/* Sign Up Button */}
-            <button className="bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white px-6 py-2.5 rounded-full hover:shadow-lg transition-shadow ml-4">
-              Sign Up
-            </button>
           </nav>
 
           {/* Mobile Menu Button */}
@@ -121,10 +118,6 @@ export default function HeaderStart() {
                   {item.label}
                 </a>
               ))}
-              {/* Sign Up Button */}
-              <button className="bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white px-6 py-2.5 rounded-full mt-2">
-                Sign Up
-              </button>
             </div>
           </div>
         )}
