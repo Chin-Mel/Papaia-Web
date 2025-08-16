@@ -22,7 +22,7 @@ export default function ScanDetailsPage() {
               <span className="hover:text-gray-800 cursor-pointer">
                 Scan History
               </span>
-              <span className="mx-2">></span>
+              <span className="mx-2">&gt;</span>
               <span className="text-gray-800">Scan Results</span>
             </nav>
           </div>
