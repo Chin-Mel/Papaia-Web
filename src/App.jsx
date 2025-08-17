@@ -11,6 +11,9 @@ import ScanHistoryPage from "./pages/ScanHistoryPage";
 import ScanDetailsPage from "./pages/ScanDetailsPage";
 import AboutPage from "./pages/AboutPage";
 import AboutHomePage from "./pages/AboutHomePage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import NewPasswordPage from "./pages/NewPasswordPage";
+import OtpVerificationPage from "./pages/OtpVerificationPage";
 import AuthGuard from "./components/AuthGuard";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -24,8 +27,10 @@ function App() {
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/about" element={<AboutPage />} />
         <Route path="/about-home" element={<AboutHomePage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/new-password" element={<NewPasswordPage />} />
+        <Route path="/otp-verification" element={<OtpVerificationPage />} />
 
         {/* Protected Routes */}
         <Route
@@ -76,6 +81,17 @@ function App() {
             </AuthGuard>
           }
         />
+        <Route
+          path="/about"
+          element={
+            <AuthGuard>
+              <AboutPage />
+            </AuthGuard>
+          }
+        />
+
+        {/* Catch-all route for 404 errors - redirect to landing page */}
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     </ErrorBoundary>
   );

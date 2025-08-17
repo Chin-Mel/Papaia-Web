@@ -2,12 +2,22 @@ import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { secureApiCall, validateEmail, sanitizeInput } from "../utils/security";
 import SecureInput from "../components/SecureInput";
+import HeaderStart from "../components/Header/HeaderStart";
+import FooterMain from "../components/Footer/FooterMain";
+import loginBackgroundPic from "../assets/login-backgroundpic.jpg";
+import userIcon from "../assets/user-icon.png";
+import lockIcon from "../assets/lock-icon.png";
+import eyeIcon from "../assets/eye-icon.png";
+import arrowIcon from "../assets/arrow-icon.png";
+import papaiaLogo from "../assets/papaia-logo.png";
 
 export default function SignInPage() {
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
+    rememberMe: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,11 +44,9 @@ export default function SignInPage() {
   const validateForm = () => {
     const newErrors = {};
 
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+    // Username validation
+    if (!formData.username.trim()) {
+      newErrors.username = "Username is required";
     }
 
     // Password validation
@@ -66,7 +74,7 @@ export default function SignInPage() {
       const response = await secureApiCall("/api/auth/signin", {
         method: "POST",
         body: JSON.stringify({
-          email: sanitizeInput(formData.email),
+          username: sanitizeInput(formData.username),
           password: formData.password, // Don't sanitize password
         }),
       });
@@ -94,125 +102,163 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-20"
-        style={{
-          backgroundImage:
-            "url('https://source.unsplash.com/1920x1080/?farm,agriculture')",
-        }}
-      ></div>
+    <div className="min-h-screen flex flex-col">
+      {/* Header */}
+      <HeaderStart />
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="max-w-md w-full">
-          {/* Logo and Title */}
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">P</span>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome Back
-            </h1>
-            <p className="text-gray-600">Sign in to your Papaia account</p>
-          </div>
+      {/* Main Content with Background */}
+      <main className="flex-1 relative">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(${loginBackgroundPic})`,
+          }}
+        />
 
-          {/* Sign In Form */}
-          <div className="bg-white rounded-lg shadow-lg p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* General Error */}
-              {errors.general && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600 text-sm">{errors.general}</p>
+        {/* Content Overlay */}
+        <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
+          <div className="max-w-md w-full">
+            {/* Sign-in Form Card */}
+            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+              {/* Form Header with Gradient */}
+              <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] p-6 text-center">
+                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
+                  <img src={papaiaLogo} alt="Papaia Logo" className="w-8 h-8" />
                 </div>
-              )}
-
-              {/* Email Field */}
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Email Address
-                </label>
-                <SecureInput
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange("email", e.target.value)}
-                  placeholder="Enter your email"
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                />
-                {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
-                )}
+                <h1 className="text-white text-xl font-bold mb-1">
+                  Papaya Farm
+                </h1>
+                <p className="text-white text-sm opacity-90">
+                  Welcome back to your farm dashboard
+                </p>
               </div>
 
-              {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Password
-                </label>
-                <SecureInput
-                  type="password"
-                  id="password"
-                  value={formData.password}
-                  onChange={(e) =>
-                    handleInputChange("password", e.target.value)
-                  }
-                  placeholder="Enter your password"
-                  className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
-                )}
+              {/* Form Content */}
+              <div className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* General Error */}
+                  {errors.general && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                      <p className="text-red-600 text-sm">{errors.general}</p>
+                    </div>
+                  )}
+
+                  {/* Username Field */}
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <img src={userIcon} alt="User" className="w-4 h-4" />
+                      Username
+                    </label>
+                    <SecureInput
+                      type="text"
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleInputChange("username", e.target.value)
+                      }
+                      placeholder="Enter your username"
+                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
+                        errors.username ? "border-red-500" : ""
+                      }`}
+                      required
+                    />
+                    {errors.username && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.username}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Password Field */}
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <img src={lockIcon} alt="Lock" className="w-4 h-4" />
+                      Password
+                    </label>
+                    <div className="relative">
+                      <SecureInput
+                        type={showPassword ? "text" : "password"}
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
+                        placeholder="Enter your password"
+                        className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
+                          errors.password ? "border-red-500" : ""
+                        }`}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      >
+                        <img
+                          src={eyeIcon}
+                          alt="Toggle password"
+                          className="w-5 h-5"
+                        />
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.password}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Remember Me and Forgot Password */}
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.rememberMe}
+                        onChange={(e) =>
+                          handleInputChange("rememberMe", e.target.checked)
+                        }
+                        className="rounded border-gray-300 text-[#4A7C59] focus:ring-[#4A7C59]"
+                      />
+                      <span className="text-sm text-gray-700">Remember me</span>
+                    </label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-[#FF8C42] hover:text-[#E67E22] transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+
+                  {/* Login Button */}
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] text-white font-bold py-3 px-4 rounded-lg hover:from-[#2D5016] hover:to-[#E67E22] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <img src={arrowIcon} alt="Arrow" className="w-4 h-4" />
+                    {isLoading ? "Logging in..." : "Login to Farm"}
+                  </button>
+                </form>
+
+                {/* Sign Up Link */}
+                <div className="mt-6 text-center">
+                  <p className="text-gray-600 text-sm">
+                    Don't have an account?{" "}
+                    <Link
+                      to="/sign-up"
+                      className="text-[#FF8C42] hover:text-[#E67E22] font-medium transition-colors"
+                    >
+                      Sign up here
+                    </Link>
+                  </p>
+                </div>
               </div>
-
-              {/* Forgot Password Link */}
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-[#4A7C59] hover:text-[#2D5016] transition-colors"
-                >
-                  Forgot your password?
-                </Link>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] text-white font-bold py-3 px-4 rounded-lg hover:from-[#2D5016] hover:to-[#F97316] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </button>
-            </form>
-
-            {/* Sign Up Link */}
-            <div className="mt-6 text-center">
-              <p className="text-gray-600">
-                Don't have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="text-[#4A7C59] hover:text-[#2D5016] font-medium transition-colors"
-                >
-                  Sign up here
-                </Link>
-              </p>
             </div>
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <FooterMain />
     </div>
   );
 }

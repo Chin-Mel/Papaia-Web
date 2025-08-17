@@ -24,26 +24,17 @@ export default function AuthGuard({ children }) {
           if (data.authenticated) {
             setIsAuthenticated(true);
           } else {
-            // Redirect to login with return URL
-            navigate("/signin", {
-              state: { from: location.pathname },
-              replace: true,
-            });
+            // Redirect to landing page
+            navigate("/", { replace: true });
           }
         } else {
-          // Redirect to login with return URL
-          navigate("/signin", {
-            state: { from: location.pathname },
-            replace: true,
-          });
+          // Redirect to landing page
+          navigate("/", { replace: true });
         }
       } catch (error) {
         console.error("Auth check failed:", error);
-        // Redirect to login with return URL
-        navigate("/signin", {
-          state: { from: location.pathname },
-          replace: true,
-        });
+        // Redirect to landing page
+        navigate("/", { replace: true });
       } finally {
         setIsLoading(false);
       }
