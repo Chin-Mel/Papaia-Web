@@ -26,6 +26,7 @@ export default function SignUp() {
     "lastName",
     "username",
     "email",
+    "contactNumber",
     "password",
     "confirmPassword",
   ];
@@ -39,7 +40,7 @@ export default function SignUp() {
     dateOfBirth: "",
     username: "",
     email: "",
-    phoneNumber: "",
+    contactNumber: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
@@ -120,7 +121,7 @@ export default function SignUp() {
             return `${month}-${day}-${year}`; // MM-DD-YYYY
           })()
         : undefined,
-      contactNumber: formData.contactNumber,
+      contactNumber: formData.phoneNumber,
       profilePicture: formData.profilePicture && {
         profilePicture: formData.profilePicture,
       },
