@@ -21,12 +21,13 @@ import PhoneIcon from "../assets/phone-icon.png";
 
 export default function SignUp() {
   const navigate = useNavigate();
+
   const requiredFields = [
     "firstName",
     "lastName",
     "username",
     "email",
-    "contactNumber",
+    "phoneNumber",
     "password",
     "confirmPassword",
   ];
@@ -41,6 +42,12 @@ export default function SignUp() {
     username: "",
     email: "",
     phoneNumber: "",
+    profilePicture: "",
+    street: "",
+    barangay: "",
+    municipality: "",
+    province: "",
+    zipCode: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
@@ -51,7 +58,6 @@ export default function SignUp() {
     confirmPassword: "",
   });
 
-  // Show/hide password state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -72,7 +78,6 @@ export default function SignUp() {
       }));
     }
 
-    // Confirm password validation (only if user touched it)
     if (field === "confirmPassword") {
       setTouched((prev) => ({ ...prev, confirmPassword: true }));
       setErrors((prev) => ({
@@ -82,7 +87,6 @@ export default function SignUp() {
       }));
     }
 
-    // Update confirm password error if password changes
     if (field === "password" && touched.confirmPassword) {
       setErrors((prev) => ({
         ...prev,
@@ -95,6 +99,7 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Check required fields
     const missingRequired = requiredFields.some((field) => !formData[field]);
     if (missingRequired) {
       alert("Please complete all required fields before registering.");
@@ -106,32 +111,28 @@ export default function SignUp() {
       return;
     }
 
+    // Build userData, only include optional fields if they have values
     const userData = {
       username: formData.username,
       email: formData.email,
       password: formData.password,
       role: "owner",
       firstName: formData.firstName,
-      middleName: formData.middleName && { middleName: formData.middleName },
       lastName: formData.lastName,
-      suffix: formData.suffix && { suffix: formData.suffix },
-      birthDate: formData.dateOfBirth
-        ? (() => {
-            const [year, month, day] = formData.dateOfBirth.split("-");
-            return `${month}-${day}-${year}`; // MM-DD-YYYY
-          })()
-        : undefined,
       contactNumber: formData.phoneNumber,
-      profilePicture: formData.profilePicture && {
+      ...(formData.middleName && { middleName: formData.middleName }),
+      ...(formData.suffix && { suffix: formData.suffix }),
+      ...(formData.dateOfBirth && {
+        birthDate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
+      }),
+      ...(formData.profilePicture && {
         profilePicture: formData.profilePicture,
-      },
-      street: formData.street && { street: formData.street },
-      barangay: formData.barangay && { barangay: formData.barangay },
-      municipality: formData.municipality && {
-        municipality: formData.municipality,
-      },
-      province: formData.province && { province: formData.province },
-      zipCode: formData.zipCode && { zipCode: formData.zipCode },
+      }),
+      ...(formData.street && { street: formData.street }),
+      ...(formData.barangay && { barangay: formData.barangay }),
+      ...(formData.municipality && { municipality: formData.municipality }),
+      ...(formData.province && { province: formData.province }),
+      ...(formData.zipCode && { zipCode: formData.zipCode }),
     };
 
     try {
@@ -145,7 +146,7 @@ export default function SignUp() {
 
       if (response.ok) {
         alert(data.message || "Account created successfully.");
-        navigate("/sign-in"); // go to sign-in page
+        navigate("/sign-in");
       } else {
         alert(data.error || "Registration failed");
       }
