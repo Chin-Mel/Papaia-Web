@@ -121,7 +121,7 @@ export default function SignUp() {
       middleName: formData.middleName,
       lastName: formData.lastName,
       suffix: formData.suffix,
-      birthDate: formData.dateOfBirth,
+      birthDate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
       contactNumber: formData.phoneNumber,
       profilePicture: formData.profilePicture,
       street: formData.street,
@@ -130,6 +130,8 @@ export default function SignUp() {
       province: formData.province,
       zipCode: formData.zipCode,
     };
+
+    console.log("Payload being sent:", userData);
 
     try {
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
