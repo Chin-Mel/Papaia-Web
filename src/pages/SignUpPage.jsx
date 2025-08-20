@@ -18,29 +18,62 @@ import CalendarIcon from "../assets/calendar-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
 
 export default function SignUp() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    lastName: "",
-    firstName: "",
-    middleName: "",
-    suffix: "",
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    dateOfBirth: "",
-    phoneNumber: "",
-    agreeToTerms: false,
-  });
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    // Prepare userData
+    const userData = {
+      username: formData.username,
+      email: formData.email,
+      password: formData.password,
+      role: "owner",
+      middleName: formData.middleName || undefined,
+      lastName: formData.lastName,
+      suffix: formData.suffix || undefined,
+      birthDate: formData.dateOfBirth, // we'll convert next
+      contactNumber: formData.phoneNumber,
+      profilePicture: undefined,
+      street: undefined,
+      barangay: undefined,
+      municipality: undefined,
+      province: undefined,
+      zipCode: undefined,
+    };
+
+    // ✅ Convert YYYY-MM-DD → MM-DD-YYYY
+    if (userData.birthDate) {
+      const [year, month, day] = userData.birthDate.split("-");
+      userData.birthDate = `${month}-${day}-${year}`;
+    }
+
+    try {
+      const response = await fetch("https://papaiaapi.onrender.com/api/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert(
+          data.message ||
+            "Account created successfully. Please check your email."
+        );
+      } else {
+        alert(data.error || "Registration failed");
+      }
+    } catch (err) {
+      console.error("Error registering:", err);
+      alert("Something went wrong. Please try again later.");
+    }
   };
 
   return (

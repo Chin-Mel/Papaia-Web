@@ -23,9 +23,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/signin" element={<SignInPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/about-home" element={<AboutHomePage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
