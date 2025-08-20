@@ -121,7 +121,7 @@ export default function SignUp() {
       middleName: formData.middleName || "",
       lastName: formData.lastName,
       suffix: formData.suffix || "",
-      birthDate: formData.dateOfBirth || "", // MM-DD-YYYY
+      birthDate: formData.dateOfBirth || null, // MM-DD-YYYY
       contactNumber: formData.phoneNumber,
       profilePicture: formData.profilePicture || "",
       street: formData.street || "",
