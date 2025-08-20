@@ -63,9 +63,9 @@ export default function HeaderStart() {
                     ? "0px"
                     : activeNav === "about"
                     ? "87px"
-                    : activeNav === "signin"
+                    : activeNav === "sign-in"
                     ? "174px"
-                    : activeNav === "signup"
+                    : activeNav === "sign-up"
                     ? "261px"
                     : "0px"
                 })`,
