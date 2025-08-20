@@ -34,13 +34,13 @@ export default function SignInPage() {
         },
         credentials: "include", // 🔑 ensures JWT cookie is stored
         body: JSON.stringify({
-          "email/username": usernameOrEmail,
+          email: usernameOrEmail,
           password,
         }),
       });
 
       const payload = {
-        "email/username": usernameOrEmail,
+        email: usernameOrEmail,
         password,
       };
       console.log("Payload being sent:", JSON.stringify(payload));
