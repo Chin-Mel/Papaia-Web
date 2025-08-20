@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
@@ -28,7 +28,7 @@ export default function SignInPage() {
   }
 
   useEffect(() => {
-    const token = getCookie("jwt"); // Replace "jwt" with your cookie name
+    const token = getCookie("jwt");
     if (token) {
       navigate("/dashboard");
     }
