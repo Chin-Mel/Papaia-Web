@@ -88,6 +88,7 @@ export default function SignUp() {
       email: formData.email,
       password: formData.password,
       role: "owner",
+      firstName: formData.firstName,
       middleName: formData.middleName && { middleName: formData.middleName },
       lastName: formData.lastName,
       suffix: formData.suffix && { suffix: formData.suffix },
