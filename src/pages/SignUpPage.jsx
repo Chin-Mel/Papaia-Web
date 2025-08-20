@@ -118,21 +118,17 @@ export default function SignUp() {
       password: formData.password,
       role: "owner",
       firstName: formData.firstName,
+      middleName: formData.middleName,
       lastName: formData.lastName,
       contactNumber: formData.phoneNumber,
-      ...(formData.middleName && { middleName: formData.middleName }),
-      ...(formData.suffix && { suffix: formData.suffix }),
-      ...(formData.dateOfBirth && {
-        birthDate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
-      }),
-      ...(formData.profilePicture && {
-        profilePicture: formData.profilePicture,
-      }),
-      ...(formData.street && { street: formData.street }),
-      ...(formData.barangay && { barangay: formData.barangay }),
-      ...(formData.municipality && { municipality: formData.municipality }),
-      ...(formData.province && { province: formData.province }),
-      ...(formData.zipCode && { zipCode: formData.zipCode }),
+      suffix: formData.suffix,
+      birthdate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
+      profilePicture: formData.profilePicture,
+      street: formData.street,
+      barangay: formData.barangay,
+      municipality: formData.municipality,
+      province: formData.province,
+      zipCode: formData.zipCode,
     };
 
     try {
