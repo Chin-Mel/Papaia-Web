@@ -28,10 +28,20 @@ export default function SignInPage() {
   }
 
   useEffect(() => {
-    const token = getCookie("jwt");
-    if (token) {
-      navigate("/dashboard");
-    }
+    fetch("https://papaiaapi.onrender.com/api/me", {
+      method: "GET",
+      credentials: "include", // send the cookie
+    })
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error("Not logged in");
+      })
+      .then((user) => {
+        navigate("/dashboard"); // logged in
+      })
+      .catch(() => {
+        // not logged in, stay on login page
+      });
   }, [navigate]);
 
   const handleSubmit = async (e) => {
