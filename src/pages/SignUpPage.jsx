@@ -104,7 +104,7 @@ export default function SignUp() {
     };
 
     try {
-      const response = await fetch("https://papaiaapi.onrender.com/user", {
+      const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
