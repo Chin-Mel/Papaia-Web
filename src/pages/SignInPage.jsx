@@ -21,6 +21,19 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+  }
+
+  useEffect(() => {
+    const token = getCookie("jwt"); // Replace "jwt" with your cookie name
+    if (token) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
