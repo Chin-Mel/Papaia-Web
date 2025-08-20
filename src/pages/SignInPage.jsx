@@ -1,255 +1,158 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { secureApiCall, validateEmail, sanitizeInput } from "../utils/security";
-import SecureInput from "../components/SecureInput";
+import { Link } from "react-router-dom";
+import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
-import FooterMain from "../components/Footer/FooterMain";
-import loginBackgroundPic from "../assets/login-backgroundpic.jpg";
-import userIcon from "../assets/user-icon.png";
-import lockIcon from "../assets/lock-icon.png";
-import eyeIcon from "../assets/eye-icon.png";
-import arrowIcon from "../assets/arrow-icon.png";
-import papaiaLogo from "../assets/papaia-logo.png";
+
+import BackgroundImage from "../assets/hero-background.png";
+import PapayaLogo from "../assets/papaia-logo.png";
+import UserIcon from "../assets/user-icon.png";
+import LockIcon from "../assets/lock-icon.png";
+import EyeIcon from "../assets/eye-icon.png";
+import EyeOffIcon from "../assets/eye-off-icon.png";
+import LoginIcon from "../assets/login-icon.png";
+import SignInImage from "../assets/sign-in-pic.png";
 
 export default function SignInPage() {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    rememberMe: false,
-  });
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get return URL from location state
-  const from = location.state?.from || "/dashboard";
-
-  const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: "",
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Username validation
-    if (!formData.username.trim()) {
-      newErrors.username = "Username is required";
-    }
-
-    // Password validation
-    if (!formData.password.trim()) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      const response = await secureApiCall("/api/auth/signin", {
-        method: "POST",
-        body: JSON.stringify({
-          username: sanitizeInput(formData.username),
-          password: formData.password, // Don't sanitize password
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Redirect to the page they were trying to access
-        navigate(from, { replace: true });
-      } else {
-        const errorData = await response.json();
-        setErrors({
-          general:
-            errorData.message || "Invalid credentials. Please try again.",
-        });
-      }
-    } catch (error) {
-      console.error("Sign in error:", error);
-      setErrors({
-        general: "An error occurred. Please try again later.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Header */}
       <HeaderStart />
 
-      {/* Main Content with Background */}
       <main className="flex-1 relative">
-        {/* Background Image */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url(${loginBackgroundPic})`,
+            backgroundImage: `url(${BackgroundImage})`,
           }}
         />
 
-        {/* Content Overlay */}
-        <div className="relative z-10 flex items-center justify-center min-h-screen p-6">
-          <div className="max-w-md w-full">
-            {/* Sign-in Form Card */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-              {/* Form Header with Gradient */}
-              <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] p-6 text-center">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3">
-                  <img src={papaiaLogo} alt="Papaia Logo" className="w-8 h-8" />
-                </div>
-                <h1 className="text-white text-xl font-bold mb-1">
-                  Papaya Farm
-                </h1>
-                <p className="text-white text-sm opacity-90">
-                  Welcome back to your farm dashboard
-                </p>
-              </div>
+        <div className="relative z-10 flex items-center justify-center min-h-full py-30 px-6">
+          {/* UPDATED: This is now a grid container for the image and form */}
+          <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 items-center bg-white/21 backdrop-blur-[5.4px] rounded-[20px] border border-white/1 overflow-hidden">
+            {/* Column 1: Image (hidden on screens smaller than lg) */}
+            <div className="hidden lg:block h-full">
+              <img
+                src={SignInImage}
+                alt="Farmer in a papaya field"
+                className="w-full h-full object-cover"
+              />
+            </div>
 
-              {/* Form Content */}
-              <div className="p-6">
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* General Error */}
-                  {errors.general && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-red-600 text-sm">{errors.general}</p>
-                    </div>
-                  )}
-
-                  {/* Username Field */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                      <img src={userIcon} alt="User" className="w-4 h-4" />
-                      Username
-                    </label>
-                    <SecureInput
-                      type="text"
-                      value={formData.username}
-                      onChange={(e) =>
-                        handleInputChange("username", e.target.value)
-                      }
-                      placeholder="Enter your username"
-                      className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
-                        errors.username ? "border-red-500" : ""
-                      }`}
-                      required
+            {/* Column 2: Form */}
+            <div className="relative flex justify-center items-center py-8 px-4 sm:px-8">
+              <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
+                <div className="h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] relative">
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center">
+                    <img
+                      src={PapayaLogo}
+                      alt="Papaia Logo"
+                      className="w-14 h-14"
                     />
-                    {errors.username && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.username}
-                      </p>
-                    )}
                   </div>
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-center w-full">
+                    <h1 className="text-2xl font-bold text-white font-['Poppins']">
+                      Papaya Farm
+                    </h1>
+                    <p className="text-[#FDEDD3] text-sm mt-1">
+                      Welcome back to your farm dashboard
+                    </p>
+                  </div>
+                </div>
 
-                  {/* Password Field */}
-                  <div>
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                      <img src={lockIcon} alt="Lock" className="w-4 h-4" />
-                      Password
-                    </label>
-                    <div className="relative">
-                      <SecureInput
-                        type={showPassword ? "text" : "password"}
-                        value={formData.password}
-                        onChange={(e) =>
-                          handleInputChange("password", e.target.value)
-                        }
-                        placeholder="Enter your password"
-                        className={`w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent ${
-                          errors.password ? "border-red-500" : ""
-                        }`}
-                        required
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                      >
+                <div className="p-8">
+                  <form className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                         <img
-                          src={eyeIcon}
-                          alt="Toggle password"
-                          className="w-5 h-5"
+                          src={UserIcon}
+                          alt="Username"
+                          className="w-4 h-4"
                         />
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.password}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Remember Me and Forgot Password */}
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2">
+                        Username
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={formData.rememberMe}
-                        onChange={(e) =>
-                          handleInputChange("rememberMe", e.target.checked)
-                        }
-                        className="rounded border-gray-300 text-[#4A7C59] focus:ring-[#4A7C59]"
+                        type="text"
+                        placeholder="Enter your username"
+                        className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                       />
-                      <span className="text-sm text-gray-700">Remember me</span>
-                    </label>
-                    <Link
-                      to="/forgot-password"
-                      className="text-sm text-[#FF8C42] hover:text-[#E67E22] transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
+                    </div>
 
-                  {/* Login Button */}
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] text-white font-bold py-3 px-4 rounded-lg hover:from-[#2D5016] hover:to-[#E67E22] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    <img src={arrowIcon} alt="Arrow" className="w-4 h-4" />
-                    {isLoading ? "Logging in..." : "Login to Farm"}
-                  </button>
-                </form>
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                        <img
+                          src={LockIcon}
+                          alt="Password"
+                          className="w-4 h-4"
+                        />
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          {showPassword ? (
+                            <img
+                              src={EyeOffIcon}
+                              alt="Hide Password"
+                              className="w-5 h-5"
+                            />
+                          ) : (
+                            <img
+                              src={EyeIcon}
+                              alt="Show Password"
+                              className="w-5 h-4"
+                            />
+                          )}
+                        </button>
+                      </div>
+                    </div>
 
-                {/* Sign Up Link */}
-                <div className="mt-6 text-center">
-                  <p className="text-gray-600 text-sm">
-                    Don't have an account?{" "}
-                    <Link
-                      to="/sign-up"
-                      className="text-[#FF8C42] hover:text-[#E67E22] font-medium transition-colors"
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500"
+                        />
+                        <span className="text-sm text-gray-500">
+                          Remember me
+                        </span>
+                      </label>
+                      <Link
+                        to="/forgot-password"
+                        className="text-sm text-orange-500 hover:text-orange-600 transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
                     >
+                      <img src={LoginIcon} alt="Login" className="w-5 h-5" />
+                      Login to Farm
+                    </button>
+                  </form>
+
+                  <div className="mt-6 text-center">
+                    <span className="text-gray-500">
+                      Don't have an account?{" "}
+                    </span>
+                    <button className="text-orange-500 font-semibold hover:text-orange-600 transition-colors">
                       Sign up here
-                    </Link>
-                  </p>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -257,8 +160,7 @@ export default function SignInPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <FooterMain />
+      <Footer />
     </div>
   );
 }
