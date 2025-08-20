@@ -12,6 +12,12 @@ import EyeOffIcon from "../assets/eye-off-icon.png";
 import LoginIcon from "../assets/login-icon.png";
 import SignInImage from "../assets/sign-in-pic.png";
 
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 export default function SignInPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,20 +28,10 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("https://papaiaapi.onrender.com/api/me", {
-      method: "GET",
-      credentials: "include",
-    })
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Not logged in");
-      })
-      .then((user) => {
-        navigate("/dashboard"); // logged in
-      })
-      .catch(() => {
-        // not logged in, stay on login page
-      });
+    const token = getCookie("jwt"); // replace "jwt" with your actual cookie name
+    if (token) {
+      navigate("/dashboard"); // redirect if cookie exists
+    }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
