@@ -35,6 +35,11 @@ export default function SignUp() {
     agreeToTerms: false,
   });
 
+  const [errors, setErrors] = useState({
+    email: "",
+    confirmPassword: "",
+  });
+
   // Show/hide password state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,6 +47,32 @@ export default function SignUp() {
   // Handle input changes
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    // Live validation
+    if (field === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setErrors((prev) => ({
+        ...prev,
+        email: emailRegex.test(value) ? "" : "Invalid email format",
+      }));
+    }
+
+    if (field === "confirmPassword") {
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword:
+          value === formData.password ? "" : "Passwords do not match",
+      }));
+    }
+
+    if (field === "password") {
+      // Also update confirmPassword error when password changes
+      setErrors((prev) => ({
+        ...prev,
+        confirmPassword:
+          value === formData.confirmPassword ? "" : "Passwords do not match",
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -218,7 +249,7 @@ export default function SignUp() {
                       alt="Calendar"
                       className="w-3 h-3"
                     />
-                    Date of Birth (Must be 18+)
+                    Date of Birth
                   </label>
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
@@ -306,6 +337,9 @@ export default function SignUp() {
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                   />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm">{errors.email}</p>
+                  )}
                 </div>
                 {/* Phone Number */}
                 <div className="space-y-2">
@@ -413,6 +447,11 @@ export default function SignUp() {
                         />
                       )}
                     </button>
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm">
+                        {errors.confirmPassword}
+                      </p>
+                    )}
                   </div>
                 </div>
                 {/* Empty div to maintain grid alignment */}
