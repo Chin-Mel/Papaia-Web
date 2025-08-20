@@ -1,12 +1,12 @@
 // API configuration and utilities
 
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || "https://api.papaia.com",
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || "https://api.papaia.com/api",
   TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000,
   ENDPOINTS: {
     AUTH: {
-      SIGNIN: "/auth/signin",
-      SIGNOUT: "/auth/signout",
+      SIGNIN: "/auth/sign-in",
+      SIGNOUT: "/auth/sign-out",
       VERIFY: "/auth/verify",
       REFRESH: "/auth/refresh",
     },

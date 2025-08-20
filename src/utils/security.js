@@ -6,15 +6,15 @@
  * @returns {string} - Sanitized input
  */
 export function sanitizeInput(input) {
-  if (typeof input !== 'string') return input;
-  
+  if (typeof input !== "string") return input;
+
   return input
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;')
-    .replace(/\//g, '&#x2F;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;")
+    .replace(/\//g, "&#x2F;");
 }
 
 /**
@@ -23,7 +23,7 @@ export function sanitizeInput(input) {
  */
 export function getCSRFToken() {
   const metaTag = document.querySelector('meta[name="csrf-token"]');
-  return metaTag ? metaTag.getAttribute('content') : '';
+  return metaTag ? metaTag.getAttribute("content") : "";
 }
 
 /**
@@ -34,10 +34,10 @@ export function getCSRFToken() {
  */
 export async function secureApiCall(url, options = {}) {
   const defaultOptions = {
-    credentials: 'include', // Include cookies for session auth
+    credentials: "include", // Include cookies for session auth
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': getCSRFToken(), // CSRF protection
+      "Content-Type": "application/json",
+      "X-CSRF-Token": getCSRFToken(), // CSRF protection
     },
   };
 
@@ -52,25 +52,25 @@ export async function secureApiCall(url, options = {}) {
 
   try {
     const response = await fetch(url, finalOptions);
-    
+
     if (!response.ok) {
       // Handle different error status codes
       if (response.status === 401) {
         // Unauthorized - redirect to login
-        window.location.href = '/signin';
-        throw new Error('Authentication required');
+        window.location.href = "/sign-in";
+        throw new Error("Authentication required");
       } else if (response.status === 403) {
-        throw new Error('Access denied');
+        throw new Error("Access denied");
       } else if (response.status >= 500) {
-        throw new Error('Server error occurred');
+        throw new Error("Server error occurred");
       } else {
-        throw new Error('Request failed');
+        throw new Error("Request failed");
       }
     }
 
     return response;
   } catch (error) {
-    console.error('API call failed:', error);
+    console.error("API call failed:", error);
     throw error;
   }
 }
@@ -107,16 +107,16 @@ export function validatePassword(password) {
   }
 
   if (hasUpperCase) score += 1;
-  else feedback.push('Include at least one uppercase letter');
+  else feedback.push("Include at least one uppercase letter");
 
   if (hasLowerCase) score += 1;
-  else feedback.push('Include at least one lowercase letter');
+  else feedback.push("Include at least one lowercase letter");
 
   if (hasNumbers) score += 1;
-  else feedback.push('Include at least one number');
+  else feedback.push("Include at least one number");
 
   if (hasSpecialChar) score += 1;
-  else feedback.push('Include at least one special character');
+  else feedback.push("Include at least one special character");
 
   return {
     score,
@@ -131,16 +131,16 @@ export function validatePassword(password) {
 export function clearSensitiveData() {
   // Never store JWTs in localStorage/sessionStorage
   // Only clear non-sensitive data
-  const safeKeys = ['theme', 'language', 'ui-preferences'];
-  
+  const safeKeys = ["theme", "language", "ui-preferences"];
+
   // Clear all except safe keys
-  Object.keys(localStorage).forEach(key => {
+  Object.keys(localStorage).forEach((key) => {
     if (!safeKeys.includes(key)) {
       localStorage.removeItem(key);
     }
   });
 
-  Object.keys(sessionStorage).forEach(key => {
+  Object.keys(sessionStorage).forEach((key) => {
     if (!safeKeys.includes(key)) {
       sessionStorage.removeItem(key);
     }
@@ -153,18 +153,18 @@ export function clearSensitiveData() {
 export function secureLogout() {
   // Clear any sensitive data
   clearSensitiveData();
-  
+
   // Call logout API to invalidate session
-  fetch('/api/auth/logout', {
-    method: 'POST',
-    credentials: 'include',
+  fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
     headers: {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': getCSRFToken(),
+      "Content-Type": "application/json",
+      "X-CSRF-Token": getCSRFToken(),
     },
   }).finally(() => {
     // Redirect to login page
-    window.location.href = '/signin';
+    window.location.href = "/sign-in";
   });
 }
 
@@ -177,7 +177,9 @@ export function secureLogout() {
 export function confirmDestructiveAction(action, itemName) {
   return new Promise((resolve) => {
     const confirmed = window.confirm(
-      `Are you sure you want to ${action} "${sanitizeInput(itemName)}"? This action cannot be undone.`
+      `Are you sure you want to ${action} "${sanitizeInput(
+        itemName
+      )}"? This action cannot be undone.`
     );
     resolve(confirmed);
   });
