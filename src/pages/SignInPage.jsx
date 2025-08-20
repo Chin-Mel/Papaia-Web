@@ -34,7 +34,7 @@ export default function SignInPage() {
         },
         credentials: "include", // 🔑 ensures JWT cookie is stored
         body: JSON.stringify({
-          "email/username": usernameOrEmail,
+          identifier: usernameOrEmail,
           password,
           rememberMe,
         }),
