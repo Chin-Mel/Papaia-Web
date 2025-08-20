@@ -40,7 +40,7 @@ export default function SignUp() {
     dateOfBirth: "",
     username: "",
     email: "",
-    contactNumber: "",
+    phoneNumber: "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
