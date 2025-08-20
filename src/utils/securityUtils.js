@@ -1,29 +1,41 @@
-// securityUtils.js
-
 export async function secureApiCall(url, options = {}) {
-  // your function code here
-}
+  const defaultOptions = {
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": getCSRFToken(),
+    },
+  };
 
-export function sanitizeInput(input) {
-  // your function code here
-}
+  const finalOptions = {
+    ...defaultOptions,
+    ...options,
+    headers: {
+      ...defaultOptions.headers,
+      ...options.headers,
+    },
+  };
 
-// other utility functions
-export function getCSRFToken() {
-  /* ... */
-}
-export function validateEmail(email) {
-  /* ... */
-}
-export function validatePassword(password) {
-  /* ... */
-}
+  try {
+    const response = await fetch(url, finalOptions);
 
-// Default export (optional)
-export default {
-  secureApiCall,
-  sanitizeInput,
-  getCSRFToken,
-  validateEmail,
-  validatePassword,
-};
+    if (!response.ok) {
+      if (response.status === 401) {
+        window.location.href = "/sign-in";
+        throw new Error("Authentication required");
+      } else if (response.status === 403) {
+        throw new Error("Access denied");
+      } else if (response.status >= 500) {
+        throw new Error("Server error occurred");
+      } else {
+        throw new Error("Request failed");
+      }
+    }
+
+    // ✅ Return response object so .json() works
+    return response;
+  } catch (error) {
+    console.error("API call failed:", error);
+    throw error;
+  }
+}
