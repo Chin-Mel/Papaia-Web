@@ -112,12 +112,12 @@ export default function SignUp() {
       middleName: formData.middleName && { middleName: formData.middleName },
       lastName: formData.lastName,
       suffix: formData.suffix && { suffix: formData.suffix },
-      birthDate:
-        formData.dateOfBirth &&
-        (() => {
-          const [year, month, day] = formData.dateOfBirth.split("-");
-          return { birthDate: `${month}-${day}-${year}` }; // MM-DD-YYYY
-        })(),
+      birthDate: formData.dateOfBirth
+        ? (() => {
+            const [year, month, day] = formData.dateOfBirth.split("-");
+            return `${month}-${day}-${year}`; // MM-DD-YYYY
+          })()
+        : undefined,
       contactNumber: formData.phoneNumber && {
         contactNumber: formData.phoneNumber,
       },
@@ -296,22 +296,18 @@ export default function SignUp() {
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="dateOfBirth"
                     name="dateOfBirth"
-                    type="date"
-                    placeholder="mm/dd/yyyy"
+                    type="text"
+                    placeholder="MM-DD-YYYY"
                     autoComplete="bday"
-                    max={(() => {
-                      const today = new Date();
-                      const maxDate = new Date(
-                        today.getFullYear() - 18,
-                        today.getMonth(),
-                        today.getDate()
-                      );
-                      return maxDate.toISOString().split("T")[0];
-                    })()}
                     value={formData.dateOfBirth}
-                    onChange={(e) =>
-                      handleInputChange("dateOfBirth", e.target.value)
-                    }
+                    onChange={(e) => {
+                      // Optional: validate MM-DD-YYYY format
+                      const regex =
+                        /^(0[1-9]|1[0-2])-([0-2][0-9]|3[01])-\d{4}$/;
+                      if (e.target.value === "" || regex.test(e.target.value)) {
+                        handleInputChange("dateOfBirth", e.target.value);
+                      }
+                    }}
                   />
                 </div>
               </div>
