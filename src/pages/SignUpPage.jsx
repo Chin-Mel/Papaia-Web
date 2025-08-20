@@ -19,6 +19,14 @@ import PhoneIcon from "../assets/phone-icon.png";
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const requiredFields = [
+    "firstName",
+    "lastName",
+    "username",
+    "email",
+    "password",
+    "confirmPassword",
+  ];
 
   // Define formData state
   const [formData, setFormData] = useState({
@@ -44,6 +52,10 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [touched, setTouched] = useState({
+    confirmPassword: false,
+  });
+
   // Handle input changes
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -57,7 +69,9 @@ export default function SignUp() {
       }));
     }
 
+    // Confirm password validation (only if user touched it)
     if (field === "confirmPassword") {
+      setTouched((prev) => ({ ...prev, confirmPassword: true }));
       setErrors((prev) => ({
         ...prev,
         confirmPassword:
@@ -65,8 +79,8 @@ export default function SignUp() {
       }));
     }
 
-    if (field === "password") {
-      // Also update confirmPassword error when password changes
+    // Update confirm password error if password changes
+    if (field === "password" && touched.confirmPassword) {
       setErrors((prev) => ({
         ...prev,
         confirmPassword:
@@ -77,6 +91,12 @@ export default function SignUp() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const missingRequired = requiredFields.some((field) => !formData[field]);
+    if (missingRequired) {
+      alert("Please complete all required fields before registering.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
