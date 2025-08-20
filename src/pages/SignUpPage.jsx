@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
 import Footer from "../components/Footer/FooterMain";
 import BackgroundImage from "../assets/hero-background.png";
@@ -18,6 +18,32 @@ import CalendarIcon from "../assets/calendar-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
 
 export default function SignUp() {
+  const navigate = useNavigate();
+
+  // Define formData state
+  const [formData, setFormData] = useState({
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    suffix: "",
+    dateOfBirth: "",
+    username: "",
+    email: "",
+    phoneNumber: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
+  });
+
+  // Show/hide password state
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // Handle input changes
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -26,7 +52,6 @@ export default function SignUp() {
       return;
     }
 
-    // Prepare userData
     const userData = {
       username: formData.username,
       email: formData.email,
@@ -35,7 +60,9 @@ export default function SignUp() {
       middleName: formData.middleName || undefined,
       lastName: formData.lastName,
       suffix: formData.suffix || undefined,
-      birthDate: formData.dateOfBirth, // we'll convert next
+      birthDate: formData.dateOfBirth
+        ? formData.dateOfBirth.split("-").reverse().join("-") // MM-DD-YYYY
+        : undefined,
       contactNumber: formData.phoneNumber,
       profilePicture: undefined,
       street: undefined,
@@ -45,28 +72,18 @@ export default function SignUp() {
       zipCode: undefined,
     };
 
-    // ✅ Convert YYYY-MM-DD → MM-DD-YYYY
-    if (userData.birthDate) {
-      const [year, month, day] = userData.birthDate.split("-");
-      userData.birthDate = `${month}-${day}-${year}`;
-    }
-
     try {
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert(
-          data.message ||
-            "Account created successfully. Please check your email."
-        );
+        alert(data.message || "Account created successfully.");
+        navigate("/sign-in"); // go to sign-in page
       } else {
         alert(data.error || "Registration failed");
       }
