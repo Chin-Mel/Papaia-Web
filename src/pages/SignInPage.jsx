@@ -22,9 +22,9 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("https://papaiaapi.onrender.com/api/user/:id", {
+    fetch(`https://papaiaapi.onrender.com/api/user/${userId}`, {
       method: "GET",
-      credentials: "include", // send the cookie
+      credentials: "include",
     })
       .then((res) => {
         if (res.ok) return res.json();
