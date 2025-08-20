@@ -21,14 +21,8 @@ export default function SignInPage() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-  }
-
   useEffect(() => {
-    fetch("https://papaiaapi.onrender.com/api/me", {
+    fetch("https://papaiaapi.onrender.com/api/user/:id", {
       method: "GET",
       credentials: "include", // send the cookie
     })
