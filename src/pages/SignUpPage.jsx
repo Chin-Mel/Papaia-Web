@@ -4,6 +4,8 @@ import HeaderStart from "../components/Header/HeaderStart";
 import Footer from "../components/Footer/FooterMain";
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 // Import all your icons from the assets folder
 import UserIcon from "../assets/user-icon.png";
@@ -292,22 +294,26 @@ export default function SignUp() {
                     />
                     Date of Birth
                   </label>
-                  <input
-                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    id="dateOfBirth"
-                    name="dateOfBirth"
-                    type="text"
-                    placeholder="MM-DD-YYYY"
-                    autoComplete="bday"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => {
-                      // Optional: validate MM-DD-YYYY format
-                      const regex =
-                        /^(0[1-9]|1[0-2])-([0-2][0-9]|3[01])-\d{4}$/;
-                      if (e.target.value === "" || regex.test(e.target.value)) {
-                        handleInputChange("dateOfBirth", e.target.value);
-                      }
+                  <DatePicker
+                    selected={
+                      formData.dateOfBirth
+                        ? new Date(formData.dateOfBirth)
+                        : null
+                    }
+                    onChange={(date) => {
+                      const yyyy = date.getFullYear();
+                      const mm = String(date.getMonth() + 1).padStart(2, "0");
+                      const dd = String(date.getDate()).padStart(2, "0");
+                      handleInputChange("dateOfBirth", `${yyyy}-${mm}-${dd}`);
                     }}
+                    dateFormat="MM-dd-yyyy"
+                    placeholderText="MM-DD-YYYY"
+                    maxDate={
+                      new Date(
+                        new Date().setFullYear(new Date().getFullYear() - 18)
+                      )
+                    }
+                    className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   />
                 </div>
               </div>
