@@ -120,9 +120,7 @@ export default function SignUp() {
             return `${month}-${day}-${year}`; // MM-DD-YYYY
           })()
         : undefined,
-      contactNumber: formData.phoneNumber && {
-        contactNumber: formData.phoneNumber,
-      },
+      contactNumber: formData.contactNumber,
       profilePicture: formData.profilePicture && {
         profilePicture: formData.profilePicture,
       },
@@ -477,12 +475,12 @@ export default function SignUp() {
                         />
                       )}
                     </button>
-                    {errors.confirmPassword && (
-                      <p className="text-red-500 text-sm">
-                        {errors.confirmPassword}
-                      </p>
-                    )}
                   </div>
+                  {errors.confirmPassword && (
+                    <p className="text-red-500 text-sm">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                 </div>
                 {/* Empty div to maintain grid alignment */}
                 <div></div>
