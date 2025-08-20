@@ -25,12 +25,9 @@ export default function SignInPage() {
   useEffect(() => {
     const checkLogin = async () => {
       try {
-        const response = await secureApiCall(
-          "https://papaiaapi.onrender.com/api/verify"
-        );
-        if (response.ok) {
-          navigate("/dashboard", { replace: true });
-        }
+        await secureApiCall("https://papaiaapi.onrender.com/api/verify");
+        // If successful, user is logged in
+        navigate("/dashboard", { replace: true });
       } catch (err) {
         // Not logged in; do nothing
       }
@@ -47,28 +44,22 @@ export default function SignInPage() {
       const safeEmail = sanitizeInput(usernameOrEmail);
       const safePassword = sanitizeInput(password);
 
-      const response = await secureApiCall(
-        "https://papaiaapi.onrender.com/api/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: safeEmail,
-            password: safePassword,
-          }),
-        }
-      );
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Invalid credentials. Please try again.");
-        } else if (response.status === 403) {
-          throw new Error("Please verify your email before logging in.");
-        } else {
-          throw new Error("Login failed. Please try again later.");
-        }
-      }
+      // Login
+      await secureApiCall("https://papaiaapi.onrender.com/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: safeEmail,
+          password: safePassword,
+        }),
+      });
 
-      await secureApiCall("https://papaiaapi.onrender.com/api/verify");
+      // Verify login
+      const verifyResponse = await secureApiCall(
+        "https://papaiaapi.onrender.com/api/verify"
+      );
+      const userData = await verifyResponse.json();
+      console.log("Logged in user:", userData);
 
       // ✅ Success
       navigate("/dashboard");
