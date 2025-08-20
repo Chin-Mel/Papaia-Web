@@ -118,17 +118,17 @@ export default function SignUp() {
       password: formData.password,
       role: "owner",
       firstName: formData.firstName,
-      middleName: formData.middleName || null,
+      middleName: formData.middleName || "",
       lastName: formData.lastName,
-      suffix: formData.suffix || null,
-      birthDate: formData.dateOfBirth.split("-").reverse().join("-") || null, // MM-DD-YYYY
+      suffix: formData.suffix || "",
+      birthDate: formData.dateOfBirth || "", // MM-DD-YYYY
       contactNumber: formData.phoneNumber,
-      profilePicture: formData.profilePicture || null,
-      street: formData.street || null,
-      barangay: formData.barangay || null,
-      municipality: formData.municipality || null,
-      province: formData.province || null,
-      zipCode: formData.zipCode || null,
+      profilePicture: formData.profilePicture || "",
+      street: formData.street || "",
+      barangay: formData.barangay || "",
+      municipality: formData.municipality || "",
+      province: formData.province || "",
+      zipCode: formData.zipCode || "",
     };
 
     console.log("Payload being sent:", userData);
