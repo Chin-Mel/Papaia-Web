@@ -28,9 +28,10 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = getCookie("jwt"); // replace "jwt" with your actual cookie name
+    const token = getCookie("token"); // 🔑 replace "authToken" with your actual cookie name
     if (token) {
-      navigate("/dashboard"); // redirect if cookie exists
+      // If cookie exists, user is already logged in → go to dashboard
+      navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
 
