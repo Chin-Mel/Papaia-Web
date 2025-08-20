@@ -1,18 +1,17 @@
-// API configuration and utilities
-
+// apiConfig.js
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || "https://api.papaia.com/api",
+  BASE_URL:
+    import.meta.env.VITE_API_BASE_URL || "https://papaiaapi.onrender.com/api",
   TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000,
   ENDPOINTS: {
     AUTH: {
-      SIGNIN: "/auth/sign-in",
+      SIGNIN: "/login",
+      VERIFY: "/verify",
       SIGNOUT: "/auth/sign-out",
-      VERIFY: "/auth/verify",
-      REFRESH: "/auth/refresh",
     },
     PROFILE: {
+      GET: "/user",
       UPDATE: "/profile/update",
-      GET: "/profile",
     },
     FARMS: {
       LIST: "/farms",
@@ -28,19 +27,14 @@ const API_CONFIG = {
   },
 };
 
-// Ensure all API calls use HTTPS
 export function getApiUrl(endpoint) {
   const baseUrl = API_CONFIG.BASE_URL;
-
-  // Force HTTPS in production
   if (import.meta.env.PROD && !baseUrl.startsWith("https://")) {
     console.warn("API base URL should use HTTPS in production");
   }
-
   return `${baseUrl}${endpoint}`;
 }
 
-// API timeout wrapper
 export function withTimeout(promise, timeoutMs = API_CONFIG.TIMEOUT) {
   return Promise.race([
     promise,
@@ -50,7 +44,6 @@ export function withTimeout(promise, timeoutMs = API_CONFIG.TIMEOUT) {
   ]);
 }
 
-// Default headers for all API requests
 export function getDefaultHeaders() {
   return {
     "Content-Type": "application/json",
@@ -59,7 +52,6 @@ export function getDefaultHeaders() {
   };
 }
 
-// Error handling for API responses
 export function handleApiError(error) {
   if (error.name === "TypeError" && error.message.includes("fetch")) {
     return {
@@ -67,18 +59,37 @@ export function handleApiError(error) {
       type: "network",
     };
   }
-
   if (error.message === "Request timeout") {
-    return {
-      message: "Request timed out. Please try again.",
-      type: "timeout",
-    };
+    return { message: "Request timed out. Please try again.", type: "timeout" };
   }
-
   return {
-    message: "An unexpected error occurred.",
+    message: error.message || "An unexpected error occurred.",
     type: "unknown",
   };
+}
+
+// General fetch wrapper for authenticated requests
+export async function apiFetch(endpoint, options = {}) {
+  const url = getApiUrl(endpoint);
+  const defaultOptions = {
+    method: "GET",
+    headers: getDefaultHeaders(),
+    credentials: "include", // 🔑 include HttpOnly cookies
+  };
+  const finalOptions = { ...defaultOptions, ...options };
+
+  try {
+    const response = await withTimeout(fetch(url, finalOptions));
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "API request failed");
+    }
+
+    return response.json();
+  } catch (err) {
+    throw handleApiError(err);
+  }
 }
 
 export default API_CONFIG;

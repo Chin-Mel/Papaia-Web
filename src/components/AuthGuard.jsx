@@ -1,26 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
-
 export default function AuthGuard({ children }) {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const token = getCookie("jwt");
-    if (!token) {
-      navigate("/", { replace: true });
-    } else {
-      setLoading(false);
-    }
+    fetch("https://papaiaapi.onrender.com/api/verify", {
+      method: "GET",
+      credentials: "include", // sends HttpOnly cookie
+    })
+      .then((res) => {
+        if (res.ok) {
+          setChecking(false); // user is logged in, allow rendering
+        } else {
+          navigate("/sign-in", { replace: true });
+        }
+      })
+      .catch(() => {
+        navigate("/sign-in", { replace: true });
+      });
   }, [navigate]);
 
-  if (loading) return null; // or a spinner
+  if (checking) return null; // or a loading spinner
 
-  return children;
+  return children; // render protected content
 }

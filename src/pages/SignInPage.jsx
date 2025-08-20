@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
+import { secureApiCall, sanitizeInput } from "../utils/securityUtils"; // your file
 
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
@@ -11,12 +12,6 @@ import EyeIcon from "../assets/eye-icon.png";
 import EyeOffIcon from "../assets/eye-off-icon.png";
 import LoginIcon from "../assets/login-icon.png";
 import SignInImage from "../assets/sign-in-pic.png";
-
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-}
 
 export default function SignInPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -28,11 +23,19 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = getCookie("token"); // 🔑 replace "authToken" with your actual cookie name
-    if (token) {
-      // If cookie exists, user is already logged in → go to dashboard
-      navigate("/dashboard", { replace: true });
-    }
+    const checkLogin = async () => {
+      try {
+        const response = await secureApiCall(
+          "https://papaiaapi.onrender.com/api/verify"
+        );
+        if (response.ok) {
+          navigate("/dashboard", { replace: true });
+        }
+      } catch (err) {
+        // Not logged in; do nothing
+      }
+    };
+    checkLogin();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -41,24 +44,20 @@ export default function SignInPage() {
     setError("");
 
     try {
-      const response = await fetch("https://papaiaapi.onrender.com/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 🔑 ensures JWT cookie is stored
-        body: JSON.stringify({
-          email: usernameOrEmail,
-          password,
-        }),
-      });
+      const safeEmail = sanitizeInput(usernameOrEmail);
+      const safePassword = sanitizeInput(password);
 
-      const payload = {
-        email: usernameOrEmail,
-        password,
-      };
-      console.log("Payload being sent:", JSON.stringify(payload));
-
+      const response = await secureApiCall(
+        "https://papaiaapi.onrender.com/api/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: safeEmail,
+            password: safePassword,
+          }),
+        }
+      );
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error("Invalid credentials. Please try again.");
@@ -68,6 +67,8 @@ export default function SignInPage() {
           throw new Error("Login failed. Please try again later.");
         }
       }
+
+      await secureApiCall("https://papaiaapi.onrender.com/api/verify");
 
       // ✅ Success
       navigate("/dashboard");
