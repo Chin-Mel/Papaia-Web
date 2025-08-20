@@ -170,7 +170,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="lastName"
+                    name="lastName"
+                    type="text"
                     placeholder="Enter last name"
+                    autoComplete="family-name"
                     value={formData.lastName}
                     onChange={(e) =>
                       handleInputChange("lastName", e.target.value)
@@ -189,7 +192,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="firstName"
+                    name="firstName"
+                    type="text"
                     placeholder="Enter first name"
+                    autoComplete="given-name"
                     value={formData.firstName}
                     onChange={(e) =>
                       handleInputChange("firstName", e.target.value)
@@ -208,7 +214,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="middleName"
+                    name="middleName"
+                    type="text"
                     placeholder="Enter middle name"
+                    autoComplete="additional-name"
                     value={formData.middleName}
                     onChange={(e) =>
                       handleInputChange("middleName", e.target.value)
@@ -226,10 +235,12 @@ export default function SignUp() {
                   </label>
                   <select
                     className="flex h-10 w-full items-center justify-between rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00712D] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    id="suffix"
+                    name="suffix"
+                    value={formData.suffix}
                     onChange={(e) =>
                       handleInputChange("suffix", e.target.value)
                     }
-                    value={formData.suffix}
                   >
                     <option value="">Select suffix</option>
                     <option value="jr">Jr.</option>
@@ -254,8 +265,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="dateOfBirth"
-                    placeholder="mm/dd/yyyy"
+                    name="dateOfBirth"
                     type="date"
+                    placeholder="mm/dd/yyyy"
+                    autoComplete="bday"
                     max={(() => {
                       const today = new Date();
                       const maxDate = new Date(
@@ -266,35 +279,9 @@ export default function SignUp() {
                       return maxDate.toISOString().split("T")[0];
                     })()}
                     value={formData.dateOfBirth}
-                    onChange={(e) => {
-                      const selectedDate = new Date(e.target.value);
-                      const today = new Date();
-                      const age =
-                        today.getFullYear() - selectedDate.getFullYear();
-                      const monthDiff =
-                        today.getMonth() - selectedDate.getMonth();
-
-                      if (
-                        monthDiff < 0 ||
-                        (monthDiff === 0 &&
-                          today.getDate() < selectedDate.getDate())
-                      ) {
-                        // If birthday hasn't occurred this year, subtract 1 from age
-                        if (age - 1 < 18) {
-                          alert(
-                            "You must be at least 18 years old to use this website."
-                          );
-                          return;
-                        }
-                      } else if (age < 18) {
-                        alert(
-                          "You must be at least 18 years old to use this website."
-                        );
-                        return;
-                      }
-
-                      handleInputChange("dateOfBirth", e.target.value);
-                    }}
+                    onChange={(e) =>
+                      handleInputChange("dateOfBirth", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -313,7 +300,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="username"
+                    name="username"
+                    type="text"
                     placeholder="Choose username"
+                    autoComplete="username"
                     value={formData.username}
                     onChange={(e) =>
                       handleInputChange("username", e.target.value)
@@ -332,8 +322,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="Enter email address"
+                    autoComplete="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                   />
@@ -353,8 +345,10 @@ export default function SignUp() {
                   <input
                     className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     id="phoneNumber"
+                    name="phoneNumber"
                     type="tel"
                     placeholder="Enter phone number"
+                    autoComplete="tel"
                     value={formData.phoneNumber}
                     onChange={(e) =>
                       handleInputChange("phoneNumber", e.target.value)
@@ -378,8 +372,10 @@ export default function SignUp() {
                     <input
                       className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                       id="password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter password"
+                      autoComplete="new-password"
                       value={formData.password}
                       onChange={(e) =>
                         handleInputChange("password", e.target.value)
@@ -419,8 +415,10 @@ export default function SignUp() {
                     <input
                       className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00712D] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pr-10"
                       id="confirmPassword"
+                      name="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="Confirm password"
+                      autoComplete="new-password"
                       value={formData.confirmPassword}
                       onChange={(e) =>
                         handleInputChange("confirmPassword", e.target.value)
@@ -463,6 +461,7 @@ export default function SignUp() {
                 <input
                   type="checkbox"
                   id="terms"
+                  name="terms"
                   checked={formData.agreeToTerms}
                   onChange={(e) =>
                     handleInputChange("agreeToTerms", e.target.checked)
