@@ -34,10 +34,16 @@ export default function SignInPage() {
         },
         credentials: "include", // 🔑 ensures JWT cookie is stored
         body: JSON.stringify({
-          identifier: usernameOrEmail,
+          "email/username": usernameOrEmail,
           password,
         }),
       });
+
+      const payload = {
+        "email/username": usernameOrEmail,
+        password,
+      };
+      console.log("Payload being sent:", JSON.stringify(payload));
 
       if (!response.ok) {
         if (response.status === 401) {
