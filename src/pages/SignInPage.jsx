@@ -51,7 +51,7 @@ export default function SignInPage() {
       }
 
       // ✅ Success
-      navigate("/dashboard"); // redirect after login
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,9 +72,8 @@ export default function SignInPage() {
         />
 
         <div className="relative z-10 flex items-center justify-center min-h-full py-30 px-6">
-          {/* UPDATED: This is now a grid container for the image and form */}
           <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 items-center bg-white/21 backdrop-blur-[5.4px] rounded-[20px] border border-white/1 overflow-hidden">
-            {/* Column 1: Image (hidden on screens smaller than lg) */}
+            {/* Column 1: Image */}
             <div className="hidden lg:block h-full">
               <img
                 src={SignInImage}
@@ -105,7 +104,7 @@ export default function SignInPage() {
                 </div>
 
                 <div className="p-8">
-                  <form className="space-y-6" onSubmit={handleLogin}>
+                  <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                         <img
@@ -113,11 +112,11 @@ export default function SignInPage() {
                           alt="Username"
                           className="w-4 h-4"
                         />
-                        Username
+                        Username or Email
                       </label>
                       <input
                         type="text"
-                        placeholder="Enter your username"
+                        placeholder="Enter your username or email"
                         value={usernameOrEmail}
                         onChange={(e) => setUsernameOrEmail(e.target.value)}
                         className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
@@ -163,7 +162,6 @@ export default function SignInPage() {
                       </div>
                     </div>
 
-                    {/* Remember me + Forgot Password */}
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -184,29 +182,19 @@ export default function SignInPage() {
                       </Link>
                     </div>
 
-                    {/* Login button (loading state included if you want) */}
+                    {error && (
+                      <p className="text-red-500 text-sm text-center">
+                        {error}
+                      </p>
+                    )}
+
                     <button
                       type="submit"
                       disabled={loading}
-                      className={`w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
-                        loading ? "opacity-70 cursor-not-allowed" : ""
-                      }`}
+                      className="w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      {loading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          <span>Logging in...</span>
-                        </>
-                      ) : (
-                        <>
-                          <img
-                            src={LoginIcon}
-                            alt="Login"
-                            className="w-5 h-5"
-                          />
-                          Login to Farm
-                        </>
-                      )}
+                      <img src={LoginIcon} alt="Login" className="w-5 h-5" />
+                      {loading ? "Logging in..." : "Login to Farm"}
                     </button>
                   </form>
 
