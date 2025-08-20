@@ -36,7 +36,6 @@ export default function SignInPage() {
         body: JSON.stringify({
           identifier: usernameOrEmail,
           password,
-          rememberMe,
         }),
       });
 
