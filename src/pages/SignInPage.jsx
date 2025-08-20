@@ -42,10 +42,10 @@ export default function SignInPage() {
       });
 
       // Verify login
-      const verifyResponse = await secureApiCall(
+      const response = await secureApiCall(
         "https://papaiaapi.onrender.com/api/verify"
       );
-      const userData = await verifyResponse.json();
+      const userData = await response.json(); // Only if secureApiCall returns fetch response
       console.log("Logged in user:", userData);
 
       // ✅ Success
