@@ -22,7 +22,7 @@ export default function SignInPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch(`https://papaiaapi.onrender.com/api/user/${userId}`, {
+    fetch("https://papaiaapi.onrender.com/api/me", {
       method: "GET",
       credentials: "include",
     })
