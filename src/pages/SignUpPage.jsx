@@ -116,7 +116,7 @@ export default function SignUp() {
         formData.dateOfBirth &&
         (() => {
           const [year, month, day] = formData.dateOfBirth.split("-");
-          return { birthDate: `${month}-${day}-${year}` };
+          return { birthDate: `${month}-${day}-${year}` }; // MM-DD-YYYY
         })(),
       contactNumber: formData.phoneNumber && {
         contactNumber: formData.phoneNumber,
