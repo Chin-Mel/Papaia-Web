@@ -120,9 +120,9 @@ export default function SignUp() {
       firstName: formData.firstName,
       middleName: formData.middleName,
       lastName: formData.lastName,
-      contactNumber: formData.phoneNumber,
       suffix: formData.suffix,
-      birthdate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
+      birthDate: formData.dateOfBirth.split("-").reverse().join("-"), // MM-DD-YYYY
+      contactNumber: formData.phoneNumber,
       profilePicture: formData.profilePicture,
       street: formData.street,
       barangay: formData.barangay,
