@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
 
@@ -13,8 +13,51 @@ import LoginIcon from "../assets/login-icon.png";
 import SignInImage from "../assets/sign-in-pic.png";
 
 export default function SignInPage() {
+  const [usernameOrEmail, setUsernameOrEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("https://papaiaapi.onrender.com/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 🔑 ensures JWT cookie is stored
+        body: JSON.stringify({
+          "email/username": usernameOrEmail,
+          password,
+          rememberMe,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Invalid credentials. Please try again.");
+        } else if (response.status === 403) {
+          throw new Error("Please verify your email before logging in.");
+        } else {
+          throw new Error("Login failed. Please try again later.");
+        }
+      }
+
+      // ✅ Success
+      navigate("/dashboard"); // redirect after login
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -62,7 +105,7 @@ export default function SignInPage() {
                 </div>
 
                 <div className="p-8">
-                  <form className="space-y-6">
+                  <form className="space-y-6" onSubmit={handleLogin}>
                     <div className="space-y-2">
                       <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                         <img
@@ -75,6 +118,8 @@ export default function SignInPage() {
                       <input
                         type="text"
                         placeholder="Enter your username"
+                        value={usernameOrEmail}
+                        onChange={(e) => setUsernameOrEmail(e.target.value)}
                         className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                       />
                     </div>
@@ -92,6 +137,8 @@ export default function SignInPage() {
                         <input
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
                           className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                         />
                         <button
@@ -116,6 +163,7 @@ export default function SignInPage() {
                       </div>
                     </div>
 
+                    {/* Remember me + Forgot Password */}
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -136,12 +184,29 @@ export default function SignInPage() {
                       </Link>
                     </div>
 
+                    {/* Login button (loading state included if you want) */}
                     <button
                       type="submit"
-                      className="w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      disabled={loading}
+                      className={`w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 ${
+                        loading ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
                     >
-                      <img src={LoginIcon} alt="Login" className="w-5 h-5" />
-                      Login to Farm
+                      {loading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <span>Logging in...</span>
+                        </>
+                      ) : (
+                        <>
+                          <img
+                            src={LoginIcon}
+                            alt="Login"
+                            className="w-5 h-5"
+                          />
+                          Login to Farm
+                        </>
+                      )}
                     </button>
                   </form>
 
