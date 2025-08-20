@@ -88,19 +88,28 @@ export default function SignUp() {
       email: formData.email,
       password: formData.password,
       role: "owner",
-      middleName: formData.middleName || undefined,
+      middleName: formData.middleName && { middleName: formData.middleName },
       lastName: formData.lastName,
-      suffix: formData.suffix || undefined,
-      birthDate: formData.dateOfBirth
-        ? formData.dateOfBirth.split("-").reverse().join("-") // MM-DD-YYYY
-        : undefined,
-      contactNumber: formData.phoneNumber,
-      profilePicture: undefined,
-      street: undefined,
-      barangay: undefined,
-      municipality: undefined,
-      province: undefined,
-      zipCode: undefined,
+      suffix: formData.suffix && { suffix: formData.suffix },
+      birthDate:
+        formData.dateOfBirth &&
+        (() => {
+          const [year, month, day] = formData.dateOfBirth.split("-");
+          return { birthDate: `${month}-${day}-${year}` };
+        })(),
+      contactNumber: formData.phoneNumber && {
+        contactNumber: formData.phoneNumber,
+      },
+      profilePicture: formData.profilePicture && {
+        profilePicture: formData.profilePicture,
+      },
+      street: formData.street && { street: formData.street },
+      barangay: formData.barangay && { barangay: formData.barangay },
+      municipality: formData.municipality && {
+        municipality: formData.municipality,
+      },
+      province: formData.province && { province: formData.province },
+      zipCode: formData.zipCode && { zipCode: formData.zipCode },
     };
 
     try {
