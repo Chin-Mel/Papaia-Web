@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
@@ -21,19 +21,6 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        await secureApiCall("https://papaiaapi.onrender.com/api/verify");
-        // If successful, user is logged in
-        navigate("/dashboard", { replace: true });
-      } catch (err) {
-        // Not logged in; do nothing
-      }
-    };
-    checkLogin();
-  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
