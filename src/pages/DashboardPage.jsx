@@ -235,8 +235,9 @@ export default function DashboardPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 {farms.map((farm) => (
-                  <div
+                  <Link
                     key={farm.id}
+                    to={`/farmdashboard/${farm.id}`}
                     className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                   >
                     <div className="relative">
@@ -261,8 +262,7 @@ export default function DashboardPage() {
                       </h3>
                       <p className="text-sm text-gray-600 mb-2">{farm.desc}</p>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin size={12} />
-                        {farm.location}
+                        <MapPin size={12} /> {farm.location}
                       </div>
                       <div className="flex items-center gap-1">
                         <Leaf size={12} className="text-green-500" />
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
