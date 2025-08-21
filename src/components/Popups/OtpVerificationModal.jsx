@@ -7,7 +7,7 @@ export default function OtpVerificationModal({
   onSuccess,
   onClose,
 }) {
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]); // 4 inputs now
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [countdown, setCountdown] = useState(60);
@@ -38,8 +38,9 @@ export default function OtpVerificationModal({
     setSuccessMessage("");
 
     const enteredOtp = otp.join("");
-    if (enteredOtp.length !== 6) {
-      setError("Please enter the full 6-digit OTP.");
+    if (enteredOtp.length !== 4) {
+      // Check for 4 digits
+      setError("Please enter the full 4-digit OTP.");
       return;
     }
 
@@ -58,7 +59,7 @@ export default function OtpVerificationModal({
       if (response.ok) {
         setSuccessMessage("OTP verified successfully!");
         setTimeout(() => {
-          onSuccess(data.userId); // ✅ let parent decide (e.g. navigate or show new-password modal)
+          onSuccess(data.userId);
         }, 1000);
       } else {
         setError(data.message || "Invalid OTP. Please try again.");
@@ -99,7 +100,10 @@ export default function OtpVerificationModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-opacity-40 z-50"
+      style={{ background: "Transparent" }}
+    >
       <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 relative">
         {/* Close Button */}
         <button
@@ -108,6 +112,7 @@ export default function OtpVerificationModal({
         >
           ✕
         </button>
+
         {/* Header */}
         <div className="flex flex-col items-center mb-4">
           <div className="bg-orange-100 rounded-full p-4 shadow mb-2">
@@ -115,7 +120,7 @@ export default function OtpVerificationModal({
           </div>
           <h2 className="text-xl font-bold">Verify OTP</h2>
           <p className="text-sm text-gray-600 text-center">
-            Enter the 6-digit OTP sent to <b>{email}</b>
+            Enter the 4-digit OTP sent to <b>{email}</b>
           </p>
         </div>
 
