@@ -5,8 +5,8 @@ const API_CONFIG = {
   TIMEOUT: parseInt(import.meta.env.VITE_API_TIMEOUT) || 10000,
   ENDPOINTS: {
     AUTH: {
-      SIGNIN: "/login",
-      VERIFY: "/verify",
+      SIGNIN: "/sign-in",
+      SIGNUP: "/sign-up",
       SIGNOUT: "/auth/sign-out",
     },
     PROFILE: {
