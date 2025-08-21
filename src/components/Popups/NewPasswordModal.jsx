@@ -24,16 +24,11 @@ export default function NewPassword({ userId, asModal = true }) {
 
     try {
       const res = await fetch(
-        "https://your-backend-domain.com/reset-password",
+        "https://papaiaapi.onrender.com/api/reset-password",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId,
-            newPassword: password,
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, newPassword: password }),
         }
       );
 
