@@ -141,7 +141,13 @@ export function secureLogout() {
   window.location.href = "/sign-in";
 }
 
+export function getLoggedInUser() {
+  const user = localStorage.getItem("user"); // or wherever you store user info
+  return user ? JSON.parse(user) : null;
+}
+
 /**
+ *
  * Confirm destructive action with user
  */
 export function confirmDestructiveAction(action, itemName) {

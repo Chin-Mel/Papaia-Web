@@ -1,22 +1,32 @@
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
-import { secureLogout } from "../../utils/security";
+import { useLocation } from "react-router-dom";
+import { secureLogout, getLoggedInUser } from "../../utils/security";
+import ProfileDropdown from "../components/Popups/ProfileDropdown";
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
-  const [notifications] = useState(3); // Mock data
+  const [notifications] = useState(3); // Mock notifications
+  const [username, setUsername] = useState("");
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
     // Set active nav based on current path
     const path = location.pathname;
-    if (path === "/dashboard") setActiveNav("dashboard");
-    else if (path === "/scan-history") setActiveNav("scan-history");
-    else if (path === "/about") setActiveNav("about");
-    else if (path === "/profile") setActiveNav("profile");
-    else if (path === "/edit-profile") setActiveNav("edit-profile");
-    else if (path === "/farm-dashboard") setActiveNav("farm-dashboard");
-    else if (path === "/scan-details") setActiveNav("scan-details");
+    const navMap = {
+      "/dashboard": "dashboard",
+      "/scan-history": "scan-history",
+      "/about": "about",
+      "/profile": "profile",
+      "/edit-profile": "edit-profile",
+      "/farm-dashboard": "farm-dashboard",
+      "/scan-details": "scan-details",
+    };
+    setActiveNav(navMap[path] || "dashboard");
+
+    // Get logged-in username
+    const user = getLoggedInUser(); // implement in utils/security.js
+    if (user) setUsername(user.username);
   }, [location.pathname]);
 
   const handleNavClick = (navItem) => {
@@ -24,7 +34,6 @@ export default function HeaderMain() {
   };
 
   const handleLogout = () => {
-    // Use secure logout function
     secureLogout();
   };
 
@@ -41,46 +50,29 @@ export default function HeaderMain() {
 
         {/* Navigation */}
         <nav className="flex items-center space-x-8">
-          <Link
-            to="/dashboard"
-            onClick={() => handleNavClick("dashboard")}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 font-poppins ${
-              activeNav === "dashboard"
-                ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white font-bold"
-                : "text-[#4A7C59] font-normal hover:text-[#2D5016]"
-            }`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/scan-history"
-            onClick={() => handleNavClick("scan-history")}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 font-poppins ${
-              activeNav === "scan-history"
-                ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white font-bold"
-                : "text-[#4A7C59] font-normal hover:text-[#2D5016]"
-            }`}
-          >
-            Scan History
-          </Link>
-          <Link
-            to="/about"
-            onClick={() => handleNavClick("about")}
-            className={`px-4 py-2 rounded-lg transition-all duration-300 font-poppins ${
-              activeNav === "about"
-                ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white font-bold"
-                : "text-[#4A7C59] font-normal hover:text-[#2D5016]"
-            }`}
-          >
-            About
-          </Link>
+          {["dashboard", "scan-history", "about"].map((nav) => (
+            <button
+              key={nav}
+              onClick={() => handleNavClick(nav)}
+              className={`px-4 py-2 rounded-lg transition-all duration-300 font-poppins ${
+                activeNav === nav
+                  ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white font-bold"
+                  : "text-[#4A7C59] font-normal hover:text-[#2D5016]"
+              }`}
+            >
+              {nav
+                .split("-")
+                .map((w) => w[0].toUpperCase() + w.slice(1))
+                .join(" ")}
+            </button>
+          ))}
         </nav>
 
         {/* Right Side */}
         <div className="flex items-center space-x-6">
           {/* Welcome Message */}
           <span className="text-gray-700 font-medium">
-            Welcome Back, John Michael!
+            Welcome Back, {username || "User"}!
           </span>
 
           {/* Notification Bell */}
@@ -110,7 +102,7 @@ export default function HeaderMain() {
           {/* Profile Dropdown */}
           <div className="relative">
             <button
-              onClick={handleLogout}
+              onClick={() => setShowProfileModal(!showProfileModal)}
               className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <img
@@ -132,6 +124,14 @@ export default function HeaderMain() {
                 />
               </svg>
             </button>
+
+            {showProfileModal && (
+              <ProfileDropdown
+                username={username}
+                onClose={() => setShowProfileModal(false)}
+                onLogout={handleLogout}
+              />
+            )}
           </div>
         </div>
       </div>

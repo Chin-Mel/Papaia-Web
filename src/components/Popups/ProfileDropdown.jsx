@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { CreditCard, LogOut } from "lucide-react";
 
 export default function ProfileDropdown({
@@ -6,7 +7,13 @@ export default function ProfileDropdown({
   onLogout,
   onPlansPricing,
 }) {
+  const navigate = useNavigate();
+
   if (!isOpen) return null;
+  const goToProfilePage = () => {
+    onClose(); // close the dropdown
+    navigate("/profile"); // navigate to ProfilePage
+  };
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -16,7 +23,10 @@ export default function ProfileDropdown({
       </div>
 
       {/* Profile Information Section */}
-      <div className="p-4 border-b border-gray-200">
+      <div
+        className="p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={goToProfilePage}
+      >
         <div className="flex items-center gap-3">
           {/* Profile Picture */}
           <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
