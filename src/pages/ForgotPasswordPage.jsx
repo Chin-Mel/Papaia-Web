@@ -136,13 +136,36 @@ export default function ForgotPasswordPage() {
         />
       )}
 
+      {/* New Password Modal */}
       {showNewPasswordModal && verifiedUserId && (
-        <NewPasswordModal
+        <NewPassword
           userId={verifiedUserId}
           asModal={true}
-          onSuccess={() => {
-            setShowNewPasswordModal(false);
-            setShowPasswordUpdatedModal(true);
+          onSubmit={async (password) => {
+            try {
+              const res = await fetch(
+                "https://papaiaapi.onrender.com/api/reset-password",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    userId: verifiedUserId,
+                    newPassword: password,
+                  }),
+                }
+              );
+              if (res.ok) {
+                // show password updated modal
+                setShowNewPasswordModal(false);
+                setShowPasswordUpdatedModal(true);
+              } else {
+                const data = await res.json();
+                alert(data.message || "Failed to reset password.");
+              }
+            } catch (err) {
+              console.error(err);
+              alert("Something went wrong. Please try again.");
+            }
           }}
         />
       )}

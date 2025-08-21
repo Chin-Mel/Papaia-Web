@@ -2,7 +2,7 @@ import { CheckCircle, Shield, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-export default function NewPassword({ userId, asModal = true }) {
+export default function NewPassword({ userId, asModal = true, onSubmit }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,8 @@ export default function NewPassword({ userId, asModal = true }) {
     setLoading(true);
 
     try {
-      await onSubmit(password); // ✅ call the parent handler
+      if (onSubmit) await onSubmit(password);
+
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/reset-password",
         {
