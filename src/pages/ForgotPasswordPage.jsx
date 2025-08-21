@@ -5,6 +5,7 @@ import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
 import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
 import NewPasswordModal from "../components/Popups/NewPasswordModal";
+import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");

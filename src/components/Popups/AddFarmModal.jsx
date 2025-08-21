@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
 
-export default function AddFarmModal({ onClose }) {
+export default function AddFarmModal({ onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
@@ -12,38 +12,60 @@ export default function AddFarmModal({ onClose }) {
   const fileInputRef = useRef(null);
 
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        farmImage: file,
-      }));
-
-      // Create preview URL
+      setFormData((prev) => ({ ...prev, farmImage: file }));
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-      };
+      reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Farm data:", formData);
-    // Here you would typically send the data to your backend
-    onClose();
-  };
 
-  const handleCancel = () => {
-    onClose();
+    // Only send farmName & location as per API
+    const payload = {
+      farmName: formData.farmName,
+      location: formData.location,
+    };
+
+    try {
+      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.status === "success") {
+        // Construct new farm object for UI
+        const newFarm = {
+          id: data.farmId,
+          name: formData.farmName,
+          location: formData.location,
+          desc: formData.description,
+          img: imagePreview || "https://source.unsplash.com/400x300/?farm",
+          health: 100,
+          status: "Active",
+        };
+
+        onSubmit(newFarm); // update DashboardPage state
+      } else {
+        console.error("Failed to add farm:", data.message);
+      }
+    } catch (err) {
+      console.error("Error adding farm:", err);
+    } finally {
+      onClose();
+    }
   };
 
   return (
@@ -52,7 +74,6 @@ export default function AddFarmModal({ onClose }) {
       style={{ background: "transparent" }}
     >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] rounded-t-lg p-6 relative">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
@@ -64,14 +85,13 @@ export default function AddFarmModal({ onClose }) {
             </div>
           </div>
           <button
-            onClick={handleCancel}
+            onClick={onClose}
             className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        {/* Form Content */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Farm Name */}
@@ -89,7 +109,7 @@ export default function AddFarmModal({ onClose }) {
               />
             </div>
 
-            {/* Location/Address */}
+            {/* Location */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Location/Address <span className="text-red-500">*</span>
@@ -109,7 +129,7 @@ export default function AddFarmModal({ onClose }) {
               </div>
             </div>
 
-            {/* Farm Picture */}
+            {/* Farm Image */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
                 Farm Picture (Optional)
@@ -160,17 +180,17 @@ export default function AddFarmModal({ onClose }) {
                 onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
-                placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
+                placeholder="Describe your farm..."
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent resize-none"
               />
             </div>
 
-            {/* Action Buttons */}
+            {/* Actions */}
             <div className="flex justify-end gap-3 pt-4">
               <button
                 type="button"
-                onClick={handleCancel}
+                onClick={onClose}
                 className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
               >
                 Cancel
@@ -179,8 +199,7 @@ export default function AddFarmModal({ onClose }) {
                 type="submit"
                 className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
               >
-                <Plus className="w-4 h-4" />
-                Add Farm
+                <Plus className="w-4 h-4" /> Add Farm
               </button>
             </div>
           </form>
