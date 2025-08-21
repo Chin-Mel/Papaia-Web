@@ -31,12 +31,13 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
+      // ✅ Login request (cookies)
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include", // ✅ important for cookies
+          credentials: "include", // important for cookies
           body: JSON.stringify({ email: safeEmail, password: safePassword }),
         }
       );
@@ -45,13 +46,13 @@ export default function SignInPage() {
         throw new Error("Login failed. Please check your credentials.");
       }
 
-      // Verify login (cookie sent automatically)
+      // ✅ Verify login (cookies sent automatically)
       const verifyResponse = await fetch(
         "https://papaiaapi.onrender.com/api/verify",
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-          credentials: "include", // ✅ include cookies
+          credentials: "include", // include cookies
         }
       );
 
@@ -60,7 +61,6 @@ export default function SignInPage() {
       const userData = await verifyResponse.json();
       console.log("Verified user:", userData);
 
-      // Navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
