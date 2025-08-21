@@ -6,40 +6,10 @@ const ProtectedRoute = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const checkLogin = async () => {
-      const token = localStorage.getItem("token"); // 🔑 Get JWT from localStorage
-      if (!token) {
-        setIsLoggedIn(false);
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          "https://papaiaapi.onrender.com/api/verify",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`, // 🔑 Send token in header
-            },
-          }
-        );
-
-        if (response.ok) {
-          setIsLoggedIn(true);
-        } else {
-          setIsLoggedIn(false);
-          localStorage.removeItem("token"); // cleanup bad/expired token
-        }
-      } catch (err) {
-        setIsLoggedIn(false);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkLogin();
+    // Simply check if token exists
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+    setIsLoading(false);
   }, []);
 
   if (isLoading) return null; // or <Spinner />
