@@ -30,7 +30,7 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
-      // 🔑 Login request - expect backend to return a JWT token
+      // 🔑 Login request - backend returns JWT token + user data
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
@@ -56,28 +56,10 @@ export default function SignInPage() {
         }
       }
 
-      // 🔑 Verify login with Authorization header
-      const verifyResponse = await fetch(
-        "https://papaiaapi.onrender.com/api/verify",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${
-              loginData.token ||
-              localStorage.getItem("token") ||
-              sessionStorage.getItem("token")
-            }`,
-          },
-        }
-      );
-
-      if (!verifyResponse.ok) {
-        throw new Error("Failed to verify login.");
+      // ✅ Optionally also store some user info from login response
+      if (loginData.user) {
+        localStorage.setItem("user", JSON.stringify(loginData.user));
       }
-
-      const userData = await verifyResponse.json();
-      console.log("Verified user:", userData);
 
       // Navigate to dashboard
       navigate("/dashboard");
