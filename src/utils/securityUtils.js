@@ -1,9 +1,19 @@
+// ../utils/securityUtils.js
+
+// Helper to sanitize input
+export function sanitizeInput(input) {
+  if (typeof input !== "string") return "";
+  return input.trim();
+}
+
+// Secure API call function
 export async function secureApiCall(url, options = {}) {
+  // Make sure getCSRFToken is defined somewhere in your project
   const defaultOptions = {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": getCSRFToken(),
+      "X-CSRF-Token": typeof getCSRFToken === "function" ? getCSRFToken() : "",
     },
   };
 
@@ -28,11 +38,11 @@ export async function secureApiCall(url, options = {}) {
       } else if (response.status >= 500) {
         throw new Error("Server error occurred");
       } else {
-        throw new Error("Request failed");
+        throw new Error(`Request failed with status ${response.status}`);
       }
     }
 
-    // ✅ Return response object so .json() works
+    // Return the response so .json() can be called
     return response;
   } catch (error) {
     console.error("API call failed:", error);
