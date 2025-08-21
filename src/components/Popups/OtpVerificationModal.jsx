@@ -1,7 +1,12 @@
 import { useState, useEffect } from "react";
 import { FaCheckCircle, FaRedo } from "react-icons/fa";
 
-export default function OtpVerificationModal({ email, onBack, onSuccess }) {
+export default function OtpVerificationModal({
+  email,
+  onBack,
+  onSuccess,
+  onClose,
+}) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
