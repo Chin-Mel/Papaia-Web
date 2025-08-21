@@ -20,7 +20,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
       newOtp[index] = value;
-      setOtp(["", "", "", ""]);
+      setOtp(newOtp);
       if (value && index < otp.length - 1) {
         document.getElementById(`otp-${index + 1}`).focus();
       }
