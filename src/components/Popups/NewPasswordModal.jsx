@@ -2,17 +2,54 @@ import { CheckCircle, Shield, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
-export default function NewPassword({ onSubmit, loading, asModal = true }) {
+export default function NewPassword({ userId, asModal = true }) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    onSubmit(password); // delegate API call to parent
+
+    if (!userId) {
+      alert("Missing user ID");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(
+        "https://your-backend-domain.com/reset-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+            newPassword: password,
+          }),
+        }
+      );
+
+      if (res.ok) {
+        alert("Password reset successfully!");
+        // Optionally close modal or redirect user
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to reset password");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const content = (
@@ -24,7 +61,6 @@ export default function NewPassword({ onSubmit, loading, asModal = true }) {
         asModal ? "" : "mx-auto mt-10"
       }`}
     >
-      {/* Header Section */}
       <div className="text-center">
         <CheckCircle className="text-green-500 w-12 h-12 mx-auto mb-3" />
         <h2 className="text-xl font-semibold text-gray-800">Congratulations</h2>
@@ -37,7 +73,6 @@ export default function NewPassword({ onSubmit, loading, asModal = true }) {
         </p>
       </div>
 
-      {/* Form Section */}
       <form onSubmit={handleSubmit} className="mt-6">
         <label className="text-gray-800 font-semibold flex items-center mb-1">
           <Lock className="w-4 h-4 mr-2 text-gray-600" /> New Password
@@ -74,7 +109,6 @@ export default function NewPassword({ onSubmit, loading, asModal = true }) {
     </motion.div>
   );
 
-  // If modal → center with backdrop, else render as page block
   return asModal ? (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       {content}

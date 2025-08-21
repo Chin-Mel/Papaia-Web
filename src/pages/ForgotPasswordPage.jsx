@@ -136,6 +136,19 @@ export default function ForgotPasswordPage() {
         <OtpVerificationModal
           email={email}
           onClose={() => setShowOtpModal(false)}
+          onVerified={(userId) => {
+            setVerifiedUserId(userId); // store user ID
+            setShowOtpModal(false); // close OTP modal
+            setShowNewPasswordModal(true); // open new password modal
+          }}
+        />
+      )}
+      {/* ✅ New Password Modal */}
+      {showNewPasswordModal && verifiedUserId && (
+        <NewPassword
+          userId={verifiedUserId}
+          asModal={true}
+          onClose={() => setShowNewPasswordModal(false)}
         />
       )}
     </>

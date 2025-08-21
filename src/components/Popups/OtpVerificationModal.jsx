@@ -89,6 +89,7 @@ export default function OtpVerificationModal({
       if (response.ok) {
         setSuccessMessage("A new OTP has been sent to your email.");
         setCountdown(60);
+        onVerified(data.userId);
       } else {
         setError(data.message || "Failed to resend OTP.");
       }
