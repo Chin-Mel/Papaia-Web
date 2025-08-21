@@ -1,303 +1,330 @@
-import { useState } from "react";
-import {
-  Download,
-  ChevronDown,
-  User,
-  Calendar,
-  Clock,
-  Eye,
-} from "lucide-react";
+import { useState, useRef } from "react";
+import { Link } from "react-router-dom";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+
+import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
 
+// --- PNG ICON IMPORTS ---
+import DownloadIcon from "../assets/download-icon.png";
+import EyeIcon from "../assets/eye-icon.png";
+import UserIcon from "../assets/sh-user-icon.png";
+import CalendarIcon from "../assets/sh-calendar-icon.png";
+import ClockIcon from "../assets/sh-clock-icon.png";
+import CheckCircleIcon from "../assets/check-circle-icon.png";
+import AlertIcon from "../assets/alert-icon.png";
+
+// --- Data for the component ---
+const scanData = [
+  {
+    id: "1",
+    farmName: "Green Field Farm",
+    status: "healthy",
+    farmer: "John Smith",
+    date: "Dec 15, 2024",
+    time: "2:30 PM",
+    image:
+      "https://api.builder.io/api/v1/image/assets/TEMP/89fbe12bd1289cabc722bac2dce62b1ff1b5bb4f?width=160",
+  },
+  {
+    id: "2",
+    farmName: "North Willow Farms",
+    status: "disease-detected",
+    farmer: "Maria Garcia",
+    date: "Dec 14, 2024",
+    time: "10:15 AM",
+    image:
+      "https://api.builder.io/api/v1/image/assets/TEMP/8f342c53f902559fdd6732c79d7ef39c9ddba2aa?width=160",
+    description: "Ringspot virus detected - Immediate treatment recommended",
+  },
+  {
+    id: "3",
+    farmName: "West Lagoon Farm",
+    status: "needs-attention",
+    farmer: "David Chen",
+    date: "Dec 13, 2024",
+    time: "4:45 PM",
+    image:
+      "https://api.builder.io/api/v1/image/assets/TEMP/0716a8ead87bca87a1263f312a0b0fb53f9f54ce?width=160",
+    description: "Powdery Mildew - Monitor closely",
+  },
+  {
+    id: "4",
+    farmName: "Coast Farm",
+    status: "healthy",
+    farmer: "John Smith",
+    date: "Dec 12, 2024",
+    time: "9:20 AM",
+    image:
+      "https://api.builder.io/api/v1/image/assets/TEMP/6ed1cf9a5d511a4577be6de6a9281c620775f561?width=160",
+  },
+  {
+    id: "5",
+    farmName: "Coast Farm",
+    status: "healthy",
+    farmer: "John Smith",
+    date: "Dec 12, 2024",
+    time: "9:20 AM",
+    image:
+      "https://api.builder.io/api/v1/image/assets/TEMP/6ed1cf9a5d511a4577be6de6a9281c620775f561?width=160",
+  },
+];
+
+// --- Helper Components defined within the file ---
+
+function StatusBadge({ status }) {
+  const statusConfig = {
+    healthy: {
+      label: "Healthy",
+      className: "bg-green-100 text-green-700 border-green-200",
+      icon: <img src={CheckCircleIcon} alt="Healthy" className="w-3 h-3" />,
+    },
+    "disease-detected": {
+      label: "Disease Detected",
+      className: "bg-red-100 text-red-700 border-red-200",
+      icon: <img src={AlertIcon} alt="Alert" className="w-3 h-4" />,
+    },
+    "needs-attention": {
+      label: "Needs Attention",
+      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      icon: <img src={AlertIcon} alt="Attention" className="w-3 h-4" />,
+    },
+  };
+  const config = statusConfig[status];
+  return (
+    <div
+      className={`${config.className} flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-medium`}
+    >
+      {config.icon}
+      {config.label}
+    </div>
+  );
+}
+
+// UPDATED: This is now a Link component
+function ViewDetailsButton({ status, scanId }) {
+  const colorMap = {
+    healthy: "text-[#22C55E] hover:text-green-600",
+    "disease-detected": "text-[#EF4444] hover:text-red-600",
+    "needs-attention": "text-[#F59E0B] hover:text-yellow-600",
+  };
+  return (
+    <Link
+      to={`/scan-history-details/${scanId}`}
+      className={`flex items-center gap-2 ${colorMap[status]} p-0 h-auto text-sm font-medium transition-colors`}
+    >
+      <img src={EyeIcon} alt="View Details" className="h-4 w-4" />
+      View Details
+    </Link>
+  );
+}
+
+// --- Main Page Component ---
 export default function ScanHistoryPage() {
-  const [dateRange, setDateRange] = useState("Last 7 days");
-  const [statusFilter, setStatusFilter] = useState("All Status");
-  const [farmerFilter, setFarmerFilter] = useState("All Farmers");
-  const [farmFilter, setFarmFilter] = useState("All Farms");
+  const [currentPage, setCurrentPage] = useState(1);
+  const reportRef = useRef(null);
+  const totalPages = 3;
+  const totalResults = 1247;
+  const resultsPerPage = 5;
+  const startResult = (currentPage - 1) * resultsPerPage + 1;
+  const endResult = Math.min(currentPage * resultsPerPage, totalResults);
 
-  // Mock data for scan entries
-  const scanEntries = [
-    {
-      id: 1,
-      farmName: "Green Field Farm",
-      status: "Healthy",
-      statusColor: "green",
-      cropImage: "https://source.unsplash.com/80x80/?tomatoes,green",
-      farmer: "John Smith",
-      date: "Dec 15, 2024",
-      time: "2:30 PM",
-      details: null,
-    },
-    {
-      id: 2,
-      farmName: "North Willow Farms",
-      status: "Disease Detected",
-      statusColor: "red",
-      cropImage: "https://source.unsplash.com/80x80/?corn,cob",
-      farmer: "Maria Garcia",
-      date: "Dec 14, 2024",
-      time: "10:15 AM",
-      details: "Ringspot virus detected - immediate treatment recommended",
-    },
-    {
-      id: 3,
-      farmName: "West Lagoon Farm",
-      status: "Needs Attention",
-      statusColor: "orange",
-      cropImage: "https://source.unsplash.com/80x80/?wheat,field",
-      farmer: "David Chen",
-      date: "Dec 13, 2024",
-      time: "4:45 PM",
-      details: "Powdery Mildew - Monitor closely",
-    },
-    {
-      id: 4,
-      farmName: "Coast Farm",
-      status: "Healthy",
-      statusColor: "green",
-      cropImage: "https://source.unsplash.com/80x80/?succulent,green",
-      farmer: "John Smith",
-      date: "Dec 12, 2024",
-      time: "9:20 AM",
-      details: null,
-    },
-    {
-      id: 5,
-      farmName: "Coast Farm",
-      status: "Healthy",
-      statusColor: "green",
-      cropImage: "https://source.unsplash.com/80x80/?succulent,green",
-      farmer: "John Smith",
-      date: "Dec 12, 2024",
-      time: "9:20 AM",
-      details: null,
-    },
-  ];
-
-  const getStatusBadgeColor = (status, statusColor) => {
-    switch (statusColor) {
-      case "green":
-        return "bg-green-100 text-green-700";
-      case "red":
-        return "bg-red-100 text-red-700";
-      case "orange":
-        return "bg-orange-100 text-orange-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+  // Function to handle PDF export
+  const handleExport = () => {
+    const input = reportRef.current;
+    if (input) {
+      html2canvas(input, { scale: 2 }).then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF("p", "pt", "a4");
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+        pdf.save("scan-history-report.pdf");
+      });
     }
   };
 
-  const getViewDetailsButtonColor = (statusColor) => {
-    switch (statusColor) {
-      case "green":
-        return "text-green-600 hover:text-green-700";
-      case "red":
-        return "text-red-600 hover:text-red-700";
-      case "orange":
-        return "text-orange-600 hover:text-orange-700";
-      default:
-        return "text-gray-600 hover:text-gray-700";
-    }
-  };
-
-  const getDetailsTextColor = (statusColor) => {
-    switch (statusColor) {
-      case "red":
-        return "text-red-600";
-      case "orange":
-        return "text-orange-600";
-      default:
-        return "text-gray-600";
-    }
+  const renderPageButton = (page) => {
+    const isActive = page === currentPage;
+    return (
+      <button
+        key={page}
+        onClick={() => setCurrentPage(page)}
+        className={`min-w-[30px] h-[30px] px-2 rounded-md text-sm font-medium transition-colors ${
+          isActive
+            ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600"
+            : "border border-gray-300 text-black hover:bg-gray-50"
+        }`}
+      >
+        {page}
+      </button>
+    );
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
-
-      {/* Main Content */}
-      <main className="flex-1 p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Main Content Card */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            {/* Page Title and Description */}
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Scan History
               </h1>
-              <p className="text-gray-600">
+              <p className="text-base text-gray-600">
                 Track all crop health scans and analysis results of all farms
               </p>
             </div>
+            <button
+              onClick={handleExport}
+              className="flex items-center justify-center gap-2 h-10 px-4 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+            >
+              <img src={DownloadIcon} alt="Download" className="h-4 w-4" />
+              Export
+            </button>
+          </div>
 
-            {/* Filter and Export Section */}
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-              {/* Filters */}
-              <div className="flex flex-wrap gap-3">
-                {/* Date Range Filter */}
-                <div className="relative">
-                  <select
-                    value={dateRange}
-                    onChange={(e) => setDateRange(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent appearance-none pr-10 bg-white"
-                  >
-                    <option>Last 7 days</option>
-                    <option>Last 30 days</option>
-                    <option>Last 3 months</option>
-                    <option>Last 6 months</option>
-                    <option>Last year</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-
-                {/* Status Filter */}
-                <div className="relative">
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent appearance-none pr-10 bg-white"
-                  >
-                    <option>All Status</option>
-                    <option>Healthy</option>
-                    <option>Disease Detected</option>
-                    <option>Needs Attention</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-
-                {/* Farmer Filter */}
-                <div className="relative">
-                  <select
-                    value={farmerFilter}
-                    onChange={(e) => setFarmerFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent appearance-none pr-10 bg-white"
-                  >
-                    <option>All Farmers</option>
-                    <option>John Smith</option>
-                    <option>Maria Garcia</option>
-                    <option>David Chen</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
-
-                {/* Farm Filter */}
-                <div className="relative">
-                  <select
-                    value={farmFilter}
-                    onChange={(e) => setFarmFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent appearance-none pr-10 bg-white"
-                  >
-                    <option>All Farms</option>
-                    <option>Green Field Farm</option>
-                    <option>North Willow Farms</option>
-                    <option>West Lagoon Farm</option>
-                    <option>Coast Farm</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+          <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Date Range
+                </label>
+                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>Last 7 days</option>
+                  <option>Last 30 days</option>
+                </select>
               </div>
-
-              {/* Export Button */}
-              <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
-                <Download className="w-4 h-4" />
-                Export
-              </button>
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Status
+                </label>
+                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>All Status</option>
+                  <option>Healthy</option>
+                </select>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Farmer
+                </label>
+                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>All Farmers</option>
+                  <option>John Smith</option>
+                </select>
+              </div>
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Farm
+                </label>
+                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                  <option>All Farms</option>
+                  <option>Green Field Farm</option>
+                </select>
+              </div>
             </div>
+          </div>
 
-            {/* Scan Entries List */}
-            <div className="space-y-4">
-              {scanEntries.map((entry) => (
+          {/* Scan History List */}
+          <div
+            ref={reportRef}
+            className="bg-white rounded-xl border border-gray-200 shadow-sm"
+          >
+            <div className="space-y-4 p-6">
+              {scanData.map((record) => (
                 <div
-                  key={entry.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  key={record.id}
+                  className="bg-white rounded-xl border border-gray-200 p-6"
                 >
-                  <div className="flex items-start gap-4">
-                    {/* Crop Image */}
-                    <img
-                      src={entry.cropImage}
-                      alt={`${entry.farmName} crop`}
-                      className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                    />
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      {/* Farm Name and Status */}
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-800">
-                          {entry.farmName}
-                        </h3>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeColor(
-                            entry.status,
-                            entry.statusColor
-                          )}`}
-                        >
-                          {entry.status}
-                        </span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4 flex-1">
+                      <img
+                        src={record.image}
+                        alt={record.farmName}
+                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                            {record.farmName}
+                          </h3>
+                          <StatusBadge status={record.status} />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={UserIcon}
+                              alt="User"
+                              className="h-3 w-3"
+                            />
+                            <span>{record.farmer}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={CalendarIcon}
+                              alt="Calendar"
+                              className="h-3 w-3"
+                            />
+                            <span>{record.date}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={ClockIcon}
+                              alt="Time"
+                              className="h-3.5 w-3.5"
+                            />
+                            <span>{record.time}</span>
+                          </div>
+                        </div>
+                        {record.description && (
+                          <p
+                            className={`text-sm font-medium ${
+                              record.status === "disease-detected"
+                                ? "text-red-600"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {record.description}
+                          </p>
+                        )}
                       </div>
-
-                      {/* Farmer and Date/Time */}
-                      <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
-                        <div className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
-                          {entry.farmer}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {entry.date}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {entry.time}
-                        </div>
-                      </div>
-
-                      {/* Additional Details */}
-                      {entry.details && (
-                        <p
-                          className={`text-sm ${getDetailsTextColor(
-                            entry.statusColor
-                          )}`}
-                        >
-                          {entry.details}
-                        </p>
-                      )}
                     </div>
-
-                    {/* View Details Button */}
-                    <button
-                      className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${getViewDetailsButtonColor(
-                        entry.statusColor
-                      )} border-current hover:bg-opacity-10`}
-                    >
-                      <Eye className="w-4 h-4" />
-                      View Details
-                    </button>
+                    <div className="flex-shrink-0 ml-4">
+                      <ViewDetailsButton
+                        status={record.status}
+                        scanId={record.id}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-8 pt-6 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
-                Showing 1 to 5 of 1,247 results
-              </p>
+            <div className="flex items-center justify-between p-6 border-t border-gray-200">
+              <div className="text-sm text-gray-700">
+                Showing {startResult} to {endResult} of{" "}
+                {totalResults.toLocaleString()} results
+              </div>
               <div className="flex items-center gap-2">
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
+                <button
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                  disabled={currentPage === 1}
+                  className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-orange-500 text-white rounded-lg">
-                  1
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  2
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  3
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    renderPageButton
+                  )}
+                </div>
+                <button
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Next
                 </button>
               </div>
@@ -305,8 +332,7 @@ export default function ScanHistoryPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
+      <FooterMain />
     </div>
   );
 }

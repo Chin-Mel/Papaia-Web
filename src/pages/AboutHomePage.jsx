@@ -1,188 +1,374 @@
-import HeaderStart from "../components/Header/HeaderStart";
+import Header from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
-import ebordaImage from "../assets/eborda.png";
-import estomoImage from "../assets/estomo.jpg";
-import duarteImage from "../assets/duarte.png";
-import igotImage from "../assets/igot.png";
+
+import EyeIcon from "../assets/eye-icon-about.png";
+import TargetIcon from "../assets/target-icon.png";
+import CameraIcon from "../assets/camera-icon.png";
+import TrendingUpIcon from "../assets/trending-up-icon.png";
+import ClipboardListIcon from "../assets/clipboard-list-icon.png";
+import MailIcon from "../assets/mail-icon.png";
+import PhoneIcon from "../assets/phone-icon.png";
+import MapPinIcon from "../assets/map-pin-icon.png";
+
+// Developer Images
+import EbordaImage from "../assets/eborda.png";
+import EstomoImage from "../assets/estomo.jpg";
+import DuarteImage from "../assets/duarte.png";
+import IgotImage from "../assets/igot.png";
 
 const developers = [
   {
     name: "John Michael Eborda",
-    image: ebordaImage,
+    role: "Project Manager",
+    image: EbordaImage,
     description:
-      "John Michael Eborda is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, currently serving as the Project Manager for the Papaia App development team. As a driven and organized individual, John Michael takes charge of overseeing the entire project lifecycle—from planning and scheduling to coordination and execution. He ensures that milestones are met on time, team collaboration remains smooth, and deliverables adhere to the scope and quality standards of the capstone project.\nBeyond his managerial responsibilities, John Michael also plays a hands-on role in the technical development of the Papaia App. He contributes to coding key features, troubleshooting issues, and integrating functional components of the system. His dual role as both manager and developer allows him to bridge the gap between planning and execution, ensuring that the vision of the Papaia App is realized both strategically and technically.\nHis leadership, dedication, and technical insight are instrumental in driving the project forward, making him a vital asset to the team.",
+      "John Michael serves as Project Manager, overseeing planning, coordination, and execution phases.",
   },
   {
     name: "Erika Estomo",
-    image: estomoImage,
+    role: "Technical Writer",
+    image: EstomoImage,
     description:
-      "Erika Estomo is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, serving as the Technical Writer of the Papaia App development team. She is responsible for creating and maintaining clear, accurate, and well-structured documentation, including user manuals, system specifications, and project reports. Erika ensures that all written materials effectively convey the app's features, purpose, and technical workflows to both users and stakeholders.\nAside from her documentation duties, Erika also contributes to the web development of the Papaia App. She assists in building and refining the web-based interface, testing features, and supporting front-end improvements. Her dual strength in communication and technical implementation makes her a key bridge between design, development, and end-user clarity—making her an essential asset in both the writing and web development aspects of the project.",
+      "Erika assists in building web interface, testing features, and supporting front-end improvements.",
   },
   {
     name: "Francine Mecolle Duarte",
-    image: duarteImage,
+    role: "UI/UX Designer",
+    image: DuarteImage,
     description:
-      "Francine Mecolla Duarte is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, serving as the Front-End Developer of the Papaia App development team. She is in charge of building the user interface of the application, ensuring that the design is responsive, intuitive, and accessible across devices. Her work focuses on translating design concepts into interactive, functional components that provide a seamless user experience for both farmers and administrators.\nIn addition to front-end development, Francine also contributes ideas to the app's user flow, design consistency, and usability improvements. Her attention to detail and understanding of user needs play a key role in making the Papaia App not only visually appealing but also easy to use in real-world agricultural settings.",
+      "Francine contributes ideas for user flow, design consistency, and usability improvements.",
   },
   {
     name: "Went Ruzel Igot",
-    image: igotImage,
+    role: "Lead Programmer",
+    image: IgotImage,
     description:
-      "Went is a third-year Bachelor of Science in Information Technology (BSIT) student at the University of Cebu – Banilad Campus, and the Programmer and Back-End Developer of the Papaia App development team. He is primarily responsible for developing and maintaining the server-side logic, database structures, and core functionalities that power both the mobile and web versions of the app.\nWent ensures that user actions—such as scanning images, retrieving results, saving logs, and managing user accounts—are handled efficiently and securely behind the scenes. He also works closely with the front-end developers to integrate the user interface with the system's logic, enabling real-time communication between the app and its backend services. His strong technical skills and attention to system performance make him the backbone of the Papaia App's functionality, ensuring that it runs reliably and responds accurately to user needs.",
+      "Went develops server-side logic, database structures, and core functionalities for the application.",
   },
 ];
 
-const AboutHomePage = () => {
+export default function AboutHomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#f8f9fa]">
-      <HeaderStart />
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
 
-      <main className="flex-1 w-full pt-5">
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col lg:flex-row justify-start items-start gap-8 py-8 lg:py-12">
-            <div className="flex flex-col gap-8 w-full lg:flex-1">
-              <div className="flex flex-col">
-                <h1 className="text-3xl sm:text-4xl lg:text-[48px] font-semibold text-black lg:leading-[59px]">
+      <Header />
+
+      {/* Main Content */}
+      <main>
+        {/* Hero Section */}
+        <section className="relative h-[400px] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://api.builder.io/api/v1/image/assets/TEMP/bb0d2bc59ee3d72d5d9039aa22f5c9ddde787bea?width=2932"
+              alt="Background plants"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-papaia-green to-papaia-green-dark opacity-80"></div>
+          </div>
+          <div className="relative max-w-[1440px] mx-auto px-20 h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-12 mb-8">
+                <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
                   About Papaia
                 </h1>
-                <p className="text-base sm:text-lg lg:text-[20px] font-normal text-black text-justify lg:leading-[25px]">
-                  Papaia is a mobile and web application that helps papaya
-                  farmers detect diseases on leaves and fruits through
-                  AI-powered image scanning. By simply using a smartphone
-                  camera, farmers can scan affected areas, and the app will
-                  identify the disease and provide suggested treatments. Papaia
-                  aims to support early detection, reduce crop loss, and improve
-                  papaya production through accessible and easy-to-use
-                  technology.
+                <p className="text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                  Revolutionizing agriculture through intelligent crop disease
+                  detection and smart farming solutions
                 </p>
-              </div>
-
-              <div className="flex flex-col lg:flex-row justify-between items-stretch gap-6 lg:gap-8 w-full">
-                <div className="bg-[#fffbe6] rounded-[10px] p-5 lg:p-11 w-full lg:w-[46%] flex flex-col gap-4 min-h-[200px] lg:min-h-[250px] mt-4">
-                  <h2 className="text-2xl lg:text-[32px] font-semibold text-black text-justify lg:leading-[39px]">
-                    Vision
-                  </h2>
-                  <p className="text-base lg:text-[20px] font-normal text-black text-justify lg:leading-[25px]">
-                    To empower papaya farmers through accessible, AI-driven
-                    technology that enables early disease detection, informed
-                    decision-making, and improved crop productivity—supporting
-                    sustainable farming and agricultural innovation.
-                  </p>
-                </div>
-
-                <div className="bg-[#fffbe6] rounded-[10px] p-5 lg:p-11 w-full lg:w-[46%] flex flex-col gap-4 min-h-[200px] lg:min-h-[250px] mt-4">
-                  <h2 className="text-2xl lg:text-[32px] font-semibold text-black text-justify lg:leading-[39px]">
-                    Mission
-                  </h2>
-                  <p className="text-base lg:text-[20px] font-normal text-black text-justify lg:leading-[25px]">
-                    To become a leading digital tool in precision agriculture,
-                    revolutionizing how farmers protect and care for their
-                    papaya crops—one scan at a time.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 w-full">
-                <h2 className="text-2xl lg:text-[32px] font-semibold text-black lg:leading-[39px]">
-                  How to Use the Papaia App
-                </h2>
-                <div className="text-base lg:text-[20px] font-normal text-black lg:leading-[35px]">
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 1: Open the App</strong>
-                    <br />
-                    Launch the Papaia app on your smartphone or tablet.
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 2: Log In or Register</strong>
-                    <br />
-                    New user? Tap Register to create an account.
-                    <br />
-                    Returning user? Enter your username and password to log in.
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 3: Access the Scanner Feature</strong>
-                    <br />
-                    On the home screen, tap the scan icon
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 4: Choose How to Scan</strong>
-                    <br />
-                    You can either:
-                    <br />
-                    Tap "Take a Photo" to capture a new image of a papaya leaf
-                    or fruit.
-                    <br />
-                    Or tap "Upload from Gallery" to select an existing photo
-                    from your device.
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 5: Submit for Analysis</strong>
-                    <br />
-                    After choosing or capturing an image, the app will process
-                    the image using AI to detect any signs of disease.
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 6: View the Result</strong>
-                    <br />
-                    The app will show the detected disease, a short explanation,
-                    and a suggested treatment.
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 7: Save or Log the Result</strong>
-                    <br />
-                    After, the scan result will be automatically saved to the
-                    scan history log
-                  </p>
-                  <p className="mb-3 sm:mb-4">
-                    <strong>Step 8: Scan Again Anytime</strong>
-                    <br />
-                    Return to the home screen to scan another leaf or fruit when
-                    needed.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-4 w-full">
-                <h2 className="text-2xl lg:text-[32px] font-semibold text-black lg:leading-[39px]">
-                  The Developers
-                </h2>
               </div>
             </div>
           </div>
+        </section>
 
-          <div className="py-8 lg:py-12">
-            {developers.map((developer, index) => (
-              <div
-                key={index}
-                className="flex flex-col lg:flex-row justify-start items-start gap-6 lg:gap-8 px-4 lg:px-8 mb-12 sm:mb-16"
-              >
-                <div className="flex justify-center items-center w-full lg:w-auto">
-                  <div className="w-[266px] h-[262px] bg-[#f0f0f0] shrink-0">
-                    <img
-                      src={developer.image}
-                      alt={developer.name}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+        {/* App Overview */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center max-w-4xl mx-auto">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                App Overview
+              </h2>
+              <p className="text-lg text-papaia-text-secondary leading-relaxed">
+                Papaia is an innovative mobile application that empowers farmers
+                with AI-driven crop disease detection, real-time analytics, and
+                personalized treatment recommendations. Our cutting-edge
+                technology helps farmers identify plant diseases early, optimize
+                crop yields, and make data-driven decisions for sustainable
+                agriculture.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Vision & Mission */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="grid md:grid-cols-2 gap-12">
+              {/* Our Vision */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-[#94C522]/10      flex items-center justify-center">
+                    <img src={EyeIcon} alt="Vision" className="w-7 h-6" />
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-4 lg:gap-5 w-full lg:flex-1">
-                  <h3 className="text-2xl lg:text-[32px] font-semibold text-black lg:leading-[38px]">
-                    {developer.name}
+                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                    Our Vision
                   </h3>
-                  <p className="text-xs lg:text-[13px] font-normal text-black text-justify whitespace-pre-line lg:leading-[20px]">
-                    {developer.description}
+                </div>
+                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                  <p>
+                    To create a world where every farmer has access to
+                    intelligent
                   </p>
+                  <p>
+                    agricultural tools that ensure food security, promote
+                    sustainable
+                  </p>
+                  <p>
+                    farming practices, and maximize crop productivity through
+                  </p>
+                  <p>advanced technology and data-driven insights.</p>
                 </div>
               </div>
-            ))}
+
+              {/* Our Mission */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
+                    <img src={TargetIcon} alt="Mission" className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                    Our Mission
+                  </h3>
+                </div>
+                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                  <p>
+                    We develop innovative AI-powered solutions that help farmers
+                  </p>
+                  <p>detect crop diseases early, receive expert treatment</p>
+                  <p>recommendations, and access comprehensive analytics to</p>
+                  <p>optimize their farming operations and increase yields.</p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+        </section>
+
+        {/* Key Features */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                Key Features
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                Discover the powerful tools that make Papaia the perfect farming
+                companion
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Disease Identification */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={CameraIcon}
+                    alt="Disease Identification"
+                    className="w-8 h-8"
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Disease Identification
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Simply scan your crops with your camera and get instant
+                  AI-powered disease identification with 95% accuracy
+                </p>
+              </div>
+
+              {/* Smart Analytics */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={TrendingUpIcon}
+                    alt="Smart Analytics"
+                    className="w-8 h-8"
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Smart Analytics
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Track crop health, monitor disease patterns, and access
+                  detailed analytics to optimize your farming strategy
+                </p>
+              </div>
+
+              {/* Treatment Suggestions */}
+              <div className="text-center">
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={ClipboardListIcon}
+                    alt="Treatment Suggestions"
+                    className="w-5 h-8"
+                  />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Treatment Suggestions
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Receive personalized treatment recommendations from
+                  agricultural experts based on detected diseases
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* How to Use the App */}
+        <section className="py-16 bg-[#E5E7EB]/10">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                How to Use the App
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                Get started in just three simple steps
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Step 1 */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">1</span>
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Capture
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Take a clear photo of the affected plant or leaf using your
+                  smartphone camera
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#F97316] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Analyze
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Our AI instantly analyzes the image and identifies potential
+                  diseases or issues
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#DE5B00] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Treat
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Receive detailed treatment recommendations and track your
+                  crop's recovery progress
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Meet the Developers */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                Meet the Developers
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                The passionate team behind Papaia
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-4 gap-8">
+              {developers.map((dev, index) => (
+                <div key={index} className="text-center">
+                  <img
+                    src={dev.image}
+                    alt={dev.name}
+                    className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+                  />
+                  <h3 className="text-xl font-bold text-papaia-text-primary mb-2">
+                    {dev.name}
+                  </h3>
+                  <p className="text-[#FF8C42] font-medium mb-4">{dev.role}</p>
+                  <p className="text-sm text-papaia-text-secondary leading-relaxed">
+                    {dev.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Information */}
+        <section className="py-16 bg-[#E5E7EB]/10">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-tertiary mb-4">
+                Contact Information
+              </h2>
+              <p className="text-lg text-[#909090]">
+                Get in touch with our team
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              {/* Email */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={MailIcon} alt="Email" className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
+                  Email
+                </h3>
+                <p className="text-[#909090]">support@papaia.com</p>
+              </div>
+
+              {/* Phone */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={PhoneIcon} alt="Phone" className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
+                  Phone
+                </h3>
+                <p className="text-[#909090]">+1 (555) 123-4567</p>
+              </div>
+
+              {/* Address */}
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={MapPinIcon} alt="Address" className="w-5 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
+                  Address
+                </h3>
+                <p className="text-[#909090]">
+                  123 Agriculture St, Farm City, FC 12345
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
+      {/*Footer*/}
       <Footer />
     </div>
   );
-};
-
-export default AboutHomePage;
+}
