@@ -31,6 +31,8 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
+      sessionStorage.removeItem("authToken");
+
       // ✅ Login request (cookies)
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
@@ -42,25 +44,40 @@ export default function SignInPage() {
         }
       );
 
-      if (!loginResponse.ok) {
-        throw new Error("Login failed. Please check your credentials.");
+      const loginData = await loginResponse.json();
+
+      // IMPORTANT: Store the token from the response
+      if (loginData.token) {
+        sessionStorage.setItem("authToken", loginData.token);
+      } else {
+        throw new Error("Authentication token not received.");
       }
 
-      // ✅ Verify login (cookies sent automatically)
+      // Verify login using the stored token in the Authorization header
+      const token = sessionStorage.getItem("authToken");
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
       const verifyResponse = await fetch(
         "https://papaiaapi.onrender.com/api/verify",
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include", // include cookies
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Use the token here
+          },
         }
       );
 
-      if (!verifyResponse.ok) throw new Error("Failed to verify login");
+      if (!verifyResponse.ok) {
+        throw new Error("Failed to verify login with the token.");
+      }
 
       const userData = await verifyResponse.json();
       console.log("Verified user:", userData);
 
+      // Successfully logged in and verified, navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
