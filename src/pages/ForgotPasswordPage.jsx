@@ -5,7 +5,7 @@ import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
-import OtpVerificationModal from "../components/OtpVerificationModal"; // 👈 import modal
+import OtpVerificationModal from "../components/Popups/OtpVerificationModal"; // 👈 import modal
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
