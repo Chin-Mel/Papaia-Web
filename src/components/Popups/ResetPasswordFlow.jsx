@@ -1,6 +1,6 @@
 import { useState } from "react";
 import NewPasswordPage from "./NewPasswordPage";
-import PasswordUpdatedModal from "./PasswordUpdatedModal";
+import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 
 export default function ResetPasswordFlow({ userId }) {
   const [step, setStep] = useState("newPassword"); // "newPassword" | "success"
@@ -29,7 +29,9 @@ export default function ResetPasswordFlow({ userId }) {
   };
 
   if (step === "newPassword") {
-    return <NewPasswordPage onSubmit={handlePasswordSubmit} />;
+    return (
+      <NewPasswordPage userId={userId} onSuccess={() => setStep("success")} />
+    );
   }
 
   if (step === "success") {
