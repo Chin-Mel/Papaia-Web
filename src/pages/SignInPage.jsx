@@ -54,7 +54,10 @@ export default function SignInPage() {
         "https://papaiaapi.onrender.com/api/verify",
         {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${loginData.token}`,
+          },
           credentials: "include", // ✅ include cookies
         }
       );
