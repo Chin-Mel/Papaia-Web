@@ -20,7 +20,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
       newOtp[index] = value;
-      setOtp(newOtp);
+      setOtp(["", "", "", ""]);
       if (value && index < otp.length - 1) {
         document.getElementById(`otp-${index + 1}`).focus();
       }
@@ -53,7 +53,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
       if (response.ok) {
         setSuccessMessage("OTP verified successfully!");
         setTimeout(() => {
-          onSuccess(data.userId); // go to NewPassword modal
+          if (typeof onSuccess === "function") onSuccess(data.userId);
         }, 1000);
       } else {
         setError(data.message || "Invalid OTP. Please try again.");

@@ -38,8 +38,9 @@ export default function NewPassword({ userId, asModal = true }) {
       );
 
       if (res.ok) {
-        alert("Password reset successfully!");
+        //alert("Password reset successfully!");
         // Optionally close modal or redirect user
+        if (typeof onSuccess === "function") onSuccess();
       } else {
         const data = await res.json();
         alert(data.message || "Failed to reset password");
