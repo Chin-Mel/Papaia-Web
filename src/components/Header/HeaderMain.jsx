@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
 import ProfileDropdown from "../Popups/ProfileDropdown";
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
-  const [notifications] = useState(3); // Mock notifications
+  const [notifications] = useState(3);
   const [username, setUsername] = useState("");
   const [showProfileModal, setShowProfileModal] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Set active nav based on current path
     const path = location.pathname;
     const navMap = {
       "/dashboard": "dashboard",
@@ -24,10 +24,10 @@ export default function HeaderMain() {
     };
     setActiveNav(navMap[path] || "dashboard");
 
-    // Fetch user info from backend
+    // Fetch logged-in user info
     const user = getLoggedInUser();
     if (user?.id) {
-      fetch(`/user/${user.id}`)
+      fetch(`https://papaiaapi.onrender.com/api/user/${user.id}`) // <-- backend URL
         .then((res) => {
           if (!res.ok) throw new Error("User not found");
           return res.json();
@@ -35,18 +35,17 @@ export default function HeaderMain() {
         .then((data) => {
           if (data?.username) setUsername(data.username);
         })
-        .catch((err) => {
-          console.error("Failed to fetch user details:", err);
-        });
+        .catch((err) => console.error(err));
     }
   }, [location.pathname]);
 
-  const handleNavClick = (navItem) => {
-    setActiveNav(navItem);
-  };
+  const handleNavClick = (navItem) => setActiveNav(navItem);
 
-  const handleLogout = () => {
-    secureLogout();
+  const handleLogout = () => secureLogout();
+
+  const handleProfileClick = () => {
+    setShowProfileModal(false);
+    navigate("/profile"); // Navigate to ProfilePage
   };
 
   return (
@@ -82,12 +81,11 @@ export default function HeaderMain() {
 
         {/* Right Side */}
         <div className="flex items-center space-x-6">
-          {/* Welcome Message */}
           <span className="text-gray-700 font-medium">
-            Welcome Back, {username || "User"}!
+            Welcome Back, {username || "..."}!
           </span>
 
-          {/* Notification Bell */}
+          {/* Notifications */}
           <div className="relative">
             <button className="w-6 h-6 text-gray-600 hover:text-gray-800 transition-colors">
               <svg
@@ -142,6 +140,7 @@ export default function HeaderMain() {
                 username={username}
                 onClose={() => setShowProfileModal(false)}
                 onLogout={handleLogout}
+                onProfileClick={handleProfileClick} // pass handler
               />
             )}
           </div>
