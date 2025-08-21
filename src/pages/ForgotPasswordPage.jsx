@@ -1,26 +1,24 @@
-// ForgotPassword.jsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // ✅ Import this
 import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
-import OtpVerificationModal from "../components/Popups/OtpVerificationModal"; // 👈 import modal
+import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
+import NewPassword from "../components/Popups/NewPassword";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [emailFormatError, setEmailFormatError] = useState("");
-  const [showOtpModal, setShowOtpModal] = useState(false); // 👈 state to show modal
-  const navigate = useNavigate();
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
+  const [verifiedUserId, setVerifiedUserId] = useState(null);
 
   const validateEmailFormat = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regex.test(value.trim())) {
-      setEmailFormatError("Please enter a valid email address.");
-    } else {
-      setEmailFormatError("");
-    }
+    setEmailFormatError(
+      !regex.test(value.trim()) ? "Please enter a valid email address." : ""
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -43,12 +41,8 @@ export default function ForgotPasswordPage() {
       );
 
       const data = await response.json();
-
-      if (response.ok) {
-        setShowOtpModal(true);
-      } else {
-        setError(data.message || "Email not found or invalid.");
-      }
+      if (response.ok) setShowOtpModal(true);
+      else setError(data.message || "Email not found or invalid.");
     } catch (err) {
       console.error("Forgot password error:", err);
       setError("Failed to connect to server.");
@@ -87,7 +81,6 @@ export default function ForgotPasswordPage() {
                 />
               </svg>
             </div>
-
             <h2 className="text-xl font-bold">Forgot Password</h2>
             <p className="text-sm text-center opacity-90 mt-1">
               You will receive an email with a one-time password
@@ -97,10 +90,8 @@ export default function ForgotPasswordPage() {
           <div className="bg-white p-6">
             <form onSubmit={handleSubmit}>
               <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-1">
-                <MdEmail className="text-[#FF8C42] text-lg" />
-                Email Address
+                <MdEmail className="text-[#FF8C42] text-lg" /> Email Address
               </label>
-
               <input
                 type="email"
                 placeholder="Enter email address"
@@ -111,7 +102,6 @@ export default function ForgotPasswordPage() {
                 }}
                 className="w-full px-4 py-2 border-2 mt-1 border-[#E5E7EB] placeholder-[#ADAEBC] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
-
               {emailFormatError && (
                 <p className="text-red-500 text-sm mt-1">{emailFormatError}</p>
               )}
@@ -131,19 +121,20 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
-      {/* ✅ OTP Modal */}
+
+      {/* OTP Modal */}
       {showOtpModal && (
         <OtpVerificationModal
           email={email}
-          onClose={() => setShowOtpModal(false)}
           onVerified={(userId) => {
-            setVerifiedUserId(userId); // store user ID
-            setShowOtpModal(false); // close OTP modal
-            setShowNewPasswordModal(true); // open new password modal
+            setVerifiedUserId(userId);
+            setShowOtpModal(false);
+            setShowNewPasswordModal(true);
           }}
         />
       )}
-      {/* ✅ New Password Modal */}
+
+      {/* New Password Modal */}
       {showNewPasswordModal && verifiedUserId && (
         <NewPassword
           userId={verifiedUserId}

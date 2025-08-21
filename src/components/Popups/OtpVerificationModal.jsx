@@ -1,19 +1,14 @@
 import { useState, useEffect } from "react";
 import { FaCheckCircle, FaRedo } from "react-icons/fa";
 
-export default function OtpVerificationModal({
-  email,
-  onBack,
-  onSuccess,
-  onClose,
-}) {
-  const [otp, setOtp] = useState(["", "", "", ""]); // 4 inputs now
+export default function OtpVerificationModal({ email, onSuccess }) {
+  const [otp, setOtp] = useState(["", "", "", ""]); // 4 inputs
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(600); // 10 minutes = 600 seconds
   const [isResending, setIsResending] = useState(false);
 
-  // Countdown for resend
+  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
@@ -39,7 +34,6 @@ export default function OtpVerificationModal({
 
     const enteredOtp = otp.join("");
     if (enteredOtp.length !== 4) {
-      // Check for 4 digits
       setError("Please enter the full 4-digit OTP.");
       return;
     }
@@ -59,7 +53,7 @@ export default function OtpVerificationModal({
       if (response.ok) {
         setSuccessMessage("OTP verified successfully!");
         setTimeout(() => {
-          onSuccess(data.userId);
+          onSuccess(data.userId); // go to NewPassword modal
         }, 1000);
       } else {
         setError(data.message || "Invalid OTP. Please try again.");
@@ -88,8 +82,7 @@ export default function OtpVerificationModal({
 
       if (response.ok) {
         setSuccessMessage("A new OTP has been sent to your email.");
-        setCountdown(60);
-        onVerified(data.userId);
+        setCountdown(600); // reset 10-minute countdown
       } else {
         setError(data.message || "Failed to resend OTP.");
       }
@@ -97,23 +90,13 @@ export default function OtpVerificationModal({
       console.error("Resend OTP error:", err);
       setError("Failed to connect to server.");
     }
+
     setIsResending(false);
   };
 
   return (
-    <div
-      className="fixed inset-0 flex items-center justify-center bg-opacity-40 z-50"
-      style={{ background: "Transparent" }}
-    >
+    <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 relative">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-        >
-          ✕
-        </button>
-
         {/* Header */}
         <div className="flex flex-col items-center mb-4">
           <div className="bg-orange-100 rounded-full p-4 shadow mb-2">
