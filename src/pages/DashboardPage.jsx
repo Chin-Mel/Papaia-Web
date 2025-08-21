@@ -1,19 +1,12 @@
-import { useState } from "react";
-import {
-  Plus,
-  Users,
-  Leaf,
-  ScanLine,
-  CheckCircle,
-  MapPin,
-  TrendingUp,
-} from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import AddFarmModal from "../components/Popups/AddFarmModal";
 
 export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+  const [farms, setFarms] = useState([]);
 
   // Example data for activities
   const activities = [
@@ -21,7 +14,6 @@ export default function DashboardPage() {
       type: "New Farm Registered",
       icon: "➕",
       iconBg: "bg-green-100",
-      iconColor: "text-green-600",
       title: "New farm registered",
       description: "Green Valley Farm added to system",
       time: "2 hours ago",
@@ -31,7 +23,6 @@ export default function DashboardPage() {
       type: "Crop Scan Completed",
       icon: "📊",
       iconBg: "bg-blue-100",
-      iconColor: "text-blue-600",
       title: "Crop scan completed",
       description: "Sunrise Orchards - Health check",
       time: "4 hours ago",
@@ -41,7 +32,6 @@ export default function DashboardPage() {
       type: "Disease Detected",
       icon: "⚠️",
       iconBg: "bg-yellow-100",
-      iconColor: "text-yellow-600",
       title: "Disease Detected",
       description: "Green Valley Farm - Check",
       time: "8 hours ago",
@@ -51,7 +41,6 @@ export default function DashboardPage() {
       type: "New Farmer Onboarded",
       icon: "👤",
       iconBg: "bg-green-100",
-      iconColor: "text-green-600",
       title: "New farmer onboarded",
       description: "John Smith joined the platform",
       time: "1 day ago",
@@ -61,7 +50,6 @@ export default function DashboardPage() {
       type: "Monthly Report Generated",
       icon: "📋",
       iconBg: "bg-purple-100",
-      iconColor: "text-purple-600",
       title: "Monthly report generated",
       description: "Productivity analytics ready",
       time: "2 days ago",
@@ -69,70 +57,80 @@ export default function DashboardPage() {
     },
   ];
 
-  const farms = [
-    {
-      name: "Green Valley Farm",
-      desc: "Organic vegetables and herbs production",
-      location: "California, USA",
-      health: 98,
-      status: "Active",
-      img: "https://source.unsplash.com/400x300/?vegetables,farm",
-    },
-    {
-      name: "Sunrise Orchards",
-      desc: "Apple and citrus fruit cultivation",
-      location: "Oregon, USA",
-      health: 95,
-      status: "Active",
-      img: "https://source.unsplash.com/400x300/?wheat,field",
-    },
-    {
-      name: "Tech Greenhouse",
-      desc: "Hydroponic lettuce and tomatoes",
-      location: "Texas, USA",
-      health: 87,
-      status: "Monitoring",
-      img: "https://source.unsplash.com/400x300/?greenhouse,hydroponic",
-    },
-    {
-      name: "Lavender Fields",
-      desc: "Essential oils and aromatherapy herbs",
-      location: "Washington, USA",
-      health: 82,
-      status: "Active",
-      img: "https://source.unsplash.com/400x300/?lavender,flowers",
-    },
-    {
-      name: "Golden Corn Fields",
-      desc: "Sweet corn and grain production",
-      location: "Iowa, USA",
-      health: 96,
-      status: "Active",
-      img: "https://source.unsplash.com/400x300/?corn,plants",
-    },
-    {
-      name: "Heritage Vineyard",
-      desc: "Premium wine grapes cultivation",
-      location: "Napa Valley, CA",
-      health: 94,
-      status: "Active",
-      img: "https://source.unsplash.com/400x300/?vineyard,grapes",
-    },
-  ];
+  // Fetch farms from backend
+  useEffect(() => {
+    const fetchFarms = async () => {
+      try {
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/farms",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.status === "success" && data.farms) {
+          // Map API fields to UI
+          const mappedFarms = data.farms.map((f) => ({
+            id: f.id,
+            name: f.farmName,
+            desc: "", // default
+            location: f.location,
+            health: 100, // default
+            status: "Active", // default
+            img: "https://source.unsplash.com/400x300/?farm",
+          }));
+          setFarms(mappedFarms);
+        }
+      } catch (err) {
+        console.error("Failed to fetch farms:", err);
+      }
+    };
+    fetchFarms();
+  }, []);
 
-  const handleAddFarm = () => {
-    setShowAddFarmModal(true);
+  // Handle adding a new farm
+  const handleAddFarm = async (farmData) => {
+    try {
+      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({
+          farmName: farmData.name,
+          location: farmData.location,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.status === "success") {
+        const newFarm = {
+          id: data.farmId,
+          name: farmData.name,
+          desc: farmData.desc || "",
+          location: farmData.location,
+          health: 100,
+          status: "Active",
+          img: farmData.img || "https://source.unsplash.com/400x300/?farm",
+        };
+        setFarms((prev) => [newFarm, ...prev]);
+      }
+    } catch (err) {
+      console.error("Failed to add farm:", err);
+    } finally {
+      setShowAddFarmModal(false);
+    }
   };
 
-  const handleCloseModal = () => {
-    setShowAddFarmModal(false);
-  };
+  const handleCloseModal = () => setShowAddFarmModal(false);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-7xl mx-auto flex gap-6">
           {/* Left Column - Recent Activities */}
@@ -171,7 +169,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Column - Dashboard Overview & My Farms */}
+          {/* Right Column - My Farms */}
           <div className="flex-1">
             {/* Dashboard Overview */}
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -223,12 +221,11 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* My Farms */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
                 <button
-                  onClick={handleAddFarm}
+                  onClick={() => setShowAddFarmModal(true)}
                   className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
                 >
                   <Plus size={16} />
@@ -237,9 +234,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-3 gap-4">
-                {farms.map((farm, idx) => (
+                {farms.map((farm) => (
                   <div
-                    key={idx}
+                    key={farm.id}
                     className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                   >
                     <div className="relative">
@@ -282,9 +279,9 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* Add Farm Modal */}
-      {showAddFarmModal && <AddFarmModal onClose={handleCloseModal} />}
-
+      {showAddFarmModal && (
+        <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
+      )}
       <Footer />
     </div>
   );
