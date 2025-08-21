@@ -1,14 +1,14 @@
-import { useState, useEffect } from "react";
-import { FaCheckCircle, FaRedo } from "react-icons/fa";
+import { useState, useEffect, useRef } from "react";
+import { FaSignInAlt } from "react-icons/fa";
 
 export default function OtpVerificationModal({ email, onSuccess }) {
-  const [otp, setOtp] = useState(["", "", "", ""]); // 4 inputs
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [countdown, setCountdown] = useState(600); // 10 minutes = 600 seconds
+  const [countdown, setCountdown] = useState(600); // 10 minutes
   const [isResending, setIsResending] = useState(false);
+  const inputRefs = useRef([]);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
@@ -21,9 +21,13 @@ export default function OtpVerificationModal({ email, onSuccess }) {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
-      if (value && index < otp.length - 1) {
-        document.getElementById(`otp-${index + 1}`).focus();
-      }
+      if (value && index < otp.length - 1) inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleKeyDown = (e, index) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
     }
   };
 
@@ -39,18 +43,13 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     }
 
     try {
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/verify-otp",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, otp: enteredOtp }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
+      const res = await fetch("https://papaiaapi.onrender.com/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: enteredOtp }),
+      });
+      const data = await res.json();
+      if (res.ok) {
         setSuccessMessage("OTP verified successfully!");
         setTimeout(() => {
           if (typeof onSuccess === "function") onSuccess(data.userId);
@@ -59,7 +58,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
         setError(data.message || "Invalid OTP. Please try again.");
       }
     } catch (err) {
-      console.error("OTP verification error:", err);
+      console.error(err);
       setError("Failed to connect to server.");
     }
   };
@@ -68,9 +67,8 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     if (countdown > 0 || isResending) return;
     setIsResending(true);
     setError("");
-
     try {
-      const response = await fetch(
+      const res = await fetch(
         "https://papaiaapi.onrender.com/api/forgot-password",
         {
           method: "POST",
@@ -78,51 +76,77 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           body: JSON.stringify({ email }),
         }
       );
-      const data = await response.json();
-
-      if (response.ok) {
+      const data = await res.json();
+      if (res.ok) {
         setSuccessMessage("A new OTP has been sent to your email.");
-        setCountdown(600); // reset 10-minute countdown
-      } else {
-        setError(data.message || "Failed to resend OTP.");
-      }
+        setCountdown(600);
+      } else setError(data.message || "Failed to resend OTP.");
     } catch (err) {
-      console.error("Resend OTP error:", err);
+      console.error(err);
       setError("Failed to connect to server.");
     }
-
     setIsResending(false);
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-lg p-6 relative">
+      <div className="relative z-10 w-full max-w-md h-[500px] rounded-2xl shadow-lg overflow-hidden bg-white mt-20 mb-[30px]">
         {/* Header */}
-        <div className="flex flex-col items-center mb-4">
-          <div className="bg-orange-100 rounded-full p-4 shadow mb-2">
-            <FaCheckCircle className="w-8 h-8 text-orange-500" />
+        <div
+          className="flex flex-col items-center justify-center text-white pt-6 pb-3"
+          style={{
+            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
+          }}
+        >
+          <div className="bg-white rounded-full p-4 shadow-lg mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="orange"
+              viewBox="0 0 24 24"
+              stroke="orange"
+              className="w-8 h-8"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
           </div>
-          <h2 className="text-xl font-bold">Verify OTP</h2>
-          <p className="text-sm text-gray-600 text-center">
-            Enter the 4-digit OTP sent to <b>{email}</b>
+          <h2 className="text-xl font-bold">Email Authentication</h2>
+          <h4 className="text-sm font-bold">Enter one-time password</h4>
+          <p className="text-sm text-center opacity-90 mt-1">
+            A one-time password has been sent to
+          </p>
+          <p className="text-sm text-center opacity-90 mt-1 font-bold italic mb-0">
+            {email}
           </p>
         </div>
 
-        {/* Form */}
+        <p className="text-sm text-center text-[#00712D] opacity-90 mt-5">
+          Enter the 4 digit code we sent you via email to continue.
+        </p>
+
+        {/* OTP Inputs */}
         <form
           onSubmit={handleVerify}
-          className="flex flex-col items-center gap-4"
+          className="flex flex-col items-center gap-4 mt-6"
         >
-          <div className="flex gap-2">
+          <div className="flex justify-center gap-5">
             {otp.map((digit, index) => (
               <input
                 key={index}
                 id={`otp-${index}`}
                 type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength="1"
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, index)}
-                maxLength={1}
-                className="w-12 h-12 text-center text-lg border-2 border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-400"
+                onKeyDown={(e) => handleKeyDown(e, index)}
+                ref={(el) => (inputRefs.current[index] = el)}
+                className="w-16 h-16 text-center text-lg border-2 border-[#8B5E3C] focus:outline-none focus:border-orange-400 rounded"
               />
             ))}
           </div>
@@ -134,9 +158,12 @@ export default function OtpVerificationModal({ email, onSuccess }) {
 
           <button
             type="submit"
-            className="mt-2 w-full text-white font-medium py-2 rounded-md shadow bg-gradient-to-r from-orange-500 to-orange-400"
+            className="mt-6 w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow"
+            style={{
+              backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
+            }}
           >
-            Verify OTP
+            <FaSignInAlt className="w-5 h-5" /> Verify
           </button>
 
           <button
@@ -149,9 +176,16 @@ export default function OtpVerificationModal({ email, onSuccess }) {
                 : "text-orange-500"
             }`}
           >
-            <FaRedo /> Resend OTP {countdown > 0 && `(${countdown}s)`}
+            Resend OTP {countdown > 0 && `(${countdown}s)`}
           </button>
         </form>
+
+        <p className="text-xs text-center text-black opacity-90 mt-4">
+          Not your email?/Didn’t receive the code?{" "}
+          <button onClick={handleResend} className="text-[#FF8C42] underline">
+            Try Again
+          </button>
+        </p>
       </div>
     </div>
   );

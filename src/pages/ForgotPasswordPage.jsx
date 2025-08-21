@@ -5,8 +5,6 @@ import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
 import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
 import NewPasswordModal from "../components/Popups/NewPasswordModal";
-// If your file is PasswordUpdatedModal.jsx
-import PasswordUpdatedModal from "../components/Popups/PasswordUpdatedModal";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -15,8 +13,6 @@ export default function ForgotPasswordPage() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
   const [verifiedUserId, setVerifiedUserId] = useState(null);
-  const [showPasswordUpdatedModal, setShowPasswordUpdatedModal] =
-    useState(false);
 
   const validateEmailFormat = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -156,10 +152,10 @@ export default function ForgotPasswordPage() {
                   }),
                 }
               );
+
               if (res.ok) {
-                // show password updated modal
-                setShowNewPasswordModal(false);
-                setShowPasswordUpdatedModal(true);
+                // ✅ directly redirect to login page
+                window.location.href = "/signin";
               } else {
                 const data = await res.json();
                 alert(data.message || "Failed to reset password.");
@@ -169,12 +165,6 @@ export default function ForgotPasswordPage() {
               alert("Something went wrong. Please try again.");
             }
           }}
-        />
-      )}
-
-      {showPasswordUpdatedModal && (
-        <PasswordUpdatedModal
-          onClose={() => setShowPasswordUpdatedModal(false)}
         />
       )}
     </>

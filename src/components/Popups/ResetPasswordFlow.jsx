@@ -1,12 +1,16 @@
 import { useState } from "react";
 import NewPasswordModal from "./components/Popups/NewPasswordModal";
-import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 
 export default function ResetPasswordFlow({ userId }) {
-  const [step, setStep] = useState("newPassword"); // "newPassword" | "success"
+  const [loading, setLoading] = useState(false);
 
-  // This will be passed to NewPasswordPage and triggered after successful password reset
   const handlePasswordSubmit = async (password) => {
+    if (!userId) {
+      alert("Missing user ID");
+      return;
+    }
+
+    setLoading(true);
     try {
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/reset-password",
@@ -18,7 +22,8 @@ export default function ResetPasswordFlow({ userId }) {
       );
 
       if (res.ok) {
-        setStep("success"); // ✅ show success modal
+        // ✅ Directly redirect to login page
+        window.location.href = "/signin";
       } else {
         const data = await res.json();
         alert(data.message || "Failed to reset password.");
@@ -26,26 +31,16 @@ export default function ResetPasswordFlow({ userId }) {
     } catch (error) {
       console.error("Error resetting password:", error);
       alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (step === "newPassword") {
-    return <NewPasswordModal userId={userId} onSubmit={handlePasswordSubmit} />;
-  }
-
-  if (step === "success") {
-    return (
-      <PasswordUpdatedModal
-        onClose={(action) => {
-          if (action === "signin") {
-            window.location.href = "/signin";
-          } else if (action === "home") {
-            window.location.href = "/";
-          }
-        }}
-      />
-    );
-  }
-
-  return null;
+  return (
+    <NewPasswordModal
+      userId={userId}
+      onSubmit={handlePasswordSubmit}
+      loading={loading}
+    />
+  );
 }
