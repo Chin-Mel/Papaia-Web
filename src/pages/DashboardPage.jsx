@@ -238,7 +238,7 @@ export default function DashboardPage() {
                 {farms.map((farm) => (
                   <Link
                     key={farm.id}
-                    to={`/farmdashboard/${farm.id}`}
+                    to={`/farm-dashboard/${farm.id}`}
                     className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                   >
                     <div className="relative">

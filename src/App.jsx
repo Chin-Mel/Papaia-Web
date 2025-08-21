@@ -58,7 +58,7 @@ function App() {
           }
         />
         <Route
-          path="/farm-dashboard/:farmId"
+          path="/farm-dashboard/:id"
           element={
             <AuthGuard>
               <FarmDashboardPage />
