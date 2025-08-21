@@ -18,26 +18,18 @@ export function sanitizeInput(input) {
 }
 
 /**
- * Get CSRF token from meta tag
- * @returns {string} - CSRF token
- */
-export function getCSRFToken() {
-  const metaTag = document.querySelector('meta[name="csrf-token"]');
-  return metaTag ? metaTag.getAttribute("content") : "";
-}
-
-/**
- * Secure API call with CSRF protection and error handling
+ * Secure API call with JWT from localStorage
  * @param {string} url - API endpoint
  * @param {Object} options - Fetch options
  * @returns {Promise} - API response
  */
 export async function secureApiCall(url, options = {}) {
+  const token = localStorage.getItem("token"); // JWT from login
+
   const defaultOptions = {
-    credentials: "include", // Include cookies for session auth
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": getCSRFToken(), // CSRF protection
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   };
 
@@ -54,9 +46,9 @@ export async function secureApiCall(url, options = {}) {
     const response = await fetch(url, finalOptions);
 
     if (!response.ok) {
-      // Handle different error status codes
       if (response.status === 401) {
-        // Unauthorized - redirect to login
+        // Unauthorized → clear token & redirect
+        localStorage.removeItem("token");
         window.location.href = "/sign-in";
         throw new Error("Authentication required");
       } else if (response.status === 403) {
@@ -77,8 +69,6 @@ export async function secureApiCall(url, options = {}) {
 
 /**
  * Validate email format
- * @param {string} email - Email to validate
- * @returns {boolean} - Is valid email
  */
 export function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -87,8 +77,6 @@ export function validateEmail(email) {
 
 /**
  * Validate password strength
- * @param {string} password - Password to validate
- * @returns {Object} - Validation result with score and feedback
  */
 export function validatePassword(password) {
   const minLength = 8;
@@ -100,11 +88,8 @@ export function validatePassword(password) {
   let score = 0;
   const feedback = [];
 
-  if (password.length >= minLength) {
-    score += 1;
-  } else {
-    feedback.push(`Password must be at least ${minLength} characters long`);
-  }
+  if (password.length >= minLength) score += 1;
+  else feedback.push(`Password must be at least ${minLength} characters long`);
 
   if (hasUpperCase) score += 1;
   else feedback.push("Include at least one uppercase letter");
@@ -129,11 +114,8 @@ export function validatePassword(password) {
  * Clear sensitive data from localStorage and sessionStorage
  */
 export function clearSensitiveData() {
-  // Never store JWTs in localStorage/sessionStorage
-  // Only clear non-sensitive data
   const safeKeys = ["theme", "language", "ui-preferences"];
 
-  // Clear all except safe keys
   Object.keys(localStorage).forEach((key) => {
     if (!safeKeys.includes(key)) {
       localStorage.removeItem(key);
@@ -148,31 +130,19 @@ export function clearSensitiveData() {
 }
 
 /**
- * Logout function - clear state and redirect
+ * Logout function - clear token and redirect
  */
 export function secureLogout() {
-  // Clear any sensitive data
+  // Clear token + other data
+  localStorage.removeItem("token");
   clearSensitiveData();
 
-  // Call logout API to invalidate session
-  fetch("/api/auth/logout", {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRF-Token": getCSRFToken(),
-    },
-  }).finally(() => {
-    // Redirect to login page
-    window.location.href = "/sign-in";
-  });
+  // Redirect to login page
+  window.location.href = "/sign-in";
 }
 
 /**
  * Confirm destructive action with user
- * @param {string} action - Action description
- * @param {string} itemName - Name of item being affected
- * @returns {Promise<boolean>} - User confirmation
  */
 export function confirmDestructiveAction(action, itemName) {
   return new Promise((resolve) => {

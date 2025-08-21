@@ -1,19 +1,18 @@
-// ../utils/securityUtils.js
-
 // Helper to sanitize input
 export function sanitizeInput(input) {
   if (typeof input !== "string") return "";
   return input.trim();
 }
 
-// Secure API call function
+// Secure API call function using localStorage JWT (no cookies)
 export async function secureApiCall(url, options = {}) {
-  // Make sure getCSRFToken is defined somewhere in your project
+  // 🔑 Grab token from localStorage
+  const token = localStorage.getItem("token");
+
   const defaultOptions = {
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": typeof getCSRFToken === "function" ? getCSRFToken() : "",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}), // attach token if available
     },
   };
 
@@ -31,6 +30,7 @@ export async function secureApiCall(url, options = {}) {
 
     if (!response.ok) {
       if (response.status === 401) {
+        localStorage.removeItem("token"); // 🔥 clear bad token
         throw new Error("Authentication required");
       } else if (response.status === 403) {
         throw new Error("Access denied");
@@ -41,10 +41,18 @@ export async function secureApiCall(url, options = {}) {
       }
     }
 
-    // Return the response so .json() can be called
-    return response;
+    return response; // so caller can still call .json()
   } catch (error) {
     console.error("API call failed:", error);
     throw error;
   }
+}
+
+// 🔥 Optional: clear cookies completely in case old ones exist
+export function clearAllCookies() {
+  document.cookie.split(";").forEach((c) => {
+    document.cookie = c
+      .replace(/^ +/, "")
+      .replace(/=.*/, "=;expires=" + new Date(0).toUTCString() + ";path=/");
+  });
 }

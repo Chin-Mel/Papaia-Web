@@ -44,11 +44,14 @@ export function withTimeout(promise, timeoutMs = API_CONFIG.TIMEOUT) {
   ]);
 }
 
+// ✅ Default headers WITHOUT cookies
 export function getDefaultHeaders() {
+  const token = localStorage.getItem("token"); // grab JWT
   return {
     "Content-Type": "application/json",
     Accept: "application/json",
     "X-Requested-With": "XMLHttpRequest",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}), // attach JWT if present
   };
 }
 
@@ -68,13 +71,12 @@ export function handleApiError(error) {
   };
 }
 
-// General fetch wrapper for authenticated requests
+// ✅ API fetch wrapper (JWT from localStorage, no cookies)
 export async function apiFetch(endpoint, options = {}) {
   const url = getApiUrl(endpoint);
   const defaultOptions = {
     method: "GET",
     headers: getDefaultHeaders(),
-    credentials: "include", // 🔑 include HttpOnly cookies
   };
   const finalOptions = { ...defaultOptions, ...options };
 

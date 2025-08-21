@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer/FooterMain";
 import HeaderStart from "../components/Header/HeaderStart";
-import { secureApiCall, sanitizeInput } from "../utils/securityUtils"; // your file
 
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
@@ -31,13 +30,12 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
-      // Login request with credentials to include cookies
+      // 🔑 Login request - expect backend to return a JWT token
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          credentials: "include", // ✅ important for cookies
           body: JSON.stringify({ email: safeEmail, password: safePassword }),
         }
       );
@@ -49,15 +47,28 @@ export default function SignInPage() {
       const loginData = await loginResponse.json();
       console.log("Login successful:", loginData);
 
-      // Verify login (cookies are sent automatically)
+      // ✅ Store token in localStorage (or sessionStorage if not "remember me")
+      if (loginData.token) {
+        if (rememberMe) {
+          localStorage.setItem("token", loginData.token);
+        } else {
+          sessionStorage.setItem("token", loginData.token);
+        }
+      }
+
+      // 🔑 Verify login with Authorization header
       const verifyResponse = await fetch(
         "https://papaiaapi.onrender.com/api/verify",
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${
+              loginData.token ||
+              localStorage.getItem("token") ||
+              sessionStorage.getItem("token")
+            }`,
           },
-          credentials: "include", // ✅ include cookies
         }
       );
 
