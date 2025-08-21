@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
 
       {/* New Password Modal */}
       {showNewPasswordModal && verifiedUserId && (
-        <NewPassword
+        <NewPasswordModal
           userId={verifiedUserId}
           asModal={true}
           onSubmit={async (password) => {
