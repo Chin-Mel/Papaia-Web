@@ -25,26 +25,26 @@ export default function SignInPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
     try {
-      const safeEmail = sanitizeInput(usernameOrEmail);
-      const safePassword = sanitizeInput(password);
+      // Remove sanitizeInput if not available
+      const safeEmail = usernameOrEmail.trim();
+      const safePassword = password.trim();
 
-      // Login
+      // Login request
       const loginResponse = await secureApiCall(
         "https://papaiaapi.onrender.com/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: safeEmail,
-            password: safePassword,
-          }),
+          body: JSON.stringify({ email: safeEmail, password: safePassword }),
         }
       );
 
-      // Optional: check login response data
+      if (!loginResponse.ok) {
+        throw new Error("Login failed. Please check your credentials.");
+      }
+
       const loginData = await loginResponse.json();
       console.log("Login response:", loginData);
 
@@ -53,22 +53,20 @@ export default function SignInPage() {
         "https://papaiaapi.onrender.com/api/verify"
       );
 
-      if (!verifyResponse) throw new Error("No response from verify API");
-
-      let userData;
-      try {
-        userData = await verifyResponse.json();
-      } catch (jsonErr) {
-        throw new Error("Failed to parse verify response JSON");
+      if (!verifyResponse.ok) {
+        throw new Error("Failed to verify login.");
       }
 
+      const userData = await verifyResponse.json();
       console.log("Logged in user:", userData);
 
       // Navigate to dashboard
       navigate("/dashboard");
     } catch (err) {
-      setError(err.message);
+      // Display error until user edits input
+      setError(err.message || "An unexpected error occurred.");
     } finally {
+      // Stop loading spinner
       setLoading(false);
     }
   };
