@@ -39,7 +39,24 @@ export default function HeaderMain() {
     }
   }, [location.pathname]);
 
-  const handleNavClick = (navItem) => setActiveNav(navItem);
+  const handleNavClick = (navItem) => {
+    setActiveNav(navItem);
+
+    // Navigate to the correct page
+    switch (navItem) {
+      case "dashboard":
+        navigate("/dashboard");
+        break;
+      case "scan-history":
+        navigate("/scan-history");
+        break;
+      case "about":
+        navigate("/about");
+        break;
+      default:
+        navigate("/dashboard");
+    }
+  };
 
   const handleLogout = () => secureLogout();
 
