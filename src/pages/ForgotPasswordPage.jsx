@@ -13,6 +13,8 @@ export default function ForgotPasswordPage() {
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
   const [verifiedUserId, setVerifiedUserId] = useState(null);
+  const [showPasswordUpdatedModal, setShowPasswordUpdatedModal] =
+    useState(false);
 
   const validateEmailFormat = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -134,12 +136,20 @@ export default function ForgotPasswordPage() {
         />
       )}
 
-      {/* New Password Modal */}
       {showNewPasswordModal && verifiedUserId && (
         <NewPasswordModal
           userId={verifiedUserId}
           asModal={true}
-          onClose={() => setShowNewPasswordModal(false)}
+          onSuccess={() => {
+            setShowNewPasswordModal(false); // hide NewPasswordModal
+            setShowPasswordUpdatedModal(true); // show success modal
+          }}
+        />
+      )}
+
+      {showPasswordUpdatedModal && (
+        <PasswordUpdatedModal
+          onClose={() => setShowPasswordUpdatedModal(false)}
         />
       )}
     </>
