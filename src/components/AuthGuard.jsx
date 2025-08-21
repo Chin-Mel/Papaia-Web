@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { secureApiCall } from "../utils/securityUtils";
 
 export default function AuthGuard({ children }) {
   const navigate = useNavigate();
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    fetch("https://papaiaapi.onrender.com/api/verify", {
+    secureApiCall("https://papaiaapi.onrender.com/api/verify", {
       method: "GET",
       credentials: "include", // sends HttpOnly cookie
     })

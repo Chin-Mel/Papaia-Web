@@ -32,20 +32,36 @@ export default function SignInPage() {
       const safePassword = sanitizeInput(password);
 
       // Login
-      await secureApiCall("https://papaiaapi.onrender.com/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: safeEmail,
-          password: safePassword,
-        }),
-      });
+      const loginResponse = await secureApiCall(
+        "https://papaiaapi.onrender.com/api/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: safeEmail,
+            password: safePassword,
+          }),
+        }
+      );
+
+      // Optional: check login response data
+      const loginData = await loginResponse.json();
+      console.log("Login response:", loginData);
 
       // Verify login
       const verifyResponse = await secureApiCall(
         "https://papaiaapi.onrender.com/api/verify"
       );
-      const userData = await verifyResponse.json(); // ✅ safe now
+
+      if (!verifyResponse) throw new Error("No response from verify API");
+
+      let userData;
+      try {
+        userData = await verifyResponse.json();
+      } catch (jsonErr) {
+        throw new Error("Failed to parse verify response JSON");
+      }
+
       console.log("Logged in user:", userData);
 
       // Navigate to dashboard
