@@ -130,7 +130,10 @@ export default function SignInPage() {
                         type="text"
                         placeholder="Enter your username or email"
                         value={usernameOrEmail}
-                        onChange={(e) => setUsernameOrEmail(e.target.value)}
+                        onChange={(e) => {
+                          setUsernameOrEmail(e.target.value);
+                          if (error) setError("");
+                        }}
                         className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                       />
                     </div>
@@ -149,7 +152,10 @@ export default function SignInPage() {
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          setPasswordonChange={(e) => {
+                            e.target.value;
+                            if (error) setError("");
+                          }}
                           className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                         />
                         <button

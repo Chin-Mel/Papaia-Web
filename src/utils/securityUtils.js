@@ -31,7 +31,6 @@ export async function secureApiCall(url, options = {}) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        window.location.href = "/sign-in";
         throw new Error("Authentication required");
       } else if (response.status === 403) {
         throw new Error("Access denied");
