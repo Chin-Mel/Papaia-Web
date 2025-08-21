@@ -72,17 +72,16 @@ export default function DashboardPage() {
         );
         const data = await res.json();
         if (data.status === "success" && data.farms) {
-          // Map API fields to UI
           const mappedFarms = data.farms.map((f) => ({
             id: f.id,
             name: f.farmName,
-            desc: "", // default
+            desc: "",
             location: f.location,
-            health: 100, // default
-            status: "Active", // default
+            health: 100,
+            status: "Active",
             img: "https://source.unsplash.com/400x300/?farm",
           }));
-          setFarms(mappedFarms);
+          setFarms(mappedFarms); // render exactly what backend has
         }
       } catch (err) {
         console.error("Failed to fetch farms:", err);
@@ -108,6 +107,7 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (data.status === "success") {
+        // Only add the new farm to UI after successful POST
         const newFarm = {
           id: data.farmId,
           name: farmData.name,
@@ -117,7 +117,7 @@ export default function DashboardPage() {
           status: "Active",
           img: farmData.img || "https://source.unsplash.com/400x300/?farm",
         };
-        setFarms((prev) => [newFarm, ...prev]);
+        setFarms((prev) => [...prev, newFarm]); // append, not prepend
       }
     } catch (err) {
       console.error("Failed to add farm:", err);
