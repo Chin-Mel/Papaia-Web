@@ -5,11 +5,13 @@ import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
+import OtpVerificationModal from "../components/OtpVerificationModal"; // 👈 import modal
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [emailFormatError, setEmailFormatError] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false); // 👈 state to show modal
   const navigate = useNavigate();
 
   const validateEmailFormat = (value) => {
@@ -43,7 +45,7 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (response.ok) {
-        navigate("/verify-otp", { state: { email: email.trim() } });
+        setShowOtpModal(true);
       } else {
         setError(data.message || "Email not found or invalid.");
       }
@@ -129,6 +131,13 @@ export default function ForgotPasswordPage() {
           </div>
         </div>
       </div>
+      {/* ✅ OTP Modal */}
+      {showOtpModal && (
+        <OtpVerificationModal
+          email={email}
+          onClose={() => setShowOtpModal(false)}
+        />
+      )}
     </>
   );
 }

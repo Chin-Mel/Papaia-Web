@@ -12,8 +12,9 @@ import ScanDetailsPage from "./pages/ScanDetailsPage";
 import AboutPage from "./pages/AboutPage";
 import AboutHomePage from "./pages/AboutHomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import NewPasswordPage from "./pages/NewPasswordPage";
-import OtpVerificationPage from "./pages/OtpVerificationPage";
+import NewPasswordModal from "./components/Popups/NewPasswordModal";
+import OtpVerificationModal from "./components/Popups/OtpVerificationModal";
+import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 import AuthGuard from "./components/AuthGuard";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -27,8 +28,9 @@ function App() {
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/about-home" element={<AboutHomePage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/new-password" element={<NewPasswordPage />} />
-        <Route path="/otp-verification" element={<OtpVerificationPage />} />
+        <Route path="/new-password" element={<NewPasswordModal />} />
+        <Route path="/otp-verification" element={<OtpVerificationModal />} />
+        <Route path="/changed-password" element={<PasswordUpdatedModal />} />
 
         {/* Protected Routes */}
         <Route
