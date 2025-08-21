@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
       {showOtpModal && (
         <OtpVerificationModal
           email={email}
-          onVerified={(userId) => {
+          onSuccess={(userId) => {
             setVerifiedUserId(userId);
             setShowOtpModal(false);
             setShowNewPasswordModal(true);
