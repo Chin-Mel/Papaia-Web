@@ -4,7 +4,7 @@ import { MdEmail } from "react-icons/md";
 import Header from "../components/Header/HeaderStart";
 import heroBg from "../assets/hero-background.png";
 import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
-import NewPassword from "../components/Popups/NewPassword";
+import NewPasswordModal from "../components/Popups/NewPasswordModal";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -136,7 +136,7 @@ export default function ForgotPasswordPage() {
 
       {/* New Password Modal */}
       {showNewPasswordModal && verifiedUserId && (
-        <NewPassword
+        <NewPasswordModal
           userId={verifiedUserId}
           asModal={true}
           onClose={() => setShowNewPasswordModal(false)}
