@@ -5,6 +5,7 @@ import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 export default function ResetPasswordFlow({ userId }) {
   const [step, setStep] = useState("newPassword"); // "newPassword" | "success"
 
+  // This will be passed to NewPasswordPage and triggered after successful password reset
   const handlePasswordSubmit = async (password) => {
     try {
       const res = await fetch(
@@ -17,7 +18,7 @@ export default function ResetPasswordFlow({ userId }) {
       );
 
       if (res.ok) {
-        setStep("success");
+        setStep("success"); // ✅ show success modal
       } else {
         const data = await res.json();
         alert(data.message || "Failed to reset password.");
@@ -30,7 +31,10 @@ export default function ResetPasswordFlow({ userId }) {
 
   if (step === "newPassword") {
     return (
-      <NewPasswordPage userId={userId} onSuccess={() => setStep("success")} />
+      <NewPasswordPage
+        userId={userId}
+        onSubmit={handlePasswordSubmit} // pass the submit handler
+      />
     );
   }
 

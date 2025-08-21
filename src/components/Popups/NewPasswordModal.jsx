@@ -15,6 +15,8 @@ export default function NewPassword({ userId, asModal = true }) {
       return;
     }
 
+    await onSubmit(password); // ✅ trigger the parent to show success
+
     if (!userId) {
       alert("Missing user ID");
       return;
