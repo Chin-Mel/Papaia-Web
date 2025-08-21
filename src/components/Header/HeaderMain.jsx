@@ -24,6 +24,12 @@ export default function HeaderMain() {
     };
     setActiveNav(navMap[path] || "dashboard");
 
+    useEffect(() => {
+      const user = getLoggedInUser();
+      console.log("Logged-in user:", user); // Check what it returns
+      if (user) setUsername(user.username);
+    }, []);
+
     // Get logged-in username
     const user = getLoggedInUser(); // implement in utils/security.js
     if (user) setUsername(user.username);

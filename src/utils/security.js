@@ -141,10 +141,10 @@ export function secureLogout() {
   window.location.href = "/sign-in";
 }
 
-export function getLoggedInUser() {
-  const user = localStorage.getItem("user"); // or wherever you store user info
+export const getLoggedInUser = () => {
+  const user = localStorage.getItem("user"); // or "authUser" depending on your app
   return user ? JSON.parse(user) : null;
-}
+};
 
 /**
  *
