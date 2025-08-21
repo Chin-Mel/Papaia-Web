@@ -1,5 +1,5 @@
 import { useState } from "react";
-import NewPasswordPage from "./NewPasswordPage";
+import NewPasswordModal from "./components/Popups/NewPasswordModal";
 import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
 
 export default function ResetPasswordFlow({ userId }) {
@@ -30,7 +30,7 @@ export default function ResetPasswordFlow({ userId }) {
   };
 
   if (step === "newPassword") {
-    return <NewPasswordPage userId={userId} onSubmit={handlePasswordSubmit} />;
+    return <NewPasswordModal userId={userId} onSubmit={handlePasswordSubmit} />;
   }
 
   if (step === "success") {
