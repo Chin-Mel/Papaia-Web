@@ -30,7 +30,7 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
-      // 🔑 Login request - backend returns JWT token + user data
+      // 🔑 Login request
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
@@ -47,22 +47,18 @@ export default function SignInPage() {
       const loginData = await loginResponse.json();
       console.log("Login successful:", loginData);
 
-      // ✅ Store token in localStorage (or sessionStorage if not "remember me")
+      // ✅ Store JWT token
       if (loginData.token) {
-        if (rememberMe) {
-          localStorage.setItem("token", loginData.token);
-        } else {
-          sessionStorage.setItem("token", loginData.token);
-        }
+        localStorage.setItem("token", loginData.token); // always store in localStorage
       }
 
-      // ✅ Optionally also store some user info from login response
+      // ✅ Store user info
       if (loginData.user) {
         localStorage.setItem("user", JSON.stringify(loginData.user));
       }
 
-      // Navigate to dashboard
-      navigate("/dashboard");
+      // ✅ Navigate to dashboard
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
     } finally {
