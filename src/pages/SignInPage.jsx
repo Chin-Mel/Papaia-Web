@@ -45,7 +45,6 @@ export default function SignInPage() {
         throw new Error("Login failed. Please check your credentials.");
       }
 
-      const token = loginData.token;
       const verifyResponse = await fetch(
         "https://papaiaapi.onrender.com/api/verify",
         {
