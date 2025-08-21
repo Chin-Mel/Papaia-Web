@@ -30,12 +30,7 @@ export default function ResetPasswordFlow({ userId }) {
   };
 
   if (step === "newPassword") {
-    return (
-      <NewPasswordPage
-        userId={userId}
-        onSubmit={handlePasswordSubmit} // pass the submit handler
-      />
-    );
+    return <NewPasswordPage userId={userId} onSubmit={handlePasswordSubmit} />;
   }
 
   if (step === "success") {

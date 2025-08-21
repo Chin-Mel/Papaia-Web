@@ -25,6 +25,7 @@ export default function NewPassword({ userId, asModal = true }) {
     setLoading(true);
 
     try {
+      await onSubmit(password); // ✅ call the parent handler
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/reset-password",
         {
