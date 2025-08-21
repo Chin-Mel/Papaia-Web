@@ -56,7 +56,6 @@ export default function SignInPage() {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${loginData.token}`,
           },
           credentials: "include", // ✅ include cookies
         }
