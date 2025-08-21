@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
-import ProfileDropdown from "./components/Popups/ProfileDropdown";
+import ProfileDropdown from "../components/Popups/ProfileDropdown";
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
@@ -24,15 +24,21 @@ export default function HeaderMain() {
     };
     setActiveNav(navMap[path] || "dashboard");
 
-    useEffect(() => {
-      const user = getLoggedInUser();
-      console.log("Logged-in user:", user); // Check what it returns
-      if (user) setUsername(user.username);
-    }, []);
-
-    // Get logged-in username
-    const user = getLoggedInUser(); // implement in utils/security.js
-    if (user) setUsername(user.username);
+    // Fetch user info from backend
+    const user = getLoggedInUser();
+    if (user?.id) {
+      fetch(`/user/${user.id}`)
+        .then((res) => {
+          if (!res.ok) throw new Error("User not found");
+          return res.json();
+        })
+        .then((data) => {
+          if (data?.username) setUsername(data.username);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch user details:", err);
+        });
+    }
   }, [location.pathname]);
 
   const handleNavClick = (navItem) => {
