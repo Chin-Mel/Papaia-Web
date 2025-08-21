@@ -45,20 +45,20 @@ export default function SignInPage() {
         throw new Error("Login failed. Please check your credentials.");
       }
 
-      const loginData = await loginResponse.json();
-      console.log("Login response:", loginData);
-
-      // Verify login
-      const verifyResponse = await secureApiCall(
-        "https://papaiaapi.onrender.com/api/verify"
+      const token = loginData.token;
+      const verifyResponse = await fetch(
+        "https://papaiaapi.onrender.com/api/verify",
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // <-- send token here
+          },
+        }
       );
 
-      if (!verifyResponse.ok) {
-        throw new Error("Failed to verify login.");
-      }
-
+      if (!verifyResponse.ok) throw new Error("Failed to verify login");
       const userData = await verifyResponse.json();
-      console.log("Logged in user:", userData);
+      console.log("Verified user:", userData);
 
       // Navigate to dashboard
       navigate("/dashboard");
