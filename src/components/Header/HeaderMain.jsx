@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
-import ProfileDropdown from "../components/Popups/ProfileDropdown";
+import ProfileDropdown from "../Popups/ProfileDropdown";
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
