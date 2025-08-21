@@ -141,8 +141,8 @@ export default function ForgotPasswordPage() {
           userId={verifiedUserId}
           asModal={true}
           onSuccess={() => {
-            setShowNewPasswordModal(false); // hide NewPasswordModal
-            setShowPasswordUpdatedModal(true); // show success modal
+            setShowNewPasswordModal(false);
+            setShowPasswordUpdatedModal(true);
           }}
         />
       )}
