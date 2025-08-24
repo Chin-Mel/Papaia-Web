@@ -12,24 +12,19 @@ export default function HeaderMain() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const path = location.pathname;
-    const navMap = {
-      "/dashboard": "dashboard",
-      "/scan-history": "scan-history",
-      "/about": "about",
-      "/profile": "profile",
-      "/edit-profile": "edit-profile",
-      "/farm-dashboard": "farm-dashboard",
-      "/scan-details": "scan-details",
-    };
-    setActiveNav(navMap[path] || "dashboard");
-
-    // Fetch logged-in user info
     const user = getLoggedInUser();
-    if (user?.id) {
-      fetch(`https://papaiaapi.onrender.com/api/user/${user.id}`) // <-- backend URL
+    const token = localStorage.getItem("token");
+
+    if (user?.id && token) {
+      fetch(`https://papaiaapi.onrender.com/api/user/${user.id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ attach token
+        },
+      })
         .then((res) => {
-          if (!res.ok) throw new Error("User not found");
+          if (!res.ok) throw new Error("User not found or unauthorized");
           return res.json();
         })
         .then((data) => {
@@ -37,12 +32,11 @@ export default function HeaderMain() {
         })
         .catch((err) => console.error(err));
     }
-  }, [location.pathname]);
+  }, [location.pathname]); // ✅ re-run when path changes
 
   const handleNavClick = (navItem) => {
     setActiveNav(navItem);
 
-    // Navigate to the correct page
     switch (navItem) {
       case "dashboard":
         navigate("/dashboard");
@@ -62,7 +56,7 @@ export default function HeaderMain() {
 
   const handleProfileClick = () => {
     setShowProfileModal(false);
-    navigate("/profile"); // Navigate to ProfilePage
+    navigate("/profile");
   };
 
   return (
@@ -157,7 +151,7 @@ export default function HeaderMain() {
                 username={username}
                 onClose={() => setShowProfileModal(false)}
                 onLogout={handleLogout}
-                onProfileClick={handleProfileClick} // pass handler
+                onProfileClick={handleProfileClick}
               />
             )}
           </div>
