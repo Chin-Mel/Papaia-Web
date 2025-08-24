@@ -1,5 +1,4 @@
 import { useState, useRef } from "react";
-import { Link } from "react-router-dom";
 import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
 
 export default function AddFarmModal({ onClose, onSubmit }) {
@@ -10,6 +9,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
     farmImage: null,
   });
   const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleInputChange = (field, value) => {
@@ -29,51 +29,34 @@ export default function AddFarmModal({ onClose, onSubmit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Only send farmName & location as per API
-    const payload = {
-      farmName: formData.farmName,
+    if (!formData.farmName.trim() || !formData.location.trim()) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+
+    // Pass the form data to parent component with the correct field names
+    // The parent will handle the API call
+    const farmData = {
+      name: formData.farmName, // Map farmName to name for parent component
       location: formData.location,
+      description: formData.description,
+      image: imagePreview,
     };
 
     try {
-      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-      if (data.status === "success") {
-        // Construct new farm object for UI
-        const newFarm = {
-          id: data.farmId,
-          name: formData.farmName,
-          location: formData.location,
-          desc: formData.description,
-          img: imagePreview || "https://source.unsplash.com/400x300/?farm",
-          health: 100,
-          status: "Active",
-        };
-
-        onSubmit(newFarm); // update DashboardPage state
-      } else {
-        console.error("Failed to add farm:", data.message);
-      }
-    } catch (err) {
-      console.error("Error adding farm:", err);
+      await onSubmit(farmData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Failed to add farm. Please try again.");
     } finally {
-      onClose();
+      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4"
-      style={{ background: "transparent" }}
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] rounded-t-lg p-6 relative">
           <div className="flex items-center gap-3">
@@ -87,7 +70,8 @@ export default function AddFarmModal({ onClose, onSubmit }) {
           </div>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            disabled={loading}
+            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors disabled:opacity-50"
           >
             <X className="w-6 h-6" />
           </button>
@@ -106,7 +90,8 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                 onChange={(e) => handleInputChange("farmName", e.target.value)}
                 placeholder="Enter your farm name"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
+                disabled={loading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -125,7 +110,8 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                   }
                   placeholder="Enter farm address or location"
                   required
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
+                  disabled={loading}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -136,8 +122,10 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                 Farm Picture (Optional)
               </label>
               <div
-                onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                onClick={() => !loading && fileInputRef.current?.click()}
+                className={`border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors ${
+                  loading ? "opacity-50 cursor-not-allowed" : ""
+                }`}
               >
                 {imagePreview ? (
                   <div className="space-y-2">
@@ -147,7 +135,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                       className="w-32 h-32 mx-auto object-cover rounded-lg"
                     />
                     <p className="text-sm text-gray-600">
-                      Click to change image
+                      {loading ? "Uploading..." : "Click to change image"}
                     </p>
                   </div>
                 ) : (
@@ -166,6 +154,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                   type="file"
                   accept="image/*"
                   onChange={handleImageUpload}
+                  disabled={loading}
                   className="hidden"
                 />
               </div>
@@ -183,7 +172,8 @@ export default function AddFarmModal({ onClose, onSubmit }) {
                 }
                 placeholder="Describe your farm..."
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent resize-none"
+                disabled={loading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
               />
             </div>
 
@@ -192,15 +182,22 @@ export default function AddFarmModal({ onClose, onSubmit }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors"
+                disabled={loading}
+                className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
+                disabled={
+                  loading ||
+                  !formData.farmName.trim() ||
+                  !formData.location.trim()
+                }
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Plus className="w-4 h-4" /> Add Farm
+                <Plus className="w-4 h-4" />
+                {loading ? "Adding..." : "Add Farm"}
               </button>
             </div>
           </form>

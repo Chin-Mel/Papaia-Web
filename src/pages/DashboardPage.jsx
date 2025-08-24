@@ -8,6 +8,18 @@ import AddFarmModal from "../components/Popups/AddFarmModal";
 export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [dashboardStats, setDashboardStats] = useState({
+    totalFarmers: 0,
+    totalFarms: 0,
+    todayScans: 0,
+    farmersChange: 0,
+    farmsChange: 0,
+    scansChange: 0,
+    farmersTrend: "no change",
+    farmsTrend: "no change",
+    scansTrend: "no change",
+  });
 
   // Example data for activities
   const activities = [
@@ -58,42 +70,105 @@ export default function DashboardPage() {
     },
   ];
 
-  // Fetch farms from backend
-  useEffect(() => {
-    // Fetch farms from backend (extract into a function so we can reuse it)
-    const fetchFarms = async () => {
-      try {
-        const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (data.status === "success" && data.farms) {
-          const mappedFarms = data.farms.map((f) => ({
-            id: f.id,
-            name: f.farmName,
-            desc: "",
-            location: f.location,
-            health: 100,
-            status: "Active",
-            img: "https://source.unsplash.com/400x300/?farm",
-          }));
-          setFarms(mappedFarms);
+  // Fetch dashboard statistics
+  const fetchDashboardStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      // Fetch all statistics in parallel
+      const [
+        farmCountRes,
+        farmerCountRes,
+        scansComparisonRes,
+        farmersComparisonRes,
+        farmsComparisonRes,
+      ] = await Promise.all([
+        fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
+          headers,
+        }),
+        fetch("https://papaiaapi.onrender.com/api/owner/count-farmers", {
+          headers,
+        }),
+        fetch(
+          "https://papaiaapi.onrender.com/api/owner/identification-comparison",
+          { headers }
+        ),
+        fetch("https://papaiaapi.onrender.com/api/owner/farmers-comparison", {
+          headers,
+        }),
+        fetch("https://papaiaapi.onrender.com/api/owner/farms-comparison", {
+          headers,
+        }),
+      ]);
+
+      // Parse all responses
+      const farmCountData = await farmCountRes.json();
+      const farmerCountData = await farmerCountRes.json();
+      const scansComparisonData = await scansComparisonRes.json();
+      const farmersComparisonData = await farmersComparisonRes.json();
+      const farmsComparisonData = await farmsComparisonRes.json();
+
+      setDashboardStats({
+        totalFarmers: farmerCountData.totalFarmers || 0,
+        totalFarms: farmCountData.farmCount || 0,
+        todayScans: scansComparisonData.today || 0,
+        farmersChange: farmersComparisonData.percentageChange || 0,
+        farmsChange: farmsComparisonData.percentageChange || 0,
+        scansChange: scansComparisonData.changePercent || 0,
+        farmersTrend: farmersComparisonData.trend || "no change",
+        farmsTrend: farmsComparisonData.trend || "no change",
+        scansTrend: scansComparisonData.trend || "no change",
+      });
+    } catch (err) {
+      console.error("Failed to fetch dashboard stats:", err);
+    }
+  };
+
+  // Fetch farms from backend - moved outside useEffect so it can be reused
+  const fetchFarms = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farms",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      } catch (err) {
-        console.error("Failed to fetch farms:", err);
+      );
+      const data = await res.json();
+      if (data.status === "success" && data.farms) {
+        const mappedFarms = data.farms.map((f) => ({
+          id: f.id,
+          name: f.farmName,
+          desc: "", // You can add description field to your API response if needed
+          location: f.location,
+          health: 100, // You can add health field to your API response if needed
+          status: "Active", // You can add status field to your API response if needed
+          img: "https://source.unsplash.com/400x300/?farm",
+        }));
+        setFarms(mappedFarms);
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch farms:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch farms and stats on component mount
+  useEffect(() => {
     fetchFarms();
+    fetchDashboardStats();
   }, []);
 
   // Handle adding a new farm
   const handleAddFarm = async (farmData) => {
     try {
+      setLoading(true);
       const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
         method: "POST",
         headers: {
@@ -108,13 +183,17 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (data.status === "success") {
-        // Instead of appending manually, just refresh from backend
+        // Refresh farms list and stats from backend to avoid duplicates
         await fetchFarms();
+        await fetchDashboardStats();
+        setShowAddFarmModal(false);
+      } else {
+        console.error("Failed to add farm:", data.message);
       }
     } catch (err) {
       console.error("Failed to add farm:", err);
     } finally {
-      setShowAddFarmModal(false);
+      setLoading(false);
     }
   };
 
@@ -175,12 +254,36 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <Users className="w-5 h-5 text-green-600" />
                     </div>
-                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <TrendingUp
+                      className={`w-4 h-4 ${
+                        dashboardStats.farmersTrend === "increase"
+                          ? "text-green-500"
+                          : dashboardStats.farmersTrend === "decrease"
+                          ? "text-red-500"
+                          : "text-gray-400"
+                      }`}
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">1,247</h3>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {dashboardStats.totalFarmers.toLocaleString()}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-1">All Farmers</p>
-                  <span className="text-xs text-green-600 font-medium">
-                    +12% from last month
+                  <span
+                    className={`text-xs font-medium ${
+                      dashboardStats.farmersTrend === "increase"
+                        ? "text-green-600"
+                        : dashboardStats.farmersTrend === "decrease"
+                        ? "text-red-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {dashboardStats.farmersTrend === "increase"
+                      ? "+"
+                      : dashboardStats.farmersTrend === "decrease"
+                      ? "-"
+                      : ""}
+                    {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+                    last month
                   </span>
                 </div>
 
@@ -189,12 +292,36 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
                       <Leaf className="w-5 h-5 text-yellow-600" />
                     </div>
-                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <TrendingUp
+                      className={`w-4 h-4 ${
+                        dashboardStats.farmsTrend === "increase"
+                          ? "text-green-500"
+                          : dashboardStats.farmsTrend === "decrease"
+                          ? "text-red-500"
+                          : "text-gray-400"
+                      }`}
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">892</h3>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {dashboardStats.totalFarms.toLocaleString()}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-1">All Farms</p>
-                  <span className="text-xs text-green-600 font-medium">
-                    +8% from last month
+                  <span
+                    className={`text-xs font-medium ${
+                      dashboardStats.farmsTrend === "increase"
+                        ? "text-green-600"
+                        : dashboardStats.farmsTrend === "decrease"
+                        ? "text-red-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {dashboardStats.farmsTrend === "increase"
+                      ? "+"
+                      : dashboardStats.farmsTrend === "decrease"
+                      ? "-"
+                      : ""}
+                    {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from last
+                    month
                   </span>
                 </div>
 
@@ -203,12 +330,36 @@ export default function DashboardPage() {
                     <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                       <ScanLine className="w-5 h-5 text-blue-600" />
                     </div>
-                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <TrendingUp
+                      className={`w-4 h-4 ${
+                        dashboardStats.scansTrend === "increase"
+                          ? "text-green-500"
+                          : dashboardStats.scansTrend === "decrease"
+                          ? "text-red-500"
+                          : "text-gray-400"
+                      }`}
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">156</h3>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {dashboardStats.todayScans.toLocaleString()}
+                  </h3>
                   <p className="text-sm text-gray-600 mb-1">Today's Scans</p>
-                  <span className="text-xs text-green-600 font-medium">
-                    +24% from yesterday
+                  <span
+                    className={`text-xs font-medium ${
+                      dashboardStats.scansTrend === "increase"
+                        ? "text-green-600"
+                        : dashboardStats.scansTrend === "decrease"
+                        ? "text-red-600"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {dashboardStats.scansTrend === "increase"
+                      ? "+"
+                      : dashboardStats.scansTrend === "decrease"
+                      ? "-"
+                      : ""}
+                    {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+                    yesterday
                   </span>
                 </div>
               </div>
@@ -219,54 +370,69 @@ export default function DashboardPage() {
                 <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
                 <button
                   onClick={() => setShowAddFarmModal(true)}
-                  className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
+                  disabled={loading}
+                  className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus size={16} />
-                  Add Farm
+                  {loading ? "Loading..." : "Add Farm"}
                 </button>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                {farms.map((farm) => (
-                  <Link
-                    key={farm.id}
-                    to={`/farm-dashboard/${farm.id}`}
-                    className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
-                  >
-                    <div className="relative">
-                      <img
-                        src={farm.img}
-                        alt={farm.name}
-                        className="w-full h-40 object-cover"
-                      />
-                      <span
-                        className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full font-medium ${
-                          farm.status === "Active"
-                            ? "bg-green-500 text-white"
-                            : "bg-yellow-500 text-white"
-                        }`}
+              {loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-gray-500">Loading farms...</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
+                  {farms.length === 0 ? (
+                    <div className="col-span-3 text-center py-12 text-gray-500">
+                      No farms added yet. Click "Add Farm" to get started!
+                    </div>
+                  ) : (
+                    farms.map((farm) => (
+                      <Link
+                        key={farm.id}
+                        to={`/farm-dashboard/${farm.id}`}
+                        className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
                       >
-                        {farm.status}
-                      </span>
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-800 mb-1">
-                        {farm.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mb-2">{farm.desc}</p>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin size={12} /> {farm.location}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Leaf size={12} className="text-green-500" />
-                        <span className="text-sm font-medium text-green-600">
-                          {farm.health}% Health
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                        <div className="relative">
+                          <img
+                            src={farm.img}
+                            alt={farm.name}
+                            className="w-full h-40 object-cover"
+                          />
+                          <span
+                            className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full font-medium ${
+                              farm.status === "Active"
+                                ? "bg-green-500 text-white"
+                                : "bg-yellow-500 text-white"
+                            }`}
+                          >
+                            {farm.status}
+                          </span>
+                        </div>
+                        <div className="p-4">
+                          <h3 className="font-bold text-gray-800 mb-1">
+                            {farm.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 mb-2">
+                            {farm.desc}
+                          </p>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                            <MapPin size={12} /> {farm.location}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Leaf size={12} className="text-green-500" />
+                            <span className="text-sm font-medium text-green-600">
+                              {farm.health}% Health
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
