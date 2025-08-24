@@ -60,6 +60,7 @@ export default function DashboardPage() {
 
   // Fetch farms from backend
   useEffect(() => {
+    // Fetch farms from backend (extract into a function so we can reuse it)
     const fetchFarms = async () => {
       try {
         const res = await fetch(
@@ -81,7 +82,7 @@ export default function DashboardPage() {
             status: "Active",
             img: "https://source.unsplash.com/400x300/?farm",
           }));
-          setFarms(mappedFarms); // render exactly what backend has
+          setFarms(mappedFarms);
         }
       } catch (err) {
         console.error("Failed to fetch farms:", err);
@@ -107,17 +108,8 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (data.status === "success") {
-        // Only add the new farm to UI after successful POST
-        const newFarm = {
-          id: data.farmId,
-          name: farmData.name,
-          desc: farmData.desc || "",
-          location: farmData.location,
-          health: 100,
-          status: "Active",
-          img: farmData.img || "https://source.unsplash.com/400x300/?farm",
-        };
-        setFarms((prev) => [...prev, newFarm]); // append, not prepend
+        // Instead of appending manually, just refresh from backend
+        await fetchFarms();
       }
     } catch (err) {
       console.error("Failed to add farm:", err);
