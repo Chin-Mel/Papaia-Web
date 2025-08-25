@@ -1,328 +1,374 @@
-import {
-  Target,
-  Camera,
-  TrendingUp,
-  Leaf,
-  Mail,
-  Phone,
-  MapPin,
-  Sun,
-  Users,
-} from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 
-export default function AboutPage() {
+import EyeIcon from "../assets/eye-icon-about.png";
+import TargetIcon from "../assets/target-icon.png";
+import CameraIcon from "../assets/camera-icon.png";
+import TrendingUpIcon from "../assets/trending-up-icon.png";
+import ClipboardListIcon from "../assets/clipboard-list-icon.png";
+import MailIcon from "../assets/mail-icon.png";
+import PhoneIcon from "../assets/phone-icon.png";
+import MapPinIcon from "../assets/map-pin-icon.png";
+
+// Developer Images
+import EbordaImage from "../assets/eborda.png";
+import EstomoImage from "../assets/estomo.jpg";
+import DuarteImage from "../assets/duarte.png";
+import IgotImage from "../assets/igot.png";
+import HeaderMain from "../components/Header/HeaderMain";
+
+const developers = [
+  {
+    name: "John Michael Eborda",
+    role: "Project Manager",
+    image: EbordaImage,
+    description:
+      "John Michael serves as Project Manager, overseeing planning, coordination, and execution phases.",
+  },
+  {
+    name: "Erika Estomo",
+    role: "Technical Writer",
+    image: EstomoImage,
+    description:
+      "Erika assists in building web interface, testing features, and supporting front-end improvements.",
+  },
+  {
+    name: "Francine Mecolle Duarte",
+    role: "UI/UX Designer",
+    image: DuarteImage,
+    description:
+      "Francine contributes ideas for user flow, design consistency, and usability improvements.",
+  },
+  {
+    name: "Went Ruzel Igot",
+    role: "Lead Programmer",
+    image: IgotImage,
+    description:
+      "Went develops server-side logic, database structures, and core functionalities for the application.",
+  },
+];
+
+export default function AboutHomePage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+
       <HeaderMain />
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-green-600 to-orange-500 py-20">
-        <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <h1 className="text-5xl font-bold text-white mb-4">About Papaia</h1>
-          <p className="text-xl text-white max-w-3xl mx-auto">
-            Revolutionizing crop health with AI-powered insights for sustainable
-            farming and food security.
-          </p>
-        </div>
-      </section>
-
       {/* Main Content */}
-      <main className="flex-1 py-16">
-        <div className="max-w-7xl mx-auto px-6 space-y-20">
-          {/* App Overview Section */}
-          <section className="text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-6">
-              App Overview
-            </h2>
-            <p className="text-lg text-gray-700 max-w-4xl mx-auto leading-relaxed">
-              Papaia is an innovative mobile application that empowers farmers
-              with AI-powered crop disease detection, real-time analytics, and
-              personalized treatment recommendations. Our cutting-edge
-              technology helps farmers identify plant disease paths, optimize
-              crop yields, and make data-driven decisions for sustainable
-              agriculture.
-            </p>
-          </section>
-
-          {/* Vision & Mission Section */}
-          <section>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Our Vision */}
-              <div className="bg-gray-100 rounded-lg p-8 shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center">
-                    <Sun className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    Our Vision
-                  </h3>
-                </div>
-                <p className="text-gray-700 leading-relaxed">
-                  To create a world where every farmer has access to intelligent
-                  agriculture tools that ensure food security, promote
-                  sustainable farming practices, and maximize crop productivity
-                  through advanced technology accessible to everyone.
-                </p>
-              </div>
-
-              {/* Our Mission */}
-              <div className="bg-gray-100 rounded-lg p-8 shadow-sm">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center">
-                    <Target className="w-6 h-6 text-orange-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
-                    Our Mission
-                  </h3>
-                </div>
-                <p className="text-gray-700 leading-relaxed">
-                  We develop innovative AI-powered tools that help farmers
-                  detect crop diseases early, receive expert-hand
-                  recommendations, and access comprehensive analytics to
-                  optimize their farming operations and maximize yields.
+      <main>
+        {/* Hero Section */}
+        <section className="relative h-[400px] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src="https://api.builder.io/api/v1/image/assets/TEMP/bb0d2bc59ee3d72d5d9039aa22f5c9ddde787bea?width=2932"
+              alt="Background plants"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-papaia-green to-papaia-green-dark opacity-80"></div>
+          </div>
+          <div className="relative max-w-[1440px] mx-auto px-20 h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-12 mb-8">
+                <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
+                  About Papaia
+                </h1>
+                <p className="text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                  Revolutionizing agriculture through intelligent crop disease
+                  detection and smart farming solutions
                 </p>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Key Features Section */}
-          <section className="text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Key Features
-            </h2>
-            <p className="text-lg text-gray-700 mb-12">
-              Discover the powerful tools that make Papaia the perfect farming
-              companion
-            </p>
+        {/* App Overview */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center max-w-4xl mx-auto">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                App Overview
+              </h2>
+              <p className="text-lg text-papaia-text-secondary leading-relaxed">
+                Papaia is an innovative mobile application that empowers farmers
+                with AI-driven crop disease detection, real-time analytics, and
+                personalized treatment recommendations. Our cutting-edge
+                technology helps farmers identify plant diseases early, optimize
+                crop yields, and make data-driven decisions for sustainable
+                agriculture.
+              </p>
+            </div>
+          </div>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Vision & Mission */}
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="grid md:grid-cols-2 gap-12">
+              {/* Our Vision */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-[#94C522]/10      flex items-center justify-center">
+                    <img src={EyeIcon} alt="Vision" className="w-7 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                    Our Vision
+                  </h3>
+                </div>
+                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                  <p>
+                    To create a world where every farmer has access to
+                    intelligent
+                  </p>
+                  <p>
+                    agricultural tools that ensure food security, promote
+                    sustainable
+                  </p>
+                  <p>
+                    farming practices, and maximize crop productivity through
+                  </p>
+                  <p>advanced technology and data-driven insights.</p>
+                </div>
+              </div>
+
+              {/* Our Mission */}
+              <div className="bg-white rounded-2xl p-8 shadow-lg">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-14 h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
+                    <img src={TargetIcon} alt="Mission" className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                    Our Mission
+                  </h3>
+                </div>
+                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                  <p>
+                    We develop innovative AI-powered solutions that help farmers
+                  </p>
+                  <p>detect crop diseases early, receive expert treatment</p>
+                  <p>recommendations, and access comprehensive analytics to</p>
+                  <p>optimize their farming operations and increase yields.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Key Features */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                Key Features
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                Discover the powerful tools that make Papaia the perfect farming
+                companion
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
               {/* Disease Identification */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Camera className="w-8 h-8 text-orange-600" />
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={CameraIcon}
+                    alt="Disease Identification"
+                    className="w-8 h-8"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
                   Disease Identification
                 </h3>
-                <p className="text-gray-700">
-                  Advanced AI technology that instantly identifies plant
-                  diseases from photos, providing accurate diagnoses and early
-                  detection capabilities.
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Simply scan your crops with your camera and get instant
+                  AI-powered disease identification with 95% accuracy
                 </p>
               </div>
 
               {/* Smart Analytics */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-8 h-8 text-orange-600" />
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={TrendingUpIcon}
+                    alt="Smart Analytics"
+                    className="w-8 h-8"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
                   Smart Analytics
                 </h3>
-                <p className="text-gray-700">
-                  Comprehensive data analysis and insights that help farmers
-                  track crop health trends, optimize yields, and make informed
-                  decisions.
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Track crop health, monitor disease patterns, and access
+                  detailed analytics to optimize your farming strategy
                 </p>
               </div>
 
               {/* Treatment Suggestions */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Leaf className="w-8 h-8 text-orange-600" />
+                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
+                  <img
+                    src={ClipboardListIcon}
+                    alt="Treatment Suggestions"
+                    className="w-5 h-8"
+                  />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
                   Treatment Suggestions
                 </h3>
-                <p className="text-gray-700">
-                  Personalized treatment recommendations based on disease
-                  identification, helping farmers implement effective solutions
-                  quickly.
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Receive personalized treatment recommendations from
+                  agricultural experts based on detected diseases
                 </p>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* How to Use the App Section */}
-          <section className="text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              How to Use the App
-            </h2>
-            <p className="text-lg text-gray-700 mb-12">
-              Get started in just three simple steps
-            </p>
+        {/* How to Use the App */}
+        <section className="py-16 bg-[#E5E7EB]/10">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                How to Use the App
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                Get started in just three simple steps
+              </p>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-8">
               {/* Step 1 */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl font-bold">1</span>
+                <div className="w-16 h-16 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">1</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
                   Capture
                 </h3>
-                <p className="text-gray-700">
+                <p className="text-papaia-text-secondary leading-relaxed">
                   Take a clear photo of the affected plant or leaf using your
-                  smartphone camera for accurate analysis.
+                  smartphone camera
                 </p>
               </div>
 
               {/* Step 2 */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl font-bold">2</span>
+                <div className="w-16 h-16 rounded-full bg-[#F97316] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">2</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
                   Analyze
                 </h3>
-                <p className="text-gray-700">
-                  Our AI system processes the image and provides instant disease
-                  identification with confidence levels.
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Our AI instantly analyzes the image and identifies potential
+                  diseases or issues
                 </p>
               </div>
 
               {/* Step 3 */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white text-2xl font-bold">3</span>
+                <div className="w-16 h-16 rounded-full bg-[#DE5B00] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl font-bold text-white">3</span>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Treat</h3>
-                <p className="text-gray-700">
-                  Receive personalized treatment recommendations and track the
-                  progress of your crop recovery.
+                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
+                  Treat
+                </h3>
+                <p className="text-papaia-text-secondary leading-relaxed">
+                  Receive detailed treatment recommendations and track your
+                  crop's recovery progress
                 </p>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Meet the Developers Section */}
-          <section className="text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Meet the Developers
-            </h2>
-            <p className="text-lg text-gray-700 mb-12">
-              The passionate team behind Papaia
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {/* Developer 1 */}
-              <div className="text-center">
-                <img
-                  src="https://source.unsplash.com/120x120/?man,portrait,1"
-                  alt="Alex Johnson"
-                  className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                />
-                <h3 className="text-lg font-bold text-gray-800 mb-1">
-                  Alex Johnson
-                </h3>
-                <p className="text-gray-600 mb-3">Project Manager</p>
-                <p className="text-gray-700 text-sm">
-                  Leads the development team and ensures project milestones are
-                  met with precision and efficiency.
-                </p>
-              </div>
-
-              {/* Developer 2 */}
-              <div className="text-center">
-                <img
-                  src="https://source.unsplash.com/120x120/?woman,portrait,1"
-                  alt="Sarah Chen"
-                  className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                />
-                <h3 className="text-lg font-bold text-gray-800 mb-1">
-                  Sarah Chen
-                </h3>
-                <p className="text-gray-600 mb-3">Lead Programmer</p>
-                <p className="text-gray-700 text-sm">
-                  Expert in AI and machine learning, responsible for the core
-                  disease detection algorithms.
-                </p>
-              </div>
-
-              {/* Developer 3 */}
-              <div className="text-center">
-                <img
-                  src="https://source.unsplash.com/120x120/?man,portrait,2"
-                  alt="Mike Rodriguez"
-                  className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                />
-                <h3 className="text-lg font-bold text-gray-800 mb-1">
-                  Mike Rodriguez
-                </h3>
-                <p className="text-gray-600 mb-3">UI/UX Designer</p>
-                <p className="text-gray-700 text-sm">
-                  Creates intuitive and beautiful user interfaces that make the
-                  app accessible to farmers of all ages.
-                </p>
-              </div>
-
-              {/* Developer 4 */}
-              <div className="text-center">
-                <img
-                  src="https://source.unsplash.com/120x120/?woman,portrait,2"
-                  alt="Sophia Kim"
-                  className="w-24 h-24 rounded-full object-cover mx-auto mb-4"
-                />
-                <h3 className="text-lg font-bold text-gray-800 mb-1">
-                  Sophia Kim
-                </h3>
-                <p className="text-gray-600 mb-3">Content Writer</p>
-                <p className="text-gray-700 text-sm">
-                  Develops educational content and treatment guides to help
-                  farmers understand crop diseases better.
-                </p>
-              </div>
+        {/* Meet the Developers */}
+        <section className="py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+                Meet the Developers
+              </h2>
+              <p className="text-lg text-papaia-text-secondary">
+                The passionate team behind Papaia
+              </p>
             </div>
-          </section>
 
-          {/* Contact Information Section */}
-          <section className="text-center">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">
-              Contact Information
-            </h2>
-            <p className="text-lg text-gray-700 mb-12">
-              Get in touch with our team
-            </p>
+            <div className="grid md:grid-cols-4 gap-8">
+              {developers.map((dev, index) => (
+                <div key={index} className="text-center">
+                  <img
+                    src={dev.image}
+                    alt={dev.name}
+                    className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+                  />
+                  <h3 className="text-xl font-bold text-papaia-text-primary mb-2">
+                    {dev.name}
+                  </h3>
+                  <p className="text-[#FF8C42] font-medium mb-4">{dev.role}</p>
+                  <p className="text-sm text-papaia-text-secondary leading-relaxed">
+                    {dev.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {/* Contact Information */}
+        <section className="py-16 bg-[#E5E7EB]/10">
+          <div className="max-w-[1440px] mx-auto px-20">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold text-papaia-text-tertiary mb-4">
+                Contact Information
+              </h2>
+              <p className="text-lg text-[#909090]">
+                Get in touch with our team
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
               {/* Email */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Mail className="w-8 h-8 text-orange-600" />
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={MailIcon} alt="Email" className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Email</h3>
-                <p className="text-gray-700">info@papaia.com</p>
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
+                  Email
+                </h3>
+                <p className="text-[#909090]">support@papaia.com</p>
               </div>
 
               {/* Phone */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Phone className="w-8 h-8 text-orange-600" />
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={PhoneIcon} alt="Phone" className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">Phone</h3>
-                <p className="text-gray-700">+1 (555) 123-4567</p>
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
+                  Phone
+                </h3>
+                <p className="text-[#909090]">+1 (555) 123-4567</p>
               </div>
 
               {/* Address */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-orange-100 border-2 border-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MapPin className="w-8 h-8 text-orange-600" />
+                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
+                  <img src={MapPinIcon} alt="Address" className="w-5 h-6" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3">
+                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
                   Address
                 </h3>
-                <p className="text-gray-700">
-                  123 Innovation Drive, Tech City, TC 12345
+                <p className="text-[#909090]">
+                  123 Agriculture St, Farm City, FC 12345
                 </p>
               </div>
             </div>
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
 
+      {/*Footer*/}
       <Footer />
     </div>
   );

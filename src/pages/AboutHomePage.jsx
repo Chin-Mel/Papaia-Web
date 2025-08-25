@@ -1,4 +1,4 @@
-import Header from "../components/Header/HeaderMain";
+import HeaderStart from "../components/Header/HeaderStart";
 import Footer from "../components/Footer/FooterMain";
 
 import EyeIcon from "../assets/eye-icon-about.png";
@@ -15,6 +15,7 @@ import EbordaImage from "../assets/eborda.png";
 import EstomoImage from "../assets/estomo.jpg";
 import DuarteImage from "../assets/duarte.png";
 import IgotImage from "../assets/igot.png";
+import HeaderMain from "../components/Header/HeaderMain";
 
 const developers = [
   {
@@ -52,7 +53,7 @@ export default function AboutHomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
 
-      <Header />
+      <HeaderStart />
 
       {/* Main Content */}
       <main>
