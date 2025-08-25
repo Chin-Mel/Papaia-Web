@@ -15,8 +15,6 @@ import EbordaImage from "../assets/eborda.png";
 import EstomoImage from "../assets/estomo.jpg";
 import DuarteImage from "../assets/duarte.png";
 import IgotImage from "../assets/igot.png";
-import HeaderMain from "../components/Header/HeaderMain";
-
 const developers = [
   {
     name: "John Michael Eborda",
