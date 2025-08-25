@@ -11,6 +11,30 @@ export default function HeaderMain() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Navigation items mapping
+  const navRoutes = {
+    "/dashboard": "dashboard",
+    "/scan-history": "scan-history",
+    "/about": "about",
+  };
+
+  // Sync active nav with current route
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const matchedNav = navRoutes[currentPath];
+
+    if (matchedNav) {
+      setActiveNav(matchedNav);
+    } else if (currentPath.startsWith("/farm-dashboard/")) {
+      // Handle farm dashboard routes as dashboard
+      setActiveNav("dashboard");
+    } else {
+      // Default to dashboard for any other protected routes
+      setActiveNav("dashboard");
+    }
+  }, [location.pathname]);
+
+  // Fetch user data
   useEffect(() => {
     const user = getLoggedInUser();
     const token = localStorage.getItem("token");
@@ -20,7 +44,7 @@ export default function HeaderMain() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ attach token
+          Authorization: `Bearer ${token}`,
         },
       })
         .then((res) => {
@@ -32,7 +56,7 @@ export default function HeaderMain() {
         })
         .catch((err) => console.error(err));
     }
-  }, [location.pathname]); // ✅ re-run when path changes
+  }, []);
 
   const handleNavClick = (navItem) => {
     setActiveNav(navItem);
@@ -60,7 +84,7 @@ export default function HeaderMain() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <div className="flex items-center">

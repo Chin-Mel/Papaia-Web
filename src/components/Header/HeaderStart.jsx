@@ -14,21 +14,37 @@ export default function HeaderStart() {
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
-  // Sync active nav with current route only on initial load
+  // Sync active nav with current route
   useEffect(() => {
     const currentPath = location.pathname;
     const currentNav = navItems.find((item) => item.href === currentPath);
-    if (currentNav && activeNav === "home") {
+    if (currentNav) {
       setActiveNav(currentNav.id);
+    } else {
+      // Default to home if no match
+      setActiveNav("home");
     }
   }, [location.pathname]);
 
   const handleNavClick = (navId) => {
     setActiveNav(navId);
+    // Close mobile menu when clicking a nav item
+    setIsMenuOpen(false);
+  };
+
+  // Calculate the transform position based on active nav
+  const getTransformX = () => {
+    const positions = {
+      home: 0,
+      about: 87,
+      signin: 174,
+      signup: 261,
+    };
+    return positions[activeNav] || 0;
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50">
+    <header className="fixed top-0 left-0 right-0 z-50">
       <div
         className="w-full h-20 backdrop-blur-lg"
         style={{
@@ -58,21 +74,11 @@ export default function HeaderStart() {
               className="absolute top-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
               style={{
                 width: "80px",
-                transform: `translateX(${
-                  activeNav === "home"
-                    ? "0px"
-                    : activeNav === "about"
-                    ? "87px"
-                    : activeNav === "sign-in"
-                    ? "174px"
-                    : activeNav === "sign-up"
-                    ? "261px"
-                    : "0px"
-                })`,
+                transform: `translateX(${getTransformX()}px)`,
               }}
             />
 
-            {navItems.map((item, index) => (
+            {navItems.map((item) => (
               <Link
                 key={item.id}
                 to={item.href}
