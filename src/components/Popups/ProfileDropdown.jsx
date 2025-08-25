@@ -33,6 +33,9 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
                 user?.firstName ? `${user.firstName} ${user.lastName}` : "User"
               }
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = defaultUserPic;
+              }}
             />
           </div>
 
@@ -41,9 +44,9 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
             <h4 className="font-bold text-gray-800 text-lg">
               {user?.firstName && user?.lastName
                 ? `${user.firstName} ${user.lastName}`
-                : "Unknown User"}
+                : user?.username || "Unknown User"}
             </h4>
-            <p className="text-gray-600 text-sm">{user?.email}</p>
+            <p className="text-gray-600 text-sm">{user?.email || "No email"}</p>
           </div>
         </div>
       </div>

@@ -112,8 +112,9 @@ export default function HeaderMain() {
         <div className="flex items-center space-x-6">
           <span className="text-gray-700 font-medium">
             Welcome Back,{" "}
-            {userData?.firstName
-              ? `${userData.firstName} ${userData.lastName}`
+            {userData?.username || userData?.firstName
+              ? userData?.username ||
+                `${userData.firstName} ${userData.lastName}`
               : "..."}
             !
           </span>
@@ -152,6 +153,9 @@ export default function HeaderMain() {
                 src={userData?.profilePicture || defaultUser} // ✅ Use defaultUser if no profile picture
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => {
+                  e.target.src = defaultUser;
+                }}
               />
               <svg
                 className="w-4 h-4"
