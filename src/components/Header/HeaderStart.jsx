@@ -5,9 +5,8 @@ import papaiaLogo from "../../assets/papaia-logo.png";
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("home");
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const location = useLocation();
-  const navRefs = useRef({});
 
   const navItems = [
     { id: "home", label: "Home", href: "/" },
@@ -16,25 +15,25 @@ export default function HeaderStart() {
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
-  // Sync active nav with current route
-  // Sync active nav with current route
+  // store refs for each nav item
+  const navRefs = useRef({});
+
+  // Update active nav when route changes
   useEffect(() => {
     const currentPath = location.pathname;
     const currentNav = navItems.find((item) => item.href === currentPath);
-
     if (currentNav) {
       setActiveNav(currentNav.id);
     }
-    // ❌ don't reset to "home" if no match
   }, [location.pathname]);
 
-  // Update indicator position and size when activeNav changes
+  // Update indicator position whenever activeNav changes
   useEffect(() => {
     const el = navRefs.current[activeNav];
     if (el) {
       setIndicatorStyle({
-        left: el.offsetLeft,
         width: el.offsetWidth,
+        left: el.offsetLeft,
       });
     }
   }, [activeNav]);
@@ -74,8 +73,8 @@ export default function HeaderStart() {
             <div
               className="absolute top-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
               style={{
-                left: indicatorStyle.left,
                 width: indicatorStyle.width,
+                transform: `translateX(${indicatorStyle.left}px)`,
               }}
             />
 
@@ -95,51 +94,7 @@ export default function HeaderStart() {
               </Link>
             ))}
           </nav>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden text-papaia-green-500"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M3 12H21M3 6H21M3 18H21"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
         </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-lg border-t border-white/20 p-4">
-            <div className="flex flex-col gap-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.href}
-                  className={`py-2 px-4 rounded-lg transition-all duration-300 ${
-                    activeNav === item.id
-                      ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
-                      : "text-papaia-green-400"
-                  }`}
-                  onClick={() => handleNavClick(item.id)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );
