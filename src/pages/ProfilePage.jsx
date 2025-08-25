@@ -23,23 +23,6 @@ export default function ProfilePage() {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
-  // Get user status based on last login
-  const getUserStatus = (lastLogin) => {
-    if (!lastLogin) return { status: "inactive", color: "red" };
-
-    const lastLoginDate = new Date(lastLogin);
-    const currentDate = new Date();
-    const daysDifference = Math.floor(
-      (currentDate - lastLoginDate) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysDifference >= 3) {
-      return { status: "inactive", color: "red" };
-    } else {
-      return { status: "active", color: "green" };
-    }
-  };
-
   // Fetch user data
   useEffect(() => {
     const fetchUserData = async () => {
@@ -52,7 +35,7 @@ export default function ProfilePage() {
           return;
         }
 
-        // Fetch user details
+        // ✅ Fetch user details using /user/:id
         const userResponse = await fetch(
           `https://papaiaapi.onrender.com/api/user/${user.id}`,
           {
@@ -71,7 +54,7 @@ export default function ProfilePage() {
         const userInfo = await userResponse.json();
         setUserData(userInfo);
 
-        // Fetch farm count
+        // ✅ Fetch farm count
         const farmResponse = await fetch(
           "https://papaiaapi.onrender.com/api/owner/count-farms",
           {
@@ -102,13 +85,11 @@ export default function ProfilePage() {
     const file = event.target.files[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       alert("Please select an image file");
       return;
     }
 
-    // Validate file size (e.g., max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("Please select an image smaller than 5MB");
       return;
@@ -138,13 +119,11 @@ export default function ProfilePage() {
 
       const result = await response.json();
 
-      // Update userData with new profile picture
       setUserData((prev) => ({
         ...prev,
         profilePicture: result.profilePicture || result.profilePictureUrl,
       }));
 
-      // Trigger a refresh of the header component by reloading user data
       window.location.reload();
     } catch (error) {
       console.error("Error uploading profile picture:", error);
@@ -191,7 +170,7 @@ export default function ProfilePage() {
     );
   }
 
-  const userStatus = getUserStatus(userData.lastLogin);
+  const userStatus = { status: "active", color: "green" };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -220,11 +199,10 @@ export default function ProfilePage() {
           </div>
 
           {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
             {/* Left Panel - Profile Card */}
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                {/* Profile Picture */}
+              <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
                     <img
@@ -232,7 +210,7 @@ export default function ProfilePage() {
                       alt={`${userData.firstName} ${userData.lastName}`}
                       className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
                       onError={(e) => {
-                        e.target.src = defaultUserPic;
+                        e.currentTarget.src = defaultUserPic;
                       }}
                     />
                     <button
@@ -248,7 +226,6 @@ export default function ProfilePage() {
                     </button>
                   </div>
 
-                  {/* User Info */}
                   <h2 className="text-xl font-bold text-gray-800 mt-4 mb-1">
                     {userData.firstName && userData.lastName
                       ? `${userData.firstName} ${userData.lastName}`
@@ -256,7 +233,6 @@ export default function ProfilePage() {
                   </h2>
                   <p className="text-gray-600 mb-3">Farm Owner</p>
 
-                  {/* Status */}
                   <div className="flex items-center gap-2 mb-6">
                     <div
                       className={`w-3 h-3 bg-${userStatus.color}-500 rounded-full`}
@@ -267,7 +243,6 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Farms Managed */}
                 <div className="bg-green-50 rounded-lg p-4 border border-green-100">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -286,10 +261,9 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Right Panel - Personal Information Display */}
+            {/* Right Panel */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                {/* Form Header */}
+              <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-lg font-bold text-gray-800">
                     Personal Information
@@ -303,9 +277,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                {/* Information Display */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Full Name */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <User className="w-4 h-4" />
@@ -318,7 +290,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Username */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <AtSign className="w-4 h-4" />
@@ -329,7 +300,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Email Address */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Mail className="w-4 h-4" />
@@ -340,7 +310,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Contact Number */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Phone className="w-4 h-4" />
@@ -353,7 +322,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Birth Date */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Calendar className="w-4 h-4" />
