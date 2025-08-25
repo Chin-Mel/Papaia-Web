@@ -1,34 +1,85 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Camera,
   Calendar,
-  MapPin,
   Save,
   Key,
   UserMinus,
   Trash2,
-  ChevronDown,
+  User,
+  AtSign,
+  Mail,
+  Phone,
 } from "lucide-react";
-import SecureInput from "../components/SecureInput";
-import {
-  secureApiCall,
-  sanitizeInput,
-  confirmDestructiveAction,
-} from "../utils/security";
-import PasswordUpdatedSuccessModal from "../components/PasswordUpdatedSuccessModal";
+import { useNavigate } from "react-router-dom";
+import { getLoggedInUser } from "../utils/security";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
+import defaultUserPic from "../assets/default-user.png";
 
 export default function EditProfilePage() {
+  const [userData, setUserData] = useState(null);
   const [formData, setFormData] = useState({
-    fullName: "John Anderson",
-    username: "john_anderson",
-    email: "john.anderson@agrotech.com",
-    contact: "+1 (555) 123-4567",
-    birthDate: "1985-06-15",
-    address: "1234 Form Road, Fresno, CA 93720",
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    phone: "",
+    dateOfBirth: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [errors, setErrors] = useState({});
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const user = getLoggedInUser();
+        const token = localStorage.getItem("token");
+
+        if (!user?.id || !token) {
+          navigate("/login");
+          return;
+        }
+
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${user.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const userInfo = await response.json();
+        setUserData(userInfo);
+
+        // Set form data with current user data
+        setFormData({
+          firstName: userInfo.firstName || "",
+          lastName: userInfo.lastName || "",
+          username: userInfo.username || "",
+          email: userInfo.email || "",
+          phone: userInfo.phone || userInfo.contactNumber || "",
+          dateOfBirth: userInfo.dateOfBirth || userInfo.birthDate || "",
+        });
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        setErrors({ general: "Failed to load user data" });
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -45,26 +96,93 @@ export default function EditProfilePage() {
     }
   };
 
+  // Handle profile picture upload
+  const handleProfilePictureUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Please select an image smaller than 5MB");
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const token = localStorage.getItem("token");
+      const formDataUpload = new FormData();
+      formDataUpload.append("profilePicture", file);
+
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/profile-picture",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formDataUpload,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to upload profile picture");
+      }
+
+      const result = await response.json();
+
+      // Update userData with new profile picture
+      setUserData((prev) => ({
+        ...prev,
+        profilePicture:
+          result.profilePicture || result.profilePictureUrl || result.imageUrl,
+      }));
+    } catch (error) {
+      console.error("Error uploading profile picture:", error);
+      alert("Failed to upload profile picture. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleSaveChanges = async () => {
     setIsLoading(true);
     setErrors({});
 
     try {
-      const response = await secureApiCall("/api/profile/update", {
-        method: "PUT",
-        body: JSON.stringify({
-          fullName: sanitizeInput(formData.fullName),
-          username: sanitizeInput(formData.username),
-          email: sanitizeInput(formData.email),
-          contact: sanitizeInput(formData.contact),
-          birthDate: formData.birthDate,
-          address: sanitizeInput(formData.address),
-        }),
-      });
+      const user = getLoggedInUser();
+      const token = localStorage.getItem("token");
+
+      if (!user?.id || !token) {
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/user/${user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (response.ok) {
-        // Show success message or update UI
-        console.log("Profile updated successfully");
+        const updatedUser = await response.json();
+        setUserData(updatedUser);
+        alert("Profile updated successfully!");
+        navigate("/profile");
       } else {
         const errorData = await response.json();
         setErrors({
@@ -83,71 +201,37 @@ export default function EditProfilePage() {
   };
 
   const handleChangePassword = () => {
-    // Show password success modal for demo
-    setShowPasswordModal(true);
+    // Navigate to change password page or show modal
+    navigate("/change-password");
   };
 
-  const handleDeactivateAccount = async () => {
-    const confirmed = await confirmDestructiveAction(
-      "deactivate",
-      "your account"
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 mt-16 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading profile...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
     );
-    if (confirmed) {
-      try {
-        const response = await secureApiCall("/api/account/deactivate", {
-          method: "POST",
-        });
-
-        if (response.ok) {
-          // Redirect to login or show success message
-          window.location.href = "/signin";
-        } else {
-          const errorData = await response.json();
-          setErrors({
-            general: errorData.message || "Failed to deactivate account.",
-          });
-        }
-      } catch (error) {
-        console.error("Deactivate account error:", error);
-        setErrors({
-          general: "An error occurred. Please try again later.",
-        });
-      }
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    const confirmed = await confirmDestructiveAction(
-      "permanently delete",
-      "your account"
-    );
-    if (confirmed) {
-      try {
-        const response = await secureApiCall("/api/account/delete", {
-          method: "DELETE",
-        });
-
-        if (response.ok) {
-          // Redirect to home page
-          window.location.href = "/";
-        } else {
-          const errorData = await response.json();
-          setErrors({
-            general: errorData.message || "Failed to delete account.",
-          });
-        }
-      } catch (error) {
-        console.error("Delete account error:", error);
-        setErrors({
-          general: "An error occurred. Please try again later.",
-        });
-      }
-    }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
+
+      {/* Hidden file input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleProfilePictureUpload}
+        accept="image/*"
+        style={{ display: "none" }}
+      />
 
       {/* Main Content */}
       <main className="flex-1 pt-16 p-6">
@@ -175,35 +259,34 @@ export default function EditProfilePage() {
                 <div className="text-center">
                   {/* Profile Picture */}
                   <div className="relative inline-block mb-6">
-                    <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center">
-                      <img
-                        src="https://source.unsplash.com/128x128/?man,portrait"
-                        alt="John Anderson"
-                        className="w-32 h-32 rounded-full object-cover"
-                      />
-                    </div>
-                    <button className="absolute bottom-2 right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors">
-                      <Camera className="w-4 h-4 text-white" />
+                    <img
+                      src={userData.profilePicture || defaultUserPic}
+                      alt={`${userData.firstName} ${userData.lastName}`}
+                      className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
+                      onError={(e) => {
+                        e.target.src = defaultUserPic;
+                      }}
+                    />
+                    <button
+                      onClick={handleCameraClick}
+                      disabled={uploading}
+                      className="absolute bottom-2 right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {uploading ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                      ) : (
+                        <Camera className="w-4 h-4 text-white" />
+                      )}
                     </button>
                   </div>
 
                   {/* User Info */}
                   <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    John Anderson
+                    {userData.firstName && userData.lastName
+                      ? `${userData.firstName} ${userData.lastName}`
+                      : userData.username || "User"}
                   </h2>
                   <p className="text-gray-600 mb-4">Farm Owner</p>
-
-                  {/* Joined Date & Location */}
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center justify-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      <span>Joined March 2023</span>
-                    </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span>Consolacion, Cebu</span>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -220,22 +303,49 @@ export default function EditProfilePage() {
                       disabled={isLoading}
                       className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <Save className="w-4 h-4" />
-                      {isLoading ? "Saving..." : "Save Changes"}
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          Save Changes
+                        </>
+                      )}
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Full Name */}
+                    {/* First Name */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <User className="w-4 h-4" />
+                        First Name
                       </label>
-                      <SecureInput
+                      <input
                         type="text"
-                        value={formData.fullName}
+                        value={formData.firstName}
                         onChange={(e) =>
-                          handleInputChange("fullName", e.target.value)
+                          handleInputChange("firstName", e.target.value)
+                        }
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
+                        required
+                      />
+                    </div>
+
+                    {/* Last Name */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <User className="w-4 h-4" />
+                        Last Name
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          handleInputChange("lastName", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
                         required
@@ -244,10 +354,11 @@ export default function EditProfilePage() {
 
                     {/* Username */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <AtSign className="w-4 h-4" />
                         Username
                       </label>
-                      <SecureInput
+                      <input
                         type="text"
                         value={formData.username}
                         onChange={(e) =>
@@ -260,10 +371,11 @@ export default function EditProfilePage() {
 
                     {/* Email Address */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Mail className="w-4 h-4" />
                         Email Address
                       </label>
-                      <SecureInput
+                      <input
                         type="email"
                         value={formData.email}
                         onChange={(e) =>
@@ -276,14 +388,15 @@ export default function EditProfilePage() {
 
                     {/* Contact Number */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Phone className="w-4 h-4" />
                         Contact Number
                       </label>
-                      <SecureInput
+                      <input
                         type="tel"
-                        value={formData.contact}
+                        value={formData.phone}
                         onChange={(e) =>
-                          handleInputChange("contact", e.target.value)
+                          handleInputChange("phone", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
                         required
@@ -292,33 +405,15 @@ export default function EditProfilePage() {
 
                     {/* Birth Date */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Calendar className="w-4 h-4" />
                         Birth Date
                       </label>
-                      <div className="relative">
-                        <SecureInput
-                          type="date"
-                          value={formData.birthDate}
-                          onChange={(e) =>
-                            handleInputChange("birthDate", e.target.value)
-                          }
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent pr-10"
-                          required
-                        />
-                        <Calendar className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      </div>
-                    </div>
-
-                    {/* Address */}
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Address
-                      </label>
-                      <SecureInput
-                        type="text"
-                        value={formData.address}
+                      <input
+                        type="date"
+                        value={formData.dateOfBirth}
                         onChange={(e) =>
-                          handleInputChange("address", e.target.value)
+                          handleInputChange("dateOfBirth", e.target.value)
                         }
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
                         required
@@ -350,60 +445,6 @@ export default function EditProfilePage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Danger Zone Section */}
-                <div className="border-t border-gray-200 pt-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-1 h-6 bg-red-500 rounded-full"></div>
-                    <h3 className="text-xl font-bold text-red-600">
-                      Danger Zone
-                    </h3>
-                  </div>
-
-                  {/* Deactivate Account */}
-                  <div className="mb-6 p-6 bg-red-50 rounded-lg border border-red-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-gray-800 font-medium">
-                          Deactivate Account
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Temporarily disable your account. You can reactivate
-                          it anytime.
-                        </p>
-                      </div>
-                      <button
-                        onClick={handleDeactivateAccount}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2"
-                      >
-                        <UserMinus className="w-4 h-4" />
-                        Deactivate Account
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Delete Account */}
-                  <div className="p-6 bg-red-50 rounded-lg border border-red-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-gray-800 font-medium">
-                          Delete Account
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Permanently delete your account and all associated
-                          data. This action cannot be undone.
-                        </p>
-                      </div>
-                      <button
-                        onClick={handleDeleteAccount}
-                        className="px-4 py-2 bg-red-700 text-white rounded-lg hover:bg-red-800 transition-colors flex items-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        Delete Account
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -411,20 +452,6 @@ export default function EditProfilePage() {
       </main>
 
       <Footer />
-
-      {/* Password Updated Success Modal */}
-      <PasswordUpdatedSuccessModal
-        isOpen={showPasswordModal}
-        onClose={() => setShowPasswordModal(false)}
-        onContinueToSignIn={() => {
-          setShowPasswordModal(false);
-          window.location.href = "/signin";
-        }}
-        onBackToHome={() => {
-          setShowPasswordModal(false);
-          window.location.href = "/";
-        }}
-      />
     </div>
   );
 }
