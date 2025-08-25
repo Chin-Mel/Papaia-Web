@@ -18,7 +18,6 @@ import defaultUserPic from "../assets/default-user.png";
 export default function ProfilePage() {
   const [userData, setUserData] = useState(null);
   const [farmCount, setFarmCount] = useState(0);
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
@@ -140,21 +139,6 @@ export default function ProfilePage() {
   const handleEditProfile = () => {
     navigate("/edit-profile");
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 mt-16 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading profile...</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   if (!userData) {
     return (
