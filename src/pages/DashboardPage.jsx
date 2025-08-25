@@ -203,7 +203,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 pt-16 p-6">
+      <main className="flex-1 mt-16 p-6">
         <div className="max-w-7xl mx-auto flex gap-6">
           {/* Left Column - Recent Activities */}
           <div className="w-80 flex-shrink-0">

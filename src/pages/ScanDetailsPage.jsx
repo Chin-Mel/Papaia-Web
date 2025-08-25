@@ -70,7 +70,7 @@ export default function ScanDetailsPage() {
     <div className="min-h-screen bg-gray-50">
       <HeaderMain />
 
-      <main className="px-[39px] pt-16 py-8">
+      <main className="px-[39px] mt-16 py-8">
         <nav className="flex items-center space-x-2 text-sm mb-6 pl-[63px]">
           <Link
             to="/scan-history-log"

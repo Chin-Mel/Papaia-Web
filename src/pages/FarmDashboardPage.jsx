@@ -286,7 +286,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center pt-16 ">
+        <main className="flex-1 flex items-center justify-center mt-16 ">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: No farm ID provided</p>
             <button
@@ -306,7 +306,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center pt-16">
+        <main className="flex-1 flex items-center justify-center mt-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading farm data...</p>
@@ -321,7 +321,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center pt-16">
+        <main className="flex-1 flex items-center justify-center mt-16">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: {error}</p>
             <button
@@ -344,7 +344,7 @@ export default function FarmDashboardPage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 pt-16 p-6">
+      <main className="flex-1 mt-16 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Back Button */}
           <button
