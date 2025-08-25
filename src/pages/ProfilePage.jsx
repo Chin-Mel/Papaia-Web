@@ -71,8 +71,6 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -137,7 +135,6 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
-    onClose();
     navigate("/edit-profile");
   };
 
