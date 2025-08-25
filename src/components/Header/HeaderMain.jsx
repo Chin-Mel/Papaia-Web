@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
 import ProfileDropdown from "../Popups/ProfileDropdown";
-import defaultUser from "../assets/default-user.png"; // ✅ Import default profile image
+import defaultUser from "../../assets/default-user.png"; // ✅ Import default profile image
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
