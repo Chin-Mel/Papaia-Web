@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import papaiaLogo from "../../assets/papaia-logo.png"; // Make sure this path is correct
+import papaiaLogo from "../../assets/papaia-logo.png";
 
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeNav, setActiveNav] = useState("home");
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const location = useLocation();
+  const navRefs = useRef({});
 
   const navItems = [
     { id: "home", label: "Home", href: "/" },
@@ -21,26 +23,24 @@ export default function HeaderStart() {
     if (currentNav) {
       setActiveNav(currentNav.id);
     } else {
-      // Default to home if no match
       setActiveNav("home");
     }
   }, [location.pathname]);
 
+  // Update indicator position and size when activeNav changes
+  useEffect(() => {
+    const el = navRefs.current[activeNav];
+    if (el) {
+      setIndicatorStyle({
+        left: el.offsetLeft,
+        width: el.offsetWidth,
+      });
+    }
+  }, [activeNav]);
+
   const handleNavClick = (navId) => {
     setActiveNav(navId);
-    // Close mobile menu when clicking a nav item
     setIsMenuOpen(false);
-  };
-
-  // Calculate the transform position based on active nav
-  const getTransformX = () => {
-    const positions = {
-      home: 0,
-      about: 87,
-      signin: 174,
-      signup: 261,
-    };
-    return positions[activeNav] || 0;
   };
 
   return (
@@ -73,8 +73,8 @@ export default function HeaderStart() {
             <div
               className="absolute top-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-in-out"
               style={{
-                width: "80px",
-                transform: `translateX(${getTransformX()}px)`,
+                left: indicatorStyle.left,
+                width: indicatorStyle.width,
               }}
             />
 
@@ -82,6 +82,7 @@ export default function HeaderStart() {
               <Link
                 key={item.id}
                 to={item.href}
+                ref={(el) => (navRefs.current[item.id] = el)}
                 onClick={() => handleNavClick(item.id)}
                 className={`relative z-10 px-4 py-2 rounded-full transition-all duration-300 ${
                   activeNav === item.id
