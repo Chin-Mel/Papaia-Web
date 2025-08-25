@@ -1,6 +1,6 @@
 import { X, CheckCircle, ArrowLeft, User } from "lucide-react";
 
-function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
+function FarmerAddedSuccessModal({ isOpen, onClose, farmer }) {
   if (!isOpen) return null;
 
   return (
@@ -13,7 +13,7 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
             </div>
           </div>
           <h2 className="text-xl font-bold text-white text-center mb-2">
-            Farmer Removed Successfully
+            Farmer Added Successfully
           </h2>
           <button
             onClick={onClose}
@@ -24,52 +24,37 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
         </div>
 
         <div className="p-6">
-          <p className="text-gray-700 mb-6">
-            The farmer has been successfully removed from the farm management
-            system. All associated data and permissions have been updated.
+          <p className="text-gray-700 mb-6 text-center">
+            The farmer has been successfully added to your farm team. They can
+            now access the farm management system.
           </p>
 
           {farmer && (
-            <div className="bg-gray-100 rounded-lg p-4 mb-6 shadow-sm">
+            <div className="bg-green-50 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-gray-500" />
+                <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                  <User className="w-6 h-6 text-white" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-800 mb-1">
-                    {farmer.firstname || farmer.firstName}{" "}
-                    {farmer.lastname || farmer.lastName}
+                    {farmer.firstName} {farmer.lastName}
                   </h3>
-                  <p className="text-gray-600 text-sm mb-1">
-                    Farmer ID: {farmer.id || farmer.farmerId}
-                  </p>
                   <p className="text-gray-600 text-sm">Email: {farmer.email}</p>
                 </div>
-                <span className="px-3 py-1 bg-red-500 text-white text-xs rounded-full font-medium">
-                  Removed
+                <span className="px-3 py-1 bg-green-500 text-white text-xs rounded-full font-medium">
+                  Active
                 </span>
               </div>
             </div>
           )}
 
-          <div className="space-y-3 mb-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-gray-700">Access permissions revoked</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-gray-700">Historical data archived</span>
-            </div>
-          </div>
-
           <div className="flex justify-center">
             <button
               onClick={onClose}
-              className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center gap-2"
+              className="px-6 py-3 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg font-medium hover:from-orange-500 hover:to-orange-600 transition-all flex items-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              Back to Dashboard
             </button>
           </div>
         </div>
@@ -78,4 +63,4 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   );
 }
 
-export default FarmerRemovedSuccessModal;
+export default FarmerAddedSuccessModal;

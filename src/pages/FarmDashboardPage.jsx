@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Trash2,
@@ -13,129 +13,135 @@ import {
   User,
   Phone,
   Mail,
+  ArrowLeft,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
+import AddFarmerModal from "./AddFarmerModal";
+import FarmerDetailModal from "./FarmerDetailModal";
+import RemoveFarmerModal from "./RemoveFarmerModal";
+import FarmerAddedSuccessModal from "./FarmerAddedSuccessModal";
+import FarmerRemovedSuccessModal from "./FarmerRemovedSuccessModal";
 
 export default function FarmDashboardPage() {
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [farmData, setFarmData] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+  const [recentScans, setRecentScans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data for recent scans
-  const recentScans = [
-    {
-      id: 1,
-      user: {
-        name: "Regine Velasquez",
-        avatar: "https://source.unsplash.com/40x40/?woman,1",
-      },
-      status: "Healthy",
-      time: "2 hours ago",
-      icon: "🟢",
-    },
-    {
-      id: 2,
-      user: {
-        name: "Ann Curtis",
-        avatar: "https://source.unsplash.com/40x40/?woman,2",
-      },
-      status: "Anthracnose Identified",
-      time: "4 hours ago",
-      icon: "🟠",
-    },
-    {
-      id: 3,
-      user: {
-        name: "John Smith",
-        avatar: "https://source.unsplash.com/40x40/?man,1",
-      },
-      status: "Healthy",
-      time: "6 hours ago",
-      icon: "🟢",
-    },
-    {
-      id: 4,
-      user: {
-        name: "Maria Garcia",
-        avatar: "https://source.unsplash.com/40x40/?woman,3",
-      },
-      status: "Anthracnose Identified",
-      time: "1 day ago",
-      icon: "🟠",
-    },
-  ];
+  // Modal states
+  const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
+  const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
+  const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
+  const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
+    useState(false);
+  const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
+    useState(false);
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
 
-  // Mock data for farm team
-  const farmTeam = [
-    {
-      id: 1,
-      name: "Jhong Hilario",
-      avatar: "https://source.unsplash.com/40x40/?man,2",
-      role: "Senior Farmer",
-      farmerId: "FM-001",
-      contact: {
-        phone: "+63 912 345 6789",
-        email: "jhong.hilario@email.com",
-      },
-      address: "Purok Saging, Garing, Consolacion, Cebu",
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Catriona Gray",
-      avatar: "https://source.unsplash.com/40x40/?woman,4",
-      role: "Aura Farmer",
-      farmerId: "FM-002",
-      contact: {
-        phone: "+63 923 456 7890",
-        email: "catriona.gray@email.com",
-      },
-      address: "Purok Mangga, Garing, Consolacion, Cebu",
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Pia Wurtzbach",
-      avatar: "https://source.unsplash.com/40x40/?woman,5",
-      role: "Junior Farmer",
-      farmerId: "FM-003",
-      contact: {
-        phone: "+63 934 567 8901",
-        email: "pia.wurtzbach@email.com",
-      },
-      address: "Purok Santol, Garing, Consolacion, Cebu",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      name: "Manny Pacquiao",
-      avatar: "https://source.unsplash.com/40x40/?man,3",
-      role: "Senior Farmer",
-      farmerId: "FM-004",
-      contact: {
-        phone: "+63 945 678 9012",
-        email: "manny.pacquiao@email.com",
-      },
-      address: "Purok Lansones, Garing, Consolacion, Cebu",
-      status: "Inactive",
-    },
-    {
-      id: 5,
-      name: "Lea Salonga",
-      avatar: "https://source.unsplash.com/40x40/?woman,6",
-      role: "Aura Farmer",
-      farmerId: "FM-005",
-      contact: {
-        phone: "+63 956 789 0123",
-        email: "lea.salonga@email.com",
-      },
-      address: "Purok Rambutan, Garing, Consolacion, Cebu",
-      status: "Active",
-    },
-  ];
+  // Get farm ID from URL params or props
+  const farmId = "abc123"; // This should come from URL params or props
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
+
+  // Fetch farm data
+  useEffect(() => {
+    const fetchFarmData = async () => {
+      try {
+        // Fetch all farms and find the specific one
+        const response = await fetch("/api/owner/farms", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch farm data");
+        }
+
+        const data = await response.json();
+        const farm = data.farms.find((f) => f.id === farmId);
+
+        if (farm) {
+          setFarmData(farm);
+        } else {
+          setError("Farm not found");
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchFarmData();
+  }, [farmId]);
+
+  // Fetch farmers for this farm
+  useEffect(() => {
+    const fetchFarmers = async () => {
+      try {
+        const response = await fetch(`/api/owner/farmers/${farmId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch farmers");
+        }
+
+        const data = await response.json();
+        setFarmers(data.farmers || []);
+      } catch (err) {
+        console.error("Error fetching farmers:", err);
+        setFarmers([]);
+      }
+    };
+
+    if (farmId) {
+      fetchFarmers();
+    }
+  }, [farmId]);
+
+  // Fetch recent scans (this would need to be implemented in your backend)
+  useEffect(() => {
+    const fetchRecentScans = async () => {
+      try {
+        // This endpoint would need to be implemented in your backend
+        // For now, we'll set it to empty array
+        setRecentScans([]);
+      } catch (err) {
+        console.error("Error fetching recent scans:", err);
+        setRecentScans([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentScans();
+  }, [farmId]);
+
+  // Determine farm status based on recent scans
+  const getFarmStatus = () => {
+    if (recentScans.length === 0) return "Inactive";
+
+    // Check if there are scans within the last 5 days
+    const fiveDaysAgo = new Date();
+    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+
+    const recentScanExists = recentScans.some((scan) => {
+      const scanDate = new Date(scan.createdAt || scan.time);
+      return scanDate >= fiveDaysAgo;
+    });
+
+    return recentScanExists ? "Active" : "Inactive";
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -150,6 +156,162 @@ export default function FarmDashboardPage() {
     }
   };
 
+  const handleDeleteFarm = async () => {
+    if (window.confirm("Are you sure you want to delete this farm?")) {
+      try {
+        const response = await fetch(`/api/owner/farm/${farmId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to delete farm");
+        }
+
+        // Redirect back to dashboard
+        window.history.back();
+      } catch (err) {
+        alert("Error deleting farm: " + err.message);
+      }
+    }
+  };
+
+  const handleAddFarmer = () => {
+    setIsAddFarmerModalOpen(true);
+  };
+
+  const handleFarmerAdded = async (farmerData) => {
+    try {
+      // Add farmer via API
+      const response = await fetch("/api/owner/farmer", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: "temp_user_id", // This should be handled by backend
+          farmId: farmId,
+          ...farmerData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add farmer");
+      }
+
+      setNewlyAddedFarmer(farmerData);
+      setIsAddFarmerModalOpen(false);
+      setIsFarmerAddedSuccessModalOpen(true);
+
+      // Refresh farmers list
+      const farmersResponse = await fetch(`/api/owner/farmers/${farmId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (farmersResponse.ok) {
+        const data = await farmersResponse.json();
+        setFarmers(data.farmers || []);
+      }
+    } catch (err) {
+      console.error("Error adding farmer:", err);
+      alert("Error adding farmer: " + err.message);
+    }
+  };
+
+  const handleViewFarmer = (farmer) => {
+    setSelectedFarmer(farmer);
+    setIsFarmerDetailModalOpen(true);
+  };
+
+  const handleRemoveFarmerFromDetail = () => {
+    setIsFarmerDetailModalOpen(false);
+    setIsRemoveFarmerModalOpen(true);
+  };
+
+  const handleConfirmRemoveFarmer = async () => {
+    try {
+      const response = await fetch(`/api/owner/farmer/${selectedFarmer.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to remove farmer");
+      }
+
+      // Remove farmer from state
+      setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
+      setIsRemoveFarmerModalOpen(false);
+      setIsFarmerRemovedSuccessModalOpen(true);
+    } catch (err) {
+      console.error("Error removing farmer:", err);
+      alert("Error removing farmer: " + err.message);
+    }
+  };
+
+  const handleBackToDetailModal = () => {
+    setIsRemoveFarmerModalOpen(false);
+    setIsFarmerDetailModalOpen(true);
+  };
+
+  const handleSuccessModalClose = () => {
+    setIsFarmerAddedSuccessModalOpen(false);
+    setIsFarmerRemovedSuccessModalOpen(false);
+    setSelectedFarmer(null);
+    setNewlyAddedFarmer(null);
+  };
+
+  const goBack = () => {
+    window.history.back();
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading farm data...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error: {error}</p>
+            <button
+              onClick={goBack}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            >
+              Go Back
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const farmStatus = getFarmStatus();
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
@@ -157,21 +319,36 @@ export default function FarmDashboardPage() {
       {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
+          {/* Back Button */}
+          <button
+            onClick={goBack}
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </button>
+
           {/* Top Header Section */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <div className="flex justify-between items-start">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <h1 className="text-2xl font-bold text-gray-800">
-                    Green Valley Farm
+                    {farmData?.farmName || "Loading..."}
                   </h1>
-                  <span className="px-3 py-1 bg-green-100 text-green-700 text-sm font-medium rounded-full">
-                    Active
+                  <span
+                    className={`px-3 py-1 text-sm font-medium rounded-full ${
+                      farmStatus === "Active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {farmStatus}
                   </span>
                 </div>
                 <p className="text-gray-600 flex items-center gap-2">
                   <MapPin className="w-4 h-4" />
-                  Purok Saging, Garing, Consolacion, Cebu
+                  {farmData?.location || "No location specified"}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -179,7 +356,10 @@ export default function FarmDashboardPage() {
                   <FileText className="w-4 h-4" />
                   Export PDF
                 </button>
-                <button className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors">
+                <button
+                  onClick={handleDeleteFarm}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors"
+                >
                   <Trash2 className="w-4 h-4" />
                   Delete
                 </button>
@@ -236,15 +416,17 @@ export default function FarmDashboardPage() {
               {/* Summary Statistics */}
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
-                  <p className="text-green-600 font-semibold">156</p>
+                  <p className="text-green-600 font-semibold">
+                    {recentScans.length}
+                  </p>
                   <p className="text-sm text-gray-600">Total Scans</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-blue-600 font-semibold">89%</p>
+                  <p className="text-blue-600 font-semibold">--</p>
                   <p className="text-sm text-gray-600">Health Score</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-orange-600 font-semibold">12.5</p>
+                  <p className="text-orange-600 font-semibold">--</p>
                   <p className="text-sm text-gray-600">Disease Score</p>
                 </div>
               </div>
@@ -256,25 +438,41 @@ export default function FarmDashboardPage() {
                 Recent Scans
               </h2>
               <div className="space-y-3">
-                {recentScans.map((scan) => (
-                  <div
-                    key={scan.id}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-                  >
-                    <img
-                      src={scan.user.avatar}
-                      alt={scan.user.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-800">{scan.status}</p>
-                      <p className="text-sm text-gray-600">
-                        {scan.user.name} • {scan.time}
-                      </p>
+                {recentScans.length > 0 ? (
+                  recentScans.map((scan, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                    >
+                      <img
+                        src={
+                          scan.user?.avatar ||
+                          `https://source.unsplash.com/40x40/?person,${index}`
+                        }
+                        alt={scan.user?.name || "User"}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-800">
+                          {scan.status || "Scan Result"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          {scan.user?.name || "Unknown User"} •{" "}
+                          {scan.time || "Recently"}
+                        </p>
+                      </div>
+                      <div className="text-2xl">{scan.icon || "📊"}</div>
                     </div>
-                    <div className="text-2xl">{scan.icon}</div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Leaf className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500">No recent scans available</p>
+                    <p className="text-sm text-gray-400">
+                      Scans will appear here once farmers start using the app
+                    </p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -291,14 +489,14 @@ export default function FarmDashboardPage() {
               </button>
             </div>
             <p className="text-gray-700 leading-relaxed">
-              Green Valley Farm is a 500-acre sustainable agriculture operation
-              dedicated to organic farming practices. Our farm specializes in
-              crop rotation, integrated pest management, and water conservation
-              techniques. We supply fresh, organic produce to local markets and
-              restaurants, maintaining the highest standards of quality and
-              environmental stewardship. Our commitment to sustainable
-              agriculture ensures long-term soil health and biodiversity while
-              providing nutritious food for our community.
+              {farmData?.farmName || "This farm"} is dedicated to sustainable
+              agriculture practices. Our farm specializes in crop rotation,
+              integrated pest management, and water conservation techniques. We
+              supply fresh produce to local markets and restaurants, maintaining
+              the highest standards of quality and environmental stewardship.
+              Our commitment to sustainable agriculture ensures long-term soil
+              health and biodiversity while providing nutritious food for our
+              community.
             </p>
           </div>
 
@@ -311,7 +509,10 @@ export default function FarmDashboardPage() {
                   Manage and track all registered farmers
                 </p>
               </div>
-              <button className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2">
+              <button
+                onClick={handleAddFarmer}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
+              >
                 <Plus className="w-4 h-4" />
                 Add Farmer
               </button>
@@ -346,118 +547,192 @@ export default function FarmDashboardPage() {
 
             {/* Farmer Table */}
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Farmer
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Farmer ID
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Contact
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Address
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      Status
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-700">
-                      See Details
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {farmTeam.map((farmer) => (
-                    <tr
-                      key={farmer.id}
-                      className="border-b border-gray-100 hover:bg-gray-50"
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={farmer.avatar}
-                            alt={farmer.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {farmer.name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {farmer.role}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-gray-700">
-                        {farmer.farmerId}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="space-y-1">
-                          <p className="text-sm text-gray-700 flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
-                            {farmer.contact.phone}
-                          </p>
-                          <p className="text-sm text-gray-700 flex items-center gap-1">
-                            <Mail className="w-3 h-3" />
-                            {farmer.contact.email}
-                          </p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-700">
-                        {farmer.address}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                            farmer.status
-                          )}`}
-                        >
-                          {farmer.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
-                        <button className="text-green-600 hover:text-green-700 transition-colors">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </td>
+              {farmers.length > 0 ? (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Farmer
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Farmer ID
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Contact
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Address
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Status
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium text-gray-700">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {farmers
+                      .filter(
+                        (farmer) =>
+                          farmer.firstname
+                            ?.toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ||
+                          farmer.lastname
+                            ?.toLowerCase()
+                            .includes(searchQuery.toLowerCase()) ||
+                          farmer.id
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())
+                      )
+                      .filter(
+                        (farmer) =>
+                          statusFilter === "All Status" ||
+                          farmer.status === statusFilter.toLowerCase()
+                      )
+                      .map((farmer) => (
+                        <tr
+                          key={farmer.id}
+                          className="border-b border-gray-100 hover:bg-gray-50"
+                        >
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={
+                                  farmer.profilePicture ||
+                                  `https://source.unsplash.com/40x40/?person,${farmer.id}`
+                                }
+                                alt={`${farmer.firstname} ${farmer.lastname}`}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                              <div>
+                                <p className="font-medium text-gray-800">
+                                  {`${farmer.firstname || ""} ${
+                                    farmer.middlename || ""
+                                  } ${farmer.lastname || ""} ${
+                                    farmer.suffix || ""
+                                  }`.trim()}
+                                </p>
+                                <p className="text-sm text-gray-600">Farmer</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-gray-700">
+                            {farmer.id}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="space-y-1">
+                              <p className="text-sm text-gray-700 flex items-center gap-1">
+                                <Phone className="w-3 h-3" />
+                                N/A
+                              </p>
+                              <p className="text-sm text-gray-700 flex items-center gap-1">
+                                <Mail className="w-3 h-3" />
+                                N/A
+                              </p>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-700">
+                            {`${farmer.street || ""}, ${
+                              farmer.barangay || ""
+                            }, ${farmer.municipality || ""}, ${
+                              farmer.province || ""
+                            } ${farmer.zipcode || ""}`
+                              .replace(/^,\s*|,\s*$/g, "")
+                              .replace(/,\s*,/g, ",")}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                                farmer.status.charAt(0).toUpperCase() +
+                                  farmer.status.slice(1)
+                              )}`}
+                            >
+                              {farmer.status.charAt(0).toUpperCase() +
+                                farmer.status.slice(1)}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => handleViewFarmer(farmer)}
+                                className="text-green-600 hover:text-green-700 transition-colors"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedFarmer(farmer);
+                                  setIsRemoveFarmerModalOpen(true);
+                                }}
+                                className="text-red-600 hover:text-red-700 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="text-center py-8">
+                  <User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-500">No farmers added yet</p>
+                  <p className="text-sm text-gray-400">
+                    Click "Add Farmer" to start building your team
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-6">
-              <p className="text-sm text-gray-600">
-                Showing 1 to 5 of 1,247 results
-              </p>
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  Previous
-                </button>
-                <button className="px-3 py-1 bg-orange-500 text-white rounded-lg">
-                  1
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  2
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  3
-                </button>
-                <button className="px-3 py-1 text-gray-600 hover:text-gray-800 transition-colors">
-                  Next
-                </button>
+            {farmers.length > 0 && (
+              <div className="flex justify-between items-center mt-6">
+                <p className="text-sm text-gray-600">
+                  Showing {farmers.length} farmer
+                  {farmers.length !== 1 ? "s" : ""}
+                </p>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
 
       <Footer />
+
+      {/* Modals */}
+      <AddFarmerModal
+        isOpen={isAddFarmerModalOpen}
+        onClose={() => setIsAddFarmerModalOpen(false)}
+        onFarmerAdded={handleFarmerAdded}
+        farmId={farmId}
+      />
+
+      <FarmerDetailModal
+        isOpen={isFarmerDetailModalOpen}
+        onClose={() => setIsFarmerDetailModalOpen(false)}
+        onRemoveFarmer={handleRemoveFarmerFromDetail}
+        farmer={selectedFarmer}
+      />
+
+      <RemoveFarmerModal
+        isOpen={isRemoveFarmerModalOpen}
+        onClose={handleBackToDetailModal}
+        onConfirmRemove={handleConfirmRemoveFarmer}
+        farmer={selectedFarmer}
+      />
+
+      <FarmerAddedSuccessModal
+        isOpen={isFarmerAddedSuccessModalOpen}
+        onClose={handleSuccessModalClose}
+        farmer={newlyAddedFarmer}
+      />
+
+      <FarmerRemovedSuccessModal
+        isOpen={isFarmerRemovedSuccessModalOpen}
+        onClose={handleSuccessModalClose}
+        farmer={selectedFarmer}
+      />
     </div>
   );
 }
