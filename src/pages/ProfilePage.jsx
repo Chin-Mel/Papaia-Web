@@ -9,156 +9,90 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState({});
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const fileInputRef = useRef(null);
-  const navigate = useNavigate();
+  const [userStatus, setUserStatus] = useState({
+    status: "active",
+    color: "green",
+  });
+  const fileInputRef = useRef();
 
-  // Fetch user data
+  const loggedInUser = getLoggedInUser();
+  const token = loggedInUser?.token;
+
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const user = getLoggedInUser();
-        const token = localStorage.getItem("token");
+    if (!loggedInUser) return;
 
-        if (!user?.id || !token) {
-          navigate("/login");
-          return;
-        }
+    // Fetch user details
+    fetch(`https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setUserData(data))
+      .catch((err) => console.error("Failed to fetch user details:", err));
 
-        // ✅ Fetch user details using /user/:id
-        const userResponse = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${user.id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    // Fetch farm count
+    fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setFarmCount(data.farmCount || 0))
+      .catch((err) => console.error("Failed to fetch farm count:", err));
+  }, [loggedInUser, token]);
 
-        if (!userResponse.ok) {
-          throw new Error("Failed to fetch user data");
-        }
+  const handleCameraClick = () => {
+    fileInputRef.current.click();
+  };
 
-        const userInfo = await userResponse.json();
-        setUserData(userInfo.user);
-
-        // ✅ Fetch farm count
-        const farmResponse = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/count-farms",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (farmResponse.ok) {
-          const farmData = await farmResponse.json();
-          setFarmCount(farmData.farmCount || 0);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchUserData();
-  }, [navigate]);
-
-  // Handle profile picture upload
-  const handleProfilePictureUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleProfilePictureUpload = async (e) => {
+    const file = e.target.files[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file");
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Please select an image smaller than 5MB");
-      return;
-    }
-
     setUploading(true);
+    const formData = new FormData();
+    formData.append("profilePicture", file);
 
     try {
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-      formData.append("profilePicture", file);
-
-      const response = await fetch(
+      const res = await fetch(
         "https://papaiaapi.onrender.com/api/profile-picture",
         {
           method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to upload profile picture");
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUserData((prev) => ({
+          ...prev,
+          profilePicture: updatedUser.profilePicture,
+        }));
+      } else {
+        console.error("Failed to update profile picture");
       }
-
-      const result = await response.json();
-
-      setUserData((prev) => ({
-        ...prev,
-        profilePicture: result.profilePicture || result.profilePictureUrl,
-      }));
-
-      window.location.reload();
-    } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      alert("Failed to upload profile picture. Please try again.");
+    } catch (err) {
+      console.error("Error uploading profile picture:", err);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleCameraClick = () => {
-    fileInputRef.current?.click();
-  };
-
   const handleEditProfile = () => {
-    navigate("/edit-profile");
+    alert("Edit profile feature not implemented yet."); // Placeholder
   };
-
-  if (!userData) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 mt-16 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-gray-600">Failed to load profile data.</p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  const userStatus = { status: "active", color: "green" };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -167,10 +101,8 @@ export default function ProfilePage() {
         style={{ display: "none" }}
       />
 
-      {/* Main Content */}
       <main className="flex-1 mt-16 p-6">
         <div className="max-w-6xl mx-auto">
-          {/* Page Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Profile Settings
@@ -180,9 +112,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            {/* Left Panel - Profile Card */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex flex-col items-center mb-6">
@@ -191,20 +121,15 @@ export default function ProfilePage() {
                       src={userData.profilePicture || defaultUserPic}
                       alt={`${userData.firstName} ${userData.lastName}`}
                       className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
-                      onError={(e) => {
-                        e.currentTarget.src = defaultUserPic;
-                      }}
+                      onError={(e) => (e.currentTarget.src = defaultUserPic)}
                     />
                     <button
                       onClick={handleCameraClick}
                       disabled={uploading}
                       className="absolute bottom-2 right-2 w-8 h-8 bg-gradient-to-r from-[#FF8C42] to-[#F97316] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Change profile picture"
                     >
-                      {uploading ? (
-                        <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
-                      ) : (
-                        <Camera className="w-4 h-4 text-white" />
-                      )}
+                      <Camera className="w-4 h-4 text-white" />
                     </button>
                   </div>
 
@@ -243,7 +168,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Right Panel */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex justify-between items-center mb-6">
@@ -262,8 +186,7 @@ export default function ProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <User className="w-4 h-4" />
-                      Full Name
+                      <User className="w-4 h-4" /> Full Name
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
                       {userData.firstName && userData.lastName
@@ -274,8 +197,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <AtSign className="w-4 h-4" />
-                      Username
+                      <AtSign className="w-4 h-4" /> Username
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
                       {userData.username || "Not provided"}
@@ -284,8 +206,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Mail className="w-4 h-4" />
-                      Email Address
+                      <Mail className="w-4 h-4" /> Email Address
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
                       {userData.email || "Not provided"}
@@ -294,8 +215,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Phone className="w-4 h-4" />
-                      Contact Number
+                      <Phone className="w-4 h-4" /> Contact Number
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
                       {userData.phone ||
@@ -306,8 +226,7 @@ export default function ProfilePage() {
 
                   <div className="space-y-2 md:col-span-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Calendar className="w-4 h-4" />
-                      Birth Date
+                      <Calendar className="w-4 h-4" /> Birth Date
                     </label>
                     <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
                       {userData.dateOfBirth ||
