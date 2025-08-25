@@ -1,7 +1,12 @@
 import { useState } from "react";
 import { X, UserPlus, Loader2 } from "lucide-react";
 
-function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
+export default function AddFarmerModal({
+  isOpen,
+  onClose,
+  onFarmerAdded,
+  farmId,
+}) {
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
