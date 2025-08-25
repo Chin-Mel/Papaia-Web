@@ -52,7 +52,7 @@ export default function ProfilePage() {
         }
 
         const userInfo = await userResponse.json();
-        setUserData(userInfo);
+        setUserData(userInfo.user);
 
         // ✅ Fetch farm count
         const farmResponse = await fetch(
