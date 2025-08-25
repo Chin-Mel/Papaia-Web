@@ -17,16 +17,16 @@ export default function HeaderStart() {
   ];
 
   // Sync active nav with current route
+  // Sync active nav with current route
   useEffect(() => {
     const currentPath = location.pathname;
     const currentNav = navItems.find((item) => item.href === currentPath);
+
     if (currentNav) {
       setActiveNav(currentNav.id);
-    } else {
-      setActiveNav("home");
     }
+    // ❌ don't reset to "home" if no match
   }, [location.pathname]);
-
   // Update indicator position and size when activeNav changes
   useEffect(() => {
     const el = navRefs.current[activeNav];
