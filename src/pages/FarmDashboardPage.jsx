@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // Add this import
 import {
   FileText,
   Trash2,
@@ -24,6 +25,8 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 
 export default function FarmDashboardPage() {
+  const { id: farmId } = useParams(); // Extract farmId from URL parameters
+
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -44,14 +47,17 @@ export default function FarmDashboardPage() {
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
 
-  // Get farm ID from URL params or props
-  const farmId = "abc123"; // This should come from URL params or props
-
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
   // Fetch farm data
   useEffect(() => {
     const fetchFarmData = async () => {
+      if (!farmId) {
+        setError("No farm ID provided");
+        setLoading(false);
+        return;
+      }
+
       try {
         // Fetch all farms and find the specific one
         const response = await fetch("/api/owner/farms", {
@@ -84,6 +90,8 @@ export default function FarmDashboardPage() {
   // Fetch farmers for this farm
   useEffect(() => {
     const fetchFarmers = async () => {
+      if (!farmId) return;
+
       try {
         const response = await fetch(`/api/owner/farmers/${farmId}`, {
           headers: {
@@ -104,9 +112,7 @@ export default function FarmDashboardPage() {
       }
     };
 
-    if (farmId) {
-      fetchFarmers();
-    }
+    fetchFarmers();
   }, [farmId]);
 
   // Fetch recent scans (this would need to be implemented in your backend)
@@ -274,6 +280,27 @@ export default function FarmDashboardPage() {
   const goBack = () => {
     window.history.back();
   };
+
+  // Early return if no farmId
+  if (!farmId) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-600 mb-4">Error: No farm ID provided</p>
+            <button
+              onClick={goBack}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+            >
+              Go Back
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   if (loading) {
     return (
