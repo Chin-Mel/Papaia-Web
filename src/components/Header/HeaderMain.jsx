@@ -51,7 +51,8 @@ export default function HeaderMain() {
           return res.json();
         })
         .then((data) => {
-          setUserData(data); // store whole user object
+          console.log("Fetched user data:", data);
+          setUserData(data.user || data); // store whole user object
         })
         .catch((err) => console.error(err));
     }
