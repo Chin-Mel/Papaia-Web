@@ -17,11 +17,11 @@ import {
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
-import AddFarmerModal from "./Popups/AddFarmerModal";
-import FarmerDetailModal from "./Popups/FarmerDetailModal";
-import RemoveFarmerModal from "./Popups/RemoveFarmerModal";
-import FarmerAddedSuccessModal from "./Popups/FarmerAddedSuccessModal";
-import FarmerRemovedSuccessModal from "./Popups/FarmerRemovedSuccessModal";
+import AddFarmerModal from "../Popups/AddFarmerModal";
+import FarmerDetailModal from "../Popups/FarmerDetailModal";
+import RemoveFarmerModal from "../Popups/RemoveFarmerModal";
+import FarmerAddedSuccessModal from "../Popups/FarmerAddedSuccessModal";
+import FarmerRemovedSuccessModal from "../Popups/FarmerRemovedSuccessModal";
 
 export default function FarmDashboardPage() {
   const [timeFilter, setTimeFilter] = useState("Daily");
