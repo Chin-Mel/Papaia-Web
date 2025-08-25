@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -15,64 +15,7 @@ import ClockIcon from "../assets/sh-clock-icon.png";
 import CheckCircleIcon from "../assets/check-circle-icon.png";
 import AlertIcon from "../assets/alert-icon.png";
 
-// --- Data for the component ---
-const scanData = [
-  {
-    id: "1",
-    farmName: "Green Field Farm",
-    status: "healthy",
-    farmer: "John Smith",
-    date: "Dec 15, 2024",
-    time: "2:30 PM",
-    image:
-      "https://api.builder.io/api/v1/image/assets/TEMP/89fbe12bd1289cabc722bac2dce62b1ff1b5bb4f?width=160",
-  },
-  {
-    id: "2",
-    farmName: "North Willow Farms",
-    status: "disease-detected",
-    farmer: "Maria Garcia",
-    date: "Dec 14, 2024",
-    time: "10:15 AM",
-    image:
-      "https://api.builder.io/api/v1/image/assets/TEMP/8f342c53f902559fdd6732c79d7ef39c9ddba2aa?width=160",
-    description: "Ringspot virus detected - Immediate treatment recommended",
-  },
-  {
-    id: "3",
-    farmName: "West Lagoon Farm",
-    status: "needs-attention",
-    farmer: "David Chen",
-    date: "Dec 13, 2024",
-    time: "4:45 PM",
-    image:
-      "https://api.builder.io/api/v1/image/assets/TEMP/0716a8ead87bca87a1263f312a0b0fb53f9f54ce?width=160",
-    description: "Powdery Mildew - Monitor closely",
-  },
-  {
-    id: "4",
-    farmName: "Coast Farm",
-    status: "healthy",
-    farmer: "John Smith",
-    date: "Dec 12, 2024",
-    time: "9:20 AM",
-    image:
-      "https://api.builder.io/api/v1/image/assets/TEMP/6ed1cf9a5d511a4577be6de6a9281c620775f561?width=160",
-  },
-  {
-    id: "5",
-    farmName: "Coast Farm",
-    status: "healthy",
-    farmer: "John Smith",
-    date: "Dec 12, 2024",
-    time: "9:20 AM",
-    image:
-      "https://api.builder.io/api/v1/image/assets/TEMP/6ed1cf9a5d511a4577be6de6a9281c620775f561?width=160",
-  },
-];
-
 // --- Helper Components defined within the file ---
-
 function StatusBadge({ status }) {
   const statusConfig = {
     healthy: {
@@ -91,7 +34,7 @@ function StatusBadge({ status }) {
       icon: <img src={AlertIcon} alt="Attention" className="w-3 h-4" />,
     },
   };
-  const config = statusConfig[status];
+  const config = statusConfig[status] || statusConfig.healthy;
   return (
     <div
       className={`${config.className} flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-medium`}
@@ -102,7 +45,6 @@ function StatusBadge({ status }) {
   );
 }
 
-// UPDATED: This is now a Link component
 function ViewDetailsButton({ status, scanId }) {
   const colorMap = {
     healthy: "text-[#22C55E] hover:text-green-600",
@@ -123,14 +65,121 @@ function ViewDetailsButton({ status, scanId }) {
 // --- Main Page Component ---
 export default function ScanHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const reportRef = useRef(null);
-  const totalPages = 3;
-  const totalResults = 1247;
-  const resultsPerPage = 5;
-  const startResult = (currentPage - 1) * resultsPerPage + 1;
-  const endResult = Math.min(currentPage * resultsPerPage, totalResults);
+  const [scanData, setScanData] = useState([]);
+  const [farms, setFarms] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalScans, setTotalScans] = useState(0);
+  const [filters, setFilters] = useState({
+    dateRange: "all",
+    status: "all",
+    farmId: "all",
+    farmerName: "",
+  });
 
-  // Function to handle PDF export
+  const reportRef = useRef(null);
+  const resultsPerPage = 5;
+  const totalPages = Math.ceil(totalScans / resultsPerPage);
+  const startResult = (currentPage - 1) * resultsPerPage + 1;
+  const endResult = Math.min(currentPage * resultsPerPage, totalScans);
+
+  // Fetch farms on component mount
+  useEffect(() => {
+    fetchFarms();
+  }, []);
+
+  // Fetch scans when page or filters change
+  useEffect(() => {
+    fetchScans();
+  }, [currentPage, filters]);
+
+  const fetchFarms = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      const response = await fetch("/api/owner/farms", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch farms");
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setFarms(data.farms || []);
+      }
+    } catch (error) {
+      console.error("Error fetching farms:", error);
+      setFarms([]);
+    }
+  };
+
+  const fetchScans = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+
+      // Build query parameters for filtering and pagination
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: resultsPerPage.toString(),
+        ...(filters.dateRange !== "all" && { dateRange: filters.dateRange }),
+        ...(filters.status !== "all" && { status: filters.status }),
+        ...(filters.farmId !== "all" && { farmId: filters.farmId }),
+        ...(filters.farmerName && { farmerName: filters.farmerName }),
+      });
+
+      // Note: This endpoint would need to be created in your backend
+      // It should return all scans from farms owned by the authenticated owner
+      const response = await fetch(`/api/owner/scans?${queryParams}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch scans");
+
+      const data = await response.json();
+      if (data.status === "success") {
+        setScanData(data.scans || []);
+        setTotalScans(data.totalCount || 0);
+      }
+    } catch (error) {
+      console.error("Error fetching scans:", error);
+      setScanData([]);
+      setTotalScans(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters((prev) => ({
+      ...prev,
+      [filterType]: value,
+    }));
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   const handleExport = () => {
     const input = reportRef.current;
     if (input) {
@@ -185,42 +234,70 @@ export default function ScanHistoryPage() {
             </button>
           </div>
 
+          {/* Filters */}
           <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Date Range
                 </label>
-                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option>Last 7 days</option>
-                  <option>Last 30 days</option>
+                <select
+                  value={filters.dateRange}
+                  onChange={(e) =>
+                    handleFilterChange("dateRange", e.target.value)
+                  }
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="all">All Time</option>
+                  <option value="today">Today</option>
+                  <option value="week">Last 7 days</option>
+                  <option value="month">Last 30 days</option>
                 </select>
               </div>
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Status
                 </label>
-                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option>All Status</option>
-                  <option>Healthy</option>
+                <select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange("status", e.target.value)}
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="healthy">Healthy</option>
+                  <option value="disease-detected">Disease Detected</option>
+                  <option value="needs-attention">Needs Attention</option>
                 </select>
               </div>
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Farmer
                 </label>
-                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option>All Farmers</option>
-                  <option>John Smith</option>
-                </select>
+                <input
+                  type="text"
+                  placeholder="Search farmer name..."
+                  value={filters.farmerName}
+                  onChange={(e) =>
+                    handleFilterChange("farmerName", e.target.value)
+                  }
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                />
               </div>
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Farm
                 </label>
-                <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
-                  <option>All Farms</option>
-                  <option>Green Field Farm</option>
+                <select
+                  value={filters.farmId}
+                  onChange={(e) => handleFilterChange("farmId", e.target.value)}
+                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                >
+                  <option value="all">All Farms</option>
+                  {farms.map((farm) => (
+                    <option key={farm.id} value={farm.id}>
+                      {farm.farmName}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -232,103 +309,125 @@ export default function ScanHistoryPage() {
             className="bg-white rounded-xl border border-gray-200 shadow-sm"
           >
             <div className="space-y-4 p-6">
-              {scanData.map((record) => (
-                <div
-                  key={record.id}
-                  className="bg-white rounded-xl border border-gray-200 p-6"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4 flex-1">
-                      <img
-                        src={record.image}
-                        alt={record.farmName}
-                        className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">
-                            {record.farmName}
-                          </h3>
-                          <StatusBadge status={record.status} />
+              {loading ? (
+                <div className="text-center py-8">
+                  <div className="text-gray-500">Loading scans...</div>
+                </div>
+              ) : scanData.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="text-gray-500">No scans found</div>
+                </div>
+              ) : (
+                scanData.map((record) => (
+                  <div
+                    key={record.id}
+                    className="bg-white rounded-xl border border-gray-200 p-6"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-4 flex-1">
+                        <img
+                          src={record.imageUrl || record.image}
+                          alt={record.farmName}
+                          className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://via.placeholder.com/80x80?text=No+Image";
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 truncate">
+                              {record.farmName}
+                            </h3>
+                            <StatusBadge status={record.status} />
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={UserIcon}
+                                alt="User"
+                                className="h-3 w-3"
+                              />
+                              <span>{record.farmerName}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={CalendarIcon}
+                                alt="Calendar"
+                                className="h-3 w-3"
+                              />
+                              <span>
+                                {formatDate(record.createdAt || record.date)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <img
+                                src={ClockIcon}
+                                alt="Time"
+                                className="h-3.5 w-3.5"
+                              />
+                              <span>
+                                {formatTime(record.createdAt || record.time)}
+                              </span>
+                            </div>
+                          </div>
+                          {record.description && (
+                            <p
+                              className={`text-sm font-medium ${
+                                record.status === "disease-detected"
+                                  ? "text-red-600"
+                                  : "text-gray-600"
+                              }`}
+                            >
+                              {record.description}
+                            </p>
+                          )}
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              alt="User"
-                              className="h-3 w-3"
-                            />
-                            <span>{record.farmer}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={CalendarIcon}
-                              alt="Calendar"
-                              className="h-3 w-3"
-                            />
-                            <span>{record.date}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <img
-                              src={ClockIcon}
-                              alt="Time"
-                              className="h-3.5 w-3.5"
-                            />
-                            <span>{record.time}</span>
-                          </div>
-                        </div>
-                        {record.description && (
-                          <p
-                            className={`text-sm font-medium ${
-                              record.status === "disease-detected"
-                                ? "text-red-600"
-                                : "text-gray-600"
-                            }`}
-                          >
-                            {record.description}
-                          </p>
-                        )}
+                      </div>
+                      <div className="flex-shrink-0 ml-4">
+                        <ViewDetailsButton
+                          status={record.status}
+                          scanId={record.id}
+                        />
                       </div>
                     </div>
-                    <div className="flex-shrink-0 ml-4">
-                      <ViewDetailsButton
-                        status={record.status}
-                        scanId={record.id}
-                      />
-                    </div>
                   </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
-            <div className="flex items-center justify-between p-6 border-t border-gray-200">
-              <div className="text-sm text-gray-700">
-                Showing {startResult} to {endResult} of{" "}
-                {totalResults.toLocaleString()} results
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
+
+            {/* Pagination - only show if there are more than 5 scans */}
+            {totalScans > resultsPerPage && (
+              <div className="flex items-center justify-between p-6 border-t border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Showing {startResult} to {endResult} of{" "}
+                  {totalScans.toLocaleString()} results
+                </div>
                 <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    renderPageButton
-                  )}
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Previous
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      renderPageButton
+                    )}
+                  </div>
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
                 </div>
-                <button
-                  onClick={() =>
-                    setCurrentPage(Math.min(totalPages, currentPage + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
