@@ -137,6 +137,7 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
+    onClose();
     navigate("/edit-profile");
   };
 
