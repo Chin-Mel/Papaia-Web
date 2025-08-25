@@ -16,6 +16,8 @@ import {
   Mail,
   ArrowLeft,
 } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
 import AddFarmerModal from "../components/Popups/AddFarmerModal";
 import FarmerDetailModal from "../components/Popups/FarmerDetailModal";
 import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
@@ -283,6 +285,7 @@ export default function FarmDashboardPage() {
   if (!farmId) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: No farm ID provided</p>
@@ -302,6 +305,7 @@ export default function FarmDashboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
@@ -316,6 +320,7 @@ export default function FarmDashboardPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: {error}</p>
@@ -336,6 +341,8 @@ export default function FarmDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
       {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-7xl mx-auto space-y-6">

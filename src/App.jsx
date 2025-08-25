@@ -1,6 +1,5 @@
+// App.jsx
 import { Routes, Route } from "react-router-dom";
-import HeaderMain from "./components/Header/HeaderMain";
-import FooterMain from "./components/Footer/FooterMain";
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -22,94 +21,78 @@ import ErrorBoundary from "./components/ErrorBoundary";
 function App() {
   return (
     <ErrorBoundary>
-      <div className="app-container">
-        {/* ✅ Always visible */}
-        <HeaderMain />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/about-home" element={<AboutHomePage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/new-password" element={<NewPasswordModal />} />
+        <Route path="/otp-verification" element={<OtpVerificationModal />} />
+        <Route path="/changed-password" element={<PasswordUpdatedModal />} />
 
-        <main className="content">
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/sign-in" element={<SignInPage />} />
-            <Route path="/sign-up" element={<SignUpPage />} />
-            <Route path="/about-home" element={<AboutHomePage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/new-password" element={<NewPasswordModal />} />
-            <Route
-              path="/otp-verification"
-              element={<OtpVerificationModal />}
-            />
-            <Route
-              path="/changed-password"
-              element={<PasswordUpdatedModal />}
-            />
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <AuthGuard>
+              <DashboardPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <AuthGuard>
+              <ProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            <AuthGuard>
+              <EditProfilePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/farm-dashboard/:id"
+          element={
+            <AuthGuard>
+              <FarmDashboardPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/scan-history"
+          element={
+            <AuthGuard>
+              <ScanHistoryPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/scan-details"
+          element={
+            <AuthGuard>
+              <ScanDetailsPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <AuthGuard>
+              <AboutPage />
+            </AuthGuard>
+          }
+        />
 
-            {/* Protected Routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <AuthGuard>
-                  <DashboardPage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <AuthGuard>
-                  <ProfilePage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/edit-profile"
-              element={
-                <AuthGuard>
-                  <EditProfilePage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/farm-dashboard/:id"
-              element={
-                <AuthGuard>
-                  <FarmDashboardPage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/scan-history"
-              element={
-                <AuthGuard>
-                  <ScanHistoryPage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/scan-details"
-              element={
-                <AuthGuard>
-                  <ScanDetailsPage />
-                </AuthGuard>
-              }
-            />
-            <Route
-              path="/about"
-              element={
-                <AuthGuard>
-                  <AboutPage />
-                </AuthGuard>
-              }
-            />
-
-            {/* Catch-all route for 404 errors */}
-            <Route path="*" element={<LandingPage />} />
-          </Routes>
-        </main>
-
-        {/* ✅ Always visible */}
-        <FooterMain />
-      </div>
+        {/* Catch-all route for 404 errors - redirect to landing page */}
+        <Route path="*" element={<LandingPage />} />
+      </Routes>
     </ErrorBoundary>
   );
 }

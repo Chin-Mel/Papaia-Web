@@ -147,6 +147,8 @@ export default function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
       {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
@@ -407,6 +409,8 @@ export default function EditProfilePage() {
           </div>
         </div>
       </main>
+
+      <Footer />
 
       {/* Password Updated Success Modal */}
       <PasswordUpdatedSuccessModal

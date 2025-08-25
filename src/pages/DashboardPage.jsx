@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
 import AddFarmModal from "../components/Popups/AddFarmModal";
 
 export default function DashboardPage() {
@@ -199,6 +201,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
       <main className="flex-1 p-6">
         <div className="max-w-7xl mx-auto flex gap-6">
           {/* Left Column - Recent Activities */}
@@ -437,6 +441,7 @@ export default function DashboardPage() {
       {showAddFarmModal && (
         <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
       )}
+      <Footer />
     </div>
   );
 }

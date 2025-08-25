@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+import FooterMain from "../components/Footer/FooterMain";
+import HeaderMain from "../components/Header/HeaderMain";
+
 // --- PNG ICON IMPORTS ---
 import DownloadIcon from "../assets/download-icon.png";
 import EyeIcon from "../assets/eye-icon.png";
@@ -161,6 +164,7 @@ export default function ScanHistoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -328,6 +332,7 @@ export default function ScanHistoryPage() {
           </div>
         </div>
       </main>
+      <FooterMain />
     </div>
   );
 }

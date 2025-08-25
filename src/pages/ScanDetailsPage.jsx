@@ -3,6 +3,9 @@ import { Link } from "react-router-dom";
 import jsPDF from "jspdf"; // 2. Import jsPDF for creating the PDF
 import html2canvas from "html2canvas"; // 3. Import html2canvas to capture the content as an image
 
+import FooterMain from "../components/Footer/FooterMain";
+import HeaderMain from "../components/Header/HeaderMain";
+
 import ChevronRightIcon from "../assets/chevron-right-icon.png";
 import DownloadIcon from "../assets/download-icon.png";
 import ShareIcon from "../assets/share-icon.png";
@@ -65,6 +68,8 @@ export default function ScanDetailsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <HeaderMain />
+
       <main className="px-[39px] py-8">
         <nav className="flex items-center space-x-2 text-sm mb-6 pl-[63px]">
           <Link
@@ -290,6 +295,8 @@ export default function ScanDetailsPage() {
           </div>
         </div>
       </main>
+
+      <FooterMain />
     </div>
   );
 }

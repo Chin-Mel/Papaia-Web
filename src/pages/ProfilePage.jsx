@@ -11,6 +11,8 @@ import {
   Tractor,
   CheckCircle,
 } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
 
 export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false);
@@ -42,6 +44,8 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
       {/* Main Content */}
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
@@ -238,6 +242,8 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

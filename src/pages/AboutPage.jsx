@@ -9,10 +9,14 @@ import {
   Sun,
   Users,
 } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-green-600 to-orange-500 py-20">
         <div className="absolute inset-0 bg-black bg-opacity-40"></div>
@@ -318,6 +322,8 @@ export default function AboutPage() {
           </section>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }
