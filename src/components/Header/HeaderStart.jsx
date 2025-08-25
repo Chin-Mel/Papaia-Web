@@ -27,6 +27,7 @@ export default function HeaderStart() {
     }
     // ❌ don't reset to "home" if no match
   }, [location.pathname]);
+
   // Update indicator position and size when activeNav changes
   useEffect(() => {
     const el = navRefs.current[activeNav];
