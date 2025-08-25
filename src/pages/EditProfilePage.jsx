@@ -150,7 +150,7 @@ export default function EditProfilePage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <main className="flex-1 pt-16 p-6">
         <div className="max-w-6xl mx-auto">
           {/* Page Title */}
           <div className="mb-8">

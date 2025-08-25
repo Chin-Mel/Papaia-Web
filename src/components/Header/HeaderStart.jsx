@@ -15,10 +15,9 @@ export default function HeaderStart() {
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
-  // store refs for each nav item
   const navRefs = useRef({});
 
-  // Update active nav when route changes
+  // Sync active nav with route
   useEffect(() => {
     const currentPath = location.pathname;
     const currentNav = navItems.find((item) => item.href === currentPath);
@@ -27,7 +26,7 @@ export default function HeaderStart() {
     }
   }, [location.pathname]);
 
-  // Update indicator position whenever activeNav changes
+  // Update sliding indicator when activeNav changes
   useEffect(() => {
     const el = navRefs.current[activeNav];
     if (el) {
@@ -38,8 +37,8 @@ export default function HeaderStart() {
     }
   }, [activeNav]);
 
-  const handleNavClick = (navId) => {
-    setActiveNav(navId);
+  const handleNavClick = () => {
+    // only close mobile menu, no manual setActiveNav
     setIsMenuOpen(false);
   };
 
@@ -83,7 +82,7 @@ export default function HeaderStart() {
                 key={item.id}
                 to={item.href}
                 ref={(el) => (navRefs.current[item.id] = el)}
-                onClick={() => handleNavClick(item.id)}
+                onClick={handleNavClick}
                 className={`relative z-10 px-4 py-2 rounded-full transition-all duration-300 ${
                   activeNav === item.id
                     ? "text-white font-medium"

@@ -286,7 +286,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center pt-16 ">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: No farm ID provided</p>
             <button
@@ -306,7 +306,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center pt-16">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading farm data...</p>
@@ -321,7 +321,7 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center">
+        <main className="flex-1 flex items-center justify-center pt-16">
           <div className="text-center">
             <p className="text-red-600 mb-4">Error: {error}</p>
             <button
@@ -344,7 +344,7 @@ export default function FarmDashboardPage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <main className="flex-1 pt-16 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Back Button */}
           <button
@@ -473,12 +473,14 @@ export default function FarmDashboardPage() {
                     >
                       <img
                         src={
-                          scan.user?.avatar ||
-                          `https://source.unsplash.com/40x40/?person,${index}`
+                          scan.user?.avatar && scan.user?.avatar.trim() !== ""
+                            ? scan.user.avatar
+                            : "/assets/default-user.png"
                         }
                         alt={scan.user?.name || "User"}
                         className="w-10 h-10 rounded-full object-cover"
                       />
+
                       <div className="flex-1">
                         <p className="font-medium text-gray-800">
                           {scan.status || "Scan Result"}
@@ -626,12 +628,15 @@ export default function FarmDashboardPage() {
                             <div className="flex items-center gap-3">
                               <img
                                 src={
-                                  farmer.profilePicture ||
-                                  `https://source.unsplash.com/40x40/?person,${farmer.id}`
+                                  farmer.profilePicture &&
+                                  farmer.profilePicture.trim() !== ""
+                                    ? farmer.profilePicture
+                                    : "/assets/default-user.png"
                                 }
                                 alt={`${farmer.firstname} ${farmer.lastname}`}
                                 className="w-10 h-10 rounded-full object-cover"
                               />
+
                               <div>
                                 <p className="font-medium text-gray-800">
                                   {`${farmer.firstname || ""} ${

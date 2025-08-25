@@ -54,7 +54,7 @@ export default function AboutHomePage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main>
+      <main className="pt-16">
         {/* Hero Section */}
         <section className="relative h-[400px] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
           <div className="absolute inset-0">

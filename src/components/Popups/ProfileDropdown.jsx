@@ -1,18 +1,15 @@
-import { useNavigate } from "react-router-dom";
 import { CreditCard, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import defaultUserPic from "../assets/default-user.png"; // ✅ import default image
 
-export default function ProfileDropdown({
-  isOpen,
-  onClose,
-  onLogout,
-  onPlansPricing,
-}) {
+export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
 
   if (!isOpen) return null;
+
   const goToProfilePage = () => {
-    onClose(); // close the dropdown
-    navigate("/profile"); // navigate to ProfilePage
+    onClose();
+    navigate("/profile");
   };
 
   return (
@@ -31,16 +28,22 @@ export default function ProfileDropdown({
           {/* Profile Picture */}
           <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
             <img
-              src="https://source.unsplash.com/48x48/?woman,portrait"
-              alt="Sarah Johnson"
+              src={user?.profilePicture || defaultUserPic} // ✅ use uploaded or fallback
+              alt={
+                user?.firstName ? `${user.firstName} ${user.lastName}` : "User"
+              }
               className="w-full h-full object-cover"
             />
           </div>
 
           {/* User Info */}
           <div className="flex-1">
-            <h4 className="font-bold text-gray-800 text-lg">Sarah Johnson</h4>
-            <p className="text-gray-600 text-sm">sarah@company.com</p>
+            <h4 className="font-bold text-gray-800 text-lg">
+              {user?.firstName && user?.lastName
+                ? `${user.firstName} ${user.lastName}`
+                : "Unknown User"}
+            </h4>
+            <p className="text-gray-600 text-sm">{user?.email}</p>
           </div>
         </div>
       </div>
@@ -48,15 +51,12 @@ export default function ProfileDropdown({
       {/* Navigation/Options Section */}
       <div className="p-4 border-b border-gray-200">
         <button
-          onClick={onPlansPricing}
+          onClick={() => alert("Plans & Pricing clicked")}
           className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
         >
-          {/* Icon */}
           <div className="mt-1">
             <CreditCard className="w-5 h-5 text-gray-700" />
           </div>
-
-          {/* Content */}
           <div className="flex-1 text-left">
             <p className="font-bold text-gray-800">Plans and Pricing</p>
             <p className="text-gray-600 text-sm">See Offers</p>

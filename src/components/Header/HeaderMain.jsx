@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
-import ProfileDropdown from "../Popups/ProfileDropdown";
+import ProfileDropdown from "../components/Popups/ProfileDropdown";
+import defaultUser from "../assets/default-user.png"; // ✅ Import default profile image
 
 export default function HeaderMain() {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [notifications] = useState(3);
-  const [username, setUsername] = useState("");
+  const [userData, setUserData] = useState(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -26,10 +27,8 @@ export default function HeaderMain() {
     if (matchedNav) {
       setActiveNav(matchedNav);
     } else if (currentPath.startsWith("/farm-dashboard/")) {
-      // Handle farm dashboard routes as dashboard
       setActiveNav("dashboard");
     } else {
-      // Default to dashboard for any other protected routes
       setActiveNav("dashboard");
     }
   }, [location.pathname]);
@@ -52,7 +51,7 @@ export default function HeaderMain() {
           return res.json();
         })
         .then((data) => {
-          if (data?.username) setUsername(data.username);
+          setUserData(data); // store whole user object
         })
         .catch((err) => console.error(err));
     }
@@ -77,11 +76,6 @@ export default function HeaderMain() {
   };
 
   const handleLogout = () => secureLogout();
-
-  const handleProfileClick = () => {
-    setShowProfileModal(false);
-    navigate("/profile");
-  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm border-b">
@@ -117,7 +111,11 @@ export default function HeaderMain() {
         {/* Right Side */}
         <div className="flex items-center space-x-6">
           <span className="text-gray-700 font-medium">
-            Welcome Back, {username || "..."}!
+            Welcome Back,{" "}
+            {userData?.firstName
+              ? `${userData.firstName} ${userData.lastName}`
+              : "..."}
+            !
           </span>
 
           {/* Notifications */}
@@ -151,7 +149,7 @@ export default function HeaderMain() {
               className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 transition-colors"
             >
               <img
-                src="https://source.unsplash.com/32x32/?man,portrait"
+                src={userData?.profilePicture || defaultUser} // ✅ Use defaultUser if no profile picture
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover"
               />
@@ -172,10 +170,10 @@ export default function HeaderMain() {
 
             {showProfileModal && (
               <ProfileDropdown
-                username={username}
+                isOpen={showProfileModal}
                 onClose={() => setShowProfileModal(false)}
                 onLogout={handleLogout}
-                onProfileClick={handleProfileClick}
+                user={userData}
               />
             )}
           </div>
