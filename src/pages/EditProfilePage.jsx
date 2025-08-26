@@ -20,7 +20,7 @@ function EditProfilePage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10">
+      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10 mt-20">
         {/* Top Profile Info */}
         <div className="flex items-center space-x-6 pb-8 border-b border-gray-200 mb-10">
           <div className="relative">
@@ -106,7 +106,7 @@ function EditProfilePage() {
                 Update your account password to keep it secure
               </p>
             </div>
-            <button className="flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow hover:bg-orange-600 transition-colors">
+            <button className="flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl bg-gray-50 hover:bg-orange-600 transition-colors">
               <Shield size={20} className="mr-2" />
               Change Password
             </button>
@@ -114,7 +114,7 @@ function EditProfilePage() {
         </section>
 
         {/* Danger Zone Section */}
-        <section className="p-6 rounded-2xl border-2 border-red-500 bg-red-50">
+        <section className="p-6 rounded-2xl border-2 border-red-500 bg-white">
           <h2 className="text-2xl font-semibold text-red-700 mb-6">
             Danger Zone
           </h2>
