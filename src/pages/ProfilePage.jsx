@@ -9,7 +9,7 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-import { getLoggedInUser } from "../utils/security";
+import { getLoggedInUser, logoutUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
@@ -27,24 +27,53 @@ export default function ProfilePage() {
   const loggedInUser = getLoggedInUser();
   const token = loggedInUser?.token;
 
+  // Redirect or stop if not logged in
   useEffect(() => {
-    if (!loggedInUser) return;
+    if (!loggedInUser || !token) {
+      console.error("No logged-in user or token found.");
+      return;
+    }
 
-    // Fetch user details
-    fetch(`https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setUserData(data))
-      .catch((err) => console.error("Failed to fetch user details:", err));
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (res.status === 401) {
+          console.error("Unauthorized. Logging out user.");
+          logoutUser(); // Clear local storage/session
+          return;
+        }
+        const data = await res.json();
+        setUserData(data);
+      } catch (err) {
+        console.error("Failed to fetch user details:", err);
+      }
+    };
 
-    // Fetch farm count
-    fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((res) => res.json())
-      .then((data) => setFarmCount(data.farmCount || 0))
-      .catch((err) => console.error("Failed to fetch farm count:", err));
+    const fetchFarmCount = async () => {
+      try {
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/count-farms",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (res.status === 401) {
+          console.error("Unauthorized. Logging out user.");
+          logoutUser();
+          return;
+        }
+        const data = await res.json();
+        setFarmCount(data.farmCount || 0);
+      } catch (err) {
+        console.error("Failed to fetch farm count:", err);
+      }
+    };
+
+    fetchUserData();
+    fetchFarmCount();
   }, [loggedInUser, token]);
 
   const handleCameraClick = () => {
@@ -53,7 +82,7 @@ export default function ProfilePage() {
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !token) return;
 
     setUploading(true);
     const formData = new FormData();
@@ -75,6 +104,9 @@ export default function ProfilePage() {
           ...prev,
           profilePicture: updatedUser.profilePicture,
         }));
+      } else if (res.status === 401) {
+        console.error("Unauthorized. Logging out user.");
+        logoutUser();
       } else {
         console.error("Failed to update profile picture");
       }
@@ -86,7 +118,7 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
-    alert("Edit profile feature not implemented yet."); // Placeholder
+    alert("Edit profile feature not implemented yet.");
   };
 
   return (
@@ -113,13 +145,16 @@ export default function ProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            {/* Profile Summary */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
                     <img
                       src={userData.profilePicture || defaultUserPic}
-                      alt={`${userData.firstName} ${userData.lastName}`}
+                      alt={`${userData.firstName || ""} ${
+                        userData.lastName || ""
+                      }`}
                       className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
                       onError={(e) => (e.currentTarget.src = defaultUserPic)}
                     />
@@ -142,7 +177,8 @@ export default function ProfilePage() {
 
                   <div className="flex items-center gap-2 mb-6">
                     <div
-                      className={`w-3 h-3 bg-${userStatus.color}-500 rounded-full`}
+                      className={`w-3 h-3 rounded-full`}
+                      style={{ backgroundColor: userStatus.color }}
                     ></div>
                     <span className="text-sm text-gray-600 capitalize">
                       {userStatus.status}
@@ -168,6 +204,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
+            {/* Personal Information */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex justify-between items-center mb-6">
@@ -184,6 +221,7 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Full Name */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <User className="w-4 h-4" /> Full Name
@@ -195,6 +233,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Username */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <AtSign className="w-4 h-4" /> Username
@@ -204,6 +243,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Email */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Mail className="w-4 h-4" /> Email Address
@@ -213,6 +253,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Phone */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Phone className="w-4 h-4" /> Contact Number
@@ -224,6 +265,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
+                  {/* Birth Date */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Calendar className="w-4 h-4" /> Birth Date
