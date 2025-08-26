@@ -1,267 +1,197 @@
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
-  User,
-  AtSign,
   Mail,
   Phone,
   Calendar,
-  Lock,
-  Power,
+  MapPin,
+  User,
+  Shield,
   Trash2,
-  X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { getLoggedInUser } from "../utils/security";
-import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
-import defaultUserPic from "../assets/default-user.png";
 
-export default function EditProfilePage() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({});
-  const [loading, setLoading] = useState(false);
-  const [popup, setPopup] = useState(null); // "deactivate" | "delete" | null
-  const [confirmationInput, setConfirmationInput] = useState("");
-
-  const loggedInUser = getLoggedInUser();
-  const token = localStorage.getItem("token");
-
-  // Fetch latest user details
-  useEffect(() => {
-    if (!loggedInUser?._id) return;
-
-    const fetchUser = async () => {
-      try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${loggedInUser._id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setFormData({
-            firstName: data.firstName || "",
-            lastName: data.lastName || "",
-            username: data.username || "",
-            email: data.email || "",
-            phone: data.phone || data.contactNumber || "",
-            birthDate: data.dateOfBirth || data.birthDate || "",
-            profilePicture: data.profilePicture || null,
-          });
-        }
-      } catch (err) {
-        console.error("Error fetching user:", err);
-      }
-    };
-
-    fetchUser();
-  }, [loggedInUser, token]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSaveChanges = async () => {
-    if (!token || !loggedInUser?._id) return;
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        `https://papaiaapi.onrender.com/api/user/${loggedInUser._id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (!res.ok) {
-        console.error("Failed to update profile");
-        return;
-      }
-
-      const updatedUser = await res.json();
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      navigate("/profile"); // back to profile page
-    } catch (err) {
-      console.error("Error updating profile:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmAction = () => {
-    if (
-      popup === "deactivate" &&
-      confirmationInput.toLowerCase() === "deactivate"
-    ) {
-      console.log("Account deactivated"); // replace with real API call
-      setPopup(null);
-    }
-    if (popup === "delete" && confirmationInput.toLowerCase() === "delete") {
-      console.log("Account deleted"); // replace with real API call
-      setPopup(null);
-    }
-  };
-
+// The main App component that renders the Edit Profile Page
+function EditProfilePage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <HeaderMain />
-
-      <main className="flex-1 mt-16 p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
-            Edit Profile
-          </h1>
-
-          <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className="bg-gray-100 min-h-screen p-8 font-sans">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+        <div className="flex items-center space-x-6 pb-6 border-b border-gray-200 mb-8">
+          <div className="relative">
             {/* Profile Picture */}
-            <div className="flex flex-col items-center mb-6">
-              <img
-                src={
-                  formData.profilePicture
-                    ? `https://papaiaapi.onrender.com${formData.profilePicture}`
-                    : defaultUserPic
-                }
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
-                onError={(e) => (e.currentTarget.src = defaultUserPic)}
-              />
-              <p className="text-gray-500 mt-2 text-sm">
-                Profile picture cannot be changed here.
+            <img
+              src="https://placehold.co/100x100/A7F3D0/065F46?text=JA"
+              alt="Profile"
+              className="w-24 h-24 rounded-full border-4 border-white shadow-md"
+            />
+            {/* Online Status Badge */}
+            <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-800">John Anderson</h1>
+            <p className="text-lg text-gray-500">Farm Owner</p>
+            <div className="flex items-center text-sm text-gray-400 space-x-4 mt-2">
+              <span className="flex items-center">
+                <Calendar size={16} className="mr-1" /> Joined March 2023
+              </span>
+              <span className="flex items-center">
+                <MapPin size={16} className="mr-1" /> Consolacion, Cebu
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Personal Information Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+            Personal Information
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ProfileInput
+              label="Full Name"
+              placeholder="John Anderson"
+              icon={<User size={20} />}
+            />
+            <ProfileInput label="Username" placeholder="john_anderson" />
+            <ProfileInput
+              label="Email Address"
+              placeholder="john.anderson@agrotech.com"
+              type="email"
+              icon={<Mail size={20} />}
+            />
+            <ProfileInput
+              label="Contact Number"
+              placeholder="+1 (555) 123-4567"
+              type="tel"
+              icon={<Phone size={20} />}
+            />
+            <ProfileInput
+              label="Birth Date"
+              placeholder="1985-06-15"
+              type="date"
+              icon={<Calendar size={20} />}
+            />
+            <ProfileInput
+              label="Address"
+              placeholder="1234 Farm Road, Fresno, CA 93720"
+              icon={<MapPin size={20} />}
+            />
+          </div>
+          <div className="mt-8 flex justify-end">
+            <button className="flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-orange-600 transition-colors">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                <polyline points="7 3 7 8 15 8"></polyline>
+              </svg>
+              Save Changes
+            </button>
+          </div>
+        </div>
+
+        {/* Security & Privacy Section */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+            Security & Privacy
+          </h2>
+          <div className="flex justify-between items-center bg-gray-50 p-6 rounded-xl shadow-sm border border-gray-200">
+            <div>
+              <h3 className="text-lg font-medium text-gray-800">
+                Change Password
+              </h3>
+              <p className="text-sm text-gray-500">
+                Update your account password to keep it secure
               </p>
             </div>
+            <button className="flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-orange-600 transition-colors">
+              <Shield size={20} className="mr-2" />
+              Change Password
+            </button>
+          </div>
+        </div>
 
-            {/* Form */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                {
-                  name: "firstName",
-                  label: "First Name",
-                  icon: <User className="w-4 h-4" />,
-                },
-                {
-                  name: "lastName",
-                  label: "Last Name",
-                  icon: <User className="w-4 h-4" />,
-                },
-                {
-                  name: "username",
-                  label: "Username",
-                  icon: <AtSign className="w-4 h-4" />,
-                },
-                {
-                  name: "email",
-                  label: "Email",
-                  icon: <Mail className="w-4 h-4" />,
-                },
-                {
-                  name: "phone",
-                  label: "Contact Number",
-                  icon: <Phone className="w-4 h-4" />,
-                },
-                {
-                  name: "birthDate",
-                  label: "Birth Date",
-                  icon: <Calendar className="w-4 h-4" />,
-                  type: "date",
-                },
-              ].map((field) => (
-                <div key={field.name} className="space-y-2">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                    {field.icon} {field.label}
-                  </label>
-                  <input
-                    type={field.type || "text"}
-                    name={field.name}
-                    value={formData[field.name] || ""}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 outline-none"
-                  />
-                </div>
-              ))}
+        {/* Danger Zone Section */}
+        <div className="p-6 rounded-2xl border-2 border-red-500 bg-red-50">
+          <h2 className="text-2xl font-semibold text-red-700 mb-4">
+            Danger Zone
+          </h2>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center p-4 bg-red-100 rounded-xl">
+              <div>
+                <h3 className="text-lg font-medium text-red-800">
+                  Deactivate Account
+                </h3>
+                <p className="text-sm text-red-600">
+                  Temporarily disable your account. You can reactivate it
+                  anytime.
+                </p>
+              </div>
+              <button className="flex items-center justify-center bg-red-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="mr-2"
+                >
+                  <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8zm4-12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z"></path>
+                </svg>
+                Deactivate Account
+              </button>
             </div>
-
-            {/* Buttons */}
-            <div className="mt-8 flex flex-col gap-3">
-              <button
-                onClick={handleSaveChanges}
-                disabled={loading}
-                className="w-full md:w-auto bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-6 py-2 rounded-lg font-medium shadow-md transition-all"
-              >
-                {loading ? "Saving..." : "Save Changes"}
-              </button>
-
-              <button className="w-full md:w-auto bg-[#F97316] hover:bg-[#FF8C42] text-white px-6 py-2 rounded-lg flex items-center gap-2 shadow-md">
-                <Lock className="w-4 h-4" /> Change Password
-              </button>
-
-              <button
-                onClick={() => setPopup("deactivate")}
-                className="w-full md:w-auto bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 shadow-md"
-              >
-                <Power className="w-4 h-4" /> Deactivate Account
-              </button>
-
-              <button
-                onClick={() => setPopup("delete")}
-                className="w-full md:w-auto bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 shadow-md"
-              >
-                <Trash2 className="w-4 h-4" /> Delete Account
+            <div className="flex justify-between items-center p-4 bg-red-100 rounded-xl">
+              <div>
+                <h3 className="text-lg font-medium text-red-800">
+                  Delete Account
+                </h3>
+                <p className="text-sm text-red-600">
+                  Permanently delete your account and all associated data. This
+                  action cannot be undone.
+                </p>
+              </div>
+              <button className="flex items-center justify-center bg-red-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:bg-red-600 transition-colors">
+                <Trash2 size={20} className="mr-2" />
+                Delete Account
               </button>
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
-
-      {/* Popup Modal */}
-      {popup && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6 relative">
-            <button
-              onClick={() => setPopup(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
-              {popup === "deactivate" ? "Deactivate Account" : "Delete Account"}
-            </h2>
-
-            <p className="text-sm text-gray-600 mb-4">
-              To confirm, please type{" "}
-              <span className="font-semibold">
-                {popup === "deactivate" ? "deactivate" : "delete"}
-              </span>{" "}
-              below.
-            </p>
-
-            <input
-              type="text"
-              value={confirmationInput}
-              onChange={(e) => setConfirmationInput(e.target.value)}
-              placeholder={`Type "${popup}" here`}
-              className="w-full px-3 py-2 border rounded-lg mb-4"
-            />
-
-            <button
-              onClick={handleConfirmAction}
-              disabled={confirmationInput.toLowerCase() !== popup.toLowerCase()}
-              className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-6 py-2 rounded-lg font-medium shadow-md"
-            >
-              Confirm {popup === "deactivate" ? "Deactivation" : "Deletion"}
-            </button>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
+
+// A reusable input component with a label and optional icon
+const ProfileInput = ({ label, placeholder, type = "text", icon }) => {
+  return (
+    <div className="flex flex-col">
+      <label className="text-sm font-medium text-gray-500 mb-1">{label}</label>
+      <div className="relative flex items-center">
+        {icon && <div className="absolute left-3 text-gray-400">{icon}</div>}
+        <input
+          type={type}
+          placeholder={placeholder}
+          className={`w-full border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow ${
+            icon ? "pl-10" : ""
+          }`}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default EditProfilePage;
