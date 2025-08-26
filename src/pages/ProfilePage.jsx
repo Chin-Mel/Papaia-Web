@@ -37,7 +37,10 @@ export default function ProfilePage() {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         const data = await res.json();
-        setFarmCount(data.farmCount || 0);
+
+        // Extract farm count safely
+        const count = data.farmCount ?? data?.data?.farmCount ?? 0;
+        setFarmCount(count);
       } catch (err) {
         console.error("Failed to fetch farm count:", err);
       }
