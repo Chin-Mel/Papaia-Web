@@ -55,13 +55,17 @@ export default function ProfilePage() {
     return () => {
       mounted = false;
     };
-  }, []); // only run once on mount
+  }, []);
 
   const handleCameraClick = () => fileInputRef.current.click();
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
+
+    // Preview locally before uploading
+    const previewUrl = URL.createObjectURL(file);
+    setUserData((prev) => ({ ...prev, profilePicture: previewUrl }));
 
     setUploading(true);
     const formData = new FormData();
@@ -84,6 +88,7 @@ export default function ProfilePage() {
           profilePicture: updatedUser.profilePicture,
         }));
 
+        // Update localStorage
         localStorage.setItem(
           "user",
           JSON.stringify({
