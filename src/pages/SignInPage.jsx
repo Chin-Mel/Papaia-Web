@@ -147,6 +147,7 @@ export default function SignInPage() {
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           value={password}
+                          autoComplete="current-password"
                           onChange={(e) => {
                             setPassword(e.target.value); // update state
                             if (error) setError(""); // clear error if exists
