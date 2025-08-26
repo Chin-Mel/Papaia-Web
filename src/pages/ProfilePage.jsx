@@ -20,8 +20,9 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
+  // Always read token from localStorage to avoid undefined token
   const loggedInUser = getLoggedInUser();
-  const token = loggedInUser?.token;
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!loggedInUser) return;
@@ -29,18 +30,24 @@ export default function ProfilePage() {
     // Set logged-in user details
     setUserData(loggedInUser);
 
-    // Fetch total farms managed
+    // Fetch total farms managed by user
     const fetchFarmCount = async () => {
+      if (!token) return;
       try {
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/count-farms",
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
-        const data = await res.json();
 
-        // Extract farm count safely
-        const count = data.farmCount ?? data?.data?.farmCount ?? 0;
-        setFarmCount(count);
+        if (res.status === 401) {
+          console.error("Unauthorized: Invalid token");
+          return;
+        }
+
+        const data = await res.json();
+        setFarmCount(data.farmCount ?? 0);
       } catch (err) {
         console.error("Failed to fetch farm count:", err);
       }
@@ -53,7 +60,7 @@ export default function ProfilePage() {
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !token) return;
 
     setUploading(true);
     const formData = new FormData();
@@ -75,6 +82,15 @@ export default function ProfilePage() {
           ...prev,
           profilePicture: updatedUser.profilePicture,
         }));
+
+        // Optionally update localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...loggedInUser,
+            profilePicture: updatedUser.profilePicture,
+          })
+        );
       } else {
         console.error("Failed to update profile picture");
       }
