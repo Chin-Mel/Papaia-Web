@@ -15,12 +15,12 @@ import FooterMain from "../components/Footer/FooterMain";
 
 function EditProfilePage() {
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col font-sans">
+    <div className="bg-white min-h-screen flex flex-col font-sans">
       {/* Header */}
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 px-6 py-10">
+      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10">
         {/* Top Profile Info */}
         <div className="flex items-center space-x-6 pb-8 border-b border-gray-200 mb-10">
           <div className="relative">
