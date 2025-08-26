@@ -26,10 +26,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loggedInUser) return;
 
-    // Use logged-in user details directly
+    // Set logged-in user details
     setUserData(loggedInUser);
 
-    // Fetch total farms managed by user
+    // Fetch total farms managed
     const fetchFarmCount = async () => {
       try {
         const res = await fetch(
