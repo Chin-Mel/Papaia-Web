@@ -7,6 +7,7 @@ import {
   Calendar,
   Camera,
   Edit3,
+  Save,
   Tractor,
 } from "lucide-react";
 import { getLoggedInUser } from "../utils/security";
@@ -15,24 +16,16 @@ import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState({});
-  const [farmCount, setFarmCount] = useState(0);
-  const [uploading, setUploading] = useState(false);
-  const [userStatus, setUserStatus] = useState({
-    status: "active",
-    color: "green",
-  });
-  const fileInputRef = useRef();
-
   const loggedInUser = getLoggedInUser();
   const token = loggedInUser?.token;
 
+  const [userData, setUserData] = useState(loggedInUser || {});
+  const [farmCount, setFarmCount] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const fileInputRef = useRef();
+
   useEffect(() => {
-    if (!loggedInUser) return;
-
-    // Use logged-in user details directly
-    setUserData(loggedInUser);
-
     // Fetch farm count
     const fetchFarmCount = async () => {
       try {
@@ -48,7 +41,7 @@ export default function ProfilePage() {
     };
 
     fetchFarmCount();
-  }, [loggedInUser, token]);
+  }, [token]);
 
   const handleCameraClick = () => fileInputRef.current.click();
 
@@ -76,6 +69,13 @@ export default function ProfilePage() {
           ...prev,
           profilePicture: updatedUser.profilePicture,
         }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            ...loggedInUser,
+            profilePicture: updatedUser.profilePicture,
+          })
+        );
       } else {
         console.error("Failed to update profile picture");
       }
@@ -86,8 +86,47 @@ export default function ProfilePage() {
     }
   };
 
-  const handleEditProfile = () =>
-    alert("Edit profile feature not implemented yet.");
+  const handleEditToggle = () => setEditing((prev) => !prev);
+
+  const handleInputChange = (field, value) => {
+    setUserData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            email: userData.email,
+            phone: userData.phone || userData.contactNumber,
+            dateOfBirth: userData.dateOfBirth || userData.birthDate,
+          }),
+        }
+      );
+
+      if (res.ok) {
+        const updatedUser = await res.json();
+        setUserData(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        setEditing(false);
+        alert("Profile updated successfully!");
+      } else {
+        console.error("Failed to update profile");
+        alert("Failed to update profile");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error updating profile");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -142,15 +181,6 @@ export default function ProfilePage() {
                       : userData.username || "User"}
                   </h2>
                   <p className="text-gray-600 mb-3">Farm Owner</p>
-
-                  <div className="flex items-center gap-2 mb-6">
-                    <div
-                      className={`w-3 h-3 bg-${userStatus.color}-500 rounded-full`}
-                    ></div>
-                    <span className="text-sm text-gray-600 capitalize">
-                      {userStatus.status}
-                    </span>
-                  </div>
                 </div>
 
                 <div className="bg-green-50 rounded-lg p-4 border border-green-100">
@@ -179,64 +209,93 @@ export default function ProfilePage() {
                     Personal Information
                   </h3>
                   <button
-                    onClick={handleEditProfile}
+                    onClick={editing ? handleSaveProfile : handleEditToggle}
                     className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md"
                   >
-                    <Edit3 className="w-4 h-4" />
-                    Edit Profile
+                    {editing ? (
+                      <Save className="w-4 h-4" />
+                    ) : (
+                      <Edit3 className="w-4 h-4" />
+                    )}
+                    {editing ? "Save Profile" : "Edit Profile"}
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* First Name */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <User className="w-4 h-4" /> Full Name
+                      <User className="w-4 h-4" /> First Name
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.firstName && userData.lastName
-                        ? `${userData.firstName} ${userData.lastName}`
-                        : "Not provided"}
-                    </div>
+                    <input
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      value={userData.firstName || ""}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        handleInputChange("firstName", e.target.value)
+                      }
+                    />
                   </div>
 
+                  {/* Last Name */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <AtSign className="w-4 h-4" /> Username
+                      <User className="w-4 h-4" /> Last Name
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.username || "Not provided"}
-                    </div>
+                    <input
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      value={userData.lastName || ""}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        handleInputChange("lastName", e.target.value)
+                      }
+                    />
                   </div>
 
+                  {/* Email */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Mail className="w-4 h-4" /> Email Address
+                      <Mail className="w-4 h-4" /> Email
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.email || "Not provided"}
-                    </div>
+                    <input
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      value={userData.email || ""}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
+                    />
                   </div>
 
+                  {/* Contact Number */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Phone className="w-4 h-4" /> Contact Number
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.phone ||
-                        userData.contactNumber ||
-                        "Not provided"}
-                    </div>
+                    <input
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      value={userData.phone || userData.contactNumber || ""}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        handleInputChange("phone", e.target.value)
+                      }
+                    />
                   </div>
 
+                  {/* Birth Date */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Calendar className="w-4 h-4" /> Birth Date
                     </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.dateOfBirth ||
-                        userData.birthDate ||
-                        "Not provided"}
-                    </div>
+                    <input
+                      type="date"
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      value={userData.dateOfBirth || userData.birthDate || ""}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        handleInputChange("dateOfBirth", e.target.value)
+                      }
+                    />
                   </div>
                 </div>
               </div>
