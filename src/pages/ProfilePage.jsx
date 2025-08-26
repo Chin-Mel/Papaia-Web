@@ -57,17 +57,12 @@ export default function ProfilePage() {
     };
   }, []);
 
-  const handleCameraClick = () => fileInputRef.current.click();
-
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
 
-    // Preview locally before uploading
-    const previewUrl = URL.createObjectURL(file);
-    setUserData((prev) => ({ ...prev, profilePicture: previewUrl }));
-
     setUploading(true);
+
     const formData = new FormData();
     formData.append("profilePicture", file);
 
@@ -81,29 +76,29 @@ export default function ProfilePage() {
         }
       );
 
-      if (res.ok) {
-        const updatedUser = await res.json();
-        setUserData((prev) => ({
-          ...prev,
-          profilePicture: updatedUser.profilePicture,
-        }));
-
-        // Update localStorage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            ...loggedInUser,
-            profilePicture: updatedUser.profilePicture,
-          })
-        );
-      } else {
+      if (!res.ok) {
         console.error("Failed to update profile picture");
+        return;
       }
+
+      const updatedUser = await res.json();
+
+      const updatedUserData = {
+        ...loggedInUser,
+        profilePicture: updatedUser.profilePicture,
+      };
+
+      setUserData(updatedUserData);
+      localStorage.setItem("user", JSON.stringify(updatedUserData));
     } catch (err) {
       console.error("Error uploading profile picture:", err);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleCameraClick = () => {
+    fileInputRef.current.click();
   };
 
   const handleEditProfile = () =>
@@ -139,13 +134,18 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
                     <img
-                      src={userData.profilePicture || defaultUserPic}
+                      src={
+                        userData.profilePicture
+                          ? `https://papaiaapi.onrender.com${userData.profilePicture}`
+                          : defaultUserPic
+                      }
                       alt={`${userData.firstName || ""} ${
                         userData.lastName || ""
                       }`}
                       className="w-32 h-32 rounded-full object-cover border-4 border-gray-100"
                       onError={(e) => (e.currentTarget.src = defaultUserPic)}
                     />
+
                     <button
                       onClick={handleCameraClick}
                       disabled={uploading}
