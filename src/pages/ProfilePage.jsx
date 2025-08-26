@@ -9,7 +9,7 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-import { getLoggedInUser, logoutUser } from "../utils/security";
+import { getLoggedInUser, secureLogout } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
@@ -27,12 +27,8 @@ export default function ProfilePage() {
   const loggedInUser = getLoggedInUser();
   const token = loggedInUser?.token;
 
-  // Redirect or stop if not logged in
   useEffect(() => {
-    if (!loggedInUser || !token) {
-      console.error("No logged-in user or token found.");
-      return;
-    }
+    if (!loggedInUser) return;
 
     const fetchUserData = async () => {
       try {
@@ -42,11 +38,12 @@ export default function ProfilePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
         if (res.status === 401) {
-          console.error("Unauthorized. Logging out user.");
-          logoutUser(); // Clear local storage/session
+          secureLogout();
           return;
         }
+
         const data = await res.json();
         setUserData(data);
       } catch (err) {
@@ -58,13 +55,16 @@ export default function ProfilePage() {
       try {
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/count-farms",
-          { headers: { Authorization: `Bearer ${token}` } }
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
+
         if (res.status === 401) {
-          console.error("Unauthorized. Logging out user.");
-          logoutUser();
+          secureLogout();
           return;
         }
+
         const data = await res.json();
         setFarmCount(data.farmCount || 0);
       } catch (err) {
@@ -82,7 +82,7 @@ export default function ProfilePage() {
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file || !token) return;
+    if (!file) return;
 
     setUploading(true);
     const formData = new FormData();
@@ -104,9 +104,6 @@ export default function ProfilePage() {
           ...prev,
           profilePicture: updatedUser.profilePicture,
         }));
-      } else if (res.status === 401) {
-        console.error("Unauthorized. Logging out user.");
-        logoutUser();
       } else {
         console.error("Failed to update profile picture");
       }
@@ -118,7 +115,7 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
-    alert("Edit profile feature not implemented yet.");
+    alert("Edit profile feature not implemented yet."); // Placeholder
   };
 
   return (
@@ -145,7 +142,7 @@ export default function ProfilePage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-            {/* Profile Summary */}
+            {/* Left Panel */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex flex-col items-center mb-6">
@@ -177,8 +174,7 @@ export default function ProfilePage() {
 
                   <div className="flex items-center gap-2 mb-6">
                     <div
-                      className={`w-3 h-3 rounded-full`}
-                      style={{ backgroundColor: userStatus.color }}
+                      className={`w-3 h-3 bg-${userStatus.color}-500 rounded-full`}
                     ></div>
                     <span className="text-sm text-gray-600 capitalize">
                       {userStatus.status}
@@ -204,7 +200,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Personal Information */}
+            {/* Right Panel */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-6 h-full">
                 <div className="flex justify-between items-center mb-6">
@@ -221,7 +217,6 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Full Name */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <User className="w-4 h-4" /> Full Name
@@ -233,7 +228,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Username */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <AtSign className="w-4 h-4" /> Username
@@ -243,7 +237,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Mail className="w-4 h-4" /> Email Address
@@ -253,7 +246,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Phone */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Phone className="w-4 h-4" /> Contact Number
@@ -265,7 +257,6 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  {/* Birth Date */}
                   <div className="space-y-2 md:col-span-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <Calendar className="w-4 h-4" /> Birth Date
