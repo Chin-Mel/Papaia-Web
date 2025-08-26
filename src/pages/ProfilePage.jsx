@@ -9,7 +9,7 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-import { getLoggedInUser, secureLogout } from "../utils/security";
+import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
@@ -30,41 +30,16 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loggedInUser) return;
 
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+    // Use logged-in user details directly
+    setUserData(loggedInUser);
 
-        if (res.status === 401) {
-          secureLogout();
-          return;
-        }
-
-        const data = await res.json();
-        setUserData(data);
-      } catch (err) {
-        console.error("Failed to fetch user details:", err);
-      }
-    };
-
+    // Fetch farm count
     const fetchFarmCount = async () => {
       try {
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/count-farms",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-
-        if (res.status === 401) {
-          secureLogout();
-          return;
-        }
-
         const data = await res.json();
         setFarmCount(data.farmCount || 0);
       } catch (err) {
@@ -72,13 +47,10 @@ export default function ProfilePage() {
       }
     };
 
-    fetchUserData();
     fetchFarmCount();
   }, [loggedInUser, token]);
 
-  const handleCameraClick = () => {
-    fileInputRef.current.click();
-  };
+  const handleCameraClick = () => fileInputRef.current.click();
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
@@ -114,9 +86,8 @@ export default function ProfilePage() {
     }
   };
 
-  const handleEditProfile = () => {
-    alert("Edit profile feature not implemented yet."); // Placeholder
-  };
+  const handleEditProfile = () =>
+    alert("Edit profile feature not implemented yet.");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
