@@ -20,41 +20,42 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
-  // Always read token from localStorage to avoid undefined token
   const loggedInUser = getLoggedInUser();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!loggedInUser) return;
+    if (!loggedInUser || !token) return;
 
-    // Set logged-in user details
     setUserData(loggedInUser);
 
-    // Fetch total farms managed by user
+    let mounted = true;
+
     const fetchFarmCount = async () => {
-      if (!token) return;
       try {
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/count-farms",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (res.status === 401) {
-          console.error("Unauthorized: Invalid token");
+        if (!res.ok) {
+          if (res.status === 401) console.warn("Unauthorized: invalid token");
+          else console.warn("Failed to fetch farm count:", res.status);
           return;
         }
 
         const data = await res.json();
-        setFarmCount(data.farmCount ?? 0);
+        if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
-        console.error("Failed to fetch farm count:", err);
+        console.warn("Could not fetch farm count:", err.message);
       }
     };
 
     fetchFarmCount();
-  }, [loggedInUser, token]);
+
+    return () => {
+      mounted = false;
+    };
+  }, []); // only run once on mount
 
   const handleCameraClick = () => fileInputRef.current.click();
 
@@ -83,7 +84,6 @@ export default function ProfilePage() {
           profilePicture: updatedUser.profilePicture,
         }));
 
-        // Optionally update localStorage
         localStorage.setItem(
           "user",
           JSON.stringify({
