@@ -1,6 +1,6 @@
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
 import EyeIcon from "../assets/eye-icon-about.png";
@@ -49,12 +49,20 @@ const developers = [
 ];
 
 export default function AboutHomePage() {
-  // Authentication check for protected user account area
+  /// Authentication check for protected user account area
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  // Redirect to login if not authenticated
+  // Redirect to login if not authenticated using useEffect and navigate
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Don't render the page if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return null; // or a loading spinner
   }
 
   return (
