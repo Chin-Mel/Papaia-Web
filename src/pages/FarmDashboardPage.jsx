@@ -194,16 +194,31 @@ export default function FarmDashboardPage() {
     }
   };
 
+  const refreshFarmers = async () => {
+    try {
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = await res.json();
+      setFarmers(data.farmers || []);
+    } catch (err) {
+      console.error("Error refreshing farmers:", err);
+    }
+  };
+
   const handleAddFarmer = () => {
     setIsAddFarmerModalOpen(true);
   };
 
-  const handleFarmerAdded = (newFarmer) => {
-    // Update local state
-    setFarmers((prevFarmers) => [...prevFarmers, newFarmer]);
+  const handleFarmerAdded = async (newFarmer) => {
+    await refreshFarmers();
     setNewlyAddedFarmer(newFarmer);
-
-    // Close modal and show success
     setIsAddFarmerModalOpen(false);
     setIsFarmerAddedSuccessModalOpen(true);
   };
@@ -221,7 +236,7 @@ export default function FarmDashboardPage() {
   const handleConfirmRemoveFarmer = async () => {
     try {
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
+        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer._id}`,
         {
           method: "DELETE",
           headers: {
@@ -231,12 +246,9 @@ export default function FarmDashboardPage() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to remove farmer");
-      }
+      if (!response.ok) throw new Error("Failed to remove farmer");
 
-      // Remove farmer from state
-      setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
+      await refreshFarmers();
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
     } catch (err) {
@@ -590,8 +602,8 @@ export default function FarmDashboardPage() {
                           farmer.lastname
                             ?.toLowerCase()
                             .includes(searchQuery.toLowerCase()) ||
-                          farmer.id
-                            .toLowerCase()
+                          farmer._id
+                            ?.toLowerCase()
                             .includes(searchQuery.toLowerCase())
                       )
                       .filter(
@@ -601,7 +613,7 @@ export default function FarmDashboardPage() {
                       )
                       .map((farmer) => (
                         <tr
-                          key={farmer.id}
+                          key={farmer._id} // ✅ use _id
                           className="border-b border-gray-100 hover:bg-gray-50"
                         >
                           <td className="py-3 px-4">
@@ -717,7 +729,7 @@ export default function FarmDashboardPage() {
         isOpen={isAddFarmerModalOpen}
         onClose={() => setIsAddFarmerModalOpen(false)}
         onSubmit={handleFarmerAdded}
-        farmId={id} // 👈 pass the farmId here
+        farmId={farmId} // 👈 pass the farmId here
       />
 
       <FarmerDetailModal
