@@ -26,38 +26,29 @@ export default function ProfilePage() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!loggedInUser || !token) return;
+    const fetchUser = async () => {
+      if (!token) return;
 
-    setUserData(loggedInUser);
-
-    let mounted = true;
-
-    const fetchFarmCount = async () => {
       try {
         const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/count-farms",
-          { headers: { Authorization: `Bearer ${token}` } }
+          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
         );
 
-        if (!res.ok) {
-          if (res.status === 401) console.warn("Unauthorized: invalid token");
-          else console.warn("Failed to fetch farm count:", res.status);
-          return;
-        }
+        if (!res.ok) throw new Error("Failed to fetch user");
 
         const data = await res.json();
-        if (mounted) setFarmCount(data.farmCount ?? 0);
+        setUserData(data);
+        localStorage.setItem("user", JSON.stringify(data)); // keep localStorage updated
       } catch (err) {
-        console.warn("Could not fetch farm count:", err.message);
+        console.error("Error fetching user:", err);
       }
     };
 
-    fetchFarmCount();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    fetchUser();
+  }, [token, loggedInUser?.id]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
@@ -137,11 +128,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
                     <img
-                      src={
-                        userData.profilePicture
-                          ? `https://papaiaapi.onrender.com${userData.profilePicture}`
-                          : defaultUserPic
-                      }
+                      src={userData.profilePicture || defaultUserPic}
                       alt={`${userData.firstName || ""} ${
                         userData.lastName || ""
                       }`}
