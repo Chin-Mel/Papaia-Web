@@ -9,6 +9,12 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!farmerId.trim()) {
+      alert("Please enter a valid farmer ID number.");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
@@ -21,20 +27,21 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            userId: farmerId,
-            farmId: farmId, // use the farmId passed in props
+            idNumber: farmerId, // <-- correct field
+            farmId: farmId,
           }),
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to add farmer");
+        const errorData = await response.json();
+        console.error("Server error:", errorData);
+        throw new Error(errorData.message || "Failed to add farmer");
       }
 
       const data = await response.json();
       console.log("Farmer added response:", data);
 
-      // Pass the new farmer object back up
       if (data.farmer) {
         onSubmit(data.farmer);
       }
@@ -43,6 +50,7 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
       onClose();
     } catch (err) {
       console.error("Error adding farmer:", err);
+      alert("Error adding farmer: " + err.message);
     } finally {
       setIsLoading(false);
     }
