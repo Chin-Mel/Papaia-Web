@@ -1,7 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import jwtDecode from "jwt-decode";
-
 import {
   User,
   AtSign,
@@ -12,56 +9,54 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-
+import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
   const [userData, setUserData] = useState({});
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
   const token = localStorage.getItem("token");
-  let userId = null;
-
-  if (token) {
-    const decoded = jwtDecode(token);
-    userId = decoded.id || decoded._id || decoded.userId; // adjust to backend payload
-  }
 
   useEffect(() => {
-    // Redirect if no token
-    if (!token || !userId) {
-      navigate("/sign-in", { replace: true });
-      return;
-    }
+    const loggedInUser = getLoggedInUser();
+    if (!loggedInUser || !token) return;
 
-    const fetchUser = async () => {
+    // ✅ Populate UI immediately with cached user
+    setUserData(loggedInUser);
+
+    let mounted = true;
+
+    const fetchFarmCount = async () => {
       try {
         const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          "https://papaiaapi.onrender.com/api/owner/count-farms",
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch user");
+        if (!res.ok) {
+          if (res.status === 401) console.warn("Unauthorized: invalid token");
+          else console.warn("Failed to fetch farm count:", res.status);
+          return;
+        }
 
         const data = await res.json();
-        const normalizedUser = data.user || data; // ✅ normalize user
-
-        setUserData(normalizedUser);
-        localStorage.setItem("user", JSON.stringify(normalizedUser)); // ✅ always store same shape
+        if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
-        console.error("Error fetching user:", err);
+        console.warn("Could not fetch farm count:", err.message);
       }
     };
 
-    fetchUser();
-  }, [token, userId, navigate]);
+    fetchFarmCount();
+
+    return () => {
+      mounted = false;
+    };
+  }, [token]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
@@ -88,10 +83,15 @@ export default function ProfilePage() {
       }
 
       const updatedUser = await res.json();
-      const normalizedUser = updatedUser.user || updatedUser;
 
-      setUserData(normalizedUser);
-      localStorage.setItem("user", JSON.stringify(normalizedUser)); // ✅ keep normalized
+      const updatedUserData = {
+        ...userData,
+        profilePicture: updatedUser.profilePicture,
+      };
+
+      // ✅ Update both state + localStorage
+      setUserData(updatedUserData);
+      localStorage.setItem("user", JSON.stringify(updatedUserData));
     } catch (err) {
       console.error("Error uploading profile picture:", err);
     } finally {
@@ -103,14 +103,14 @@ export default function ProfilePage() {
     fileInputRef.current.click();
   };
 
-  const handleEditProfile = () => {
-    navigate("/edit-profile"); // route to EditProfilePage
-  };
+  const handleEditProfile = () =>
+    alert("Edit profile feature not implemented yet.");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
+      {/* hidden input for file upload */}
       <input
         type="file"
         ref={fileInputRef}
@@ -137,7 +137,11 @@ export default function ProfilePage() {
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative">
                     <img
-                      src={userData.profilePicture || defaultUserPic}
+                      src={
+                        userData.profilePicture
+                          ? `https://papaiaapi.onrender.com${userData.profilePicture}`
+                          : defaultUserPic
+                      }
                       alt={`${userData.firstName || ""} ${
                         userData.lastName || ""
                       }`}
@@ -198,56 +202,35 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <User className="w-4 h-4" /> Full Name
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.firstName && userData.lastName
+                  <InfoRow
+                    icon={<User />}
+                    label="Full Name"
+                    value={
+                      userData.firstName && userData.lastName
                         ? `${userData.firstName} ${userData.lastName}`
-                        : "Not provided"}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <AtSign className="w-4 h-4" /> Username
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.username || "Not provided"}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Mail className="w-4 h-4" /> Email Address
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.email || "Not provided"}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Phone className="w-4 h-4" /> Contact Number
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.phone ||
-                        userData.contactNumber ||
-                        "Not provided"}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 md:col-span-2">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                      <Calendar className="w-4 h-4" /> Birth Date
-                    </label>
-                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-                      {userData.dateOfBirth ||
-                        userData.birthDate ||
-                        "Not provided"}
-                    </div>
-                  </div>
+                        : "Not provided"
+                    }
+                  />
+                  <InfoRow
+                    icon={<AtSign />}
+                    label="Username"
+                    value={userData.username}
+                  />
+                  <InfoRow
+                    icon={<Mail />}
+                    label="Email Address"
+                    value={userData.email}
+                  />
+                  <InfoRow
+                    icon={<Phone />}
+                    label="Contact Number"
+                    value={userData.phone || userData.contactNumber}
+                  />
+                  <InfoRow
+                    icon={<Calendar />}
+                    label="Birth Date"
+                    value={userData.dateOfBirth || userData.birthDate}
+                  />
                 </div>
               </div>
             </div>
@@ -256,6 +239,19 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
+    </div>
+  );
+}
+
+function InfoRow({ icon, label, value }) {
+  return (
+    <div className="space-y-2">
+      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        {icon} {label}
+      </label>
+      <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+        {value || "Not provided"}
+      </div>
     </div>
   );
 }
