@@ -1,26 +1,16 @@
+// src/components/ProtectedRoute.jsx
 import React from "react";
-import { Navigate } from "react-router-dom";
-import jwtDecode from "jwt-decode"; // ✅ correct
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+const ProtectedRoute = () => {
+  const { user, isLoading } = useAuth();
 
-  if (!token) return <Navigate to="/sign-in" replace />;
+  if (isLoading) return <div>Loading...</div>;
 
-  try {
-    const decoded = jwtDecode(token);
-    const now = Date.now() / 1000;
+  if (!user) return <Navigate to="/" replace />;
 
-    if (decoded.exp && decoded.exp < now) {
-      localStorage.removeItem("token");
-      return <Navigate to="/sign-in" replace />;
-    }
-
-    return children;
-  } catch (error) {
-    localStorage.removeItem("token");
-    return <Navigate to="/sign-in" replace />;
-  }
+  return <Outlet />; // renders child routes
 };
 
 export default ProtectedRoute;

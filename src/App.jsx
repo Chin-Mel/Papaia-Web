@@ -1,4 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -11,56 +15,35 @@ import ScanDetailsPage from "./pages/ScanDetailsPage";
 import AboutPage from "./pages/AboutPage";
 import AboutHomePage from "./pages/AboutHomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import NewPasswordModal from "./components/Popups/NewPasswordModal";
-import OtpVerificationModal from "./components/Popups/OtpVerificationModal";
-import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
-import AuthGuard from "./components/AuthGuard";
-import ProtectedRoute from "./ProtectedRoute";
-import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
   return (
-    <ErrorBoundary>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/sign-up" element={<SignUpPage />} />
-        <Route path="/about-home" element={<AboutHomePage />} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/new-password" element={<NewPasswordModal />} />
-        <Route path="/otp-verification" element={<OtpVerificationModal />} />
-        <Route path="/changed-password" element={<PasswordUpdatedModal />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
+          <Route path="/about-home" element={<AboutHomePage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-        <Route
-          path="/dashboard"
-          element={
-            <AuthGuard>
-              <DashboardPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <AuthGuard>
-              <ProfilePage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/edit-profile"
-          element={
-            <AuthGuard>
-              <EditProfilePage />
-            </AuthGuard>
-          }
-        />
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/edit-profile" element={<EditProfilePage />} />
+            <Route path="/farm-dashboard/:id" element={<FarmDashboardPage />} />
+            <Route path="/scan-history" element={<ScanHistoryPage />} />
+            <Route path="/scan-details" element={<ScanDetailsPage />} />
+            <Route path="/about" element={<AboutPage />} />
+          </Route>
 
-        {/* Catch-all route */}
-        <Route path="*" element={<LandingPage />} />
-      </Routes>
-    </ErrorBoundary>
+          {/* Catch-all fallback */}
+          <Route path="/" element={<LandingPage />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
