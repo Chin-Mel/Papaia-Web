@@ -9,57 +9,54 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState(null);
+  const navigate = useNavigate();
+  const [userData, setUserData] = useState({});
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
+  const loggedInUser = getLoggedInUser();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!loggedInUser || !token) return;
 
-    let userId = null;
-    try {
-      const decoded = jwtDecode(token);
-      console.log("Decoded token:", decoded); // 👈 See what fields exist
-      userId = decoded.id || decoded.userId || decoded.sub;
-    } catch (err) {
-      console.error("Error decoding token:", err);
-    }
+    setUserData(loggedInUser);
 
-    if (!userId) {
-      console.warn("No userId found in token");
-      return;
-    }
+    let mounted = true;
 
-    const fetchUser = async () => {
+    const fetchFarmCount = async () => {
       try {
         const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          "https://papaiaapi.onrender.com/api/owner/count-farms",
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error("Failed to fetch user");
+
+        if (!res.ok) {
+          if (res.status === 401) console.warn("Unauthorized: invalid token");
+          else console.warn("Failed to fetch farm count:", res.status);
+          return;
+        }
 
         const data = await res.json();
-        console.log("Fetched user data:", data); // 👈 full user object
-        setUserData(data);
-        localStorage.setItem("user", JSON.stringify(data));
+        if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
-        console.error("Error fetching user:", err);
+        console.warn("Could not fetch farm count:", err.message);
       }
     };
 
-    fetchUser();
+    fetchFarmCount();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const handleProfilePictureUpload = async (e) => {
@@ -89,11 +86,10 @@ export default function ProfilePage() {
       const updatedUser = await res.json();
 
       const updatedUserData = {
-        ...userData,
+        ...loggedInUser,
         profilePicture: updatedUser.profilePicture,
       };
 
-      // ✅ Update both state + localStorage
       setUserData(updatedUserData);
       localStorage.setItem("user", JSON.stringify(updatedUserData));
     } catch (err) {
@@ -107,14 +103,14 @@ export default function ProfilePage() {
     fileInputRef.current.click();
   };
 
-  const handleEditProfile = () =>
-    alert("Edit profile feature not implemented yet.");
+  const handleEditProfile = () => {
+    navigate("/edit-profile"); // your route to EditProfilePage
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      {/* hidden input for file upload */}
       <input
         type="file"
         ref={fileInputRef}
@@ -206,35 +202,56 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <InfoRow
-                    icon={<User />}
-                    label="Full Name"
-                    value={
-                      userData.firstName && userData.lastName
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <User className="w-4 h-4" /> Full Name
+                    </label>
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+                      {userData.firstName && userData.lastName
                         ? `${userData.firstName} ${userData.lastName}`
-                        : "Not provided"
-                    }
-                  />
-                  <InfoRow
-                    icon={<AtSign />}
-                    label="Username"
-                    value={userData.username}
-                  />
-                  <InfoRow
-                    icon={<Mail />}
-                    label="Email Address"
-                    value={userData.email}
-                  />
-                  <InfoRow
-                    icon={<Phone />}
-                    label="Contact Number"
-                    value={userData.phone || userData.contactNumber}
-                  />
-                  <InfoRow
-                    icon={<Calendar />}
-                    label="Birth Date"
-                    value={userData.dateOfBirth || userData.birthDate}
-                  />
+                        : "Not provided"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <AtSign className="w-4 h-4" /> Username
+                    </label>
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+                      {userData.username || "Not provided"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Mail className="w-4 h-4" /> Email Address
+                    </label>
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+                      {userData.email || "Not provided"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Phone className="w-4 h-4" /> Contact Number
+                    </label>
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+                      {userData.phone ||
+                        userData.contactNumber ||
+                        "Not provided"}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Calendar className="w-4 h-4" /> Birth Date
+                    </label>
+                    <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
+                      {userData.dateOfBirth ||
+                        userData.birthDate ||
+                        "Not provided"}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -243,19 +260,6 @@ export default function ProfilePage() {
       </main>
 
       <Footer />
-    </div>
-  );
-}
-
-function InfoRow({ icon, label, value }) {
-  return (
-    <div className="space-y-2">
-      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-        {icon} {label}
-      </label>
-      <div className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-800">
-        {value || "Not provided"}
-      </div>
     </div>
   );
 }
