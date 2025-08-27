@@ -103,6 +103,12 @@ export default function FarmDashboardPage() {
           }
         );
 
+        if (response.status === 404) {
+          // No farmers yet
+          setFarmers([]);
+          return;
+        }
+
         if (!response.ok) {
           throw new Error("Failed to fetch farmers");
         }
