@@ -10,7 +10,7 @@ import {
   Tractor,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
