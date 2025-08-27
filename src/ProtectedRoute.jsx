@@ -1,20 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Navigate } from "react-router-dom";
+import jwtDecode from "jwt-decode";
 
 const ProtectedRoute = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    // Simply check if token exists
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-    setIsLoading(false);
-  }, []);
+  if (!token) return <Navigate to="/sign-in" replace />;
 
-  if (isLoading) return null; // or <Spinner />
+  try {
+    const decoded = jwtDecode(token);
+    const now = Date.now() / 1000; // seconds
 
-  return isLoggedIn ? children : <Navigate to="/sign-in" replace />;
+    if (decoded.exp && decoded.exp < now) {
+      localStorage.removeItem("token");
+      return <Navigate to="/sign-in" replace />;
+    }
+
+    return children; // token valid
+  } catch (error) {
+    localStorage.removeItem("token");
+    return <Navigate to="/sign-in" replace />;
+  }
 };
 
 export default ProtectedRoute;

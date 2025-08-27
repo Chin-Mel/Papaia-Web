@@ -1,4 +1,3 @@
-// App.jsx
 import { Routes, Route } from "react-router-dom";
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
@@ -15,7 +14,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewPasswordModal from "./components/Popups/NewPasswordModal";
 import OtpVerificationModal from "./components/Popups/OtpVerificationModal";
 import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
-import AuthGuard from "./components/AuthGuard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
@@ -36,57 +35,57 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <DashboardPage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/profile"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <ProfilePage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/edit-profile"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <EditProfilePage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/farm-dashboard/:id"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <FarmDashboardPage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/scan-history"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <ScanHistoryPage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/scan-details"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <ScanDetailsPage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/about"
           element={
-            <AuthGuard>
+            <ProtectedRoute>
               <AboutPage />
-            </AuthGuard>
+            </ProtectedRoute>
           }
         />
 
