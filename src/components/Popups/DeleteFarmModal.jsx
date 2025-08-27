@@ -1,7 +1,15 @@
-import { useState } from "react";
-import { X, AlertTriangle, Leaf, MapPin, Check, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  X,
+  AlertTriangle,
+  Leaf,
+  MapPin,
+  CheckCircle,
+  Trash2,
+  Loader2,
+} from "lucide-react";
 
-function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
+function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
   const [confirmationText, setConfirmationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -9,12 +17,25 @@ function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
     if (confirmationText === "DELETE") {
       setIsLoading(true);
       try {
-        await mockAPI.deleteFarm(farm?.id);
-        onConfirmDelete();
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farm/${farm.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to delete farm");
+
+        onConfirmDelete(); // notify parent to redirect or refresh
       } catch (error) {
-        console.error("Error deleting farm:", error);
+        alert("Error deleting farm: " + error.message);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     }
   };
 
@@ -35,9 +56,7 @@ function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-red-500" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Delete Farm</h2>
-            </div>
+            <h2 className="text-xl font-bold text-white">Delete Farm</h2>
           </div>
           <button
             onClick={onClose}
@@ -67,52 +86,17 @@ function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
             </div>
           )}
 
-          <div>
-            <p className="text-gray-800 font-medium">
-              Are you sure you want to delete{" "}
-              <span className="font-bold">{farm?.farmName}</span>? This action
-              cannot be undone and will permanently remove:
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-red-500" />
-              <span className="text-gray-800">
-                Access to analytics and relevant information
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-red-500" />
-              <span className="text-gray-800">All scan results and alerts</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-red-500" />
-              <span className="text-gray-800">
-                Farmer access to subscriptions (if applicable)
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="w-4 h-4 text-red-500" />
-              <span className="text-gray-800">
-                All assigned farmer accounts for this farm
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-gray-800 font-bold mb-2">
-              Type <span className="font-bold">DELETE</span> to confirm:
-            </p>
-            <input
-              type="text"
-              value={confirmationText}
-              onChange={(e) => setConfirmationText(e.target.value)}
-              placeholder="Type DELETE here..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
-              disabled={isLoading}
-            />
-          </div>
+          <p className="text-gray-800 font-medium">
+            Type <span className="font-bold">DELETE</span> to confirm deletion.
+          </p>
+          <input
+            type="text"
+            value={confirmationText}
+            onChange={(e) => setConfirmationText(e.target.value)}
+            placeholder="Type DELETE here..."
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
+            disabled={isLoading}
+          />
         </div>
 
         <div className="p-6 border-t border-gray-200 flex justify-between">
@@ -126,7 +110,7 @@ function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
           <button
             onClick={handleConfirmDelete}
             disabled={confirmationText !== "DELETE" || isLoading}
-            className="px-6 py-3 bg-red-300 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
@@ -145,4 +129,5 @@ function DeleteFarmModal({ isOpen, onClose, onConfirmDelete, farm }) {
     </div>
   );
 }
+
 export default DeleteFarmModal;

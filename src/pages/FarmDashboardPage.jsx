@@ -34,6 +34,7 @@ export default function FarmDashboardPage() {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isDeleteFarmModalOpen, setIsDeleteFarmModalOpen] = useState(false);
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
@@ -410,7 +411,7 @@ export default function FarmDashboardPage() {
                   Export PDF
                 </button>
                 <button
-                  onClick={handleDeleteFarm}
+                  onClick={() => setIsDeleteFarmModalOpen(true)}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -798,6 +799,15 @@ export default function FarmDashboardPage() {
         isOpen={isFarmerRemovedSuccessModalOpen}
         onClose={handleSuccessModalClose}
         farmer={selectedFarmer}
+      />
+      <DeleteFarmModal
+        isOpen={isDeleteFarmModalOpen}
+        onClose={() => setIsDeleteFarmModalOpen(false)}
+        farm={farmData}
+        onConfirmDelete={() => {
+          setIsDeleteFarmModalOpen(false);
+          window.history.back(); // redirect after delete
+        }}
       />
     </div>
   );
