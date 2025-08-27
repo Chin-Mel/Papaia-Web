@@ -90,7 +90,7 @@ function App() {
           }
         />
 
-        {/* Catch-all route for 404 errors - redirect to landing page */}
+        {/* Catch-all route */}
         <Route path="*" element={<LandingPage />} />
       </Routes>
     </ErrorBoundary>
