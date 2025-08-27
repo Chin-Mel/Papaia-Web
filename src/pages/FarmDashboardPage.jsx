@@ -149,16 +149,11 @@ export default function FarmDashboardPage() {
   // Determine farm status based on recent scans
   const getFarmStatus = () => {
     if (recentScans.length === 0) return "Inactive";
-
-    // Check if there are scans within the last 5 days
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-
-    const recentScanExists = recentScans.some((scan) => {
-      const scanDate = new Date(scan.createdAt || scan.time);
-      return scanDate >= fiveDaysAgo;
-    });
-
+    const recentScanExists = recentScans.some(
+      (scan) => new Date(scan.createdAt || scan.time) >= fiveDaysAgo
+    );
     return recentScanExists ? "Active" : "Inactive";
   };
 
@@ -206,12 +201,12 @@ export default function FarmDashboardPage() {
   };
 
   const handleFarmerAdded = async (farmerData) => {
+    console.log("Adding farmer with body:", {
+      idNumber: farmerData.idNumber,
+      farmId: farmId,
+    });
     try {
-      // Add farmer via API
-      console.log("Adding farmer with body:", {
-        idNumber: farmerData.idNumber,
-        farmId: farmId,
-      });
+      // Add farmer via AP
 
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
@@ -670,11 +665,20 @@ export default function FarmDashboardPage() {
 
                               <div>
                                 <p className="font-medium text-gray-800">
-                                  {`${farmer.firstname || ""} ${
-                                    farmer.middlename || ""
-                                  } ${farmer.lastname || ""} ${
-                                    farmer.suffix || ""
-                                  }`.trim()}
+                                  {[
+                                    farmer.firstName ||
+                                      farmer.firstname ||
+                                      "No first name",
+                                    farmer.middleName ||
+                                      farmer.middlename ||
+                                      "",
+                                    farmer.lastName ||
+                                      farmer.lastname ||
+                                      "No last name",
+                                    farmer.suffix || "No suffix",
+                                  ]
+                                    .filter(Boolean)
+                                    .join(" ")}
                                 </p>
                                 <p className="text-sm text-gray-600">Farmer</p>
                               </div>
@@ -687,23 +691,24 @@ export default function FarmDashboardPage() {
                             <div className="space-y-1">
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
-                                N/A
+                                {farmer.contactNumber || "No contact number"}
                               </p>
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Mail className="w-3 h-3" />
-                                N/A
+                                {farmer.email || "No email address"}
                               </p>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-700">
-                            {`${farmer.street || ""}, ${
-                              farmer.barangay || ""
-                            }, ${farmer.municipality || ""}, ${
-                              farmer.province || ""
-                            } ${farmer.zipcode || ""}`
-                              .replace(/^,\s*|,\s*$/g, "")
-                              .replace(/,\s*,/g, ",")}
+                            {[
+                              farmer.street || "No street info",
+                              farmer.barangay || "No barangay",
+                              farmer.municipality || "No municipality",
+                              farmer.province || "No province",
+                              farmer.zipCode || farmer.zipcode || "No zip code",
+                            ].join(", ")}
                           </td>
+
                           <td className="py-3 px-4">
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
@@ -722,15 +727,6 @@ export default function FarmDashboardPage() {
                                 className="text-green-600 hover:text-green-700 transition-colors"
                               >
                                 <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedFarmer(farmer);
-                                  setIsRemoveFarmerModalOpen(true);
-                                }}
-                                className="text-red-600 hover:text-red-700 transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </td>

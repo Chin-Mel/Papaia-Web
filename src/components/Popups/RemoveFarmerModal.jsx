@@ -7,6 +7,7 @@ import {
   User,
   Leaf,
   Loader2,
+  EyeOff,
 } from "lucide-react";
 
 function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
@@ -35,113 +36,117 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
 
   if (!isOpen) return null;
 
+  const getFullName = (farmer) => {
+    return [farmer.firstname, farmer.middlename, farmer.lastname, farmer.suffix]
+      .filter(Boolean)
+      .join(" ");
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-50 rounded-lg shadow-xl max-w-2xl w-full">
-        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-lg p-6 relative">
+      <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-green-600 to-orange-500 p-5 relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              <UserMinus className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-white rounded-full overflow-hidden flex items-center justify-center">
+              {farmer?.profilePicture ? (
+                <img
+                  src={farmer.profilePicture}
+                  alt="Farmer"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User className="w-6 h-6 text-gray-400" />
+              )}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Remove Farmer</h2>
-              <p className="text-white/80 text-sm">Remove Farmer from a farm</p>
+            <div className="text-white">
+              <h2 className="text-lg font-semibold leading-tight">
+                {getFullName(farmer)}
+              </h2>
+              <p className="text-sm opacity-80">🌱 Green Valley Farm</p>
             </div>
+            <span className="ml-auto px-2 py-1 text-xs bg-white text-green-600 rounded-full font-medium">
+              {farmer?.status?.charAt(0).toUpperCase() +
+                farmer?.status?.slice(1)}
+            </span>
           </div>
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
+        {/* Body */}
         <div className="p-6 space-y-6">
-          {farmer && (
-            <div className="bg-white rounded-lg p-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-gray-500" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="font-bold text-gray-800">
-                      {farmer.firstname || farmer.firstName}{" "}
-                      {farmer.lastname || farmer.lastName}
-                    </h3>
-                    <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">
-                      {farmer.status
-                        ? farmer.status.charAt(0).toUpperCase() +
-                          farmer.status.slice(1)
-                        : "Active"}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-gray-600 text-sm">
-                    <Leaf className="w-3 h-3 text-green-600" />
-                    Farm Member
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-500 mt-0.5" />
+            <AlertTriangle className="w-5 h-5 text-orange-500 mt-1" />
             <div>
-              <p className="font-bold text-gray-800 mb-2">
+              <p className="font-semibold text-gray-800 mb-1">
                 Are you sure you want to remove this farmer?
               </p>
-              <p className="text-gray-700">
+              <p className="text-sm text-gray-700">
                 This action cannot be undone and will have the following
                 consequences:
               </p>
             </div>
           </div>
 
+          {/* Consequence Cards */}
           <div className="space-y-3">
-            <div className="bg-red-50 border-l-4 border-red-500 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mt-0.5">
-                  <Ban className="w-4 h-4 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-red-700 mb-1">Data Loss:</p>
-                  <p className="text-red-600 text-sm">
-                    All pending reports and analytics will be lost
-                  </p>
-                </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <EyeOff className="w-5 h-5 text-red-500 mt-1" />
+              <div>
+                <p className="font-semibold text-red-700 mb-1">
+                  Access Revoked:
+                </p>
+                <p className="text-sm text-red-600">
+                  Farmer will lose access to report farm scans
+                </p>
+              </div>
+            </div>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+              <Ban className="w-5 h-5 text-red-500 mt-1" />
+              <div>
+                <p className="font-semibold text-red-700 mb-1">Data Loss:</p>
+                <p className="text-sm text-red-600">
+                  All pending reports and analytics will be lost
+                </p>
               </div>
             </div>
           </div>
 
+          {/* Confirmation Input */}
           <div>
-            <p className="text-gray-800 font-medium mb-2">
-              Type "REMOVE" to confirm this action:
+            <p className="text-sm text-gray-800 font-medium mb-2">
+              Type <span className="font-bold">"REMOVE"</span> to confirm this
+              action:
             </p>
             <input
               type="text"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder="Type REMOVE here"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-white"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none"
               disabled={isLoading}
             />
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex justify-between">
+        {/* Footer Buttons */}
+        <div className="p-4 border-t border-gray-200 flex justify-between">
           <button
             onClick={onClose}
-            className="px-6 py-3 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition"
             disabled={isLoading}
           >
-            <X className="w-4 h-4" />
             Cancel
           </button>
           <button
             onClick={handleConfirmRemove}
             disabled={confirmationText.toUpperCase() !== "REMOVE" || isLoading}
-            className="px-6 py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? (
               <>
