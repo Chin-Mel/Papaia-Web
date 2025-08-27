@@ -60,15 +60,12 @@ export default function FarmDashboardPage() {
 
       try {
         // Fetch all farms and find the specific one
-        const response = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch("/api/owner/farms", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch farm data");
@@ -92,21 +89,16 @@ export default function FarmDashboardPage() {
 
   // Fetch farmers for this farm
   useEffect(() => {
-    console.log("Fetching farmers for farmId:", farmId);
-
     const fetchFarmers = async () => {
       if (!farmId) return;
 
       try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`/api/owner/farmers/${farmId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch farmers");
@@ -173,16 +165,13 @@ export default function FarmDashboardPage() {
   const handleDeleteFarm = async () => {
     if (window.confirm("Are you sure you want to delete this farm?")) {
       try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await fetch(`/api/owner/farm/${farmId}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to delete farm");
@@ -196,33 +185,50 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const refreshFarmers = async () => {
-    try {
-      const res = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const data = await res.json();
-      setFarmers(data.farmers || []);
-    } catch (err) {
-      console.error("Error refreshing farmers:", err);
-    }
-  };
-
   const handleAddFarmer = () => {
     setIsAddFarmerModalOpen(true);
   };
 
-  const handleFarmerAdded = async (newFarmer) => {
-    await refreshFarmers();
-    setNewlyAddedFarmer(newFarmer);
-    setIsAddFarmerModalOpen(false);
-    setIsFarmerAddedSuccessModalOpen(true);
+  const handleFarmerAdded = async (farmerData) => {
+    try {
+      // Add farmer via API
+      const response = await fetch("/api/owner/farmer", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: "temp_user_id", // This should be handled by backend
+          farmId: farmId,
+          ...farmerData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to add farmer");
+      }
+
+      setNewlyAddedFarmer(farmerData);
+      setIsAddFarmerModalOpen(false);
+      setIsFarmerAddedSuccessModalOpen(true);
+
+      // Refresh farmers list
+      const farmersResponse = await fetch(`/api/owner/farmers/${farmId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (farmersResponse.ok) {
+        const data = await farmersResponse.json();
+        setFarmers(data.farmers || []);
+      }
+    } catch (err) {
+      console.error("Error adding farmer:", err);
+      alert("Error adding farmer: " + err.message);
+    }
   };
 
   const handleViewFarmer = (farmer) => {
@@ -237,20 +243,20 @@ export default function FarmDashboardPage() {
 
   const handleConfirmRemoveFarmer = async () => {
     try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer._id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await fetch(`/api/owner/farmer/${selectedFarmer.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      if (!response.ok) throw new Error("Failed to remove farmer");
+      if (!response.ok) {
+        throw new Error("Failed to remove farmer");
+      }
 
-      await refreshFarmers();
+      // Remove farmer from state
+      setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
     } catch (err) {
@@ -604,8 +610,8 @@ export default function FarmDashboardPage() {
                           farmer.lastname
                             ?.toLowerCase()
                             .includes(searchQuery.toLowerCase()) ||
-                          farmer._id
-                            ?.toLowerCase()
+                          farmer.id
+                            .toLowerCase()
                             .includes(searchQuery.toLowerCase())
                       )
                       .filter(
@@ -615,7 +621,7 @@ export default function FarmDashboardPage() {
                       )
                       .map((farmer) => (
                         <tr
-                          key={farmer._id} // ✅ use _id
+                          key={farmer.id}
                           className="border-b border-gray-100 hover:bg-gray-50"
                         >
                           <td className="py-3 px-4">
@@ -644,7 +650,7 @@ export default function FarmDashboardPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4 text-gray-700">
-                            {farmer._id}
+                            {farmer.id}
                           </td>
                           <td className="py-3 px-4">
                             <div className="space-y-1">
@@ -730,8 +736,8 @@ export default function FarmDashboardPage() {
       <AddFarmerModal
         isOpen={isAddFarmerModalOpen}
         onClose={() => setIsAddFarmerModalOpen(false)}
-        onSubmit={handleFarmerAdded}
-        farmId={farmId} // 👈 pass the farmId here
+        onFarmerAdded={handleFarmerAdded}
+        farmId={farmId}
       />
 
       <FarmerDetailModal
