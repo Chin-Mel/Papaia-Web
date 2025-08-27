@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { useAuth } from "../context/AuthContext";
 
 import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";
@@ -77,31 +78,38 @@ export default function ScanHistoryPage() {
   });
 
   const reportRef = useRef(null);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth(); // Use auth context
+
   const resultsPerPage = 5;
   const totalPages = Math.ceil(totalScans / resultsPerPage);
   const startResult = (currentPage - 1) * resultsPerPage + 1;
   const endResult = Math.min(currentPage * resultsPerPage, totalScans);
 
-  // Fetch farms on component mount
+  // Check authentication on component mount
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login", { replace: true });
+      return;
+    }
     fetchFarms();
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   // Fetch scans when page or filters change
   useEffect(() => {
-    fetchScans();
-  }, [currentPage, filters]);
-
-  const token = localStorage.getItem("token");
-  if (!token) {
-    // Redirect to login if token is missing
-    navigate("/login");
-    return;
-  }
+    if (isAuthenticated) {
+      fetchScans();
+    }
+  }, [currentPage, filters, isAuthenticated]);
 
   const fetchFarms = async () => {
     try {
       const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      if (!token) {
+        // Redirect to login if token is missing
+        navigate("/login");
+        return;
+      }
       const response = await fetch(
         "https://papaia.onrender.com/api/owner/farms",
         {

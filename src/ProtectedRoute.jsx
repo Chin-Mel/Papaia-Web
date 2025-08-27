@@ -1,20 +1,22 @@
+// ProtectedRoute.jsx
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
 
+  // Show loading spinner while checking auth
   if (loading) {
-    return <div>Loading...</div>; // Optional: Show a loading state
+    return <div>Loading...</div>;
   }
 
-  if (!user) {
-    // Redirect to the sign-in page if not authenticated
-    return <Navigate to="/sign-in" replace />;
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If authenticated, render the children (the protected page component)
   return children;
 };
 

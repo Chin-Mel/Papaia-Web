@@ -85,9 +85,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Catch-all fallback */}
-        <Route path="*" element={<LandingPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
   );

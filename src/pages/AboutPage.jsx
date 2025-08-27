@@ -1,5 +1,6 @@
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
+import { useAuth } from "../AuthContext";
 
 import EyeIcon from "../assets/eye-icon-about.png";
 import TargetIcon from "../assets/target-icon.png";
@@ -47,6 +48,14 @@ const developers = [
 ];
 
 export default function AboutHomePage() {
+  // Authentication check for protected user account area
+  const { isAuthenticated } = useAuth();
+
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
