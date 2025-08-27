@@ -1,5 +1,6 @@
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 
 import EyeIcon from "../assets/eye-icon-about.png";
