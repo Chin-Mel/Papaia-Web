@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 
 import LandingPage from "./pages/LandingPage";
@@ -40,7 +40,7 @@ function App() {
           </Route>
 
           {/* Catch-all fallback */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="*" element={<LandingPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
