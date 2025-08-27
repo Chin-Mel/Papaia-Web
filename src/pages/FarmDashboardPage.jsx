@@ -93,12 +93,15 @@ export default function FarmDashboardPage() {
       if (!farmId) return;
 
       try {
-        const response = await fetch(`/api/owner/farmers/${farmId}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch farmers");
