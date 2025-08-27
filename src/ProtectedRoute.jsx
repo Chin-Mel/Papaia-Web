@@ -1,16 +1,15 @@
-// src/components/ProtectedRoute.jsx
 import React from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const ProtectedRoute = () => {
-  const { user, isLoading } = useAuth();
+  const { user, loading } = useAuth();
 
-  if (isLoading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>;
 
   if (!user) return <Navigate to="/" replace />;
 
-  return <Outlet />; // renders child routes
+  return <Outlet />;
 };
 
 export default ProtectedRoute;

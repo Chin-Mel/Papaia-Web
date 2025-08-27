@@ -29,15 +29,62 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
           {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/edit-profile" element={<EditProfilePage />} />
-            <Route path="/farm-dashboard/:id" element={<FarmDashboardPage />} />
-            <Route path="/scan-history" element={<ScanHistoryPage />} />
-            <Route path="/scan-details" element={<ScanDetailsPage />} />
-            <Route path="/about" element={<AboutPage />} />
-          </Route>
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute>
+                <EditProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/farm-dashboard/:id"
+            element={
+              <ProtectedRoute>
+                <FarmDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scan-history"
+            element={
+              <ProtectedRoute>
+                <ScanHistoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/scan-details"
+            element={
+              <ProtectedRoute>
+                <ScanDetailsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <ProtectedRoute>
+                <AboutPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Catch-all fallback */}
           <Route path="*" element={<LandingPage />} />
