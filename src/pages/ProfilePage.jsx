@@ -38,7 +38,7 @@ export default function ProfilePage() {
       return;
     }
     const fetchUser = async () => {
-      if (!token) return;
+      if (!token || !userId) return;
 
       try {
         const res = await fetch(
@@ -59,7 +59,7 @@ export default function ProfilePage() {
     };
 
     fetchUser();
-  }, [token, isAuthenticated, loggedInUser?.id]);
+  }, [token, isAuthenticated, userId]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
