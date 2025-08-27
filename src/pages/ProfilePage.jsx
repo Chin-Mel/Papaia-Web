@@ -1,3 +1,22 @@
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode";
+
+import {
+  User,
+  AtSign,
+  Mail,
+  Phone,
+  Calendar,
+  Camera,
+  Edit3,
+  Tractor,
+} from "lucide-react";
+
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
+import defaultUserPic from "../assets/default-user.png";
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({});
