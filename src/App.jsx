@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom"; // Removed BrowserRouter
 import { AuthProvider } from "./AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -19,77 +19,75 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/sign-in" element={<SignInPage />} />
-          <Route path="/sign-up" element={<SignUpPage />} />
-          <Route path="/about-home" element={<AboutHomePage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/about-home" element={<AboutHomePage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-          {/* Protected Routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <DashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/edit-profile"
-            element={
-              <ProtectedRoute>
-                <EditProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/farm-dashboard/:id"
-            element={
-              <ProtectedRoute>
-                <FarmDashboardPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/scan-history"
-            element={
-              <ProtectedRoute>
-                <ScanHistoryPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/scan-details"
-            element={
-              <ProtectedRoute>
-                <ScanDetailsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/about"
-            element={
-              <ProtectedRoute>
-                <AboutPage />
-              </ProtectedRoute>
-            }
-          />
+        {/* Protected Routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit-profile"
+          element={
+            <ProtectedRoute>
+              <EditProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/farm-dashboard/:id"
+          element={
+            <ProtectedRoute>
+              <FarmDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/scan-history"
+          element={
+            <ProtectedRoute>
+              <ScanHistoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/scan-details"
+          element={
+            <ProtectedRoute>
+              <ScanDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/about"
+          element={
+            <ProtectedRoute>
+              <AboutPage />
+            </ProtectedRoute>
+          }
+        />
 
-          {/* Catch-all fallback */}
-          <Route path="*" element={<LandingPage />} />
-        </Routes>
-      </BrowserRouter>
+        {/* Catch-all fallback */}
+        <Route path="*" element={<LandingPage />} />
+      </Routes>
     </AuthProvider>
   );
 }
