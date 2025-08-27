@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // ✅ use named import
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token");
@@ -9,14 +9,14 @@ const ProtectedRoute = ({ children }) => {
 
   try {
     const decoded = jwtDecode(token);
-    const now = Date.now() / 1000; // seconds
+    const now = Date.now() / 1000;
 
     if (decoded.exp && decoded.exp < now) {
       localStorage.removeItem("token");
       return <Navigate to="/sign-in" replace />;
     }
 
-    return children; // token valid
+    return children;
   } catch (error) {
     localStorage.removeItem("token");
     return <Navigate to="/sign-in" replace />;
