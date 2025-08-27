@@ -218,9 +218,9 @@ export default function FarmDashboardPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userId: "temp_user_id", // This should be handled by backend
+            userId: farmerData.userId, // <-- use actual userId here
             farmId: farmId,
-            ...farmerData,
+            // any other farmer data if needed
           }),
         }
       );
