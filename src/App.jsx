@@ -14,6 +14,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewPasswordModal from "./components/Popups/NewPasswordModal";
 import OtpVerificationModal from "./components/Popups/OtpVerificationModal";
 import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
+import AuthGuard from "./components/AuthGuard";
 import ProtectedRoute from "./ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -36,7 +37,9 @@ function App() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <AuthGuard>
+                <DashboardPage />
+              </AuthGuard>
             </ProtectedRoute>
           }
         />
