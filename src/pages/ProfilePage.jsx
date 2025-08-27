@@ -9,14 +9,12 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const navigate = useNavigate();
   const [userData, setUserData] = useState({});
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
@@ -103,9 +101,8 @@ export default function ProfilePage() {
     fileInputRef.current.click();
   };
 
-  const handleEditProfile = () => {
-    navigate("/edit-profile"); // your route to EditProfilePage
-  };
+  const handleEditProfile = () =>
+    alert("Edit profile feature not implemented yet.");
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
