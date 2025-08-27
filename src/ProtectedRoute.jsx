@@ -1,10 +1,8 @@
-import React from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  const location = useLocation();
 
   // Show loading while auth is being checked
   if (loading) {
@@ -12,9 +10,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
+  if (!isAuthenticated) return <Navigate to="/" replace />;
 
   // Otherwise, render children (protected page)
   return children;

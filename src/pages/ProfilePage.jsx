@@ -9,6 +9,7 @@ import {
   Edit3,
   Tractor,
 } from "lucide-react";
+import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 import jwtDecode from "jwt-decode";
 import HeaderMain from "../components/Header/HeaderMain";
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
+  const { user, isAuthenticated } = useAuth();
 
   const token = localStorage.getItem("token");
   let userId = null;
@@ -31,6 +33,10 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/sign-in", { replace: true });
+      return;
+    }
     const fetchUser = async () => {
       if (!token) return;
 
@@ -53,7 +59,7 @@ export default function ProfilePage() {
     };
 
     fetchUser();
-  }, [token, loggedInUser?.id]);
+  }, [token, isAuthenticated, loggedInUser?.id]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
