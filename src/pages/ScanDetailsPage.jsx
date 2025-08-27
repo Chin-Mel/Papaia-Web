@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react"; // 1. Import useRef to targ
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf"; // 2. Import jsPDF for creating the PDF
 import html2canvas from "html2canvas"; // 3. Import html2canvas to capture the content as an image
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";

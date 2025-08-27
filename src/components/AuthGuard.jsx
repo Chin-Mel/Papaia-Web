@@ -1,21 +1,13 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 export default function AuthGuard({ children }) {
-  const navigate = useNavigate();
-  const [checking, setChecking] = useState(true);
+  const token = localStorage.getItem("token");
 
-  useEffect(() => {
-    const token = localStorage.getItem("token"); // ✅ Check token in localStorage
+  if (!token) {
+    // Redirect immediately if not logged in
+    return <Navigate to="/sign-in" replace />;
+  }
 
-    if (token) {
-      setChecking(false); // user is logged in, allow rendering
-    } else {
-      navigate("/sign-in", { replace: true });
-    }
-  }, [navigate]);
-
-  if (checking) return null; // or a spinner
-
-  return children; // render protected content
+  // User is authenticated, render protected content
+  return children;
 }

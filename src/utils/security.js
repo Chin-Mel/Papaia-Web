@@ -1,5 +1,5 @@
 // Security utility functions
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 /**
  * Sanitize user input to prevent XSS attacks
  * @param {string} input - User input to sanitize
@@ -142,14 +142,14 @@ export function secureLogout() {
 }
 
 export const getLoggedInUser = () => {
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token"); // or wherever your token is stored
   if (!token) return null;
 
   try {
-    const decoded = jwtDecode(token);
-    return decoded; // contains userId, email, role, etc.
-  } catch (err) {
-    console.error("Invalid token:", err);
+    const decoded = jwtDecode(token); // <-- here you decode the token
+    return decoded; // this object usually has user info like id, name, etc.
+  } catch (error) {
+    console.error("Invalid token:", error);
     return null;
   }
 };

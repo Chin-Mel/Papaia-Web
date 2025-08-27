@@ -10,11 +10,10 @@ import {
   Tractor,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getLoggedInUser } from "../utils/security";
+import { jwtDecode } from "jwt-decode";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
-import jwtDecode from "jwt-decode";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
