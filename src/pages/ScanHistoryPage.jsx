@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useAuth } from "../AuthContext";
 import { useNavigate } from "react-router-dom";
 
 import FooterMain from "../components/Footer/FooterMain";
@@ -80,108 +79,86 @@ export default function ScanHistoryPage() {
 
   const reportRef = useRef(null);
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth(); // Use auth context
 
   const resultsPerPage = 5;
   const totalPages = Math.ceil(totalScans / resultsPerPage);
-  const startResult = (currentPage - 1) * resultsPerPage + 1;
-  const endResult = Math.min(currentPage * resultsPerPage, totalScans);
 
-  // Check authentication on component mount
+  // --- Simple auth check ---
+  const token = localStorage.getItem("token");
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login", { replace: true });
-      return;
+    if (!token) {
+      navigate("/sign-in", { replace: true });
     }
+  }, [token, navigate]);
+
+  // --- Fetch farms ---
+  useEffect(() => {
+    if (!token) return;
+    const fetchFarms = async () => {
+      try {
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/farms",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch farms");
+        const data = await res.json();
+        if (data.status === "success") setFarms(data.farms || []);
+      } catch (err) {
+        console.error(err);
+        setFarms([]);
+      }
+    };
     fetchFarms();
-  }, [isAuthenticated, navigate]);
+  }, [token]);
 
-  // Fetch scans when page or filters change
+  // --- Fetch scans ---
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchScans();
-    }
-  }, [currentPage, filters, isAuthenticated]);
-
-  const fetchFarms = async () => {
-    try {
-      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
-      if (!token) {
-        // Redirect to login if token is missing
-        navigate("/login");
-        return;
-      }
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/farms",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch farms");
-
-      const data = await response.json();
-      if (data.status === "success") {
-        setFarms(data.farms || []);
-      }
-    } catch (error) {
-      console.error("Error fetching farms:", error);
-      setFarms([]);
-    }
-  };
-
-  const fetchScans = async () => {
-    try {
+    if (!token) return;
+    const fetchScans = async () => {
       setLoading(true);
-      const token = localStorage.getItem("token");
-
-      // Build query parameters for filtering and pagination
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: resultsPerPage.toString(),
-        ...(filters.dateRange !== "all" && { dateRange: filters.dateRange }),
-        ...(filters.status !== "all" && { status: filters.status }),
-        ...(filters.farmId !== "all" && { farmId: filters.farmId }),
-        ...(filters.farmerName && { farmerName: filters.farmerName }),
-      });
-
-      // Note: This endpoint would need to be created in your backend
-      // It should return all scans from farms owned by the authenticated owner
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/scans?${queryParams}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+      try {
+        const queryParams = new URLSearchParams({
+          page: currentPage.toString(),
+          limit: resultsPerPage.toString(),
+          ...(filters.dateRange !== "all" && { dateRange: filters.dateRange }),
+          ...(filters.status !== "all" && { status: filters.status }),
+          ...(filters.farmId !== "all" && { farmId: filters.farmId }),
+          ...(filters.farmerName && { farmerName: filters.farmerName }),
+        });
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/scans?${queryParams}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Failed to fetch scans");
+        const data = await res.json();
+        if (data.status === "success") {
+          setScanData(data.scans || []);
+          setTotalScans(data.totalCount || 0);
         }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch scans");
-
-      const data = await response.json();
-      if (data.status === "success") {
-        setScanData(data.scans || []);
-        setTotalScans(data.totalCount || 0);
+      } catch (err) {
+        console.error(err);
+        setScanData([]);
+        setTotalScans(0);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching scans:", error);
-      setScanData([]);
-      setTotalScans(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+    fetchScans();
+  }, [currentPage, filters, token]);
 
   const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
-    setCurrentPage(1); // Reset to first page when filters change
+    setFilters((prev) => ({ ...prev, [filterType]: value }));
+    setCurrentPage(1);
   };
 
   const formatDate = (dateString) => {
@@ -203,17 +180,15 @@ export default function ScanHistoryPage() {
   };
 
   const handleExport = () => {
-    const input = reportRef.current;
-    if (input) {
-      html2canvas(input, { scale: 2 }).then((canvas) => {
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF("p", "pt", "a4");
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-        pdf.save("scan-history-report.pdf");
-      });
-    }
+    if (!reportRef.current) return;
+    html2canvas(reportRef.current, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save("scan-history-report.pdf");
+    });
   };
 
   const renderPageButton = (page) => {

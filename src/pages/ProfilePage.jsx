@@ -1,28 +1,9 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  User,
-  AtSign,
-  Mail,
-  Phone,
-  Calendar,
-  Camera,
-  Edit3,
-  Tractor,
-} from "lucide-react";
-import { useAuth } from "../AuthContext";
-import { useNavigate } from "react-router-dom";
-import jwtDecode from "jwt-decode";
-import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
-import defaultUserPic from "../assets/default-user.png";
-
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [userData, setUserData] = useState({});
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
-  const { user, isAuthenticated } = useAuth();
 
   const token = localStorage.getItem("token");
   let userId = null;
@@ -33,13 +14,13 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Redirect if no token
+    if (!token || !userId) {
       navigate("/sign-in", { replace: true });
       return;
     }
-    const fetchUser = async () => {
-      if (!token || !userId) return;
 
+    const fetchUser = async () => {
       try {
         const res = await fetch(
           `https://papaiaapi.onrender.com/api/user/${userId}`,
@@ -59,7 +40,7 @@ export default function ProfilePage() {
     };
 
     fetchUser();
-  }, [token, isAuthenticated, userId]);
+  }, [token, userId, navigate]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
@@ -86,7 +67,6 @@ export default function ProfilePage() {
       }
 
       const updatedUser = await res.json();
-
       const updatedUserData = {
         ...userData,
         profilePicture: updatedUser.profilePicture,
@@ -106,7 +86,7 @@ export default function ProfilePage() {
   };
 
   const handleEditProfile = () => {
-    navigate("/edit-profile"); // your route to EditProfilePage
+    navigate("/edit-profile"); // route to EditProfilePage
   };
 
   return (
