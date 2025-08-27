@@ -208,6 +208,11 @@ export default function FarmDashboardPage() {
   const handleFarmerAdded = async (farmerData) => {
     try {
       // Add farmer via API
+      console.log("Adding farmer with body:", {
+        idNumber: farmerData.idNumber,
+        farmId: farmId,
+      });
+
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
         {
