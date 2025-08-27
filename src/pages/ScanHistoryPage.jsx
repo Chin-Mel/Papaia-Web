@@ -112,7 +112,7 @@ export default function ScanHistoryPage() {
         return;
       }
       const response = await fetch(
-        "https://papaia.onrender.com/api/owner/farms",
+        "https://papaiaapi.onrender.com/api/owner/farms",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -150,12 +150,15 @@ export default function ScanHistoryPage() {
 
       // Note: This endpoint would need to be created in your backend
       // It should return all scans from farms owned by the authenticated owner
-      const response = await fetch(`/api/owner/scans?${queryParams}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/scans?${queryParams}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to fetch scans");
 
