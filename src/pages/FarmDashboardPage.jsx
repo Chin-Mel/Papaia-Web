@@ -23,6 +23,7 @@ import FarmerDetailModal from "../components/Popups/FarmerDetailModal";
 import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
 import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModal";
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
+import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams(); // Extract farmId from URL parameters
