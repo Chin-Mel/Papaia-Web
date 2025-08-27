@@ -92,15 +92,25 @@ export default function ScanHistoryPage() {
     fetchScans();
   }, [currentPage, filters]);
 
+  const token = localStorage.getItem("token");
+  if (!token) {
+    // Redirect to login if token is missing
+    navigate("/login");
+    return;
+  }
+
   const fetchFarms = async () => {
     try {
       const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
-      const response = await fetch("/api/owner/farms", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "https://papaia.onrender.com/api/owner/farms",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to fetch farms");
 

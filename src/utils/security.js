@@ -1,5 +1,5 @@
 // Security utility functions
-
+import jwtDecode from "jwt-decode";
 /**
  * Sanitize user input to prevent XSS attacks
  * @param {string} input - User input to sanitize
@@ -142,8 +142,16 @@ export function secureLogout() {
 }
 
 export const getLoggedInUser = () => {
-  const user = localStorage.getItem("user"); // or "authUser" depending on your app
-  return user ? JSON.parse(user) : null;
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const decoded = jwtDecode(token);
+    return decoded; // contains userId, email, role, etc.
+  } catch (err) {
+    console.error("Invalid token:", err);
+    return null;
+  }
 };
 
 /**

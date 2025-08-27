@@ -14,6 +14,7 @@ import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
+import jwtDecode from "jwt-decode";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -22,8 +23,13 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
 
-  const loggedInUser = getLoggedInUser();
   const token = localStorage.getItem("token");
+  let userId = null;
+
+  if (token) {
+    const decoded = jwtDecode(token);
+    userId = decoded.id || decoded._id || decoded.userId; // adjust to backend payload
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -31,7 +37,7 @@ export default function ProfilePage() {
 
       try {
         const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
+          `https://papaiaapi.onrender.com/api/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -77,7 +83,7 @@ export default function ProfilePage() {
       const updatedUser = await res.json();
 
       const updatedUserData = {
-        ...loggedInUser,
+        ...userData,
         profilePicture: updatedUser.profilePicture,
       };
 

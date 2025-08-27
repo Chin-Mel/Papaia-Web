@@ -1,7 +1,8 @@
-import { useRef } from "react"; // 1. Import useRef to target the content for export
+import { useState, useEffect, useRef } from "react"; // 1. Import useRef to target the content for export
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf"; // 2. Import jsPDF for creating the PDF
 import html2canvas from "html2canvas"; // 3. Import html2canvas to capture the content as an image
+import jwtDecode from "jwt-decode";
 
 import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";
@@ -16,6 +17,41 @@ import ClockIcon from "../assets/clock-icon.png";
 
 export default function ScanDetailsPage() {
   // 4. Create a ref that will be attached to the report's main container
+
+  const token = localStorage.getItem("token");
+  let userId = null;
+
+  if (token) {
+    const decoded = jwtDecode(token);
+    userId = decoded.id || decoded._id || decoded.userId; // depends on your backend payload
+  }
+
+  const [scanDetails, setScanDetails] = useState(null);
+
+  useEffect(() => {
+    if (!userId || !token) return;
+
+    const fetchScanDetails = async () => {
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/scan/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch scan details");
+
+        const data = await res.json();
+        setScanDetails(data); // store real scan data
+      } catch (err) {
+        console.error("Error fetching scan details:", err);
+      }
+    };
+
+    fetchScanDetails();
+  }, [userId, token]);
+
   const reportRef = useRef(null);
 
   // 5. Function to handle the PDF export
