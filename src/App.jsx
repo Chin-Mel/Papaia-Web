@@ -14,7 +14,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import NewPasswordModal from "./components/Popups/NewPasswordModal";
 import OtpVerificationModal from "./components/Popups/OtpVerificationModal";
 import PasswordUpdatedModal from "./components/Popups/PasswordUpdatedModal";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 function App() {
