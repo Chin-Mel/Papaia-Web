@@ -642,7 +642,7 @@ export default function FarmDashboardPage() {
                             </div>
                           </td>
                           <td className="py-3 px-4 text-gray-700">
-                            {farmer.id}
+                            {farmer._id}
                           </td>
                           <td className="py-3 px-4">
                             <div className="space-y-1">
