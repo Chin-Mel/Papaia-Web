@@ -805,10 +805,7 @@ export default function FarmDashboardPage() {
         isOpen={isDeleteFarmModalOpen}
         onClose={() => setIsDeleteFarmModalOpen(false)}
         farm={farmData}
-        onConfirmDelete={() => {
-          setIsDeleteFarmModalOpen(false);
-          window.history.back(); // redirect after delete
-        }}
+        onConfirmDelete={handleDeleteFarm} // use the actual handler
       />
     </div>
   );
