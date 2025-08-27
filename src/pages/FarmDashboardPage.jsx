@@ -26,7 +26,6 @@ import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccess
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams(); // Extract farmId from URL parameters
-
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -218,7 +217,7 @@ export default function FarmDashboardPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            userId: farmerData.userId, // <-- use actual userId here
+            idNumber: farmerData.idNumber, // <-- use actual userId here
             farmId: farmId,
             // any other farmer data if needed
           }),
