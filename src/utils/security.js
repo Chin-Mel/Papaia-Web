@@ -1,5 +1,6 @@
 // Security utility functions
 import jwtDecode from "jwt-decode";
+
 /**
  * Sanitize user input to prevent XSS attacks
  * @param {string} input - User input to sanitize
