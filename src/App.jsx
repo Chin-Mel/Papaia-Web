@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom"; // Removed BrowserRouter
 import { AuthProvider } from "./AuthContext";
 import ProtectedRoute from "./ProtectedRoute";
+import { Navigate } from "react-router-dom";
 
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
