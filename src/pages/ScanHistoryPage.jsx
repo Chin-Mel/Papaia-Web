@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../AuthContext";
 
 import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";
