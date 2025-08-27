@@ -1,4 +1,3 @@
-// ProtectedRoute.jsx
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
@@ -7,7 +6,7 @@ const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Show loading spinner while checking auth
+  // Show loading while auth is being checked
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -17,6 +16,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/sign-in" state={{ from: location }} replace />;
   }
 
+  // Otherwise, render children (protected page)
   return children;
 };
 

@@ -14,86 +14,47 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Run on mount to check if user is already logged in
   useEffect(() => {
-    checkAuthStatus();
+    const token = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+
+    if (token && storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+
+    setLoading(false);
   }, []);
 
-  const checkAuthStatus = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        // Validate token with your backend
-        const response = await fetch("/api/validate-token", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setUser(userData);
-        } else {
-          // Invalid token, remove it
-          localStorage.removeItem("token");
-          setUser(null);
-        }
-      }
-    } catch (error) {
-      console.error("Auth check failed:", error);
-      localStorage.removeItem("token");
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Login function (can be used by your login page)
   const login = async (credentials) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch("https://papaiaapi.onrender.com/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        setUser(data.user);
-        return { success: true };
-      } else {
+      if (!response.ok) {
         const errorData = await response.json();
         return { success: false, error: errorData.message || "Login failed" };
       }
-    } catch (error) {
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+
+      return { success: true };
+    } catch (err) {
       return { success: false, error: "Network error" };
     }
   };
 
-  const register = async (userData) => {
-    try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        localStorage.setItem("token", data.token);
-        setUser(data.user);
-        return { success: true };
-      } else {
-        const errorData = await response.json();
-        return {
-          success: false,
-          error: errorData.message || "Registration failed",
-        };
-      }
-    } catch (error) {
-      return { success: false, error: "Network error" };
-    }
-  };
-
+  // Logout function
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
   };
 
@@ -102,9 +63,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated: !!user,
     loading,
     login,
-    register,
     logout,
-    checkAuthStatus,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
