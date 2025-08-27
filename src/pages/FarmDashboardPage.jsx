@@ -60,12 +60,15 @@ export default function FarmDashboardPage() {
 
       try {
         // Fetch all farms and find the specific one
-        const response = await fetch("/api/owner/farms", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/farms",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to fetch farm data");
@@ -174,13 +177,16 @@ export default function FarmDashboardPage() {
   const handleDeleteFarm = async () => {
     if (window.confirm("Are you sure you want to delete this farm?")) {
       try {
-        const response = await fetch(`/api/owner/farm/${farmId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error("Failed to delete farm");
@@ -201,18 +207,21 @@ export default function FarmDashboardPage() {
   const handleFarmerAdded = async (farmerData) => {
     try {
       // Add farmer via API
-      const response = await fetch("/api/owner/farmer", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "temp_user_id", // This should be handled by backend
-          farmId: farmId,
-          ...farmerData,
-        }),
-      });
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farmer",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: "temp_user_id", // This should be handled by backend
+            farmId: farmId,
+            ...farmerData,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to add farmer");
@@ -223,12 +232,15 @@ export default function FarmDashboardPage() {
       setIsFarmerAddedSuccessModalOpen(true);
 
       // Refresh farmers list
-      const farmersResponse = await fetch(`/api/owner/farmers/${farmId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const farmersResponse = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (farmersResponse.ok) {
         const data = await farmersResponse.json();
@@ -252,13 +264,16 @@ export default function FarmDashboardPage() {
 
   const handleConfirmRemoveFarmer = async () => {
     try {
-      const response = await fetch(`/api/owner/farmer/${selectedFarmer.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to remove farmer");
@@ -719,7 +734,14 @@ export default function FarmDashboardPage() {
               ) : (
                 <div className="text-center py-8">
                   <User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-500">No farmers added yet</p>
+                  {farmers.length === 0 ? (
+                    <p>No farmers added yet.</p>
+                  ) : (
+                    farmers.map((farmer) => (
+                      <FarmerCard key={farmer.id} farmer={farmer} />
+                    ))
+                  )}
+
                   <p className="text-sm text-gray-400">
                     Click "Add Farmer" to start building your team
                   </p>
