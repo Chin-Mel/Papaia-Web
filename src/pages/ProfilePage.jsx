@@ -15,7 +15,7 @@ import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
   const [farmCount, setFarmCount] = useState(0);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef();
@@ -23,7 +23,22 @@ export default function ProfilePage() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!token || !userId) return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    let userId = null;
+    try {
+      const decoded = jwtDecode(token);
+      console.log("Decoded token:", decoded); // 👈 See what fields exist
+      userId = decoded.id || decoded.userId || decoded.sub;
+    } catch (err) {
+      console.error("Error decoding token:", err);
+    }
+
+    if (!userId) {
+      console.warn("No userId found in token");
+      return;
+    }
 
     const fetchUser = async () => {
       try {
@@ -33,12 +48,10 @@ export default function ProfilePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
         if (!res.ok) throw new Error("Failed to fetch user");
 
         const data = await res.json();
-        console.log("Fetched user data:", data); // 👈 SEE WHAT BACKEND RETURNS
-
+        console.log("Fetched user data:", data); // 👈 full user object
         setUserData(data);
         localStorage.setItem("user", JSON.stringify(data));
       } catch (err) {
@@ -47,7 +60,7 @@ export default function ProfilePage() {
     };
 
     fetchUser();
-  }, [token, userId]);
+  }, []);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
