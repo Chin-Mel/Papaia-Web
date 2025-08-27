@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      const token = localStorage.getItem("authToken");
+      const token = localStorage.getItem("token");
       if (token) {
         // Validate token with your backend
         const response = await fetch("/api/validate-token", {
@@ -32,13 +32,13 @@ export const AuthProvider = ({ children }) => {
           setUser(userData);
         } else {
           // Invalid token, remove it
-          localStorage.removeItem("authToken");
+          localStorage.removeItem("token");
           setUser(null);
         }
       }
     } catch (error) {
       console.error("Auth check failed:", error);
-      localStorage.removeItem("authToken");
+      localStorage.removeItem("token");
       setUser(null);
     } finally {
       setLoading(false);
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("token", data.token);
         setUser(data.user);
         return { success: true };
       } else {
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("token", data.token);
         setUser(data.user);
         return { success: true };
       } else {
@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
     setUser(null);
   };
 
