@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState } from "react";
 
-function AddFarmerByIdModal({ isOpen, onClose, onSubmit }) {
+function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -11,7 +11,34 @@ function AddFarmerByIdModal({ isOpen, onClose, onSubmit }) {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await onSubmit(farmerId);
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            userId: farmerId,
+            farmId: farmId, // use the farmId passed in props
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to add farmer");
+      }
+
+      const data = await response.json();
+      console.log("Farmer added response:", data);
+
+      // Pass the new farmer object back up
+      if (data.farmer) {
+        onSubmit(data.farmer);
+      }
+
       setFarmerId("");
       onClose();
     } catch (err) {
@@ -72,4 +99,4 @@ function AddFarmerByIdModal({ isOpen, onClose, onSubmit }) {
   );
 }
 
-export default AddFarmerByIdModal;
+export default AddFarmerModal;

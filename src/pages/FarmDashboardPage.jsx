@@ -198,52 +198,14 @@ export default function FarmDashboardPage() {
     setIsAddFarmerModalOpen(true);
   };
 
-  const handleFarmerAdded = async (farmerData) => {
-    try {
-      // Add farmer via API
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/farmer",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: "temp_user_id", // This should be handled by backend
-            farmId: farmId,
-            ...farmerData,
-          }),
-        }
-      );
+  const handleFarmerAdded = (newFarmer) => {
+    // Update local state
+    setFarmers((prevFarmers) => [...prevFarmers, newFarmer]);
+    setNewlyAddedFarmer(newFarmer);
 
-      if (!response.ok) {
-        throw new Error("Failed to add farmer");
-      }
-
-      setNewlyAddedFarmer(farmerData);
-      setIsAddFarmerModalOpen(false);
-      setIsFarmerAddedSuccessModalOpen(true);
-
-      // Refresh farmers list
-      const farmersResponse = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (farmersResponse.ok) {
-        const data = await farmersResponse.json();
-        setFarmers(data.farmers || []);
-      }
-    } catch (err) {
-      console.error("Error adding farmer:", err);
-      alert("Error adding farmer: " + err.message);
-    }
+    // Close modal and show success
+    setIsAddFarmerModalOpen(false);
+    setIsFarmerAddedSuccessModalOpen(true);
   };
 
   const handleViewFarmer = (farmer) => {
@@ -754,8 +716,8 @@ export default function FarmDashboardPage() {
       <AddFarmerModal
         isOpen={isAddFarmerModalOpen}
         onClose={() => setIsAddFarmerModalOpen(false)}
-        onFarmerAdded={handleFarmerAdded}
-        farmId={farmId}
+        onSubmit={handleFarmerAdded}
+        farmId={id} // 👈 pass the farmId here
       />
 
       <FarmerDetailModal
