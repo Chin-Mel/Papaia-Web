@@ -1,15 +1,21 @@
 import React from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
-const ProtectedRoute = () => {
+const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) {
+    return <div>Loading...</div>; // Optional: Show a loading state
+  }
 
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) {
+    // Redirect to the sign-in page if not authenticated
+    return <Navigate to="/" replace />;
+  }
 
-  return <Outlet />;
+  // If authenticated, render the children (the protected page component)
+  return children;
 };
 
 export default ProtectedRoute;
