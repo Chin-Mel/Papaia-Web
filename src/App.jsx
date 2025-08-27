@@ -76,6 +76,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+
         <Route
           path="/about"
           element={
@@ -86,7 +87,7 @@ function App() {
         />
 
         {/* Catch-all fallback */}
-        <Route path="/" element={<LandingPage />} />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
     </AuthProvider>
   );
