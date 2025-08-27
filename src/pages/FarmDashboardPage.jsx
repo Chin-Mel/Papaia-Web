@@ -63,6 +63,7 @@ export default function FarmDashboardPage() {
         const response = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "Content-Type": "application/json",
@@ -99,6 +100,7 @@ export default function FarmDashboardPage() {
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               "Content-Type": "application/json",
@@ -235,6 +237,7 @@ export default function FarmDashboardPage() {
       const farmersResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
         {
+          method: "GET",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
