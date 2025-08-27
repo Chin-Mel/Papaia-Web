@@ -32,63 +32,28 @@ function App() {
         <Route path="/otp-verification" element={<OtpVerificationModal />} />
         <Route path="/changed-password" element={<PasswordUpdatedModal />} />
 
-        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
-              <AuthGuard>
-                <DashboardPage />
-              </AuthGuard>
-            </ProtectedRoute>
+            <AuthGuard>
+              <DashboardPage />
+            </AuthGuard>
           }
         />
         <Route
           path="/profile"
           element={
-            <ProtectedRoute>
+            <AuthGuard>
               <ProfilePage />
-            </ProtectedRoute>
+            </AuthGuard>
           }
         />
         <Route
           path="/edit-profile"
           element={
-            <ProtectedRoute>
+            <AuthGuard>
               <EditProfilePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/farm-dashboard/:id"
-          element={
-            <ProtectedRoute>
-              <FarmDashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan-history"
-          element={
-            <ProtectedRoute>
-              <ScanHistoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/scan-details"
-          element={
-            <ProtectedRoute>
-              <ScanDetailsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <ProtectedRoute>
-              <AboutPage />
-            </ProtectedRoute>
+            </AuthGuard>
           }
         />
 
