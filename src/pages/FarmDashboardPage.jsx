@@ -92,6 +92,8 @@ export default function FarmDashboardPage() {
 
   // Fetch farmers for this farm
   useEffect(() => {
+    console.log("Fetching farmers for farmId:", farmId);
+
     const fetchFarmers = async () => {
       if (!farmId) return;
 
