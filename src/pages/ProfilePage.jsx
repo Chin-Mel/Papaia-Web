@@ -51,8 +51,10 @@ export default function ProfilePage() {
         if (!res.ok) throw new Error("Failed to fetch user");
 
         const data = await res.json();
-        setUserData(data);
-        localStorage.setItem("user", JSON.stringify(data)); // keep localStorage updated
+        const normalizedUser = data.user || data; // ✅ normalize user
+
+        setUserData(normalizedUser);
+        localStorage.setItem("user", JSON.stringify(normalizedUser)); // ✅ always store same shape
       } catch (err) {
         console.error("Error fetching user:", err);
       }
@@ -86,13 +88,10 @@ export default function ProfilePage() {
       }
 
       const updatedUser = await res.json();
-      const updatedUserData = {
-        ...userData,
-        profilePicture: updatedUser.profilePicture,
-      };
+      const normalizedUser = updatedUser.user || updatedUser;
 
-      setUserData(updatedUserData);
-      localStorage.setItem("user", JSON.stringify(updatedUserData));
+      setUserData(normalizedUser);
+      localStorage.setItem("user", JSON.stringify(normalizedUser)); // ✅ keep normalized
     } catch (err) {
       console.error("Error uploading profile picture:", err);
     } finally {
