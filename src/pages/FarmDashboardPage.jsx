@@ -115,7 +115,7 @@ export default function FarmDashboardPage() {
     };
 
     fetchFarmers();
-  }, [farmerId]);
+  }, [farmId]);
 
   // Fetch recent scans (this would need to be implemented in your backend)
   useEffect(() => {
