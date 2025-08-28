@@ -667,22 +667,22 @@ export default function FarmDashboardPage() {
 
                               <div>
                                 <p className="font-medium text-gray-800">
-                                  {[
-                                    farmer.firstName ||
-                                      farmer.firstname ||
-                                      "No first name",
-                                    farmer.middleName ||
-                                      farmer.middlename ||
-                                      "",
-                                    farmer.lastName ||
-                                      farmer.lastname ||
-                                      "No last name",
-                                    farmer.suffix || "No suffix",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" ")}
+                                  {(() => {
+                                    const nameParts = [
+                                      farmer.firstName || farmer.firstname,
+                                      farmer.middleName || farmer.middlename,
+                                      farmer.lastName || farmer.lastname,
+                                      farmer.suffix,
+                                    ].filter(Boolean); // remove empty/null
+
+                                    return nameParts.length > 0
+                                      ? nameParts.join(" ")
+                                      : "N/A";
+                                  })()}
                                 </p>
-                                <p className="text-sm text-gray-600">Farmer</p>
+                                <p className="text-sm text-gray-600">
+                                  {farmer.role || "Farmer"}
+                                </p>
                               </div>
                             </div>
                           </td>
@@ -693,22 +693,28 @@ export default function FarmDashboardPage() {
                             <div className="space-y-1">
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
-                                {farmer.contactNumber || "No contact number"}
+                                {farmer.contactNumber || "N/A"}
                               </p>
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Mail className="w-3 h-3" />
-                                {farmer.email || "No email address"}
+                                {farmer.email || "N/A"}
                               </p>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-700">
-                            {[
-                              farmer.street || "No street info",
-                              farmer.barangay || "No barangay",
-                              farmer.municipality || "No municipality",
-                              farmer.province || "No province",
-                              farmer.zipCode || farmer.zipcode || "No zip code",
-                            ].join(", ")}
+                            {(() => {
+                              const addressParts = [
+                                farmer.street,
+                                farmer.barangay,
+                                farmer.municipality,
+                                farmer.province,
+                                farmer.zipCode,
+                              ].filter(Boolean);
+
+                              return addressParts.length > 0
+                                ? addressParts.join(", ")
+                                : "N/A";
+                            })()}
                           </td>
 
                           <td className="py-3 px-4">
