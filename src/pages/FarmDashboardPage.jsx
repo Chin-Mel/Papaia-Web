@@ -673,7 +673,7 @@ export default function FarmDashboardPage() {
                                       farmer.middleName || farmer.middlename,
                                       farmer.lastName || farmer.lastname,
                                       farmer.suffix,
-                                    ].filter(Boolean); // remove empty/null
+                                    ].filter(Boolean);
 
                                     return nameParts.length > 0
                                       ? nameParts.join(" ")
@@ -749,7 +749,7 @@ export default function FarmDashboardPage() {
                     <p>No farmers added yet.</p>
                   ) : (
                     farmers.map((farmer) => (
-                      <FarmerCard key={farmer.id} farmer={farmer} />
+                      <FarmerCard key={farmer.idNumber} farmer={farmer} />
                     ))
                   )}
 

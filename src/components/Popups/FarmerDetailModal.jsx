@@ -138,16 +138,23 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               </div>
             </div>
           </div>
+          <div className="bg-gray-50 p-2 rounded text-sm">
+            <p className="text-gray-600 text-xs">Address</p>
+            <p className="text-gray-800 font-medium">
+              {(() => {
+                const addressParts = [
+                  farmer.street,
+                  farmer.barangay,
+                  farmer.municipality,
+                  farmer.province,
+                  farmer.zipCode,
+                ].filter(Boolean);
 
-          {/* Address above Assigned Farm */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-orange-500 text-lg">🏠</span>
-              <h4 className="font-semibold text-gray-800 text-sm">Address</h4>
-            </div>
-            <div className="bg-gray-50 p-3 rounded text-sm">
-              <p className="text-gray-800 font-medium">{address}</p>
-            </div>
+                return addressParts.length > 0
+                  ? addressParts.join(", ")
+                  : "N/A";
+              })()}
+            </p>
           </div>
 
           {/* Assigned Farm */}
