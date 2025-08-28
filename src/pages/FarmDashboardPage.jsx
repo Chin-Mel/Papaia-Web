@@ -172,29 +172,29 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleDeleteFarm = async () => {
-    if (window.confirm("Are you sure you want to delete this farm?")) {
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to delete farm");
+  const handleDeleteFarm = async (farmId) => {
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
+      );
 
-        // Redirect back to dashboard
-        window.history.back();
-      } catch (err) {
-        alert("Error deleting farm: " + err.message);
+      const data = await response.json();
+
+      if (!response.ok || data.status !== "success") {
+        throw new Error(data.message || "Failed to delete farm");
       }
+
+      alert(data.message); // "Farm deleted successfully."
+      window.history.back(); // redirect back to dashboard
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting farm: " + err.message);
     }
   };
 

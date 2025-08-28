@@ -20,7 +20,7 @@ function EditProfilePage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10">
+      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10 mt-16">
         {/* Top Profile Info */}
         <div className="flex items-center space-x-6 pb-8 border-b border-gray-200 mb-10">
           <div className="relative">

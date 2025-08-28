@@ -4,15 +4,24 @@ import defaultUserPic from "../../assets/default-user.png";
 function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
   if (!isOpen || !farmer) return null;
 
-  const fullName = `${farmer.firstname || ""} ${farmer.middlename || ""} ${
-    farmer.lastname || ""
-  } ${farmer.suffix || ""}`.trim();
-  const fullAddress = `${farmer.street || ""}, ${farmer.barangay || ""}, ${
-    farmer.municipality || ""
-  }, ${farmer.province || ""} ${farmer.zipcode || ""}`.replace(
-    /(^, )|(, ,)/g,
-    ""
-  );
+  const fullName = [
+    farmer.firstName || " ",
+    farmer.middleName || " ",
+    farmer.lastName || " ",
+    farmer.suffix || " ",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  // Address same format as fullName
+  const address = [
+    farmer.firstName || " ",
+    farmer.middleName || "N/A",
+    farmer.lastName || " ",
+    farmer.suffix || " ",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -54,10 +63,10 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-gray-800 mb-1">
-                {fullName || "N/A"}
+                {fullName || " "}
               </h3>
               <p className="text-gray-500 text-sm mb-2">
-                Farmer ID: {farmer.id || "N/A"}
+                Farmer ID: {farmer.idNumber || " "}
               </p>
               <span className="inline-flex items-center gap-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -82,26 +91,26 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               <div className="space-y-2">
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Full Name</p>
+                  <p className="text-gray-800 font-medium">{fullName || " "}</p>
+                </div>
+                <div className="bg-gray-50 p-2 rounded text-sm">
+                  <p className="text-gray-600 text-xs">Middle Name</p>
                   <p className="text-gray-800 font-medium">
-                    {fullName || "N/A"}
+                    {farmer.middleName || " "}
                   </p>
                 </div>
-                {farmer.dateOfBirth && (
-                  <div className="bg-gray-50 p-2 rounded text-sm">
-                    <p className="text-gray-600 text-xs">Date of Birth</p>
-                    <p className="text-gray-800 font-medium">
-                      {farmer.dateOfBirth}
-                    </p>
-                  </div>
-                )}
-                {farmer.age && (
-                  <div className="bg-gray-50 p-2 rounded text-sm">
-                    <p className="text-gray-600 text-xs">Age</p>
-                    <p className="text-gray-800 font-medium">
-                      {farmer.age} years old
-                    </p>
-                  </div>
-                )}
+                <div className="bg-gray-50 p-2 rounded text-sm">
+                  <p className="text-gray-600 text-xs">Suffix</p>
+                  <p className="text-gray-800 font-medium">
+                    {farmer.suffix || " "}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-2 rounded text-sm">
+                  <p className="text-gray-600 text-xs">Date of Birth</p>
+                  <p className="text-gray-800 font-medium">
+                    {farmer.dateOfBirth || "N/A"}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -127,6 +136,17 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                   </p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Address above Assigned Farm */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-orange-500 text-lg">🏠</span>
+              <h4 className="font-semibold text-gray-800 text-sm">Address</h4>
+            </div>
+            <div className="bg-gray-50 p-3 rounded text-sm">
+              <p className="text-gray-800 font-medium">{address}</p>
             </div>
           </div>
 

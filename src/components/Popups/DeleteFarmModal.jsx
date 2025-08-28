@@ -14,28 +14,15 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirmDelete = async () => {
-    if (confirmationText === "DELETE") {
-      setIsLoading(true);
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm/${farm.id}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+    if (confirmationText !== "DELETE") return;
 
-        if (!response.ok) throw new Error("Failed to delete farm");
-
-        onConfirmDelete(); // notify parent to redirect or refresh
-      } catch (error) {
-        alert("Error deleting farm: " + error.message);
-      } finally {
-        setIsLoading(false);
-      }
+    setIsLoading(true);
+    try {
+      await onConfirmDelete(farm.id); // call parent handler with farm ID
+    } catch (error) {
+      alert("Error deleting farm: " + error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -47,7 +34,6 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
   }, [isOpen]);
 
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
@@ -79,7 +65,7 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
                   </h3>
                   <div className="flex items-center gap-1 text-gray-700 text-sm">
                     <MapPin className="w-3 h-3 text-green-600" />
-                    {farm.location}
+                    {farm.location || "No location specified"}
                   </div>
                 </div>
               </div>
