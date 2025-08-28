@@ -26,7 +26,7 @@ import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccess
 import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
 
 export default function FarmDashboardPage() {
-  const { id: farmId } = useParams(); // Extract farmId from URL parameters
+  const { id: farmerId } = useParams(); // Extract farmId from URL parameters
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -114,7 +114,7 @@ export default function FarmDashboardPage() {
     };
 
     fetchFarmers();
-  }, [farmId]);
+  }, [farmerId]);
 
   // Fetch recent scans (this would need to be implemented in your backend)
   useEffect(() => {
