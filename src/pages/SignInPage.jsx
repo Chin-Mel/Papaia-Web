@@ -216,9 +216,12 @@ export default function SignInPage() {
                     <span className="text-gray-500">
                       Don't have an account?{" "}
                     </span>
-                    <button className="text-orange-500 font-semibold hover:text-orange-600 transition-colors">
+                    <Link
+                      to="/sign-up"
+                      className="text-[#FF8C42] hover:underline font-medium"
+                    >
                       Sign up here
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
