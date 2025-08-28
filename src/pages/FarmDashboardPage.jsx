@@ -31,7 +31,6 @@ export default function FarmDashboardPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [farmData, setFarmData] = useState(null);
-  const [farmers, setFarmers] = useState([]);
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,14 +38,15 @@ export default function FarmDashboardPage() {
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
-  const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
   const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
   const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
     useState(false);
   const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
     useState(false);
-  const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
@@ -94,12 +94,10 @@ export default function FarmDashboardPage() {
 
   // Fetch farmers for this farm
   useEffect(() => {
-    const fetchFarmer = async () => {
-      if (!farmerId) return;
-
+    const fetchFarmers = async () => {
       try {
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           {
             method: "GET",
             headers: {
@@ -108,36 +106,15 @@ export default function FarmDashboardPage() {
             },
           }
         );
-
         const data = await response.json();
-        console.log("Farmer API response:", data);
-
-        if (data.status === "success" && data.farmer) {
-          const f = data.farmer;
-          const normalized = {
-            id: f.id,
-            userId: f.userId,
-            firstName: f.firstname || "",
-            middleName: f.middlename || "",
-            lastName: f.lastname || "",
-            suffix: f.suffix || "",
-            profilePicture:
-              f.profilePicture && f.profilePicture.trim() !== ""
-                ? f.profilePicture
-                : "https://placehold.co/100x100",
-            status: f.status || "inactive",
-          };
-
-          setFarmer(normalized);
-        }
+        if (data.status === "success") setFarmers(data.farmers);
       } catch (err) {
-        console.error("Error fetching farmer:", err);
-        setFarmer(null);
+        console.error("Error fetching farmers:", err);
       }
     };
 
-    fetchFarmer();
-  }, [farmerId]);
+    fetchFarmers();
+  }, [farmId]);
 
   // Fetch recent scans (this would need to be implemented in your backend)
   useEffect(() => {
@@ -265,9 +242,27 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleViewFarmer = (farmer) => {
-    setSelectedFarmer(farmer);
-    setIsFarmerDetailModalOpen(true);
+  const handleViewFarmer = async (farmerId) => {
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data.status === "success" && data.farmer) {
+        setSelectedFarmer(data.farmer);
+        setIsFarmerDetailModalOpen(true);
+      }
+    } catch (err) {
+      console.error("Error fetching farmer details:", err);
+    }
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -740,7 +735,7 @@ export default function FarmDashboardPage() {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => handleViewFarmer(farmer)}
+                                onClick={() => handleViewFarmer(farmer.id)}
                                 className="text-green-600 hover:text-green-700 transition-colors"
                               >
                                 <Eye className="w-4 h-4" />
