@@ -94,12 +94,12 @@ export default function FarmDashboardPage() {
 
   // Fetch farmers for this farm
   useEffect(() => {
-    const fetchFarmers = async () => {
-      if (!farmId) return;
+    const fetchFarmer = async () => {
+      if (!farmerId) return;
 
       try {
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
           {
             method: "GET",
             headers: {
@@ -109,26 +109,35 @@ export default function FarmDashboardPage() {
           }
         );
 
-        if (response.status === 404) {
-          // No farmers yet
-          setFarmers([]);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch farmers");
-        }
-
         const data = await response.json();
-        setFarmers(data.farmers || []);
+        console.log("Farmer API response:", data);
+
+        if (data.status === "success" && data.farmer) {
+          const f = data.farmer;
+          const normalized = {
+            id: f.id,
+            userId: f.userId,
+            firstName: f.firstname || "",
+            middleName: f.middlename || "",
+            lastName: f.lastname || "",
+            suffix: f.suffix || "",
+            profilePicture:
+              f.profilePicture && f.profilePicture.trim() !== ""
+                ? f.profilePicture
+                : "https://placehold.co/100x100",
+            status: f.status || "inactive",
+          };
+
+          setFarmer(normalized);
+        }
       } catch (err) {
-        console.error("Error fetching farmers:", err);
-        setFarmers([]);
+        console.error("Error fetching farmer:", err);
+        setFarmer(null);
       }
     };
 
-    fetchFarmers();
-  }, [farmId]);
+    fetchFarmer();
+  }, [farmerId]);
 
   // Fetch recent scans (this would need to be implemented in your backend)
   useEffect(() => {

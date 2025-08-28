@@ -24,10 +24,13 @@ function EditProfilePage() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(`/user/${id}`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${id}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
         if (res.ok) {
           const data = await res.json();
@@ -54,7 +57,7 @@ function EditProfilePage() {
   // Save changes
   const handleSave = async () => {
     try {
-      const res = await fetch(`/user/${id}`, {
+      const res = await fetch(`https://papaiaapi.onrender.com/api/user/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -64,7 +67,7 @@ function EditProfilePage() {
       });
 
       if (res.ok) {
-        navigate(`/profile/${id}`); // redirect back to profile page
+        navigate(`https://papaiaapi.onrender.com/api/profile/${id}`); // redirect back to profile page
       } else {
         console.error("Failed to update user");
       }
@@ -81,7 +84,7 @@ function EditProfilePage() {
         <div className="flex items-center space-x-6 pb-8 border-b border-gray-200 mb-10">
           <div className="relative">
             <img
-              src={userData.profilePicture || "https://placehold.co/100x100"}
+              src={userData?.profilePicture || "https://placehold.co/100x100"}
               alt="Profile"
               className="w-28 h-28 rounded-full border-4 border-white shadow-md"
             />
