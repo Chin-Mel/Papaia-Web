@@ -72,8 +72,6 @@ function EditProfilePage() {
       console.error(err);
     }
   };
-
-  if (!userData) return <div>Loading...</div>;
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <HeaderMain />
