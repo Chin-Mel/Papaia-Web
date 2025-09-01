@@ -32,13 +32,16 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
+      // ✅ Validate before sending
       if (!safeEmail || !safePassword) {
         setError("All fields are required.");
+        setLoading(false);
         return;
       }
 
       if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
         setError("Invalid email format.");
+        setLoading(false);
         return;
       }
 
@@ -144,7 +147,16 @@ export default function SignInPage() {
                         type="text"
                         placeholder="Enter your username or email"
                         value={usernameOrEmail}
-                        onChange={(e) => setUsernameOrEmail(e.target.value)}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUsernameOrEmail(value);
+
+                          if (value.includes("@") && !validateEmail(value)) {
+                            setError("Invalid email format.");
+                          } else {
+                            setError("");
+                          }
+                        }}
                         className="w-full h-10 sm:h-11 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                       />
                     </div>
