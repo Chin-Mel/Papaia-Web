@@ -32,6 +32,16 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
+      if (!safeEmail || !safePassword) {
+        setError("All fields are required.");
+        return;
+      }
+
+      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
+        setError("Invalid email format.");
+        return;
+      }
+
       // 🔑 Login request
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
@@ -44,16 +54,6 @@ export default function SignInPage() {
 
       if (!loginResponse.ok) {
         throw new Error("Login failed. Please check your credentials.");
-      }
-
-      if (!safeEmail || !safePassword) {
-        setError("All fields are required.");
-        return;
-      }
-
-      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
-        setError("Invalid email format.");
-        return;
       }
 
       const loginData = await loginResponse.json();
