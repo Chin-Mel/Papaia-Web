@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Footer from "../components/Footer/FooterMain";
+import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 
 import BackgroundImage from "../assets/hero-background.png";
@@ -20,6 +20,8 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,6 +44,16 @@ export default function SignInPage() {
 
       if (!loginResponse.ok) {
         throw new Error("Login failed. Please check your credentials.");
+      }
+
+      if (!safeEmail || !safePassword) {
+        setError("All fields are required.");
+        return;
+      }
+
+      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
+        setError("Invalid email format.");
+        return;
       }
 
       const loginData = await loginResponse.json();
@@ -70,50 +82,57 @@ export default function SignInPage() {
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      <main className="flex-1 relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(${BackgroundImage})`,
-          }}
-        />
+      <main className="flex-1 relative flex justify-center pt-20 sm:pt-28 pb-16 sm:pb-24 overflow-auto">
+        {/* Background with blur */}
+        <div className="absolute inset-0">
+          <img
+            src={BackgroundImage}
+            alt="Background"
+            className="w-full h-full object-cover blur-[2px] opacity-95"
+          />
+        </div>
 
-        <div className="relative z-10 flex items-center justify-center min-h-full py-30 px-6">
-          <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 items-center bg-white/21 backdrop-blur-[5.4px] rounded-[20px] border border-white/1 overflow-hidden">
+        <div className="w-full max-w-7xl xl:max-w-8xl mx-auto rounded-[20px] px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 h-full">
             {/* Column 1: Image */}
-            <div className="hidden lg:block h-full">
+            <div className="hidden lg:flex col-span-3 rounded-xl overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.45)]">
               <img
                 src={SignInImage}
                 alt="Farmer in a papaya field"
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-cover rounded-xl"
               />
             </div>
 
             {/* Column 2: Form */}
-            <div className="relative flex justify-center items-center py-8 px-4 sm:px-8">
-              <div className="w-full max-w-md bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.25)] overflow-hidden">
-                <div className="h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] relative">
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-20 h-20 bg-white rounded-full flex items-center justify-center">
+            <div className="col-span-2 w-full flex justify-center items-center lg:col-span-2">
+              <div className="w-full h-full lg:max-w-none bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden flex flex-col">
+                <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
+                  {/* Logo */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
                     <img
                       src={PapayaLogo}
                       alt="Papaia Logo"
-                      className="w-14 h-14"
+                      className="w-10 h-10 sm:w-12 sm:h-12"
                     />
                   </div>
-                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-center w-full">
-                    <h1 className="text-2xl font-bold text-white font-['Poppins']">
-                      Papaya Farm
-                    </h1>
-                    <p className="text-[#FDEDD3] text-sm mt-1">
-                      Welcome back to your farm dashboard
-                    </p>
-                  </div>
+
+                  {/* Text */}
+                  <h1 className="text-lg sm:text-xl font-bold text-white font-['Poppins'] mt-[2px]">
+                    Papaya Farm
+                  </h1>
+                  <p className="text-[#FDEDD3] text-xs sm:text-sm mt-1 text-center">
+                    Welcome back to your farm dashboard
+                  </p>
                 </div>
 
-                <div className="p-8">
-                  <form className="space-y-6" onSubmit={handleSubmit}>
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
+                  <form
+                    className="space-y-4 sm:space-y-5 flex flex-col justify-start"
+                    onSubmit={handleSubmit}
+                  >
+                    {/* Username */}
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
                         <img
                           src={UserIcon}
                           alt="Username"
@@ -125,16 +144,14 @@ export default function SignInPage() {
                         type="text"
                         placeholder="Enter your username or email"
                         value={usernameOrEmail}
-                        onChange={(e) => {
-                          setUsernameOrEmail(e.target.value);
-                          if (error) setError("");
-                        }}
-                        className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                        onChange={(e) => setUsernameOrEmail(e.target.value)}
+                        className="w-full h-10 sm:h-11 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                    {/* Password */}
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
                         <img
                           src={LockIcon}
                           alt="Password"
@@ -147,35 +164,28 @@ export default function SignInPage() {
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           value={password}
-                          autoComplete="current-password"
-                          onChange={(e) => {
-                            setPassword(e.target.value); // update state
-                            if (error) setError(""); // clear error if exists
-                          }}
-                          className="w-full h-12 px-4 pr-12 bg-gray-50 border border-gray-300 rounded-lg text-base placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full h-10 sm:h-11 px-3 pr-10 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           {showPassword ? (
                             <img
                               src={EyeOffIcon}
-                              alt="Hide Password"
+                              alt="Hide"
                               className="w-5 h-5"
                             />
                           ) : (
-                            <img
-                              src={EyeIcon}
-                              alt="Show Password"
-                              className="w-5 h-4"
-                            />
+                            <img src={EyeIcon} alt="Show" className="w-5 h-4" />
                           )}
                         </button>
                       </div>
                     </div>
 
+                    {/* Remember me + Forgot password */}
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
@@ -184,44 +194,50 @@ export default function SignInPage() {
                           onChange={(e) => setRememberMe(e.target.checked)}
                           className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500"
                         />
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:underline ">
                           Remember me
                         </span>
                       </label>
                       <Link
                         to="/forgot-password"
-                        className="text-sm text-orange-500 hover:text-orange-600 transition-colors"
+                        className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline cursor-pointer transition-colors"
                       >
                         Forgot password?
                       </Link>
                     </div>
 
-                    {error && (
-                      <p className="text-red-500 text-sm text-center">
-                        {error}
-                      </p>
-                    )}
-
+                    {/* Submit button */}
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full h-12 bg-gradient-to-r from-[#F0820B] to-[#F97316] text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
                     >
-                      <img src={LoginIcon} alt="Login" className="w-5 h-5" />
+                      <img
+                        src={LoginIcon}
+                        alt="Login"
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                      />
                       {loading ? "Logging in..." : "Login to Farm"}
                     </button>
+
+                    {/* Error space */}
+                    <div className="h-[14px] mt-1 flex items-center justify-center">
+                      {error && (
+                        <p className="text-red-500 text-xs text-center leading-none">
+                          {error}
+                        </p>
+                      )}
+                    </div>
                   </form>
 
-                  <div className="mt-6 text-center">
-                    <span className="text-gray-500">
+                  {/* Sign up link */}
+                  <div className="mt-4 text-center">
+                    <span className="text-gray-500 text-xs sm:text-sm">
                       Don't have an account?{" "}
                     </span>
-                    <Link
-                      to="/sign-up"
-                      className="text-[#FF8C42] hover:underline font-medium"
-                    >
+                    <button className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors cursor-pointer">
                       Sign up here
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -230,7 +246,7 @@ export default function SignInPage() {
         </div>
       </main>
 
-      <Footer />
+      <FooterStart />
     </div>
   );
 }
