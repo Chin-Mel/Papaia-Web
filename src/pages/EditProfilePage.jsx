@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Mail,
   Phone,
   Calendar,
-  MapPin,
   User,
   Shield,
   Trash2,
@@ -12,38 +11,90 @@ import {
 
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
+import { useNavigate, useParams } from "react-router-dom";
 
 function EditProfilePage() {
+  const { id } = useParams(); // get user id from route param
+  const navigate = useNavigate();
+
+  const [userData, setUserData] = useState(null);
+  const [formData, setFormData] = useState({});
+
+  // Fetch user data on load
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${id}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          setUserData(data);
+        } else {
+          console.error("User not found");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUser();
+  }, [id]);
+
+  // Handle input change
+  const handleChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Save changes
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`https://papaiaapi.onrender.com/api/user/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          // add Authorization header if needed
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        navigate(`https://papaiaapi.onrender.com/api/profile/${id}`); // redirect back to profile page
+      } else {
+        console.error("Failed to update user");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
-      {/* Header */}
       <HeaderMain />
 
-      {/* Main Content */}
-      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10">
+      <main className="flex-1 px-4 sm:px-8 lg:px-16 py-10 mt-16">
         {/* Top Profile Info */}
         <div className="flex items-center space-x-6 pb-8 border-b border-gray-200 mb-10">
           <div className="relative">
-            {/* Profile Picture */}
             <img
-              src="https://placehold.co/100x100/A7F3D0/065F46?text=JA"
+              src={userData?.profilePicture || "https://placehold.co/100x100"}
               alt="Profile"
               className="w-28 h-28 rounded-full border-4 border-white shadow-md"
             />
-            {/* Online Status */}
             <div className="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
           </div>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold text-gray-800">John Anderson</h1>
-            <p className="text-lg text-gray-500">Farm Owner</p>
-            <div className="flex items-center text-sm text-gray-400 space-x-4 mt-2">
-              <span className="flex items-center">
-                <Calendar size={16} className="mr-1" /> Joined March 2023
-              </span>
-              <span className="flex items-center">
-                <MapPin size={16} className="mr-1" /> Consolacion, Cebu
-              </span>
-            </div>
+            <h1 className="text-3xl font-bold text-gray-800">
+              {userData.firstName} {userData.lastName}
+            </h1>
+            <p className="text-lg text-gray-500">{userData.role}</p>
           </div>
         </div>
 
@@ -53,7 +104,10 @@ function EditProfilePage() {
             <h2 className="text-2xl font-semibold text-gray-700">
               Personal Information
             </h2>
-            <button className="flex items-center px-5 py-2 rounded-lg border border-orange-500 text-orange-500 font-medium hover:bg-orange-500 hover:text-white transition-colors">
+            <button
+              onClick={handleSave}
+              className="flex items-center px-5 py-2 rounded-lg border border-orange-500 text-orange-500 font-medium hover:bg-orange-500 hover:text-white transition-colors"
+            >
               <Save size={18} className="mr-2" />
               Save Changes
             </button>
@@ -61,33 +115,53 @@ function EditProfilePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <ProfileInput
-              label="Full Name"
-              placeholder="John Anderson"
+              label="First Name"
+              placeholder={userData.firstName || ""}
+              value={formData.firstName || ""}
+              onChange={(e) => handleChange("firstName", e.target.value)}
               icon={<User size={20} />}
             />
-            <ProfileInput label="Username" placeholder="john_anderson" />
+            <ProfileInput
+              label="Middle Name"
+              placeholder={userData.middleName || ""}
+              value={formData.middleName || ""}
+              onChange={(e) => handleChange("middleName", e.target.value)}
+            />
+            <ProfileInput
+              label="Last Name"
+              placeholder={userData.lastName || ""}
+              value={formData.lastName || ""}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+            />
+            <ProfileInput
+              label="Username"
+              placeholder={userData.username || ""}
+              value={formData.username || ""}
+              onChange={(e) => handleChange("username", e.target.value)}
+            />
             <ProfileInput
               label="Email Address"
-              placeholder="john.anderson@agrotech.com"
+              placeholder={userData.email || ""}
+              value={formData.email || ""}
+              onChange={(e) => handleChange("email", e.target.value)}
               type="email"
               icon={<Mail size={20} />}
             />
             <ProfileInput
               label="Contact Number"
-              placeholder="+1 (555) 123-4567"
+              placeholder={userData.contactNumber || ""}
+              value={formData.contactNumber || ""}
+              onChange={(e) => handleChange("contactNumber", e.target.value)}
               type="tel"
               icon={<Phone size={20} />}
             />
             <ProfileInput
               label="Birth Date"
-              placeholder="1985-06-15"
+              placeholder={userData.birthDate || ""}
+              value={formData.birthDate || ""}
+              onChange={(e) => handleChange("birthDate", e.target.value)}
               type="date"
               icon={<Calendar size={20} />}
-            />
-            <ProfileInput
-              label="Address"
-              placeholder="1234 Farm Road, Fresno, CA 93720"
-              icon={<MapPin size={20} />}
             />
           </div>
         </section>
@@ -119,7 +193,6 @@ function EditProfilePage() {
             Danger Zone
           </h2>
           <div className="space-y-6">
-            {/* Deactivate Account */}
             <div className="flex justify-between items-center p-5 bg-red-100 rounded-xl">
               <div>
                 <h3 className="text-lg font-medium text-red-800">
@@ -135,7 +208,6 @@ function EditProfilePage() {
               </button>
             </div>
 
-            {/* Delete Account */}
             <div className="flex justify-between items-center p-5 bg-red-100 rounded-xl">
               <div>
                 <h3 className="text-lg font-medium text-red-800">
@@ -155,13 +227,19 @@ function EditProfilePage() {
         </section>
       </main>
 
-      {/* Footer */}
       <FooterMain />
     </div>
   );
 }
 
-const ProfileInput = ({ label, placeholder, type = "text", icon }) => {
+const ProfileInput = ({
+  label,
+  placeholder,
+  type = "text",
+  icon,
+  value,
+  onChange,
+}) => {
   return (
     <div className="flex flex-col">
       <label className="text-sm font-medium text-gray-500 mb-1">{label}</label>
@@ -170,6 +248,8 @@ const ProfileInput = ({ label, placeholder, type = "text", icon }) => {
         <input
           type={type}
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
           className={`w-full border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow ${
             icon ? "pl-10" : ""
           }`}

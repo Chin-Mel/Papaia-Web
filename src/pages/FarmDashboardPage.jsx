@@ -26,12 +26,12 @@ import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccess
 import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
 
 export default function FarmDashboardPage() {
-  const { id: farmId } = useParams(); // Extract farmId from URL parameters
+  const { farmId } = useParams(); // Extract farmId from URL parameters
+  const { farmerId } = useParams();
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [farmData, setFarmData] = useState(null);
-  const [farmers, setFarmers] = useState([]);
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,14 +39,15 @@ export default function FarmDashboardPage() {
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
-  const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
   const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
   const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
     useState(false);
   const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
     useState(false);
-  const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
@@ -95,8 +96,6 @@ export default function FarmDashboardPage() {
   // Fetch farmers for this farm
   useEffect(() => {
     const fetchFarmers = async () => {
-      if (!farmId) return;
-
       try {
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
@@ -108,22 +107,10 @@ export default function FarmDashboardPage() {
             },
           }
         );
-
-        if (response.status === 404) {
-          // No farmers yet
-          setFarmers([]);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch farmers");
-        }
-
         const data = await response.json();
-        setFarmers(data.farmers || []);
+        if (data.status === "success") setFarmers(data.farmers);
       } catch (err) {
         console.error("Error fetching farmers:", err);
-        setFarmers([]);
       }
     };
 
@@ -172,29 +159,29 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleDeleteFarm = async () => {
-    if (window.confirm("Are you sure you want to delete this farm?")) {
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to delete farm");
+  const handleDeleteFarm = async (farmId) => {
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
+      );
 
-        // Redirect back to dashboard
-        window.history.back();
-      } catch (err) {
-        alert("Error deleting farm: " + err.message);
+      const data = await response.json();
+
+      if (!response.ok || data.status !== "success") {
+        throw new Error(data.message || "Failed to delete farm");
       }
+
+      alert(data.message); // "Farm deleted successfully."
+      window.history.back(); // redirect back to dashboard
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting farm: " + err.message);
     }
   };
 
@@ -256,9 +243,27 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleViewFarmer = (farmer) => {
-    setSelectedFarmer(farmer);
-    setIsFarmerDetailModalOpen(true);
+  const handleViewFarmer = async (farmerId) => {
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (data.status === "success" && data.farmer) {
+        setSelectedFarmer(data.farmer);
+        setIsFarmerDetailModalOpen(true);
+      }
+    } catch (err) {
+      console.error("Error fetching farmer details:", err);
+    }
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -667,22 +672,22 @@ export default function FarmDashboardPage() {
 
                               <div>
                                 <p className="font-medium text-gray-800">
-                                  {[
-                                    farmer.firstName ||
-                                      farmer.firstname ||
-                                      "No first name",
-                                    farmer.middleName ||
-                                      farmer.middlename ||
-                                      "",
-                                    farmer.lastName ||
-                                      farmer.lastname ||
-                                      "No last name",
-                                    farmer.suffix || "No suffix",
-                                  ]
-                                    .filter(Boolean)
-                                    .join(" ")}
+                                  {(() => {
+                                    const nameParts = [
+                                      farmer.firstName || farmer.firstname,
+                                      farmer.middleName || farmer.middlename,
+                                      farmer.lastName || farmer.lastname,
+                                      farmer.suffix,
+                                    ].filter(Boolean);
+
+                                    return nameParts.length > 0
+                                      ? nameParts.join(" ")
+                                      : "N/A";
+                                  })()}
                                 </p>
-                                <p className="text-sm text-gray-600">Farmer</p>
+                                <p className="text-sm text-gray-600">
+                                  {farmer.role || "Farmer"}
+                                </p>
                               </div>
                             </div>
                           </td>
@@ -693,22 +698,28 @@ export default function FarmDashboardPage() {
                             <div className="space-y-1">
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
-                                {farmer.contactNumber || "No contact number"}
+                                {farmer.contactNumber || "N/A"}
                               </p>
                               <p className="text-sm text-gray-700 flex items-center gap-1">
                                 <Mail className="w-3 h-3" />
-                                {farmer.email || "No email address"}
+                                {farmer.email || "N/A"}
                               </p>
                             </div>
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-700">
-                            {[
-                              farmer.street || "No street info",
-                              farmer.barangay || "No barangay",
-                              farmer.municipality || "No municipality",
-                              farmer.province || "No province",
-                              farmer.zipCode || farmer.zipcode || "No zip code",
-                            ].join(", ")}
+                            {(() => {
+                              const addressParts = [
+                                farmer.street,
+                                farmer.barangay,
+                                farmer.municipality,
+                                farmer.province,
+                                farmer.zipCode,
+                              ].filter(Boolean);
+
+                              return addressParts.length > 0
+                                ? addressParts.join(", ")
+                                : "N/A";
+                            })()}
                           </td>
 
                           <td className="py-3 px-4">
@@ -725,7 +736,7 @@ export default function FarmDashboardPage() {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               <button
-                                onClick={() => handleViewFarmer(farmer)}
+                                onClick={() => handleViewFarmer(farmer.id)}
                                 className="text-green-600 hover:text-green-700 transition-colors"
                               >
                                 <Eye className="w-4 h-4" />
@@ -743,7 +754,7 @@ export default function FarmDashboardPage() {
                     <p>No farmers added yet.</p>
                   ) : (
                     farmers.map((farmer) => (
-                      <FarmerCard key={farmer.id} farmer={farmer} />
+                      <FarmerCard key={farmer.idNumber} farmer={farmer} />
                     ))
                   )}
 
