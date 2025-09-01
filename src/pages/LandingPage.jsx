@@ -2,8 +2,6 @@
 import { Link } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
-
-// Assets
 import AnalyticsIconPNG from "../assets/analytics-icon.png";
 import DiseaseIconPNG from "../assets/disease-icon.png";
 import MobileIconPNG from "../assets/mobile-icon.png";
