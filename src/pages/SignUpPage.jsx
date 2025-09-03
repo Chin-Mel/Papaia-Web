@@ -119,12 +119,10 @@ export default function SignUpPage() {
   // API registration function
 
   // Improved API registration function with better error handling
+  // Simplified registerUser function to avoid potential issues
   const registerUser = async (userData) => {
     try {
-      console.log(
-        "Sending registration data:",
-        JSON.stringify(userData, null, 2)
-      );
+      console.log("Sending registration data:", userData);
 
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
@@ -134,46 +132,26 @@ export default function SignUpPage() {
         body: JSON.stringify(userData),
       });
 
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
-
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error(
-          `Server returned non-JSON response: ${response.status} ${response.statusText}`
-        );
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error("Failed to parse JSON response:", jsonError);
+        throw new Error("Invalid response from server");
       }
 
-      const data = await response.json();
-      console.log("Response data:", data);
-
       if (!response.ok) {
-        // Handle specific error cases
-        if (response.status === 400) {
-          throw new Error(data.error || "Invalid data provided");
-        } else if (response.status === 409) {
-          throw new Error(data.error || "Email or username already exists");
-        } else if (response.status === 500) {
-          throw new Error("Server error. Please try again later.");
-        } else {
-          throw new Error(
-            data.error ||
-              data.message ||
-              `HTTP ${response.status}: ${response.statusText}`
-          );
-        }
+        const errorMessage =
+          data?.error || data?.message || `HTTP ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
-      console.error("Registration error details:", error);
+      console.error("Registration error:", error);
 
-      // Handle network errors
-      if (error.name === "TypeError" && error.message.includes("fetch")) {
-        throw new Error(
-          "Network error. Please check your internet connection."
-        );
+      if (error.message.includes("fetch")) {
+        throw new Error("Network error. Please check your connection.");
       }
 
       throw error;
