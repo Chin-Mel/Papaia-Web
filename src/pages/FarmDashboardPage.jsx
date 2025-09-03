@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // Add this import
+import { useState, useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 import {
   FileText,
   Trash2,
@@ -25,8 +25,55 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
 
+// --- StatusDropdown Component ---
+function StatusDropdown({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const options = ["All Status", "Active", "Pending", "Inactive"];
+  const dropdownRef = useRef(null);
+
+  // Close dropdown if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative min-w-[160px] sm:min-w-[180px]" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center text-sm sm:text-base hover:bg-gray-100 bg-white transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
+      >
+        {value}
+        <ChevronDown className="w-4 h-4 text-gray-400" />
+      </button>
+
+      {isOpen && (
+        <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {options.map((option) => (
+            <li
+              key={option}
+              onClick={() => {
+                onChange(option);
+                setIsOpen(false);
+              }}
+              className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-sm sm:text-base"
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export default function FarmDashboardPage() {
-  const { id: farmId } = useParams(); // Extract farmId from URL parameters
+  const { id: farmId } = useParams();
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
@@ -60,7 +107,6 @@ export default function FarmDashboardPage() {
       }
 
       try {
-        // Fetch all farms and find the specific one
         const response = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
@@ -116,12 +162,10 @@ export default function FarmDashboardPage() {
     fetchFarmers();
   }, [farmId]);
 
-  // Fetch recent scans (this would need to be implemented in your backend)
+  // Fetch recent scans
   useEffect(() => {
     const fetchRecentScans = async () => {
       try {
-        // This endpoint would need to be implemented in your backend
-        // For now, we'll set it to empty array
         setRecentScans([]);
       } catch (err) {
         console.error("Error fetching recent scans:", err);
@@ -176,8 +220,8 @@ export default function FarmDashboardPage() {
         throw new Error(data.message || "Failed to delete farm");
       }
 
-      alert(data.message); // "Farm deleted successfully."
-      window.history.back(); // redirect back to dashboard
+      alert(data.message);
+      window.history.back();
     } catch (err) {
       console.error(err);
       alert("Error deleting farm: " + err.message);
@@ -194,8 +238,6 @@ export default function FarmDashboardPage() {
       farmId: farmId,
     });
     try {
-      // Add farmer via AP
-
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
         {
@@ -205,9 +247,8 @@ export default function FarmDashboardPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            idNumber: farmerData.idNumber, // <-- use actual userId here
+            idNumber: farmerData.idNumber,
             farmId: farmId,
-            // any other farmer data if needed
           }),
         }
       );
@@ -287,7 +328,6 @@ export default function FarmDashboardPage() {
         throw new Error("Failed to remove farmer");
       }
 
-      // Remove farmer from state
       setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
@@ -318,15 +358,17 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center mt-16 ">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Error: No farm ID provided</p>
-            <button
-              onClick={goBack}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-            >
-              Go Back
-            </button>
+        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error: No farm ID provided</p>
+              <button
+                onClick={goBack}
+                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </main>
         <Footer />
@@ -338,10 +380,12 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center mt-16">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading farm data...</p>
+        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading farm data...</p>
+            </div>
           </div>
         </main>
         <Footer />
@@ -353,15 +397,17 @@ export default function FarmDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
-        <main className="flex-1 flex items-center justify-center mt-16">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Error: {error}</p>
-            <button
-              onClick={goBack}
-              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-            >
-              Go Back
-            </button>
+        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error: {error}</p>
+              <button
+                onClick={goBack}
+                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
+              >
+                Go Back
+              </button>
+            </div>
           </div>
         </main>
         <Footer />
@@ -375,130 +421,128 @@ export default function FarmDashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      {/* Main Content */}
-      <main className="flex-1 mt-16 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* Back Button */}
-          <button
-            onClick={goBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
-          </button>
-
+      <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="space-y-6">
           {/* Top Header Section */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl font-bold text-gray-800">
-                    {farmData?.farmName || "Loading..."}
-                  </h1>
-                  <span
-                    className={`px-3 py-1 text-sm font-medium rounded-full ${
-                      farmStatus === "Active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {farmStatus}
-                  </span>
-                </div>
-                <p className="text-gray-600 flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  {farmData?.location || "No location specified"}
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <button className="px-4 py-2 bg-yellow-500 text-white rounded-lg flex items-center gap-2 hover:bg-yellow-600 transition-colors">
-                  <FileText className="w-4 h-4" />
-                  Export PDF
-                </button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <button
-                  onClick={() => setIsDeleteFarmModalOpen(true)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2 hover:bg-red-600 transition-colors"
+                  onClick={goBack}
+                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer flex items-center gap-2 text-gray-600 hover:text-gray-800 mt-7 text-sm sm:text-base"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
+                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                  {farmData?.farmName}
+                </h1>
+                <span
+                  className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full ${
+                    farmStatus === "Active"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {farmStatus}
+                </span>
               </div>
+              <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 -mt-3 text-sm sm:text-base">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                {farmData?.location || "No location specified"}
+              </p>
+            </div>
+            <div className="flex gap-2 sm:gap-3">
+              <button className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-[#CA8A04] text-white rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-yellow-700">
+                <FileText className="w-4 h-4" />
+                Export PDF
+              </button>
+              <button
+                onClick={() => setIsDeleteFarmModalOpen(true)}
+                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-white border border-red-500 text-red-500 rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-red-600 hover:text-white"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </button>
             </div>
           </div>
 
-          {/* Top Row - Analytics and Recent Scans */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Analytics + Scans */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Farm Analytics */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                Farm Analytics
-              </h2>
-
-              {/* Time Filters */}
-              <div className="flex gap-2 mb-6">
-                {timeFilters.map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setTimeFilter(filter)}
-                    className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                      timeFilter === filter
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {/* Graph Placeholder */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
-                  Weekly Plant Condition (Scan History Log)
-                </h3>
-                <div className="h-48 bg-white rounded border flex items-center justify-center">
-                  <div className="text-center">
-                    <TrendingUp className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                    <p className="text-sm text-gray-500">
-                      Line Graph Visualization
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      Y-axis: Leaf Health Score (0-100)
-                    </p>
-                    <p className="text-xs text-gray-400">
-                      X-axis: Week (7 weeks ago - This Week)
-                    </p>
-                  </div>
+            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[400px] sm:min-h-[450px]">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                  Farm Analytics
+                </h2>
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                  {timeFilters.map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setTimeFilter(filter)}
+                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                        timeFilter === filter
+                          ? "bg-green-700 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Summary Statistics */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 min-h-[300px] sm:min-h-[350px]">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
+                  {timeFilter} Farm Condition
+                </h3>
+                <div className="bg-white rounded border flex items-center justify-center h-[230px] sm:h-[290px] max-w-full mx-auto">
+                  <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-green-500" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                 <div className="text-center">
-                  <p className="text-green-600 font-semibold">
+                  <p className="text-green-600 font-semibold text-lg sm:text-xl">
                     {recentScans.length}
                   </p>
-                  <p className="text-sm text-gray-600">Total Scans</p>
+                  <p className="text-sm sm:text-base text-gray-600">
+                    Total Scans
+                  </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-blue-600 font-semibold">--</p>
-                  <p className="text-sm text-gray-600">Health Score</p>
+                  <p className="text-blue-600 font-semibold text-lg sm:text-xl">
+                    --
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-600">
+                    Health Score
+                  </p>
                 </div>
                 <div className="text-center">
-                  <p className="text-orange-600 font-semibold">--</p>
-                  <p className="text-sm text-gray-600">Disease Score</p>
+                  <p className="text-orange-600 font-semibold text-lg sm:text-xl">
+                    --
+                  </p>
+                  <p className="text-sm sm:text-base text-gray-600">
+                    Disease Score
+                  </p>
                 </div>
               </div>
             </div>
 
             {/* Recent Scans */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
+            <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[400px] sm:min-h-[450px]">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
                 Recent Scans
               </h2>
-              <div className="space-y-3">
-                {recentScans.length > 0 ? (
-                  recentScans.map((scan, index) => (
+              {recentScans.length === 0 ? (
+                <div className="text-center py-6 sm:py-8 flex-1 flex flex-col items-center justify-center">
+                  <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
+                  <p className="text-sm sm:text-base text-gray-500">
+                    No recent scans available
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentScans.map((scan, index) => (
                     <div
                       key={index}
                       className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
@@ -512,7 +556,6 @@ export default function FarmDashboardPage() {
                         alt={scan.user?.name || "User"}
                         className="w-10 h-10 rounded-full object-cover"
                       />
-
                       <div className="flex-1">
                         <p className="font-medium text-gray-800">
                           {scan.status || "Scan Result"}
@@ -524,253 +567,205 @@ export default function FarmDashboardPage() {
                       </div>
                       <div className="text-2xl">{scan.icon || "📊"}</div>
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8">
-                    <Leaf className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                    <p className="text-gray-500">No recent scans available</p>
-                    <p className="text-sm text-gray-400">
-                      Scans will appear here once farmers start using the app
-                    </p>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Farm Description */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-lg font-bold text-gray-800">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800">
                 Farm Description
               </h2>
-              <button className="px-3 py-1 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors flex items-center gap-2">
+              <button className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
                 <Edit3 className="w-4 h-4" />
                 Edit Description
               </button>
             </div>
-            <p className="text-gray-700 leading-relaxed">
-              {farmData?.farmName || "This farm"} is dedicated to sustainable
-              agriculture practices. Our farm specializes in crop rotation,
-              integrated pest management, and water conservation techniques. We
-              supply fresh produce to local markets and restaurants, maintaining
-              the highest standards of quality and environmental stewardship.
-              Our commitment to sustainable agriculture ensures long-term soil
-              health and biodiversity while providing nutritious food for our
-              community.
+            <p className="text-sm text-gray-600">
+              {farmData.description || "No description available"}
             </p>
           </div>
 
           {/* Farm Team */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-20">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 w-full">
               <div>
-                <h2 className="text-lg font-bold text-gray-800">Farm Team</h2>
-                <p className="text-gray-600">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                  Farm Team
+                </h2>
+                <p className="text-sm sm:text-base text-gray-600">
                   Manage and track all registered farmers
                 </p>
               </div>
-              <button
-                onClick={handleAddFarmer}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                Add Farmer
-              </button>
-            </div>
 
-            {/* Controls */}
-            <div className="flex gap-4 mb-6">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search farmers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent"
-                />
-              </div>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent appearance-none pr-10"
-                >
-                  <option>All Status</option>
-                  <option>Active</option>
-                  <option>Pending</option>
-                  <option>Inactive</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
+              {/* Search + Filter + Add Button */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto items-start sm:items-center">
+                <div className="flex flex-col sm:flex-row flex-1 gap-2 w-full sm:w-auto">
+                  <div className="relative flex-1 min-w-[120px]">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search farmers..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 hover:bg-gray-100 rounded-lg text-sm sm:text-base"
+                    />
+                  </div>
 
-            {/* Farmer Table */}
-            <div className="overflow-x-auto">
-              {farmers.length > 0 ? (
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200">
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Farmer
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Farmer ID
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Contact
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Address
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Status
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium text-gray-700">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {farmers
-                      .filter(
-                        (farmer) =>
-                          farmer.firstname
-                            ?.toLowerCase()
-                            .includes(searchQuery.toLowerCase()) ||
-                          farmer.lastname
-                            ?.toLowerCase()
-                            .includes(searchQuery.toLowerCase()) ||
-                          farmer.id
-                            .toLowerCase()
-                            .includes(searchQuery.toLowerCase())
-                      )
-                      .filter(
-                        (farmer) =>
-                          statusFilter === "All Status" ||
-                          farmer.status === statusFilter.toLowerCase()
-                      )
-                      .map((farmer) => (
-                        <tr
-                          key={farmer.id}
-                          className="border-b border-gray-100 hover:bg-gray-50"
-                        >
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-3">
-                              <img
-                                src={
-                                  farmer.profilePicture &&
-                                  farmer.profilePicture.trim() !== ""
-                                    ? farmer.profilePicture
-                                    : "/assets/default-user.png"
-                                }
-                                alt={`${farmer.firstname} ${farmer.lastname}`}
-                                className="w-10 h-10 rounded-full object-cover"
-                              />
-
-                              <div>
-                                <p className="font-medium text-gray-800">
-                                  {(() => {
-                                    const nameParts = [
-                                      farmer.firstName || farmer.firstname,
-                                      farmer.middleName || farmer.middlename,
-                                      farmer.lastName || farmer.lastname,
-                                      farmer.suffix,
-                                    ].filter(Boolean);
-
-                                    return nameParts.length > 0
-                                      ? nameParts.join(" ")
-                                      : "N/A";
-                                  })()}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {farmer.role || "Farmer"}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-gray-700">
-                            {farmer.id}
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="space-y-1">
-                              <p className="text-sm text-gray-700 flex items-center gap-1">
-                                <Phone className="w-3 h-3" />
-                                {farmer.contactNumber || "N/A"}
-                              </p>
-                              <p className="text-sm text-gray-700 flex items-center gap-1">
-                                <Mail className="w-3 h-3" />
-                                {farmer.email || "N/A"}
-                              </p>
-                            </div>
-                          </td>
-                          <td className="py-3 px-4 text-sm text-gray-700">
-                            {(() => {
-                              const addressParts = [
-                                farmer.street,
-                                farmer.barangay,
-                                farmer.municipality,
-                                farmer.province,
-                                farmer.zipCode,
-                              ].filter(Boolean);
-
-                              return addressParts.length > 0
-                                ? addressParts.join(", ")
-                                : "N/A";
-                            })()}
-                          </td>
-
-                          <td className="py-3 px-4">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                                farmer.status.charAt(0).toUpperCase() +
-                                  farmer.status.slice(1)
-                              )}`}
-                            >
-                              {farmer.status.charAt(0).toUpperCase() +
-                                farmer.status.slice(1)}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex items-center gap-2">
-                              <button
-                                onClick={() => handleViewFarmer(farmer.id)}
-                                className="text-green-600 hover:text-green-700 transition-colors"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-center py-8">
-                  <User className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  {farmers.length === 0 ? (
-                    <p>No farmers added yet.</p>
-                  ) : (
-                    farmers.map((farmer) => (
-                      <FarmerCard key={farmer.idNumber} farmer={farmer} />
-                    ))
-                  )}
-
-                  <p className="text-sm text-gray-400">
-                    Click "Add Farmer" to start building your team
-                  </p>
+                  {/* Status Dropdown */}
+                  <StatusDropdown
+                    value={statusFilter}
+                    onChange={setStatusFilter}
+                  />
                 </div>
-              )}
+
+                <button
+                  onClick={handleAddFarmer}
+                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add Farmer
+                </button>
+              </div>
             </div>
 
-            {farmers.length > 0 && (
-              <div className="flex justify-between items-center mt-6">
-                <p className="text-sm text-gray-600">
-                  Showing {farmers.length} farmer
-                  {farmers.length !== 1 ? "s" : ""}
-                </p>
+            <div
+              className="grid gap-2 sm:gap-4 border-b border-gray-200 pb-2 mb-4 text-gray-600 text-xs sm:text-sm font-medium bg-[#F9FAFB] items-center"
+              style={{
+                gridTemplateColumns: "3fr 2fr 2.5fr 4fr 2fr 2fr",
+              }}
+            >
+              <div className="text-left pl-2 sm:pl-4 pt-2">Farmer</div>
+              <div className="text-left pl-2 sm:pl-4 pt-2">Farmer ID</div>
+              <div className="text-left pl-2 sm:pl-4 pt-2">Contact</div>
+              <div className="text-left pl-2 sm:pl-4 pt-2 truncate">
+                Address
               </div>
+              <div className="text-left pl-2 sm:pl-4 pt-2">Status</div>
+              <div className="text-left pl-2 sm:pl-4 pt-2">See Details</div>
+            </div>
+
+            {/* Farmers List */}
+            {farmers.length === 0 ? (
+              <div className="text-center py-6 sm:py-8 col-span-6">
+                <User className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm sm:text-base">No farmers added yet.</p>
+              </div>
+            ) : (
+              farmers
+                .filter(
+                  (farmer) =>
+                    farmer.firstname
+                      ?.toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    farmer.lastname
+                      ?.toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    farmer.id.toLowerCase().includes(searchQuery.toLowerCase())
+                )
+                .filter(
+                  (farmer) =>
+                    statusFilter === "All Status" ||
+                    farmer.status === statusFilter.toLowerCase()
+                )
+                .map((farmer) => (
+                  <div
+                    key={farmer.id}
+                    className="grid gap-2 sm:gap-4 py-2 border-b border-gray-100 text-xs sm:text-sm sm:items-center items-start"
+                    style={{
+                      gridTemplateColumns: "3fr 2fr 2.5fr 4fr 2fr 2fr",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4">
+                      <img
+                        src={
+                          farmer.profilePicture &&
+                          farmer.profilePicture.trim() !== ""
+                            ? farmer.profilePicture
+                            : "/assets/default-user.png"
+                        }
+                        alt={`${farmer.firstname} ${farmer.lastname}`}
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <p className="font-medium text-gray-800 text-xs sm:text-sm">
+                          {(() => {
+                            const nameParts = [
+                              farmer.firstName || farmer.firstname,
+                              farmer.middleName || farmer.middlename,
+                              farmer.lastName || farmer.lastname,
+                              farmer.suffix,
+                            ].filter(Boolean);
+
+                            return nameParts.length > 0
+                              ? nameParts.join(" ")
+                              : "N/A";
+                          })()}
+                        </p>
+                        <p className="text-xs text-gray-600">
+                          {farmer.role || "Farmer"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="pl-2 sm:pl-4 text-gray-700">
+                      {farmer.id}
+                    </div>
+
+                    <div className="pl-2 sm:pl-4">
+                      <div className="space-y-1">
+                        <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
+                          <Phone className="w-3 h-3" />
+                          {farmer.contactNumber || "N/A"}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
+                          <Mail className="w-3 h-3" />
+                          {farmer.email || "N/A"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="pl-2 sm:pl-4 text-xs sm:text-sm text-gray-700 truncate">
+                      {(() => {
+                        const addressParts = [
+                          farmer.street,
+                          farmer.barangay,
+                          farmer.municipality,
+                          farmer.province,
+                          farmer.zipCode,
+                        ].filter(Boolean);
+
+                        return addressParts.length > 0
+                          ? addressParts.join(", ")
+                          : "N/A";
+                      })()}
+                    </div>
+
+                    <div className="pl-2 sm:pl-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          farmer.status.charAt(0).toUpperCase() +
+                            farmer.status.slice(1)
+                        )}`}
+                      >
+                        {farmer.status.charAt(0).toUpperCase() +
+                          farmer.status.slice(1)}
+                      </span>
+                    </div>
+
+                    <div className="pl-2 sm:pl-4">
+                      <button
+                        onClick={() => handleViewFarmer(farmer.id)}
+                        className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer text-green-500 hover:underline text-xs sm:text-sm"
+                      >
+                        View
+                      </button>
+                    </div>
+                  </div>
+                ))
             )}
           </div>
         </div>
@@ -811,11 +806,12 @@ export default function FarmDashboardPage() {
         onClose={handleSuccessModalClose}
         farmer={selectedFarmer}
       />
+
       <DeleteFarmModal
         isOpen={isDeleteFarmModalOpen}
         onClose={() => setIsDeleteFarmModalOpen(false)}
         farm={farmData}
-        onConfirmDelete={handleDeleteFarm} // use the actual handler
+        onConfirmDelete={handleDeleteFarm}
       />
     </div>
   );

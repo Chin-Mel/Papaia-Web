@@ -167,11 +167,13 @@ export default function DashboardPage() {
         const mappedFarms = data.farms.map((f) => ({
           id: f.id,
           name: f.farmName,
-          desc: `Farm located in ${f.location}`, // Generate description from location
+          desc: f.description || `Farm located in ${f.location}`, // use API description if available
           location: f.location,
           health: 95, // Default good health status
           status: "Active", // Default to active
-          img: `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
+          img:
+            f.farmImage ||
+            `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`, // fallback image
         }));
         setFarms(mappedFarms);
       }
@@ -190,6 +192,7 @@ export default function DashboardPage() {
   }, []);
 
   // Handle adding a new farm
+  // Handle adding a new farm
   const handleAddFarm = async (farmData) => {
     try {
       setLoading(true);
@@ -202,8 +205,11 @@ export default function DashboardPage() {
         body: JSON.stringify({
           farmName: farmData.name,
           location: farmData.location,
+          description: farmData.description || "No description provided",
+          farmImage: farmData.farmImage || "https://example.com/avatar.png", // default image if none provided
         }),
       });
+
       const data = await res.json();
 
       if (data.status === "success") {
@@ -411,7 +417,7 @@ export default function DashboardPage() {
                           <h3 className="font-bold text-xs sm:text-base lg:text-lg text-gray-800 mb-1">
                             {farm.name}
                           </h3>
-                          <p className="text-xs sm:text-sm text-gray-600 mb-2">
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
                             {farm.desc}
                           </p>
                           <div className="flex flex-col gap-1">
