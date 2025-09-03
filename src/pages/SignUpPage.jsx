@@ -6,8 +6,11 @@ import { ChevronDown } from "lucide-react";
 
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+
+// Try different DatePicker import - this often fixes the "N is not a function" error
+// Comment out the problematic import and use native HTML date input instead
+// import DatePicker from "react-datepicker";
+// import "react-datepicker/dist/react-datepicker.css";
 
 // Icons
 import UserIcon from "../assets/user-icon.png";
@@ -26,7 +29,6 @@ function SuffixDropdown({ value, onChange }) {
   const options = ["", "Jr.", "Sr.", "II", "III"];
   const dropdownRef = useRef(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -50,9 +52,9 @@ function SuffixDropdown({ value, onChange }) {
 
       {isOpen && (
         <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-          {options.map((option) => (
+          {options.map((option, index) => (
             <li
-              key={option}
+              key={`${option}-${index}`}
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
@@ -69,11 +71,18 @@ function SuffixDropdown({ value, onChange }) {
 }
 
 export default function SignUpPage() {
+  // Individual state for each form field
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+
   const [error, setError] = useState("");
   const [isChecked, setIsChecked] = useState(false);
   const [suffix, setSuffix] = useState("");
-  const [dob, setDob] = useState(null);
+  const [dob, setDob] = useState(""); // Use string for HTML date input
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
@@ -116,10 +125,7 @@ export default function SignUpPage() {
     }
   };
 
-  // API registration function
-
-  // Improved API registration function with better error handling
-  // Simplified registerUser function to avoid potential issues
+  // Simplified registerUser function
   const registerUser = async (userData) => {
     try {
       console.log("Sending registration data:", userData);
@@ -149,40 +155,38 @@ export default function SignUpPage() {
       return data;
     } catch (error) {
       console.error("Registration error:", error);
-
       if (error.message.includes("fetch")) {
         throw new Error("Network error. Please check your connection.");
       }
-
       throw error;
     }
   };
 
-  // Form submission
-  // Improved form submission with better data preparation
+  // Form submission using controlled components
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    setError(""); // Clear previous errors
+    setError("");
 
     const errors = {};
 
-    const lastName = e.target.lastName.value.trim();
-    const firstName = e.target.firstName.value.trim();
-    const middleName = e.target.middleName.value.trim();
-    const username = e.target.username.value.trim();
-    const emailVal = e.target.email.value.trim();
-    const phoneNumber = e.target.phoneNumber.value.trim();
+    // Use state values directly
+    const lastNameVal = lastName.trim();
+    const firstNameVal = firstName.trim();
+    const middleNameVal = middleName.trim();
+    const usernameVal = username.trim();
+    const emailVal = email.trim();
+    const phoneNumberVal = phoneNumber.trim();
     const pwd = password.trim();
     const confirmPwd = confirmPassword.trim();
 
-    // Validation (keep your existing validation logic)
-    if (!lastName) errors.lastName = "Last name is required";
-    if (!firstName) errors.firstName = "First name is required";
-    if (!username) errors.username = "Username is required";
+    // Validation
+    if (!lastNameVal) errors.lastName = "Last name is required";
+    if (!firstNameVal) errors.firstName = "First name is required";
+    if (!usernameVal) errors.username = "Username is required";
     if (!emailVal) errors.email = "Email is required";
     else if (!validateEmail(emailVal)) errors.email = "Invalid email format";
-    if (!phoneNumber) errors.phoneNumber = "Phone number is required";
+    if (!phoneNumberVal) errors.phoneNumber = "Phone number is required";
     if (!pwd) errors.password = "Password is required";
     if (!confirmPwd) errors.confirmPassword = "Confirm your password";
     else if (pwd !== confirmPwd)
@@ -202,32 +206,28 @@ export default function SignUpPage() {
       return;
     }
 
-    // Prepare data for API - only include required fields + optional ones with values
+    // Prepare userData
     const userData = {
-      username: username,
+      username: usernameVal,
       email: emailVal,
       password: pwd,
       role: "owner",
-      firstName: firstName,
-      lastName: lastName,
-      contactNumber: phoneNumber,
+      firstName: firstNameVal,
+      lastName: lastNameVal,
+      contactNumber: phoneNumberVal,
     };
 
-    // Add optional fields only if they have values
-    if (middleName) {
-      userData.middleName = middleName;
-    }
-
-    if (suffix) {
-      userData.suffix = suffix;
-    }
+    // Add optional fields
+    if (middleNameVal) userData.middleName = middleNameVal;
+    if (suffix) userData.suffix = suffix;
 
     if (dob) {
       try {
-        // Ensure proper date formatting
-        const month = String(dob.getMonth() + 1).padStart(2, "0");
-        const day = String(dob.getDate()).padStart(2, "0");
-        const year = dob.getFullYear();
+        // Convert HTML date input (YYYY-MM-DD) to API format (MM-DD-YYYY)
+        const dateObj = new Date(dob);
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const year = dateObj.getFullYear();
         userData.birthDate = `${month}-${day}-${year}`;
         console.log("Formatted birth date:", userData.birthDate);
       } catch (dateError) {
@@ -238,15 +238,10 @@ export default function SignUpPage() {
       }
     }
 
-    // Only add profile picture if you have a valid URL
-    // Remove this line or use a valid URL
-    // userData.profilePicture = "https://example.com/avatar.png";
-
     try {
       console.log("Attempting registration with data:", userData);
       const result = await registerUser(userData);
 
-      // Success
       console.log("Registration successful:", result);
       setError("");
 
@@ -255,12 +250,10 @@ export default function SignUpPage() {
         "Account created successfully! Please check your email to verify your account.";
       alert(successMessage);
 
-      // Redirect to sign-in page
       window.location.href = "/sign-in";
     } catch (error) {
       console.error("Registration failed:", error);
 
-      // Handle specific error messages
       if (
         error.message.includes("Email already exists") ||
         error.message.includes("Username already exists")
@@ -288,11 +281,10 @@ export default function SignUpPage() {
     const { name, value } = e.target;
     if (name === "email") {
       setEmail(value);
-
       // Live email validation
       if (!value) setError("Email is required");
       else if (!validateEmail(value)) setError("Wrong email format");
-      else setError(""); // clear error if valid
+      else setError("");
     }
   };
 
@@ -339,6 +331,8 @@ export default function SignUpPage() {
                       id="lastName"
                       name="lastName"
                       type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
                       placeholder="Enter last name"
                       autoComplete="family-name"
                       className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
@@ -357,6 +351,8 @@ export default function SignUpPage() {
                       id="firstName"
                       name="firstName"
                       type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Enter first name"
                       autoComplete="given-name"
                       className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
@@ -375,6 +371,8 @@ export default function SignUpPage() {
                       id="middleName"
                       name="middleName"
                       type="text"
+                      value={middleName}
+                      onChange={(e) => setMiddleName(e.target.value)}
                       placeholder="Enter middle name"
                       autoComplete="middle-name"
                       className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
@@ -385,7 +383,6 @@ export default function SignUpPage() {
                       <img src={TagIcon} alt="Tag" className="w-4 h-4" />
                       Suffix
                     </label>
-
                     <SuffixDropdown value={suffix} onChange={setSuffix} />
                   </div>
                   <div className="space-y-2">
@@ -398,33 +395,21 @@ export default function SignUpPage() {
                       Date of Birth
                     </label>
                     <div className="relative">
-                      <DatePicker
-                        selected={dob}
-                        onChange={(date) => setDob(date)}
-                        placeholderText="MM/DD/YYYY"
-                        dateFormat="MM/dd/yyyy" // format
-                        maxDate={
+                      {/* Use native HTML date input instead of react-datepicker */}
+                      <input
+                        type="date"
+                        value={dob}
+                        onChange={(e) => setDob(e.target.value)}
+                        max={
                           new Date(
                             new Date().getFullYear() - 18,
                             new Date().getMonth(),
                             new Date().getDate()
                           )
-                        } // only allow 18+
-                        showMonthDropdown
-                        showYearDropdown
-                        dropdownMode="select"
+                            .toISOString()
+                            .split("T")[0]
+                        }
                         className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                        popperPlacement="bottom-start"
-                        popperModifiers={[
-                          {
-                            name: "offset",
-                            options: { offset: [0, 5] },
-                          },
-                          {
-                            name: "preventOverflow",
-                            options: { boundary: document.body },
-                          },
-                        ]}
                       />
                     </div>
                   </div>
@@ -432,7 +417,6 @@ export default function SignUpPage() {
 
                 {/* Username, Email, Phone */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-5">
-                  {/* Username */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                       <img src={AtsignIcon} alt="User" className="w-4 h-4" />
@@ -442,6 +426,8 @@ export default function SignUpPage() {
                       id="username"
                       name="username"
                       type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       placeholder="Choose username"
                       autoComplete="username"
                       className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
@@ -452,7 +438,6 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  {/* Email */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                       <img src={MailIcon} alt="Mail" className="w-4 h-4" />
@@ -472,7 +457,6 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  {/* Phone */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                       <img src={PhoneIcon} alt="Phone" className="w-4 h-4" />
@@ -482,6 +466,8 @@ export default function SignUpPage() {
                       id="phoneNumber"
                       name="phoneNumber"
                       type="tel"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="Enter phone number"
                       autoComplete="tel"
                       className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
@@ -495,7 +481,6 @@ export default function SignUpPage() {
 
                 {/* Passwords */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
-                  {/* Password */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                       <img src={LockIcon} alt="Lock" className="w-4 h-4" />
@@ -508,7 +493,7 @@ export default function SignUpPage() {
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter password"
                         value={password}
-                        autoComplete="password"
+                        autoComplete="new-password"
                         onChange={handlePasswordChange}
                         className={`w-full h-12 px-4 pr-12 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                           formErrors.password
@@ -530,7 +515,6 @@ export default function SignUpPage() {
                     </div>
                   </div>
 
-                  {/* Confirm Password */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
                       <img src={LockIcon} alt="Lock" className="w-4 h-4" />
