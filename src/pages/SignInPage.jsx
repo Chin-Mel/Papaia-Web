@@ -144,6 +144,8 @@ export default function SignInPage() {
                         Username or Email
                       </label>
                       <input
+                        id="usernameOrEmail"
+                        name="usernameOrEmail"
                         type="text"
                         placeholder="Enter your username or email"
                         value={usernameOrEmail}
@@ -173,6 +175,8 @@ export default function SignInPage() {
                       </label>
                       <div className="relative">
                         <input
+                          id="password"
+                          name="password"
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           value={password}

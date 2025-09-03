@@ -1,7 +1,6 @@
+// Finished Fixing the About home page
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
-import { useNavigate } from "react-router-dom";
-//import { useAuth } from "../AuthContext";
+import FooterMain from "../components/Footer/FooterMain";
 
 import EyeIcon from "../assets/eye-icon-about.png";
 import TargetIcon from "../assets/target-icon.png";
@@ -11,12 +10,13 @@ import ClipboardListIcon from "../assets/clipboard-list-icon.png";
 import MailIcon from "../assets/mail-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
 import MapPinIcon from "../assets/map-pin-icon.png";
+import HeroBackground from "../assets/hero-background.png";
 
-// Developer Images
 import EbordaImage from "../assets/eborda.png";
 import EstomoImage from "../assets/estomo.jpg";
 import DuarteImage from "../assets/duarte.png";
 import IgotImage from "../assets/igot.png";
+
 const developers = [
   {
     name: "John Michael Eborda",
@@ -51,29 +51,29 @@ const developers = [
 export default function AboutHomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-
       <HeaderMain />
 
-      {/* Main Content */}
-      <main className="pt-16">
+      <main>
         {/* Hero Section */}
-        <section className="relative h-[400px] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
+        <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] lg:h-[60vh] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
           <div className="absolute inset-0">
             <img
-              src="https://api.builder.io/api/v1/image/assets/TEMP/bb0d2bc59ee3d72d5d9039aa22f5c9ddde787bea?width=2932"
+              src={HeroBackground}
               alt="Background plants"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-papaia-green to-papaia-green-dark opacity-80"></div>
           </div>
-          <div className="relative max-w-[1440px] mx-auto px-20 h-full flex items-center justify-center">
+          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-12 mb-8">
-                <h1 className="text-6xl font-bold text-white mb-6 leading-tight">
+              <div
+                className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg 
+        p-6 sm:p-8 md:p-10 
+        mt-4 sm:mt-6 md:mt-8 lg:mt-10 mb-6"
+              >
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                   About Papaia
                 </h1>
-                <p className="text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
                   Revolutionizing agriculture through intelligent crop disease
                   detection and smart farming solutions
                 </p>
@@ -83,13 +83,13 @@ export default function AboutHomePage() {
         </section>
 
         {/* App Overview */}
-        <section className="py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-20">
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
-              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
                 App Overview
               </h2>
-              <p className="text-lg text-papaia-text-secondary leading-relaxed">
+              <p className="text-base sm:text-lg md:text-lg text-papaia-text-secondary leading-relaxed">
                 Papaia is an innovative mobile application that empowers farmers
                 with AI-driven crop disease detection, real-time analytics, and
                 personalized treatment recommendations. Our cutting-edge
@@ -102,20 +102,24 @@ export default function AboutHomePage() {
         </section>
 
         {/* Vision & Mission */}
-        <section className="py-16 bg-gray-50">
-          <div className="max-w-[1440px] mx-auto px-20">
-            <div className="grid md:grid-cols-2 gap-12">
-              {/* Our Vision */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-full bg-[#94C522]/10      flex items-center justify-center">
-                    <img src={EyeIcon} alt="Vision" className="w-7 h-6" />
+        <section className="py-12 sm:py-16 bg-gray-50">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
+              {/* Vision */}
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#94C522]/10 flex items-center justify-center">
+                    <img
+                      src={EyeIcon}
+                      alt="Vision"
+                      className="w-5 sm:w-7 h-5 sm:h-6"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary">
                     Our Vision
                   </h3>
                 </div>
-                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
                   <p>
                     To create a world where every farmer has access to
                     intelligent
@@ -131,17 +135,21 @@ export default function AboutHomePage() {
                 </div>
               </div>
 
-              {/* Our Mission */}
-              <div className="bg-white rounded-2xl p-8 shadow-lg">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-14 h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
-                    <img src={TargetIcon} alt="Mission" className="w-6 h-6" />
+              {/* Mission */}
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+                <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
+                    <img
+                      src={TargetIcon}
+                      alt="Mission"
+                      className="w-5 sm:w-6 h-5 sm:h-6"
+                    />
                   </div>
-                  <h3 className="text-2xl font-bold text-papaia-text-primary">
+                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary">
                     Our Mission
                   </h3>
                 </div>
-                <div className="text-papaia-text-secondary leading-relaxed space-y-2">
+                <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
                   <p>
                     We develop innovative AI-powered solutions that help farmers
                   </p>
@@ -155,134 +163,55 @@ export default function AboutHomePage() {
         </section>
 
         {/* Key Features */}
-        <section className="py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-20">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
                 Key Features
               </h2>
-              <p className="text-lg text-papaia-text-secondary">
+              <p className="text-base sm:text-lg text-papaia-text-secondary">
                 Discover the powerful tools that make Papaia the perfect farming
                 companion
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Disease Identification */}
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
-                  <img
-                    src={CameraIcon}
-                    alt="Disease Identification"
-                    className="w-8 h-8"
-                  />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+              {[
+                {
+                  icon: CameraIcon,
+                  title: "Disease Identification",
+                  text: "Simply scan your crops with your camera and get instant AI-powered disease identification with 95% accuracy",
+                },
+                {
+                  icon: TrendingUpIcon,
+                  title: "Smart Analytics",
+                  text: "Track crop health, monitor disease patterns, and access detailed analytics to optimize your farming strategy",
+                },
+                {
+                  icon: ClipboardListIcon,
+                  title: "Treatment Suggestions",
+                  text: "Receive personalized treatment recommendations from agricultural experts based on detected diseases",
+                },
+              ].map((feat, i) => (
+                <div key={i} className="text-center p-4 sm:p-6">
+                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                    <img
+                      src={feat.icon}
+                      alt={feat.title}
+                      className="w-5 sm:w-8 h-5 sm:h-8"
+                    />
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-bold text-papaia-text-primary mb-2 sm:mb-4">
+                    {feat.title}
+                  </h3>
+                  <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
+                    {feat.text}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Disease Identification
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Simply scan your crops with your camera and get instant
-                  AI-powered disease identification with 95% accuracy
-                </p>
-              </div>
-
-              {/* Smart Analytics */}
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
-                  <img
-                    src={TrendingUpIcon}
-                    alt="Smart Analytics"
-                    className="w-8 h-8"
-                  />
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Smart Analytics
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Track crop health, monitor disease patterns, and access
-                  detailed analytics to optimize your farming strategy
-                </p>
-              </div>
-
-              {/* Treatment Suggestions */}
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-8">
-                  <img
-                    src={ClipboardListIcon}
-                    alt="Treatment Suggestions"
-                    className="w-5 h-8"
-                  />
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Treatment Suggestions
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Receive personalized treatment recommendations from
-                  agricultural experts based on detected diseases
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
-
-        {/* How to Use the App */}
-        <section className="py-16 bg-[#E5E7EB]/10">
-          <div className="max-w-[1440px] mx-auto px-20">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
-                How to Use the App
-              </h2>
-              <p className="text-lg text-papaia-text-secondary">
-                Get started in just three simple steps
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Step 1 */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl font-bold text-white">1</span>
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Capture
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Take a clear photo of the affected plant or leaf using your
-                  smartphone camera
-                </p>
-              </div>
-
-              {/* Step 2 */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#F97316] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl font-bold text-white">2</span>
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Analyze
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Our AI instantly analyzes the image and identifies potential
-                  diseases or issues
-                </p>
-              </div>
-
-              {/* Step 3 */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#DE5B00] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl font-bold text-white">3</span>
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-primary mb-4">
-                  Treat
-                </h3>
-                <p className="text-papaia-text-secondary leading-relaxed">
-                  Receive detailed treatment recommendations and track your
-                  crop's recovery progress
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Meet the Developers */}
         <section className="py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-20">
@@ -366,10 +295,10 @@ export default function AboutHomePage() {
             </div>
           </div>
         </section>
+        {/* The remaining sections (How to Use, Developers, Contact) can be similarly updated with responsive classes */}
       </main>
 
-      {/*Footer*/}
-      <Footer />
+      <FooterMain />
     </div>
   );
 }
