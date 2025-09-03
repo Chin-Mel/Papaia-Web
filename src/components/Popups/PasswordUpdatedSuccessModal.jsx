@@ -10,25 +10,32 @@ export default function PasswordUpdatedSuccessModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+      <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-auto">
         {/* Header Section with Gradient */}
-        <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] rounded-t-lg p-6 relative">
-          {/* Success Icon */}
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-teal-500 rounded-full flex items-center justify-center">
-              <CheckCircle className="w-8 h-8 text-white" />
-            </div>
+        <div
+          className="flex flex-col items-center justify-center text-white pt-6 pb-3 rounded-t-2xl"
+          style={{
+            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
+          }}
+        >
+          {/* Icon */}
+          <div
+            className="rounded-full p-4 shadow-lg mb-4 flex items-center justify-center"
+            style={{
+              backgroundImage: "linear-gradient(to right, #2E7D32, #14B8A6)",
+            }}
+          >
+            <CheckCircle className="w-8 h-8 text-white" />
           </div>
 
           {/* Title */}
-          <h2 className="text-xl font-bold text-white text-center">
+          <h2 className="text-xl font-bold text-center">
             Password Updated Successfully
           </h2>
         </div>
 
-        {/* Main Content Area */}
+        {/* Main Content */}
         <div className="p-6">
-          {/* Descriptive Text */}
           <p className="text-gray-700 text-center mb-8">
             Your password has been changed. You can now log in with your new
             credentials.
@@ -36,19 +43,19 @@ export default function PasswordUpdatedSuccessModal({
 
           {/* Action Buttons */}
           <div className="space-y-3">
-            {/* Continue to Sign in Button */}
+            {/* Continue to Sign in */}
             <button
               onClick={onContinueToSignIn}
-              className="w-full py-3 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 transition-colors flex items-center justify-center gap-2"
+              className="transition-all duration-150 active:scale-95 active:shadow-inner w-full py-3 px-4 bg-orange-500 text-white rounded-lg font-medium hover:bg-orange-600 flex items-center justify-center gap-2"
             >
               Continue to Sign in
               <ArrowRight className="w-4 h-4" />
             </button>
 
-            {/* Back to Home Button */}
+            {/* Back to Home */}
             <button
               onClick={onBackToHome}
-              className="w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+              className="transition-all duration-150 active:scale-95 active:shadow-inner w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 flex items-center justify-center gap-2"
             >
               <Home className="w-4 h-4" />
               Back to Home

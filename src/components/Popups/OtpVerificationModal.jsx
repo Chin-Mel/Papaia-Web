@@ -88,9 +88,14 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     setIsResending(false);
   };
 
+  // ======= NEW UI ONLY =======
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/20 z-50">
-      <div className="relative z-10 w-full max-w-md h-[500px] rounded-2xl shadow-lg overflow-hidden bg-white mt-20 mb-[30px]">
+    <div className="relative w-full min-h-screen">
+      {/* Semi-transparent overlay */}
+      <div className="absolute inset-0 z-0 bg-black/20"></div>
+
+      {/* Modal box */}
+      <div className="relative z-10 w-full max-w-md mx-auto mt-20 mb-10 rounded-2xl shadow-lg overflow-hidden bg-white">
         {/* Header */}
         <div
           className="flex flex-col items-center justify-center text-white pt-6 pb-3"
@@ -114,56 +119,56 @@ export default function OtpVerificationModal({ email, onSuccess }) {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-bold">Email Authentication</h2>
-          <h4 className="text-sm font-bold">Enter one-time password</h4>
-          <p className="text-sm text-center opacity-90 mt-1">
+          <h2 className="text-lg sm:text-xl font-bold">Email Authentication</h2>
+          <h4 className="text-sm sm:text-base font-bold">
+            Enter one-time password
+          </h4>
+          <p className="text-xs sm:text-sm text-center opacity-90 mt-1">
             A one-time password has been sent to
           </p>
-          <p className="text-sm text-center opacity-90 mt-1 font-bold italic mb-0">
+          <p className="text-xs sm:text-sm text-center opacity-90 mt-1 font-bold italic mb-0">
             {email}
           </p>
         </div>
 
-        <p className="text-sm text-center text-[#00712D] opacity-90 mt-5">
+        <p className="text-sm sm:text-base text-center text-[#00712D] opacity-90 mt-5 px-4 sm:px-6">
           Enter the 4 digit code we sent you via email to continue.
         </p>
 
         {/* OTP Inputs */}
         <form
+          className="flex flex-col items-center gap-4 mt-6 px-4 sm:px-6"
           onSubmit={handleVerify}
-          className="flex flex-col items-center gap-4 mt-6"
         >
-          <div className="flex justify-center gap-5">
+          <div className="flex justify-center gap-3 sm:gap-5">
             {otp.map((digit, index) => (
               <input
                 key={index}
-                id={`otp-${index}`}
                 type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
                 maxLength="1"
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, index)}
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 ref={(el) => (inputRefs.current[index] = el)}
-                className="w-16 h-16 text-center text-lg border-2 border-[#8B5E3C] focus:outline-none focus:border-orange-400 rounded"
+                className="w-12 h-12 sm:w-16 sm:h-16 text-center text-lg sm:text-xl border-2 border-[#8B5E3C] focus:outline-none focus:border-orange-400 rounded"
               />
             ))}
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           {successMessage && (
-            <p className="text-green-500 text-sm">{successMessage}</p>
+            <p className="text-green-500 text-sm mt-2">{successMessage}</p>
           )}
 
           <button
             type="submit"
-            className="mt-6 w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow"
+            disabled={isResending}
+            className="mt-3 w-full sm:w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow text-sm sm:text-base"
             style={{
               backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
             }}
           >
-            <FaSignInAlt className="w-5 h-5" /> Verify
+            <FaSignInAlt className="w-4 h-4 sm:w-5 sm:h-5" /> Verify
           </button>
 
           <button
@@ -178,14 +183,30 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           >
             Resend OTP {countdown > 0 && `(${countdown}s)`}
           </button>
-        </form>
 
-        <p className="text-xs text-center text-black opacity-90 mt-4">
-          Not your email?/Didn’t receive the code?{" "}
-          <button onClick={handleResend} className="text-[#FF8C42] underline">
-            Try Again
-          </button>
-        </p>
+          <div className="p-4 mt-2 mb-4 rounded-lg bg-blue-100 text-blue-800 w-full sm:w-[400px] flex items-start gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="mt-1 flex-shrink-0 w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
+              />
+            </svg>
+            <p className="text-sm">
+              <span className="font-bold">Security Reminder</span>
+              <br />
+              Never share your OTP codes with anyone. We'll never ask for your
+              verification codes via phone or email.
+            </p>
+          </div>
+        </form>
       </div>
     </div>
   );
