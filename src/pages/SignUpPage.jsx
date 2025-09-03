@@ -239,7 +239,7 @@ export default function SignUpPage() {
       middleName: middleNameVal || "", // Include empty string if not provided
       lastName: lastNameVal,
       suffix: suffix || "", // Include empty string if not provided
-      birthDate: formattedBirthDate || "", // Include empty string if not provided
+      birthDate: formattedBirthDate || null, // Include empty string if not provided
       contactNumber: phoneNumberVal,
       profilePicture: "", // Empty string for default
       street: "", // Empty string for optional address field
