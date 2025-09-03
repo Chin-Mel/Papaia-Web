@@ -206,21 +206,8 @@ export default function SignUpPage() {
       return;
     }
 
-    // Prepare userData
-    const userData = {
-      username: usernameVal,
-      email: emailVal,
-      password: pwd,
-      role: "owner",
-      firstName: firstNameVal,
-      lastName: lastNameVal,
-      contactNumber: phoneNumberVal,
-    };
-
-    // Add optional fields
-    if (middleNameVal) userData.middleName = middleNameVal;
-    if (suffix) userData.suffix = suffix;
-
+    // Prepare complete userData with all API fields
+    let formattedBirthDate = "";
     if (dob) {
       try {
         // Convert HTML date input (YYYY-MM-DD) to API format (MM-DD-YYYY)
@@ -228,8 +215,8 @@ export default function SignUpPage() {
         const month = String(dateObj.getMonth() + 1).padStart(2, "0");
         const day = String(dateObj.getDate()).padStart(2, "0");
         const year = dateObj.getFullYear();
-        userData.birthDate = `${month}-${day}-${year}`;
-        console.log("Formatted birth date:", userData.birthDate);
+        formattedBirthDate = `${month}-${day}-${year}`;
+        console.log("Formatted birth date:", formattedBirthDate);
       } catch (dateError) {
         console.error("Date formatting error:", dateError);
         setError("Invalid date format. Please select a valid date.");
@@ -237,6 +224,26 @@ export default function SignUpPage() {
         return;
       }
     }
+
+    // Complete request body with all fields (required + optional)
+    const userData = {
+      username: usernameVal,
+      email: emailVal,
+      password: pwd,
+      role: "owner",
+      firstName: firstNameVal,
+      middleName: middleNameVal || "", // Include empty string if not provided
+      lastName: lastNameVal,
+      suffix: suffix || "", // Include empty string if not provided
+      birthDate: formattedBirthDate || "", // Include empty string if not provided
+      contactNumber: phoneNumberVal,
+      profilePicture: "", // Empty string for default
+      street: "", // Empty string for optional address field
+      barangay: "", // Empty string for optional address field
+      municipality: "", // Empty string for optional address field
+      province: "", // Empty string for optional address field
+      zipCode: "", // Empty string for optional address field
+    };
 
     try {
       console.log("Attempting registration with data:", userData);
