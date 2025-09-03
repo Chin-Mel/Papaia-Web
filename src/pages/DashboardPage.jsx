@@ -5,9 +5,9 @@ import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import AddFarmModal from "../components/Popups/AddFarmModal";
-import ScansCount from "../assets/Scans.png";
-import FarmersCount from "../assets/Farmers.png";
-import FarmsCount from "../assets/Farms.png";
+import ScansCount from "../assets/scans.png";
+import FarmersCount from "../assets/farmers.png";
+import FarmsCount from "../assets/farms.png";
 
 export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
