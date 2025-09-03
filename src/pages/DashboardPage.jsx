@@ -221,6 +221,11 @@ export default function DashboardPage() {
     }
   };
 
+  const activitiesToShow =
+    recentIdentifications.length > 0
+      ? recentIdentifications
+      : fallbackActivities;
+
   const handleCloseModal = () => setShowAddFarmModal(false);
 
   return (
