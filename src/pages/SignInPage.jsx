@@ -65,6 +65,46 @@ export default function SignInPage() {
       const loginData = await loginResponse.json();
       console.log("Login successful:", loginData);
 
+      // 🔍 DEBUG: Log the full response to understand the structure
+      console.log("Full login response:", JSON.stringify(loginData, null, 2));
+      console.log("User object:", loginData.user);
+      console.log("isVerified value:", loginData.user?.isVerified);
+      console.log("verified value:", loginData.user?.verified);
+      console.log("User role:", loginData.user?.role);
+
+      // ✅ Check verification status - try multiple possible field names
+      const isVerified =
+        loginData.user?.isVerified ||
+        loginData.user?.verified ||
+        loginData.user?.emailVerified ||
+        loginData.user?.is_verified ||
+        loginData.user?.email_verified;
+
+      console.log("Final isVerified value:", isVerified);
+
+      // More flexible verification check - only block if explicitly unverified
+      // If no verification field exists, assume verified (API should handle this)
+      const hasVerificationField =
+        loginData.user &&
+        ("isVerified" in loginData.user ||
+          "verified" in loginData.user ||
+          "emailVerified" in loginData.user ||
+          "is_verified" in loginData.user ||
+          "email_verified" in loginData.user);
+
+      if (hasVerificationField && isVerified === false) {
+        setError(
+          "Your account is not verified. Please check your email and verify your account before logging in."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // If API allows login, assume account is properly verified
+      console.log(
+        "Verification check passed or skipped (no verification field found)"
+      );
+
       if (loginData.user && !loginData.user.isVerified) {
         setError(
           "Your account is not verified. Please check your email and verify your account before logging in."
@@ -87,14 +127,14 @@ export default function SignInPage() {
       }
 
       // ✅ Additional role check - only allow owners or admins
-      const allowedRoles = ["owner", "admin"];
+      const allowedRoles = ["owner"];
       if (
         loginData.user &&
         loginData.user.role &&
         !allowedRoles.includes(loginData.user.role.toLowerCase())
       ) {
         setError(
-          "Access denied. This dashboard is only available for farm owners and administrators."
+          "Access denied. This dashboard is only available for farm owners."
         );
         setLoading(false);
         return;
