@@ -1,9 +1,13 @@
+//old
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import AddFarmModal from "../components/Popups/AddFarmModal";
+import ScansCount from "../assets/Scans.png";
+import FarmersCount from "../assets/Farmers.png";
+import FarmsCount from "../assets/Farms.png";
 
 export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
@@ -203,34 +207,35 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 mt-16 p-6">
-        <div className="max-w-7xl mx-auto flex gap-6">
+      {/* Scrollable main content */}
+      <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="w-full max-w-8xl mx-auto flex flex-col lg:flex-row gap-6">
           {/* Left Column - Recent Activities */}
-          <div className="w-80 flex-shrink-0">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
+          <div className="w-full lg:w-50 xl:w-[330px] flex-shrink-0">
+            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">
                 Recent Activities
               </h2>
               <div className="space-y-3">
                 {activities.map((act, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 rounded-lg ${act.bgColor} border border-gray-100`}
+                    className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
                   >
                     <div className="flex items-start gap-3">
                       <div
-                        className={`w-8 h-8 rounded-full ${act.iconBg} flex items-center justify-center text-sm`}
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${act.iconBg} flex items-center justify-center text-xs sm:text-sm`}
                       >
                         {act.icon}
                       </div>
                       <div className="flex-1">
-                        <p className="font-semibold text-sm text-gray-800">
+                        <p className="font-semibold text-xs sm:text-sm text-gray-800">
                           {act.title}
                         </p>
                         <p className="text-xs text-gray-600 mt-1">
                           {act.description}
                         </p>
-                        <span className="text-xs text-gray-500 mt-1">
+                        <span className="text-[10px] sm:text-xm text-gray-500 mt-1 block">
                           {act.time}
                         </span>
                       </div>
@@ -244,39 +249,20 @@ export default function DashboardPage() {
           {/* Right Column - My Farms */}
           <div className="flex-1">
             {/* Dashboard Overview */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                Dashboard Overview
-              </h2>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Users className="w-5 h-5 text-green-600" />
-                    </div>
-                    <TrendingUp
-                      className={`w-4 h-4 ${
-                        dashboardStats.farmersTrend === "increase"
-                          ? "text-green-500"
-                          : dashboardStats.farmersTrend === "decrease"
-                          ? "text-red-500"
-                          : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+              Dashboard Overview
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-8">
+              {/* Farmers */}
+              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div>
+                  <p className="text-sm sm:text-base text-gray-600 mb-2">
+                    All Farmers
+                  </p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.totalFarmers.toLocaleString()}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-1">All Farmers</p>
-                  <span
-                    className={`text-xs font-medium ${
-                      dashboardStats.farmersTrend === "increase"
-                        ? "text-green-600"
-                        : dashboardStats.farmersTrend === "decrease"
-                        ? "text-red-600"
-                        : "text-gray-500"
-                    }`}
-                  >
+                  <span className="text-xs sm:text-sm font-medium text-green-600">
                     {dashboardStats.farmersTrend === "increase"
                       ? "+"
                       : dashboardStats.farmersTrend === "decrease"
@@ -286,35 +272,22 @@ export default function DashboardPage() {
                     last month
                   </span>
                 </div>
+                <img
+                  src={FarmersCount}
+                  alt="Farmers"
+                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                />
+              </div>
 
-                <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                      <Leaf className="w-5 h-5 text-yellow-600" />
-                    </div>
-                    <TrendingUp
-                      className={`w-4 h-4 ${
-                        dashboardStats.farmsTrend === "increase"
-                          ? "text-green-500"
-                          : dashboardStats.farmsTrend === "decrease"
-                          ? "text-red-500"
-                          : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div>
+                  <p className="text-sm sm:text-base text-gray-600 mb-2">
+                    All Farms
+                  </p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.totalFarms.toLocaleString()}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-1">All Farms</p>
-                  <span
-                    className={`text-xs font-medium ${
-                      dashboardStats.farmsTrend === "increase"
-                        ? "text-green-600"
-                        : dashboardStats.farmsTrend === "decrease"
-                        ? "text-red-600"
-                        : "text-gray-500"
-                    }`}
-                  >
+                  <span className="text-xs sm:text-sm font-medium text-yellow-500">
                     {dashboardStats.farmsTrend === "increase"
                       ? "+"
                       : dashboardStats.farmsTrend === "decrease"
@@ -324,35 +297,22 @@ export default function DashboardPage() {
                     month
                   </span>
                 </div>
+                <img
+                  src={FarmsCount}
+                  alt="Farms"
+                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                />
+              </div>
 
-                <div className="p-4 bg-white border border-gray-200 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <ScanLine className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <TrendingUp
-                      className={`w-4 h-4 ${
-                        dashboardStats.scansTrend === "increase"
-                          ? "text-green-500"
-                          : dashboardStats.scansTrend === "decrease"
-                          ? "text-red-500"
-                          : "text-gray-400"
-                      }`}
-                    />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">
+              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div>
+                  <p className="text-sm sm:text-base text-gray-600 mb-2">
+                    Today's Scans
+                  </p>
+                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.todayScans.toLocaleString()}
                   </h3>
-                  <p className="text-sm text-gray-600 mb-1">Today's Scans</p>
-                  <span
-                    className={`text-xs font-medium ${
-                      dashboardStats.scansTrend === "increase"
-                        ? "text-green-600"
-                        : dashboardStats.scansTrend === "decrease"
-                        ? "text-red-600"
-                        : "text-gray-500"
-                    }`}
-                  >
+                  <span className="text-xs sm:text-sm font-medium text-sky-500">
                     {dashboardStats.scansTrend === "increase"
                       ? "+"
                       : dashboardStats.scansTrend === "decrease"
@@ -362,30 +322,37 @@ export default function DashboardPage() {
                     yesterday
                   </span>
                 </div>
+                <img
+                  src={ScansCount}
+                  alt="Scans"
+                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                />
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
+            <div>
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                  My Farms
+                </h2>
                 <button
                   onClick={() => setShowAddFarmModal(true)}
                   disabled={loading}
-                  className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Plus size={16} />
                   {loading ? "Loading..." : "Add Farm"}
                 </button>
               </div>
-
+              {/* Updated old version - now responsive */}
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-gray-500">Loading farms...</div>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   {farms.length === 0 ? (
-                    <div className="col-span-3 text-center py-12 text-gray-500">
+                    <div className="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
                       No farms added yet. Click "Add Farm" to get started!
                     </div>
                   ) : (
@@ -393,16 +360,16 @@ export default function DashboardPage() {
                       <Link
                         key={farm.id}
                         to={`/farm-dashboard/${farm.id}`}
-                        className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+                        className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
                       >
                         <div className="relative">
                           <img
                             src={farm.img}
                             alt={farm.name}
-                            className="w-full h-40 object-cover"
+                            className="w-full h-32 sm:h-40 lg:h-48 object-cover"
                           />
                           <span
-                            className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full font-medium ${
+                            className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xm rounded-full font-medium ${
                               farm.status === "Active"
                                 ? "bg-green-500 text-white"
                                 : "bg-yellow-500 text-white"
@@ -411,21 +378,23 @@ export default function DashboardPage() {
                             {farm.status}
                           </span>
                         </div>
-                        <div className="p-4">
-                          <h3 className="font-bold text-gray-800 mb-1">
+                        <div className="p-3 sm:p-4">
+                          <h3 className="font-bold text-xs sm:text-base lg:text-lg text-gray-800 mb-1">
                             {farm.name}
                           </h3>
-                          <p className="text-sm text-gray-600 mb-2">
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2">
                             {farm.desc}
                           </p>
-                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                            <MapPin size={12} /> {farm.location}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Leaf size={12} className="text-green-500" />
-                            <span className="text-sm font-medium text-green-600">
-                              {farm.health}% Health
-                            </span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1 text-[10px] sm:text-xm text-gray-500 mb-2">
+                              <MapPin size={12} /> {farm.location}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Leaf size={12} className="text-green-500" />
+                              <span className="text-[15px] sm:text-xs font-medium text-green-600">
+                                {farm.health}% Health
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </Link>
