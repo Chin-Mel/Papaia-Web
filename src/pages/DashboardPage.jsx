@@ -1,4 +1,3 @@
-//old
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
@@ -13,6 +12,7 @@ export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [recentIdentifications, setRecentIdentifications] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
     totalFarmers: 0,
     totalFarms: 0,
@@ -25,51 +25,70 @@ export default function DashboardPage() {
     scansTrend: "no change",
   });
 
-  // Example data for activities
-  const activities = [
+  // Fetch recent identification history for activities
+  const fetchRecentActivities = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/identification-history",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        // Take only the latest 5 identifications for recent activities
+        const recent = data.slice(0, 5).map((identification) => ({
+          type:
+            identification.result === "Healthy"
+              ? "Crop Scan Completed"
+              : "Disease Detected",
+          icon: identification.result === "Healthy" ? "📊" : "⚠️",
+          iconBg:
+            identification.result === "Healthy"
+              ? "bg-blue-100"
+              : "bg-yellow-100",
+          title:
+            identification.result === "Healthy"
+              ? "Crop scan completed"
+              : "Disease detected",
+          description: `Farm scan - ${identification.result} (${Math.round(
+            identification.confidence * 100
+          )}% confidence)`,
+          time: identification.timestamp,
+          bgColor:
+            identification.result === "Healthy" ? "bg-blue-50" : "bg-yellow-50",
+        }));
+        setRecentIdentifications(recent);
+      }
+    } catch (err) {
+      console.error("Failed to fetch recent activities:", err);
+      // Keep empty array if no activities found
+      setRecentIdentifications([]);
+    }
+  };
+
+  // Fallback activities if no API data available
+  const fallbackActivities = [
     {
       type: "New Farm Registered",
       icon: "➕",
       iconBg: "bg-green-100",
       title: "New farm registered",
-      description: "Green Valley Farm added to system",
-      time: "2 hours ago",
+      description: "Farm added to system",
+      time: "Recently",
       bgColor: "bg-green-50",
     },
     {
-      type: "Crop Scan Completed",
-      icon: "📊",
-      iconBg: "bg-blue-100",
-      title: "Crop scan completed",
-      description: "Sunrise Orchards - Health check",
-      time: "4 hours ago",
-      bgColor: "bg-blue-50",
-    },
-    {
-      type: "Disease Detected",
-      icon: "⚠️",
-      iconBg: "bg-yellow-100",
-      title: "Disease Detected",
-      description: "Green Valley Farm - Check",
-      time: "8 hours ago",
-      bgColor: "bg-yellow-50",
-    },
-    {
-      type: "New Farmer Onboarded",
-      icon: "👤",
-      iconBg: "bg-green-100",
-      title: "New farmer onboarded",
-      description: "John Smith joined the platform",
-      time: "1 day ago",
-      bgColor: "bg-green-50",
-    },
-    {
-      type: "Monthly Report Generated",
+      type: "System Ready",
       icon: "📋",
       iconBg: "bg-purple-100",
-      title: "Monthly report generated",
-      description: "Productivity analytics ready",
-      time: "2 days ago",
+      title: "Dashboard ready",
+      description: "System initialized successfully",
+      time: "Now",
       bgColor: "bg-purple-50",
     },
   ];
@@ -131,7 +150,7 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch farms from backend - moved outside useEffect so it can be reused
+  // Fetch farms from backend
   const fetchFarms = async () => {
     try {
       setLoading(true);
@@ -148,11 +167,11 @@ export default function DashboardPage() {
         const mappedFarms = data.farms.map((f) => ({
           id: f.id,
           name: f.farmName,
-          desc: "", // You can add description field to your API response if needed
+          desc: `Farm located in ${f.location}`, // Generate description from location
           location: f.location,
-          health: 100, // You can add health field to your API response if needed
-          status: "Active", // You can add status field to your API response if needed
-          img: "https://source.unsplash.com/400x300/?farm",
+          health: 95, // Default good health status
+          status: "Active", // Default to active
+          img: `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
         }));
         setFarms(mappedFarms);
       }
@@ -163,10 +182,11 @@ export default function DashboardPage() {
     }
   };
 
-  // Fetch farms and stats on component mount
+  // Fetch all data on component mount
   useEffect(() => {
     fetchFarms();
     fetchDashboardStats();
+    fetchRecentActivities();
   }, []);
 
   // Handle adding a new farm
@@ -187,7 +207,7 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (data.status === "success") {
-        // Refresh farms list and stats from backend to avoid duplicates
+        // Refresh farms list and stats from backend
         await fetchFarms();
         await fetchDashboardStats();
         setShowAddFarmModal(false);
@@ -217,7 +237,7 @@ export default function DashboardPage() {
                 Recent Activities
               </h2>
               <div className="space-y-3">
-                {activities.map((act, idx) => (
+                {activitiesToShow.map((act, idx) => (
                   <div
                     key={idx}
                     className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
@@ -235,7 +255,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-gray-600 mt-1">
                           {act.description}
                         </p>
-                        <span className="text-[10px] sm:text-xm text-gray-500 mt-1 block">
+                        <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block">
                           {act.time}
                         </span>
                       </div>
@@ -246,7 +266,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Column - My Farms */}
+          {/* Right Column - Dashboard Content */}
           <div className="flex-1">
             {/* Dashboard Overview */}
             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
@@ -279,6 +299,7 @@ export default function DashboardPage() {
                 />
               </div>
 
+              {/* Farms */}
               <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
                 <div>
                   <p className="text-sm sm:text-base text-gray-600 mb-2">
@@ -304,6 +325,7 @@ export default function DashboardPage() {
                 />
               </div>
 
+              {/* Scans */}
               <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
                 <div>
                   <p className="text-sm sm:text-base text-gray-600 mb-2">
@@ -330,6 +352,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* My Farms Section */}
             <div>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
                 <h2 className="text-base sm:text-lg font-bold text-gray-800">
@@ -344,7 +367,8 @@ export default function DashboardPage() {
                   {loading ? "Loading..." : "Add Farm"}
                 </button>
               </div>
-              {/* Updated old version - now responsive */}
+
+              {/* Farms Grid */}
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-gray-500">Loading farms...</div>
@@ -369,7 +393,7 @@ export default function DashboardPage() {
                             className="w-full h-32 sm:h-40 lg:h-48 object-cover"
                           />
                           <span
-                            className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xm rounded-full font-medium ${
+                            className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
                               farm.status === "Active"
                                 ? "bg-green-500 text-white"
                                 : "bg-yellow-500 text-white"
@@ -386,12 +410,12 @@ export default function DashboardPage() {
                             {farm.desc}
                           </p>
                           <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-1 text-[10px] sm:text-xm text-gray-500 mb-2">
+                            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
                               <MapPin size={12} /> {farm.location}
                             </div>
                             <div className="flex items-center gap-1">
                               <Leaf size={12} className="text-green-500" />
-                              <span className="text-[15px] sm:text-xs font-medium text-green-600">
+                              <span className="text-[10px] sm:text-xs font-medium text-green-600">
                                 {farm.health}% Health
                               </span>
                             </div>
