@@ -175,7 +175,7 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
             backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
           }}
         >
-          {isSaving ? "Saving..." : "→ Save New Password"}
+          {loading ? "Saving..." : "→ Save New Password"}
         </button>
       </div>
     </div>

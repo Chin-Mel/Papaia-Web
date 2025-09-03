@@ -157,17 +157,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           </div>
 
           <button
-            type="submit"
-            disabled={isResending}
-            className="mt-3 w-full sm:w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow text-sm sm:text-base"
-            style={{
-              backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
-            }}
-          >
-            <FaSignInAlt className="w-4 h-4 sm:w-5 sm:h-5" /> Verify
-          </button>
-
-          <button
             type="button"
             onClick={handleResend}
             disabled={countdown > 0}
@@ -178,6 +167,20 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             }`}
           >
             Resend OTP {countdown > 0 && `(${countdown}s)`}
+          </button>
+
+          <button
+            type="submit"
+            disabled={isResending}
+            className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer mt-3 w-full sm:w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow text-sm sm:text-base ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            style={{
+              backgroundImage: "linear-gradient(to right, #F0820B, #F97316)",
+            }}
+          >
+            <FaSignInAlt className="w-4 h-4 sm:w-5 sm:h-5" />
+            {isLoading ? "Verifying..." : "Verify"}
           </button>
 
           {/* Security Reminder */}
