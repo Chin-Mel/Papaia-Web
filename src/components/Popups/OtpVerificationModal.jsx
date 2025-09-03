@@ -10,6 +10,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   const [countdown, setCountdown] = useState(600); // 10 minutes
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -37,6 +38,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
+    setIsLoading(true);
 
     const enteredOtp = otp.join("");
     if (enteredOtp.length !== 4) {
@@ -62,6 +64,8 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     } catch (err) {
       console.error(err);
       setError("Failed to connect to server.");
+    } finally {
+      setIsLoading(false); // stop loading
     }
   };
 
