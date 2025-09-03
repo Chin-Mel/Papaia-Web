@@ -117,8 +117,15 @@ export default function SignUpPage() {
   };
 
   // API registration function
+
+  // Improved API registration function with better error handling
   const registerUser = async (userData) => {
     try {
+      console.log(
+        "Sending registration data:",
+        JSON.stringify(userData, null, 2)
+      );
+
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
         headers: {
@@ -127,22 +134,58 @@ export default function SignUpPage() {
         body: JSON.stringify(userData),
       });
 
+      console.log("Response status:", response.status);
+      console.log("Response headers:", response.headers);
+
+      // Check if response is JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(
+          `Server returned non-JSON response: ${response.status} ${response.statusText}`
+        );
+      }
+
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Registration failed");
+        // Handle specific error cases
+        if (response.status === 400) {
+          throw new Error(data.error || "Invalid data provided");
+        } else if (response.status === 409) {
+          throw new Error(data.error || "Email or username already exists");
+        } else if (response.status === 500) {
+          throw new Error("Server error. Please try again later.");
+        } else {
+          throw new Error(
+            data.error ||
+              data.message ||
+              `HTTP ${response.status}: ${response.statusText}`
+          );
+        }
       }
 
       return data;
     } catch (error) {
+      console.error("Registration error details:", error);
+
+      // Handle network errors
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error(
+          "Network error. Please check your internet connection."
+        );
+      }
+
       throw error;
     }
   };
 
   // Form submission
+  // Improved form submission with better data preparation
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(""); // Clear previous errors
 
     const errors = {};
 
@@ -155,7 +198,7 @@ export default function SignUpPage() {
     const pwd = password.trim();
     const confirmPwd = confirmPassword.trim();
 
-    // Validation
+    // Validation (keep your existing validation logic)
     if (!lastName) errors.lastName = "Last name is required";
     if (!firstName) errors.firstName = "First name is required";
     if (!username) errors.username = "Username is required";
@@ -169,28 +212,8 @@ export default function SignUpPage() {
 
     setFormErrors(errors);
 
-    // If all required fields are empty
-    const requiredFields = [
-      lastName,
-      firstName,
-      username,
-      emailVal,
-      phoneNumber,
-      pwd,
-      confirmPwd,
-    ];
-    const allEmpty = requiredFields.every((f) => f === "");
-
-    if (allEmpty) {
-      setError("Please fill in all required fields.");
-      setIsLoading(false);
-      return;
-    } else {
-      setError(""); // clear previous error
-    }
-
-    // Prevent submit if there are errors
     if (Object.keys(errors).length > 0) {
+      setError("Please fix the errors above.");
       setIsLoading(false);
       return;
     }
@@ -201,59 +224,83 @@ export default function SignUpPage() {
       return;
     }
 
-    // Prepare data for API
+    // Prepare data for API - only include required fields + optional ones with values
     const userData = {
-      username,
+      username: username,
       email: emailVal,
       password: pwd,
-      role: "owner", // Default role as per API documentation
-      firstName,
-      lastName,
+      role: "owner",
+      firstName: firstName,
+      lastName: lastName,
       contactNumber: phoneNumber,
-      profilePicture: "https://example.com/avatar.png", // Default profile picture
     };
 
     // Add optional fields only if they have values
-    if (middleName) userData.middleName = middleName;
-    if (suffix) userData.suffix = suffix;
-    if (dob) {
-      // Format date as MM-DD-YYYY as required by API
-      const month = String(dob.getMonth() + 1).padStart(2, "0");
-      const day = String(dob.getDate()).padStart(2, "0");
-      const year = dob.getFullYear();
-      userData.birthDate = `${month}-${day}-${year}`;
+    if (middleName) {
+      userData.middleName = middleName;
     }
 
+    if (suffix) {
+      userData.suffix = suffix;
+    }
+
+    if (dob) {
+      try {
+        // Ensure proper date formatting
+        const month = String(dob.getMonth() + 1).padStart(2, "0");
+        const day = String(dob.getDate()).padStart(2, "0");
+        const year = dob.getFullYear();
+        userData.birthDate = `${month}-${day}-${year}`;
+        console.log("Formatted birth date:", userData.birthDate);
+      } catch (dateError) {
+        console.error("Date formatting error:", dateError);
+        setError("Invalid date format. Please select a valid date.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    // Only add profile picture if you have a valid URL
+    // Remove this line or use a valid URL
+    // userData.profilePicture = "https://example.com/avatar.png";
+
     try {
+      console.log("Attempting registration with data:", userData);
       const result = await registerUser(userData);
 
-      // Success - show success message
-      if (result.success || result.message) {
-        setError("");
-        alert(
-          result.message ||
-            "Account created successfully! Please check your email to verify your account."
-        );
-        window.location.href = "/sign-in";
-      }
+      // Success
+      console.log("Registration successful:", result);
+      setError("");
+
+      const successMessage =
+        result.message ||
+        "Account created successfully! Please check your email to verify your account.";
+      alert(successMessage);
+
+      // Redirect to sign-in page
+      window.location.href = "/sign-in";
     } catch (error) {
-      // Handle different types of errors
+      console.error("Registration failed:", error);
+
+      // Handle specific error messages
       if (
         error.message.includes("Email already exists") ||
         error.message.includes("Username already exists")
       ) {
         setError(error.message);
+      } else if (error.message.includes("Server error")) {
+        setError(
+          "The server is experiencing issues. Please try again in a few minutes."
+        );
+      } else if (error.message.includes("Network error")) {
+        setError(
+          "Connection problem. Please check your internet and try again."
+        );
       } else if (error.message.includes("provide all required fields")) {
         setError("Please fill in all required fields.");
-      } else if (error.message.includes("verification email")) {
-        setError(
-          "Account created but failed to send verification email. Please contact support."
-        );
       } else {
         setError(error.message || "Registration failed. Please try again.");
       }
-
-      console.error("Registration error:", error);
     } finally {
       setIsLoading(false);
     }
