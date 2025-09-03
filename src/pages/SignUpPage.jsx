@@ -312,7 +312,7 @@ export default function SignUpPage() {
 
         {/* Centered Form */}
         <form onSubmit={handleSubmit} className="w-full max-w-7xl">
-          <div className="relative z-10 w-full mx-auto my-4 sm:my-6 lg:my-8">
+          <div className="relative z-10 w-full mx-auto my-7 sm:my-9 lg:my-11">
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
               {/* Gradient Header */}
               <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
