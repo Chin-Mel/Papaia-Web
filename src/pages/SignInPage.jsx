@@ -65,34 +65,8 @@ export default function SignInPage() {
       const loginData = await loginResponse.json();
       console.log("Login successful:", loginData);
 
-      // 🔍 DEBUG: Log the full response to understand the structure
-      console.log("Full login response:", JSON.stringify(loginData, null, 2));
-      console.log("User object:", loginData.user);
-      console.log("isVerified value:", loginData.user?.isVerified);
-      console.log("verified value:", loginData.user?.verified);
-      console.log("User role:", loginData.user?.role);
-
-      // ✅ Check verification status - try multiple possible field names
-      const isVerified =
-        loginData.user?.isVerified ||
-        loginData.user?.verified ||
-        loginData.user?.emailVerified ||
-        loginData.user?.is_verified ||
-        loginData.user?.email_verified;
-
-      console.log("Final isVerified value:", isVerified);
-
-      // More flexible verification check - only block if explicitly unverified
-      // If no verification field exists, assume verified (API should handle this)
-      const hasVerificationField =
-        loginData.user &&
-        ("isVerified" in loginData.user ||
-          "verified" in loginData.user ||
-          "emailVerified" in loginData.user ||
-          "is_verified" in loginData.user ||
-          "email_verified" in loginData.user);
-
-      if (hasVerificationField && isVerified === false) {
+      // ✅ Check only the one field your API actually returns
+      if (loginData.user?.emailVerified === false) {
         setError(
           "Your account is not verified. Please check your email and verify your account before logging in."
         );
@@ -100,18 +74,7 @@ export default function SignInPage() {
         return;
       }
 
-      // If API allows login, assume account is properly verified
-      console.log(
-        "Verification check passed or skipped (no verification field found)"
-      );
-
-      if (loginData.user && !loginData.user.isVerified) {
-        setError(
-          "Your account is not verified. Please check your email and verify your account before logging in."
-        );
-        setLoading(false);
-        return;
-      }
+      console.log("Verification check passed");
 
       // ✅ Check if user has farmer role (block farmers from accessing owner dashboard)
       if (
