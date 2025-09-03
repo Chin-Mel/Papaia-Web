@@ -210,13 +210,17 @@ export default function SignUpPage() {
     let formattedBirthDate = "";
     if (dob) {
       try {
-        // Convert HTML date input (YYYY-MM-DD) to API format (MM-DD-YYYY)
-        const dateObj = new Date(dob);
-        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-        const day = String(dateObj.getDate()).padStart(2, "0");
-        const year = dateObj.getFullYear();
-        formattedBirthDate = `${month}-${day}-${year}`;
-        console.log("Formatted birth date:", formattedBirthDate);
+        // HTML date input provides YYYY-MM-DD format
+        // Split the date string and rearrange to MM-DD-YYYY
+        const dateParts = dob.split("-"); // ['YYYY', 'MM', 'DD']
+        if (dateParts.length === 3) {
+          const [year, month, day] = dateParts;
+          formattedBirthDate = `${month}-${day}-${year}`;
+          console.log("Original date:", dob);
+          console.log("Formatted birth date:", formattedBirthDate);
+        } else {
+          throw new Error("Invalid date format");
+        }
       } catch (dateError) {
         console.error("Date formatting error:", dateError);
         setError("Invalid date format. Please select a valid date.");
