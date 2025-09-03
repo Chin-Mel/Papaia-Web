@@ -585,7 +585,7 @@ export default function FarmDashboardPage() {
               </button>
             </div>
             <p className="text-sm text-gray-600">
-              {farmData.description || "No description available"}
+              {farmData?.description || "No description available"}
             </p>
           </div>
 
