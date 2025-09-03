@@ -26,8 +26,7 @@ import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccess
 import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
 
 export default function FarmDashboardPage() {
-  const { farmId } = useParams(); // Extract farmId from URL parameters
-  const { farmerId } = useParams();
+  const { id: farmId } = useParams(); // Extract farmId from URL parameters
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
