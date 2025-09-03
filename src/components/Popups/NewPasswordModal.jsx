@@ -166,7 +166,7 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
             !newPassword || !confirmPassword || passwordError || loading
           }
           onClick={handleSavePassword}
-          className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full flex justify-center items-center gap-2 text-white font-medium py-3 rounded-md shadow mt-4 ${
+          className={`transition-all duration-150 active:scale-95 active:shadow-inner hover:bg-orange-600 cursor-pointer w-full flex justify-center items-center gap-2 text-white font-medium py-3 rounded-md shadow mt-4 ${
             !newPassword || !confirmPassword || passwordError || loading
               ? "opacity-50 cursor-not-allowed"
               : ""

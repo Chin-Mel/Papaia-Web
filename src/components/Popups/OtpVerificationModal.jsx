@@ -176,7 +176,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           <button
             type="submit"
             disabled={isResending}
-            className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer mt-3 w-full sm:w-[400px] flex justify-center items-center gap-2 text-white font-medium py-2 rounded-md shadow text-sm sm:text-base ${
+            className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer mt-3 w-full sm:w-[400px] flex justify-center items-center gap-2 hover:bg-orange-600 text-white font-medium py-2 rounded-md shadow text-sm sm:text-base ${
               isLoading ? "opacity-50 cursor-not-allowed" : ""
             }`}
             style={{
