@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSignInAlt } from "react-icons/fa";
+import PapayaLogo from "../../assets/papaia-logo.png";
+import { FiInfo } from "react-icons/fi";
 
 export default function OtpVerificationModal({ email, onSuccess }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -92,7 +94,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   return (
     <div className="relative w-full min-h-screen">
       {/* Semi-transparent overlay */}
-      <div className="absolute inset-0 z-0 bg-black/20"></div>
+      <div className="absolute inset-0 z-0"></div>
 
       {/* Modal box */}
       <div className="relative z-10 w-full max-w-md mx-auto mt-20 mb-10 rounded-2xl shadow-lg overflow-hidden bg-white">
@@ -104,20 +106,11 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           }}
         >
           <div className="bg-white rounded-full p-4 shadow-lg mb-4">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="orange"
-              viewBox="0 0 24 24"
-              stroke="orange"
-              className="w-8 h-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
+            <img
+              src={PapayaLogo}
+              alt="Papaia Logo"
+              className="w-12 h-12 sm:w-14 sm:h-14"
+            />
           </div>
           <h2 className="text-lg sm:text-xl font-bold">Email Authentication</h2>
           <h4 className="text-sm sm:text-base font-bold">
@@ -131,6 +124,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           </p>
         </div>
 
+        {/* Instructions with horizontal padding */}
         <p className="text-sm sm:text-base text-center text-[#00712D] opacity-90 mt-5 px-4 sm:px-6">
           Enter the 4 digit code we sent you via email to continue.
         </p>
@@ -155,10 +149,12 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             ))}
           </div>
 
-          {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-          {successMessage && (
-            <p className="text-green-500 text-sm mt-2">{successMessage}</p>
-          )}
+          <div className="h-5 mt-2">
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {successMessage && (
+              <p className="text-green-500 text-sm">{successMessage}</p>
+            )}
+          </div>
 
           <button
             type="submit"
@@ -184,21 +180,9 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             Resend OTP {countdown > 0 && `(${countdown}s)`}
           </button>
 
+          {/* Security Reminder */}
           <div className="p-4 mt-2 mb-4 rounded-lg bg-blue-100 text-blue-800 w-full sm:w-[400px] flex items-start gap-2">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              className="mt-1 flex-shrink-0 w-5 h-5"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m0-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z"
-              />
-            </svg>
+            <FiInfo className="mt-1 flex-shrink-0 w-5 h-5" />
             <p className="text-sm">
               <span className="font-bold">Security Reminder</span>
               <br />

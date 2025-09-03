@@ -157,7 +157,7 @@ export default function ForgotPasswordPage() {
             userId={verifiedUserId}
             onPasswordSaved={() => {
               setShowNewPasswordModal(false);
-              setShowPasswordUpdated(true);
+              setShowPasswordUpdated(true); // now this will trigger
             }}
           />
         )}
@@ -166,12 +166,8 @@ export default function ForgotPasswordPage() {
         {showPasswordUpdated && (
           <PasswordUpdatedSuccessModal
             isOpen={showPasswordUpdated}
-            onContinueToSignIn={() => {
-              window.location.href = "/signin";
-            }}
-            onBackToHome={() => {
-              window.location.href = "/";
-            }}
+            onContinueToSignIn={() => (window.location.href = "/signin")}
+            onBackToHome={() => (window.location.href = "/")}
           />
         )}
       </div>
