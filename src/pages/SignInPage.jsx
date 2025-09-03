@@ -56,11 +56,49 @@ export default function SignInPage() {
       );
 
       if (!loginResponse.ok) {
-        throw new Error("Login failed. Please check your credentials.");
+        const errorData = await loginResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || "Login failed. Please check your credentials."
+        );
       }
 
       const loginData = await loginResponse.json();
       console.log("Login successful:", loginData);
+
+      if (loginData.user && !loginData.user.isVerified) {
+        setError(
+          "Your account is not verified. Please check your email and verify your account before logging in."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Check if user has farmer role (block farmers from accessing owner dashboard)
+      if (
+        loginData.user &&
+        loginData.user.role &&
+        loginData.user.role.toLowerCase() === "farmer"
+      ) {
+        setError(
+          "Access denied. This dashboard is only available for farm owners. Please use the farmer mobile app."
+        );
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Additional role check - only allow owners or admins
+      const allowedRoles = ["owner", "admin"];
+      if (
+        loginData.user &&
+        loginData.user.role &&
+        !allowedRoles.includes(loginData.user.role.toLowerCase())
+      ) {
+        setError(
+          "Access denied. This dashboard is only available for farm owners and administrators."
+        );
+        setLoading(false);
+        return;
+      }
 
       // ✅ Store JWT token
       if (loginData.token) {
@@ -251,9 +289,12 @@ export default function SignInPage() {
                     <span className="text-gray-500 text-xs sm:text-sm">
                       Don't have an account?{" "}
                     </span>
-                    <button className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors cursor-pointer">
+                    <Link
+                      to="/sign-up"
+                      className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors cursor-pointer inline-block"
+                    >
                       Sign up here
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

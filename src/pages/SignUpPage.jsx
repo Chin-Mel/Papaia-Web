@@ -303,7 +303,7 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      <main className="flex-1 relative flex justify-center pt-12 sm:pt-20 pb-16 sm:pb-24 overflow-auto">
+      <main className="flex-1 relative flex justify-center pt-6 sm:pt-12 lg:pt-20 pb-8 sm:pb-16 lg:pb-24 overflow-auto px-2 sm:px-4">
         {/* Background */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -311,31 +311,37 @@ export default function SignUpPage() {
         />
 
         {/* Centered Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="relative z-10 w-full max-w-[1200px] min-w-[600px] sm:min-w-[700px] md:min-w-[900px] mx-4 sm:mx-6 my-8">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <form onSubmit={handleSubmit} className="w-full max-w-7xl">
+          <div className="relative z-10 w-full mx-auto my-4 sm:my-6 lg:my-8">
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
               {/* Gradient Header */}
-              <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-6">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+              <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center shadow-md">
                   <img
                     src={PapayaLogo}
                     alt="Papaia Logo"
-                    className="w-12 h-12"
+                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"
                   />
                 </div>
-                <h1 className="text-2xl font-bold text-white mt-2">Sign Up</h1>
-                <p className="text-[#FDEDD3] text-sm mt-1">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mt-2">
+                  Sign Up
+                </h1>
+                <p className="text-[#FDEDD3] text-xs sm:text-sm lg:text-base mt-1 text-center">
                   Create your farm dashboard account
                 </p>
               </div>
 
               {/* Form */}
-              <div className="p-6 sm:p-8 space-y-5">
+              <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-5 lg:space-y-6">
                 {/* Row 1: Name Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={UserIcon} alt="User" className="w-4 h-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-5">
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Last Name
                     </label>
                     <input
@@ -346,16 +352,20 @@ export default function SignUpPage() {
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Enter last name"
                       autoComplete="family-name"
-                      className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                      className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                         formErrors.lastName
                           ? "border-red-500"
                           : "border-gray-300"
                       }`}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={UserIcon} alt="User" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       First Name
                     </label>
                     <input
@@ -366,16 +376,20 @@ export default function SignUpPage() {
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="Enter first name"
                       autoComplete="given-name"
-                      className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                      className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                         formErrors.firstName
                           ? "border-red-500"
                           : "border-gray-300"
                       }`}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={UserIcon} alt="User" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Middle Name
                     </label>
                     <input
@@ -386,27 +400,30 @@ export default function SignUpPage() {
                       onChange={(e) => setMiddleName(e.target.value)}
                       placeholder="Enter middle name"
                       autoComplete="middle-name"
-                      className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                      className="w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={TagIcon} alt="Tag" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={TagIcon}
+                        alt="Tag"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Suffix
                     </label>
                     <SuffixDropdown value={suffix} onChange={setSuffix} />
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
+                  <div className="space-y-1 sm:space-y-2 sm:col-span-2 lg:col-span-1">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
                       <img
                         src={CalendarIcon}
                         alt="Calendar"
-                        className="w-4 h-4"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
                       />
                       Date of Birth
                     </label>
                     <div className="relative">
-                      {/* Use native HTML date input instead of react-datepicker */}
                       <input
                         type="date"
                         value={dob}
@@ -420,17 +437,21 @@ export default function SignUpPage() {
                             .toISOString()
                             .split("T")[0]
                         }
-                        className="w-full h-12 px-4 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+                        className="w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Username, Email, Phone */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-5">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={AtsignIcon} alt="User" className="w-4 h-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={AtsignIcon}
+                        alt="User"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Username
                     </label>
                     <input
@@ -441,7 +462,7 @@ export default function SignUpPage() {
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Choose username"
                       autoComplete="username"
-                      className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                      className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                         formErrors.username
                           ? "border-red-500"
                           : "border-gray-300"
@@ -449,9 +470,13 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={MailIcon} alt="Mail" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={MailIcon}
+                        alt="Mail"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Email Address
                     </label>
                     <input
@@ -461,16 +486,20 @@ export default function SignUpPage() {
                       value={email}
                       placeholder="Enter email address"
                       autoComplete="email"
-                      className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                      className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                         formErrors.email ? "border-red-500" : "border-gray-300"
                       }`}
                       onChange={handleChange}
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={PhoneIcon} alt="Phone" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2 sm:col-span-2 lg:col-span-1">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={PhoneIcon}
+                        alt="Phone"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Phone Number
                     </label>
                     <input
@@ -481,7 +510,7 @@ export default function SignUpPage() {
                       onChange={(e) => setPhoneNumber(e.target.value)}
                       placeholder="Enter phone number"
                       autoComplete="tel"
-                      className={`w-full h-12 px-4 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                      className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                         formErrors.phoneNumber
                           ? "border-red-500"
                           : "border-gray-300"
@@ -491,10 +520,14 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Passwords */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={LockIcon} alt="Lock" className="w-4 h-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={LockIcon}
+                        alt="Lock"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Password
                     </label>
                     <div className="relative">
@@ -506,7 +539,7 @@ export default function SignUpPage() {
                         value={password}
                         autoComplete="new-password"
                         onChange={handlePasswordChange}
-                        className={`w-full h-12 px-4 pr-12 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                        className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 pr-10 sm:pr-12 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                           formErrors.password
                             ? "border-red-500"
                             : "border-gray-300"
@@ -515,20 +548,24 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
                       >
                         <img
                           src={showPassword ? EyeOffIcon : EyeIcon}
                           alt={showPassword ? "Hide Password" : "Show Password"}
-                          className="w-5 h-4"
+                          className="w-4 h-4 sm:w-5 sm:h-4"
                         />
                       </button>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-600 text-sm font-medium">
-                      <img src={LockIcon} alt="Lock" className="w-4 h-4" />
+                  <div className="space-y-1 sm:space-y-2">
+                    <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                      <img
+                        src={LockIcon}
+                        alt="Lock"
+                        className="w-3 h-3 sm:w-4 sm:h-4"
+                      />
                       Confirm Password
                     </label>
                     <div className="relative">
@@ -540,7 +577,7 @@ export default function SignUpPage() {
                         value={confirmPassword}
                         autoComplete="new-password"
                         onChange={handleConfirmPasswordChange}
-                        className={`w-full h-12 px-4 pr-12 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
+                        className={`w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 pr-10 sm:pr-12 text-sm sm:text-base bg-gray-50 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none ${
                           formErrors.confirmPassword || confirmPasswordError
                             ? "border-red-500"
                             : "border-gray-300"
@@ -551,7 +588,7 @@ export default function SignUpPage() {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
+                        className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-500"
                       >
                         <img
                           src={showConfirmPassword ? EyeOffIcon : EyeIcon}
@@ -560,35 +597,38 @@ export default function SignUpPage() {
                               ? "Hide Password"
                               : "Show Password"
                           }
-                          className="w-5 h-4"
+                          className="w-4 h-4 sm:w-5 sm:h-4"
                         />
                       </button>
                     </div>
                   </div>
-                  <div></div>
+                  <div className="hidden lg:block"></div>
                 </div>
 
                 {/* Terms */}
-                <div className="flex items-center gap-2 mt-7">
+                <div className="flex items-start gap-2 sm:gap-3 mt-4 sm:mt-5 lg:mt-7">
                   <input
                     type="checkbox"
                     id="terms"
                     checked={isChecked}
                     onChange={(e) => setIsChecked(e.target.checked)}
-                    className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500 cursor-pointer"
+                    className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 border border-gray-400 rounded-sm accent-orange-500 cursor-pointer flex-shrink-0"
                   />
-                  <label htmlFor="terms" className="text-sm text-gray-600">
+                  <label
+                    htmlFor="terms"
+                    className="text-xs sm:text-sm lg:text-base text-gray-600 leading-relaxed"
+                  >
                     I agree to the{" "}
                     <Link
                       to="/terms"
-                      className="text-orange-500 hover:underline"
+                      className="text-orange-500 hover:underline font-medium"
                     >
                       Terms of Service
                     </Link>{" "}
                     and{" "}
                     <Link
                       to="/privacy"
-                      className="text-orange-500 hover:underline"
+                      className="text-orange-500 hover:underline font-medium"
                     >
                       Privacy Policy
                     </Link>
@@ -599,22 +639,22 @@ export default function SignUpPage() {
                 <button
                   type="submit"
                   disabled={!isChecked || isLoading}
-                  className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full mt-4 h-14 bg-gradient-to-r bg-[#F97316] text-lg font-semibold text-white rounded-lg shadow-lg flex items-center justify-center gap-2
-                    ${
-                      !isChecked || isLoading
-                        ? "opacity-50 cursor-not-allowed hover:bg-[#F97316]"
-                        : "hover:bg-orange-600"
-                    }`}
+                  className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full mt-4 sm:mt-5 lg:mt-6 h-11 sm:h-12 lg:h-14 bg-gradient-to-r bg-[#F97316] text-sm sm:text-base lg:text-lg font-semibold text-white rounded-lg shadow-lg flex items-center justify-center gap-2
+                  ${
+                    !isChecked || isLoading
+                      ? "opacity-50 cursor-not-allowed hover:bg-[#F97316]"
+                      : "hover:bg-orange-600"
+                  }`}
                 >
                   <img
                     src={CreateUserIcon}
                     alt="Create Account"
-                    className="w-5 h-5"
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
                   {isLoading ? "Creating Account..." : "Create Account"}
                 </button>
 
-                <div className="min-h-[20px] mt-3 text-center text-red-500 text-sm">
+                <div className="min-h-[16px] sm:min-h-[20px] mt-2 sm:mt-3 text-center text-red-500 text-xs sm:text-sm">
                   {error
                     ? error
                     : confirmPasswordError
@@ -625,7 +665,7 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Sign In */}
-                <p className="text-center mt-4 text-gray-600 text-sm">
+                <p className="text-center mt-3 sm:mt-4 text-gray-600 text-xs sm:text-sm lg:text-base">
                   Already have an account?{" "}
                   <Link
                     to="/sign-in"
