@@ -92,6 +92,9 @@ export default function ProfilePage() {
 
       setUserData(updatedUserData);
       localStorage.setItem("user", JSON.stringify(updatedUserData));
+
+      // ✅ Notify all components listening to storage
+      window.dispatchEvent(new Event("storage"));
     } catch (err) {
       console.error("Error uploading profile picture:", err);
     } finally {
@@ -115,19 +118,13 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top Header */}
       <HeaderMain />
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleProfilePictureUpload}
-        accept="image/*"
-        style={{ display: "none" }}
-      />
-
-      <main className="flex-1 mt-16 p-4 sm:p-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
+      {/* Main Content */}
+      <main className="flex-1 mt-16 px-4 sm:px-6 lg:px-8">
+        <div className="w-full">
+          {/* Page Header */}
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
               Profile Settings
@@ -136,6 +133,14 @@ export default function ProfilePage() {
               Manage your account information and preferences
             </p>
           </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleProfilePictureUpload}
+            accept="image/*"
+            style={{ display: "none" }}
+          />
 
           {/* Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

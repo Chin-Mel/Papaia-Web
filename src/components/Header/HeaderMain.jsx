@@ -1,14 +1,13 @@
+// imports unchanged ...
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
 
-// Assets
 import papaiaLogo from "../../assets/papaia-logo.png";
 import notificationIcon from "../../assets/bell-icon.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
 import defaultUser from "../../assets/default-user.png";
 
-// Components
 import ProfileDropdown from "../Popups/ProfileDropdown";
 import NotificationDropdown from "../Popups/NotificationDropdown";
 import { ChevronDown, LogOut } from "lucide-react";
@@ -28,28 +27,21 @@ export default function HeaderMain() {
     { label: "About", href: "/about" },
   ];
 
-  // Fetch user data from backend
+  // Load user initially + listen for updates
   useEffect(() => {
-    const user = getLoggedInUser();
-    const token = localStorage.getItem("token");
+    const loadUser = () => {
+      const user = getLoggedInUser();
+      setUserData(user);
+    };
 
-    if (user?.id && token) {
-      fetch(`https://papaiaapi.onrender.com/api/user/${user.id}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("User not found or unauthorized");
-          return res.json();
-        })
-        .then((data) => {
-          setUserData(data.user || data);
-        })
-        .catch((err) => console.error(err));
-    }
+    loadUser();
+
+    // ✅ Listen for profile updates from ProfilePage
+    window.addEventListener("storage", loadUser);
+
+    return () => {
+      window.removeEventListener("storage", loadUser);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -145,7 +137,11 @@ export default function HeaderMain() {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
                   <img
-                    src={userData?.profilePicture || defaultUser}
+                    src={
+                      userData?.profilePicture
+                        ? `https://papaiaapi.onrender.com${userData.profilePicture}`
+                        : defaultUser
+                    }
                     alt="User Avatar"
                     className="w-full h-full object-cover"
                     onError={(e) => (e.target.src = defaultUser)}
@@ -204,7 +200,11 @@ export default function HeaderMain() {
             <div className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50">
               <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
                 <img
-                  src={userData?.profilePicture || defaultUser}
+                  src={
+                    userData?.profilePicture
+                      ? `https://papaiaapi.onrender.com${userData.profilePicture}`
+                      : defaultUser
+                  }
                   alt="User Avatar"
                   className="w-full h-full object-cover"
                   onError={(e) => (e.target.src = defaultUser)}
@@ -213,8 +213,7 @@ export default function HeaderMain() {
               <div className="flex-1">
                 <p className="font-semibold text-gray-800 text-base">
                   {userData
-                    ? userData.username ||
-                      `${userData.firstName} ${userData.lastName}`
+                    ? `${userData.firstName} ${userData.lastName}`
                     : "Guest"}
                 </p>
                 <p className="text-gray-500 text-sm">View Profile</p>
