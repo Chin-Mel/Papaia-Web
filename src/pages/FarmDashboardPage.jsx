@@ -734,7 +734,7 @@ export default function FarmDashboardPage() {
                     </div>
 
                     <div className="pl-2 sm:pl-4 text-gray-700">
-                      {farmer.id}
+                      {farmer.idNumber}
                     </div>
 
                     <div className="pl-2 sm:pl-4">
