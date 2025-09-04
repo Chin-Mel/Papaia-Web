@@ -167,14 +167,15 @@ export default function DashboardPage() {
         const mappedFarms = data.farms.map((f) => ({
           id: f.id,
           name: f.farmName,
-          desc: f.description || `Farm located in ${f.location}`, // use API description if available
+          desc: f.description || `Farm located in ${f.location}`,
           location: f.location,
-          health: 95, // Default good health status
-          status: "Active", // Default to active
-          img:
-            f.farmImage ||
-            `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`, // fallback image
+          health: 95,
+          status: "Active",
+          img: f.farmImage
+            ? `https://papaiaapi.onrender.com${f.farmImage}`
+            : `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
         }));
+
         setFarms(mappedFarms);
       }
     } catch (err) {
