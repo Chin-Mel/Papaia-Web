@@ -110,6 +110,29 @@ export default function ProfilePage() {
     navigate("/edit-profile");
   };
 
+  // Save changes
+  const handleSave = async () => {
+    try {
+      const res = await fetch(`https://papaiaapi.onrender.com/api/user/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ add auth
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        // ✅ redirect back to frontend profile page
+        navigate(`/profile`);
+      } else {
+        console.error("Failed to update user");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const renderField = (value) => (
     <span className={value ? "text-gray-800" : "text-gray-400 italic"}>
       {value || "N/A"}
