@@ -196,18 +196,25 @@ export default function DashboardPage() {
   const handleAddFarm = async (farmData) => {
     try {
       setLoading(true);
+
+      const formData = new FormData();
+      formData.append("farmName", farmData.name);
+      formData.append("location", farmData.location);
+      formData.append(
+        "description",
+        farmData.description || "No description provided"
+      );
+
+      if (farmData.farmImage) {
+        formData.append("farmImage", farmData.farmImage); // append actual file
+      }
+
       const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({
-          farmName: farmData.name,
-          location: farmData.location,
-          description: farmData.description || "No description provided",
-          farmImage: farmData.farmImage || "https://example.com/avatar.png", // default image if none provided
-        }),
+        body: formData,
       });
 
       const data = await res.json();

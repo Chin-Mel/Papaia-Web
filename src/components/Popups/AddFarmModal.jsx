@@ -6,7 +6,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
     farmName: "",
     location: "",
     description: "",
-    farmImage: null,
+    farmImage: "",
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -42,7 +42,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
       name: formData.farmName, // Map farmName to name for parent component
       location: formData.location,
       description: formData.description,
-      image: imagePreview,
+      farmImage: formData.farmImage,
     };
 
     try {
