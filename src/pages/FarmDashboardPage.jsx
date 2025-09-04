@@ -232,9 +232,10 @@ export default function FarmDashboardPage() {
     setIsAddFarmerModalOpen(true);
   };
 
+  // Fixed handleFarmerAdded function and farmer data handling
   const handleFarmerAdded = async (farmerData) => {
     console.log("Adding farmer with body:", {
-      idNumber: farmerData.idNumber,
+      userId: farmerData.idNumber, // Changed from idNumber to userId
       farmId: farmId,
     });
     try {
@@ -247,21 +248,24 @@ export default function FarmDashboardPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            idNumber: farmerData.idNumber,
+            userId: farmerData.idNumber, // Use userId as per API docs
             farmId: farmId,
           }),
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to add farmer");
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to add farmer");
       }
 
-      setNewlyAddedFarmer(farmerData);
-      setIsAddFarmerModalOpen(false);
-      setIsFarmerAddedSuccessModalOpen(true);
+      const result = await response.json();
+      console.log("Farmer added successfully:", result);
 
-      // Refresh farmers list
+      // Close the add modal first
+      setIsAddFarmerModalOpen(false);
+
+      // Refresh farmers list to get the complete farmer data
       const farmersResponse = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
         {
@@ -274,8 +278,16 @@ export default function FarmDashboardPage() {
       );
 
       if (farmersResponse.ok) {
-        const data = await farmersResponse.json();
-        setFarmers(data.farmers || []);
+        const farmersData = await farmersResponse.json();
+        if (farmersData.status === "success") {
+          setFarmers(farmersData.farmers || []);
+
+          // Find the newly added farmer from the refreshed list
+          // Since we don't have the exact farmer ID from the POST response,
+          // we'll show success with the basic data we have
+          setNewlyAddedFarmer(farmerData);
+          setIsFarmerAddedSuccessModalOpen(true);
+        }
       }
     } catch (err) {
       console.error("Error adding farmer:", err);
@@ -687,19 +699,29 @@ export default function FarmDashboardPage() {
                             ? farmer.profilePicture
                             : "/assets/default-user.png"
                         }
-                        alt={`${farmer.firstname} ${farmer.lastname}`}
+                        alt={`${farmer.firstname || farmer.firstName} ${
+                          farmer.lastname || farmer.lastName
+                        }`}
                         className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
                       />
                       <div>
                         <p className="font-medium text-gray-800 text-xs sm:text-sm">
                           {(() => {
-                            const nameParts = [
-                              farmer.firstName || farmer.firstname,
-                              farmer.middleName || farmer.middlename,
-                              farmer.lastName || farmer.lastname,
-                              farmer.suffix,
-                            ].filter(Boolean);
+                            // Handle both API field name formats
+                            const firstName =
+                              farmer.firstname || farmer.firstName || "";
+                            const middleName =
+                              farmer.middlename || farmer.middleName || "";
+                            const lastName =
+                              farmer.lastname || farmer.lastName || "";
+                            const suffix = farmer.suffix || "";
 
+                            const nameParts = [
+                              firstName,
+                              middleName,
+                              lastName,
+                              suffix,
+                            ].filter(Boolean);
                             return nameParts.length > 0
                               ? nameParts.join(" ")
                               : "N/A";
@@ -719,7 +741,7 @@ export default function FarmDashboardPage() {
                       <div className="space-y-1">
                         <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
                           <Phone className="w-3 h-3" />
-                          {farmer.contactNumber || "N/A"}
+                          {farmer.contactNumber || farmer.phone || "N/A"}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
                           <Mail className="w-3 h-3" />
@@ -735,7 +757,7 @@ export default function FarmDashboardPage() {
                           farmer.barangay,
                           farmer.municipality,
                           farmer.province,
-                          farmer.zipCode,
+                          farmer.zipcode || farmer.zipCode, // Handle both field names
                         ].filter(Boolean);
 
                         return addressParts.length > 0
