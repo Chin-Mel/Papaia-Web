@@ -31,7 +31,6 @@ function StatusDropdown({ value, onChange }) {
   const options = ["All Status", "Active", "Pending", "Inactive"];
   const dropdownRef = useRef(null);
 
-  // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
