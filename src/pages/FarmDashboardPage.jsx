@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   FileText,
   Trash2,
@@ -80,6 +80,7 @@ export default function FarmDashboardPage() {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const [isDeleteFarmModalOpen, setIsDeleteFarmModalOpen] = useState(false);
 
   // Modal states
@@ -220,7 +221,7 @@ export default function FarmDashboardPage() {
       }
 
       alert(data.message);
-      window.history.back();
+      navigate("/owner/farms"); // ✅ go back to farms list
     } catch (err) {
       console.error(err);
       alert("Error deleting farm: " + err.message);
