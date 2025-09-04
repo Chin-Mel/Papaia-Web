@@ -221,7 +221,7 @@ export default function FarmDashboardPage() {
       }
 
       alert(data.message);
-      navigate("/owner/farms"); // ✅ go back to farms list
+      navigate("/dashboard"); // ✅ go back to farms list
     } catch (err) {
       console.error(err);
       alert("Error deleting farm: " + err.message);
