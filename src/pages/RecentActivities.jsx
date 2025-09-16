@@ -9,12 +9,21 @@ export default function RecentActivities({ limit = 5 }) {
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/owner/activities",
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      const data = await res.json();
+
+      console.log("Response status:", res.status);
+      const text = await res.text();
+      console.log("Raw response:", text);
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Response was not JSON:", text);
+        return;
+      }
 
       if (data.status === "success" && Array.isArray(data.activities)) {
         const mapped = data.activities.slice(0, limit).map((act) => {
