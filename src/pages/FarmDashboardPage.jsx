@@ -209,7 +209,7 @@ export default function FarmDashboardPage() {
       const response = await fetch(
         `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
         {
-          method: "DELETE",
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
