@@ -207,7 +207,7 @@ export default function FarmDashboardPage() {
     console.log("Deactivating farm with ID:", farmId);
     try {
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
+        `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
         {
           method: "DELETE",
           headers: {
