@@ -26,7 +26,7 @@ export default function RecentActivities({ limit = 5 }) {
       }
 
       if (data.status === "success" && Array.isArray(data.activities)) {
-        const mapped = data.activities.slice(0, limit).map((act) => {
+        const mapped = data.activities.map((act) => {
           let style = {
             icon: "ℹ️",
             iconBg: "bg-gray-100",
@@ -52,6 +52,24 @@ export default function RecentActivities({ limit = 5 }) {
                 bgColor: "bg-red-50",
                 title: "Farmer Removed",
                 description: `Removed farmer "${act.details.farmerName}"`,
+              };
+              break;
+            case "DEACTIVATE_FARM":
+              style = {
+                icon: "🚫",
+                iconBg: "bg-orange-100",
+                bgColor: "bg-orange-50",
+                title: "Farm Deactivated",
+                description: `Deactivated farm "${act.details.farmName}"`,
+              };
+              break;
+            case "ACTIVATE_FARM":
+              style = {
+                icon: "✅",
+                iconBg: "bg-blue-100",
+                bgColor: "bg-blue-50",
+                title: "Farm Reactivated",
+                description: `Reactivated farm "${act.details.farmName}"`,
               };
               break;
           }
