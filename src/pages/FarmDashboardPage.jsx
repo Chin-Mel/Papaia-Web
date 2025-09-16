@@ -23,7 +23,7 @@ import FarmerDetailModal from "../components/Popups/FarmerDetailModal";
 import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
 import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModal";
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
-import DeleteFarmModal from "../components/Popups/DeleteFarmModal";
+import DeactivateFarmModal from "../components/Popups/DeactivateFarmModal";
 
 // --- StatusDropdown Component ---
 function StatusDropdown({ value, onChange }) {
@@ -81,7 +81,8 @@ export default function FarmDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const [isDeleteFarmModalOpen, setIsDeleteFarmModalOpen] = useState(false);
+  const [isDeactivateFarmModalOpen, setIsDeactivateFarmModalOpen] =
+    useState(false);
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
@@ -202,7 +203,7 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleDeleteFarm = async (farmId) => {
+  const handleDeactivateFarm = async (farmId) => {
     try {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
@@ -217,14 +218,14 @@ export default function FarmDashboardPage() {
       const data = await response.json();
 
       if (!response.ok || data.status !== "success") {
-        throw new Error(data.message || "Failed to delete farm");
+        throw new Error(data.message || "Failed to deactivate farm");
       }
 
-      alert(data.message);
-      navigate("/dashboard"); // ✅ go back to farms list
+      alert(data.message); // "Farm deleted successfully." (really deactivated)
+      navigate("/dashboard");
     } catch (err) {
       console.error(err);
-      alert("Error deleting farm: " + err.message);
+      alert("Error deactivating farm: " + err.message);
     }
   };
 
@@ -469,11 +470,11 @@ export default function FarmDashboardPage() {
                 Export PDF
               </button>
               <button
-                onClick={() => setIsDeleteFarmModalOpen(true)}
+                onClick={() => setIsDeactivateFarmModalOpen(true)}
                 className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-white border border-red-500 text-red-500 rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-red-600 hover:text-white"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete
+                Deactivate
               </button>
             </div>
           </div>
@@ -676,7 +677,9 @@ export default function FarmDashboardPage() {
                     farmer.lastname
                       ?.toLowerCase()
                       .includes(searchQuery.toLowerCase()) ||
-                    farmer.id.toLowerCase().includes(searchQuery.toLowerCase())
+                    String(farmer.id || "")
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase())
                 )
                 .filter(
                   (farmer) =>
@@ -829,11 +832,11 @@ export default function FarmDashboardPage() {
         farmer={selectedFarmer}
       />
 
-      <DeleteFarmModal
-        isOpen={isDeleteFarmModalOpen}
-        onClose={() => setIsDeleteFarmModalOpen(false)}
+      <DeactivateFarmModal
+        isOpen={isDeactivateFarmModalOpen}
+        onClose={() => setIsDeactivateFarmModalOpen(false)}
         farm={farmData}
-        onConfirmDelete={handleDeleteFarm}
+        onConfirmDeactivate={handleDeactivateFarm}
       />
     </div>
   );

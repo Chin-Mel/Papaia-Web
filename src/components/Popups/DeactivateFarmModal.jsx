@@ -9,18 +9,18 @@ import {
   Loader2,
 } from "lucide-react";
 
-function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
+function DeactivateFarmModal({ isOpen, onClose, farm, onConfirmDeactivate }) {
   const [confirmationText, setConfirmationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleConfirmDelete = async () => {
-    if (confirmationText !== "DELETE") return;
+  const handleConfirmDeactivate = async () => {
+    if (confirmationText !== "DEACTIVATE") return;
 
     setIsLoading(true);
     try {
-      await onConfirmDelete(farm.id); // call parent handler with farm ID
+      await onConfirmDeactivate(farm.id || farm._id || farmId); // call parent handler with farm ID
     } catch (error) {
-      alert("Error deleting farm: " + error.message);
+      alert("Error deactivating farm: " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -42,7 +42,7 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-white">Delete Farm</h2>
+            <h2 className="text-xl font-bold text-white">Deactivate Farm</h2>
           </div>
           <button
             onClick={onClose}
@@ -73,13 +73,14 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
           )}
 
           <p className="text-gray-800 font-medium">
-            Type <span className="font-bold">DELETE</span> to confirm deletion.
+            Type <span className="font-bold">DEACTIVATE</span> to confirm
+            deactivation.
           </p>
           <input
             type="text"
             value={confirmationText}
             onChange={(e) => setConfirmationText(e.target.value)}
-            placeholder="Type DELETE here..."
+            placeholder="Type DEACTIVATE here..."
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
             disabled={isLoading}
           />
@@ -94,8 +95,8 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
             Cancel
           </button>
           <button
-            onClick={handleConfirmDelete}
-            disabled={confirmationText !== "DELETE" || isLoading}
+            onClick={handleConfirmDeactivate}
+            disabled={confirmationText !== "DEACTIVATE" || isLoading}
             className="px-6 py-3 bg-red-500 text-white rounded-lg font-bold hover:bg-red-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
@@ -106,7 +107,7 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
             ) : (
               <>
                 <Trash2 className="w-4 h-4" />
-                Delete Farm
+                Deactivate Farm
               </>
             )}
           </button>
@@ -116,4 +117,4 @@ function DeleteFarmModal({ isOpen, onClose, farm, onConfirmDelete }) {
   );
 }
 
-export default DeleteFarmModal;
+export default DeactivateFarmModal;
