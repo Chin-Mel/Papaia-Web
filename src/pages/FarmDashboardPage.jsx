@@ -204,6 +204,7 @@ export default function FarmDashboardPage() {
   };
 
   const handleDeactivateFarm = async (farmId) => {
+    console.log("Deactivating farm with ID:", farmId);
     try {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`,
@@ -215,7 +216,14 @@ export default function FarmDashboardPage() {
         }
       );
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          "Server did not return JSON (maybe 404 or HTML error page)"
+        );
+      }
 
       if (!response.ok || data.status !== "success") {
         throw new Error(data.message || "Failed to deactivate farm");
