@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Users, Leaf, ScanLine, TrendingUp, MapPin } from "lucide-react";
+import { Plus, Leaf, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
 import AddFarmModal from "../components/Popups/AddFarmModal";
+import RecentActivities from "../pages/RecentActivities";
 import ScansCount from "../assets/scans.png";
 import FarmersCount from "../assets/farmers.png";
 import FarmsCount from "../assets/farms.png";
@@ -24,75 +25,6 @@ export default function DashboardPage() {
     farmsTrend: "no change",
     scansTrend: "no change",
   });
-
-  // Fetch recent identification history for activities
-  const fetchRecentActivities = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/identification-history",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
-
-      if (Array.isArray(data)) {
-        // Take only the latest 5 identifications for recent activities
-        const recent = data.slice(0, 5).map((identification) => ({
-          type:
-            identification.result === "Healthy"
-              ? "Crop Scan Completed"
-              : "Disease Detected",
-          icon: identification.result === "Healthy" ? "📊" : "⚠️",
-          iconBg:
-            identification.result === "Healthy"
-              ? "bg-blue-100"
-              : "bg-yellow-100",
-          title:
-            identification.result === "Healthy"
-              ? "Crop scan completed"
-              : "Disease detected",
-          description: `Farm scan - ${identification.result} (${Math.round(
-            identification.confidence * 100
-          )}% confidence)`,
-          time: identification.timestamp,
-          bgColor:
-            identification.result === "Healthy" ? "bg-blue-50" : "bg-yellow-50",
-        }));
-        setRecentIdentifications(recent);
-      }
-    } catch (err) {
-      console.error("Failed to fetch recent activities:", err);
-      // Keep empty array if no activities found
-      setRecentIdentifications([]);
-    }
-  };
-
-  // Fallback activities if no API data available
-  const fallbackActivities = [
-    {
-      type: "New Farm Registered",
-      icon: "➕",
-      iconBg: "bg-green-100",
-      title: "New farm registered",
-      description: "Farm added to system",
-      time: "Recently",
-      bgColor: "bg-green-50",
-    },
-    {
-      type: "System Ready",
-      icon: "📋",
-      iconBg: "bg-purple-100",
-      title: "Dashboard ready",
-      description: "System initialized successfully",
-      time: "Now",
-      bgColor: "bg-purple-50",
-    },
-  ];
-
   // Fetch dashboard statistics
   const fetchDashboardStats = async () => {
     try {
@@ -189,7 +121,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchFarms();
     fetchDashboardStats();
-    fetchRecentActivities();
   }, []);
 
   // Handle adding a new farm
@@ -235,11 +166,6 @@ export default function DashboardPage() {
     }
   };
 
-  const activitiesToShow =
-    recentIdentifications.length > 0
-      ? recentIdentifications
-      : fallbackActivities;
-
   const handleCloseModal = () => setShowAddFarmModal(false);
 
   return (
@@ -251,38 +177,7 @@ export default function DashboardPage() {
         <div className="w-full max-w-8xl mx-auto flex flex-col lg:flex-row gap-6">
           {/* Left Column - Recent Activities */}
           <div className="w-full lg:w-50 xl:w-[330px] flex-shrink-0">
-            <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6">
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">
-                Recent Activities
-              </h2>
-              <div className="space-y-3">
-                {activitiesToShow.map((act, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${act.iconBg} flex items-center justify-center text-xs sm:text-sm`}
-                      >
-                        {act.icon}
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-xs sm:text-sm text-gray-800">
-                          {act.title}
-                        </p>
-                        <p className="text-xs text-gray-600 mt-1">
-                          {act.description}
-                        </p>
-                        <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block">
-                          {act.time}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <RecentActivities limit={5} />
           </div>
 
           {/* Right Column - Dashboard Content */}

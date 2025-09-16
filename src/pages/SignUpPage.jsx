@@ -316,11 +316,11 @@ export default function SignUpPage() {
             <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden">
               {/* Gradient Header */}
               <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-white rounded-full flex items-center justify-center shadow-md">
+                <div className="w-12 h-12 sm:w-11 sm:h-11 lg:w-13 lg:h-13 bg-white rounded-full flex items-center justify-center shadow-md">
                   <img
                     src={PapayaLogo}
                     alt="Papaia Logo"
-                    className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12"
+                    className="w-8 h-8 sm:w-8 sm:h-8 lg:w-10 lg:h-10"
                   />
                 </div>
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mt-2">
