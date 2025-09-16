@@ -13,7 +13,6 @@ export default function DashboardPage() {
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [recentIdentifications, setRecentIdentifications] = useState([]);
   const [dashboardStats, setDashboardStats] = useState({
     totalFarmers: 0,
     totalFarms: 0,
