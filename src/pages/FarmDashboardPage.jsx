@@ -193,8 +193,6 @@ export default function FarmDashboardPage() {
     if (!farmId) return;
 
     const fetchAnalytics = async () => {
-      setAnalyticsLoading(true);
-      setAnalyticsError(null);
       try {
         let endpoint = "";
         switch (timeFilter) {
@@ -233,14 +231,17 @@ export default function FarmDashboardPage() {
         setAnalyticsData(data);
       } catch (err) {
         console.error("Analytics fetch error:", err.message);
-        setAnalyticsError(err.message);
-        setAnalyticsData(null);
-      } finally {
-        setAnalyticsLoading(false);
+        setAnalyticsData(null); // clear previous data on error
       }
     };
 
+    // Fetch immediately
     fetchAnalytics();
+
+    // Poll every 5 seconds for real-time updates
+    const interval = setInterval(fetchAnalytics, 5000);
+
+    return () => clearInterval(interval);
   }, [farmId, timeFilter]);
 
   const handleDeactivateFarm = async (farmId) => {
@@ -558,13 +559,7 @@ export default function FarmDashboardPage() {
                 </h3>
 
                 <div className="bg-white rounded border p-4 h-[230px] sm:h-[290px] max-w-full mx-auto overflow-auto">
-                  {analyticsLoading ? (
-                    <p className="text-gray-500">
-                      Loading {timeFilter.toLowerCase()} analytics...
-                    </p>
-                  ) : analyticsError ? (
-                    <p className="text-red-500">{analyticsError}</p>
-                  ) : analyticsData ? (
+                  {analyticsData && Object.keys(analyticsData).length > 0 ? (
                     <div className="w-full">
                       {(() => {
                         const statsKey = {
