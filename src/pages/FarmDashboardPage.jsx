@@ -50,7 +50,6 @@ function StatusDropdown({ value, onChange }) {
         {value}
         <ChevronDown className="w-4 h-4 text-gray-400" />
       </button>
-
       {isOpen && (
         <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
           {options.map((option) => (
@@ -75,33 +74,31 @@ export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
   const navigate = useNavigate();
 
-  // --- State ---
+  const [farmData, setFarmData] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+  const [recentScans, setRecentScans] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
+
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
 
-  const [analyticsData, setAnalyticsData] = useState(null);
-  const [farmData, setFarmData] = useState(null);
-  const [recentScans, setRecentScans] = useState([]);
-  const [farmers, setFarmers] = useState([]);
-
-  const [isDeactivateFarmModalOpen, setIsDeactivateFarmModalOpen] =
-    useState(false);
-
-  // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
-  const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
   const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
     useState(false);
   const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
     useState(false);
-  const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
-  const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
+  const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
+  const [isDeactivateFarmModalOpen, setIsDeactivateFarmModalOpen] =
+    useState(false);
+
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
-  // --- Fetch farm data ---
+  // Fetch farm data
   useEffect(() => {
     if (!farmId) return;
     const fetchFarmData = async () => {
@@ -116,15 +113,15 @@ export default function FarmDashboardPage() {
         );
         const data = await res.json();
         const farm = data.farms.find((f) => f.id === farmId);
-        if (farm) setFarmData(farm);
+        setFarmData(farm || null);
       } catch (err) {
-        console.error("Error fetching farm data:", err);
+        console.error(err);
       }
     };
     fetchFarmData();
   }, [farmId]);
 
-  // --- Fetch farmers ---
+  // Fetch farmers
   useEffect(() => {
     if (!farmId) return;
     const fetchFarmers = async () => {
@@ -138,28 +135,27 @@ export default function FarmDashboardPage() {
           }
         );
         const data = await res.json();
-        if (data.status === "success") setFarmers(data.farmers);
+        if (data.status === "success") setFarmers(data.farmers || []);
       } catch (err) {
-        console.error("Error fetching farmers:", err);
+        console.error(err);
       }
     };
     fetchFarmers();
   }, [farmId]);
 
-  // --- Fetch analytics (with polling) ---
+  // Fetch analytics
   useEffect(() => {
     if (!farmId) return;
     const fetchAnalytics = async () => {
       try {
-        const endpoint = {
+        const endpointMap = {
           Daily: "daily-analytics",
           Weekly: "weekly-analytics",
           Monthly: "monthly-analytics",
           Yearly: "yearly-analytics",
-        }[timeFilter];
-
+        };
         const res = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -173,23 +169,131 @@ export default function FarmDashboardPage() {
         setAnalyticsData(null);
       }
     };
-
     fetchAnalytics();
     const interval = setInterval(fetchAnalytics, 5000);
     return () => clearInterval(interval);
   }, [farmId, timeFilter]);
 
-  // --- Helpers ---
-  const getFarmStatus = () => {
-    if (!recentScans.length) return "Inactive";
-    const fiveDaysAgo = new Date();
-    fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    return recentScans.some(
-      (s) => new Date(s.createdAt || s.time) >= fiveDaysAgo
-    )
-      ? "Active"
-      : "Inactive";
+  // Handlers
+  const handleAddFarmer = () => setIsAddFarmerModalOpen(true);
+
+  const handleFarmerAdded = async (farmerData) => {
+    try {
+      const res = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farmer",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: farmerData.idNumber, farmId }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to add farmer");
+      setIsAddFarmerModalOpen(false);
+      setNewlyAddedFarmer(farmerData);
+      setIsFarmerAddedSuccessModalOpen(true);
+
+      // Refresh farmers list
+      const farmersRes = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const farmersData = await farmersRes.json();
+      if (farmersData.status === "success")
+        setFarmers(farmersData.farmers || []);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
   };
+
+  const handleViewFarmer = async (farmerId) => {
+    try {
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await res.json();
+      if (data.status === "success") {
+        setSelectedFarmer(data.farmer);
+        setIsFarmerDetailModalOpen(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleRemoveFarmerFromDetail = () => {
+    setIsFarmerDetailModalOpen(false);
+    setIsRemoveFarmerModalOpen(true);
+  };
+
+  const handleConfirmRemoveFarmer = async () => {
+    try {
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to remove farmer");
+      setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
+      setIsRemoveFarmerModalOpen(false);
+      setIsFarmerRemovedSuccessModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  const handleBackToDetailModal = () => {
+    setIsRemoveFarmerModalOpen(false);
+    setIsFarmerDetailModalOpen(true);
+  };
+
+  const handleSuccessModalClose = () => {
+    setIsFarmerAddedSuccessModalOpen(false);
+    setIsFarmerRemovedSuccessModalOpen(false);
+    setSelectedFarmer(null);
+    setNewlyAddedFarmer(null);
+  };
+
+  const handleDeactivateFarm = async (farmId) => {
+    try {
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data.status !== "success")
+        throw new Error(data.message || "Failed");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert(err.message);
+    }
+  };
+
+  const goBack = () => window.history.back();
+
+  // Farm status
+  const farmStatus = recentScans.length
+    ? new Date(
+        Math.max(...recentScans.map((s) => new Date(s.createdAt || s.time)))
+      ) > new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+      ? "Active"
+      : "Inactive"
+    : "Inactive";
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -203,10 +307,6 @@ export default function FarmDashboardPage() {
         return "text-gray-600 bg-gray-100";
     }
   };
-
-  const farmStatus = getFarmStatus();
-
-  const goBack = () => window.history.back();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
