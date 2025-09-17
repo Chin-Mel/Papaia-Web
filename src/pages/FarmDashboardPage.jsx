@@ -24,6 +24,7 @@ import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
 import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModal";
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import DeactivateFarmModal from "../components/Popups/DeactivateFarmModal";
+import FarmAnalytics from "./FarmAnalytics";
 
 // --- StatusDropdown Component ---
 function StatusDropdown({ value, onChange }) {
@@ -382,66 +383,10 @@ export default function FarmDashboardPage() {
                 </div>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4 min-h-[300px] sm:min-h-[350px]">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
-                  {timeFilter} Farm Condition
-                </h3>
-
-                <div className="bg-white rounded border p-4 h-[230px] sm:h-[290px] max-w-full mx-auto overflow-auto">
-                  {analyticsData && Object.keys(analyticsData).length > 0 ? (
-                    (() => {
-                      const statsKey = {
-                        Daily: "dailyStats",
-                        Weekly: "weeklyStats",
-                        Monthly: "monthlyStats",
-                        Yearly: "yearlyStats",
-                      }[timeFilter];
-
-                      const stats = analyticsData[statsKey] || [];
-
-                      return stats.length > 0 ? (
-                        stats.map((item, idx) => {
-                          const label =
-                            item.day || item.week || item.month || item.year;
-                          return (
-                            <div key={idx} className="mb-2">
-                              <p className="font-semibold text-gray-700">
-                                {label}
-                              </p>
-                              <div className="flex flex-wrap gap-2 mt-1">
-                                {Object.entries(item.predictions).map(
-                                  ([key, value]) => (
-                                    <span
-                                      key={key}
-                                      className={`px-2 py-1 rounded-full text-xs ${
-                                        key.toLowerCase() === "healthy"
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-red-100 text-red-800"
-                                      }`}
-                                    >
-                                      {key}: {value}
-                                    </span>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-gray-400 text-center py-8">
-                          No stats yet
-                        </div>
-                      );
-                    })()
-                  ) : (
-                    // Always render UI placeholders
-                    <div className="text-gray-400 text-center py-8">
-                      <p className="mb-2">Analytics will appear here</p>
-                      <div className="w-full h-24 bg-gray-100 rounded animate-pulse"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <FarmAnalytics
+                analyticsData={analyticsData}
+                timeFilter={timeFilter}
+              />
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                 <div className="text-center">
