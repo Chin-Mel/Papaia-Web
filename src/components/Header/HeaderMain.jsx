@@ -36,11 +36,11 @@ export default function HeaderMain() {
 
     loadUser();
 
-    // ✅ Listen for profile updates from ProfilePage
-    window.addEventListener("storage", loadUser);
+    // Listen for profile updates in the same tab
+    window.addEventListener("userUpdated", loadUser);
 
     return () => {
-      window.removeEventListener("storage", loadUser);
+      window.removeEventListener("userUpdated", loadUser);
     };
   }, []);
 

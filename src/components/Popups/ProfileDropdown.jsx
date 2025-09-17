@@ -25,8 +25,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
       const updatedUser = getLoggedInUser();
       setUserData(updatedUser);
     };
-
-    window.addEventListener("userUpdated", updateUser); // ✅ listen to custom event
+    window.addEventListener("userUpdated", updateUser);
     return () => window.removeEventListener("userUpdated", updateUser);
   }, []);
 

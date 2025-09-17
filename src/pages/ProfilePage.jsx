@@ -110,47 +110,6 @@ export default function ProfilePage() {
     navigate("/edit-profile");
   };
 
-  // Save changes
-  const handleSave = async () => {
-    if (!userData?.id) return console.error("User ID missing");
-    const updatedData = {
-      firstName: userData.firstName,
-      middleName: userData.middleName,
-      lastName: userData.lastName,
-      username: userData.username,
-      email: userData.email,
-      contactNumber: userData.contactNumber,
-      birthDate: userData.birthDate,
-      // Add other fields if editable
-    };
-
-    try {
-      const res = await fetch(
-        `https://papaiaapi.onrender.com/api/user/${userData.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(updatedData),
-        }
-      );
-
-      if (res.ok) {
-        const updatedUser = await res.json();
-        setUserData(updatedUser);
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        window.dispatchEvent(new Event("storage")); // update dropdown/header
-        navigate("/profile");
-      } else {
-        console.error("Failed to update user");
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const renderField = (value) => (
     <span className={value ? "text-gray-800" : "text-gray-400 italic"}>
       {value || "N/A"}

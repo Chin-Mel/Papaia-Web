@@ -101,8 +101,17 @@ function EditProfilePage() {
       if (!res.ok) throw new Error("Failed to update user");
 
       const updated = await res.json();
-      setUserData(updated);
       localStorage.setItem("user", JSON.stringify(updated));
+      setUserData(updated);
+      setFormValues({
+        firstName: updated.firstName || "",
+        middleName: updated.middleName || "",
+        lastName: updated.lastName || "",
+        username: updated.username || "",
+        email: updated.email || "",
+        contactNumber: updated.contactNumber || "",
+        birthDate: updated.birthDate ? updated.birthDate.split("T")[0] : "",
+      });
 
       alert("Profile updated successfully!");
       navigate("/profile");
