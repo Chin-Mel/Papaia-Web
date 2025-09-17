@@ -188,21 +188,25 @@ function EditProfilePage() {
               label="First Name"
               icon={<User size={20} />}
               value={formValues.firstName}
+              placeholder={userData.firstName || "First Name"}
               onChange={(val) => handleChange("firstName", val)}
             />
             <ProfileInput
               label="Middle Name"
               value={formValues.middleName}
+              placeholder={userData.middleName || "Middle Name"}
               onChange={(val) => handleChange("middleName", val)}
             />
             <ProfileInput
               label="Last Name"
               value={formValues.lastName}
+              placeholder={userData.lastName || "Last Name"}
               onChange={(val) => handleChange("lastName", val)}
             />
             <ProfileInput
               label="Username"
               value={formValues.username}
+              placeholder={userData.username || "Username"}
               onChange={(val) => handleChange("username", val)}
             />
             <ProfileInput
@@ -210,6 +214,7 @@ function EditProfilePage() {
               type="email"
               icon={<Mail size={20} />}
               value={formValues.email}
+              placeholder={userData.email || "Email"}
               onChange={(val) => handleChange("email", val)}
             />
             <ProfileInput
@@ -217,6 +222,7 @@ function EditProfilePage() {
               type="tel"
               icon={<Phone size={20} />}
               value={formValues.contactNumber}
+              placeholder={userData.contactNumber || "Contact Number"}
               onChange={(val) => handleChange("contactNumber", val)}
             />
             <ProfileInput
@@ -224,6 +230,7 @@ function EditProfilePage() {
               type="date"
               icon={<Calendar size={20} />}
               value={formValues.birthDate}
+              placeholder={userData.birthDate || "mm/dd/yyyyr"}
               onChange={(val) => handleChange("birthDate", val)}
             />
           </div>
@@ -295,7 +302,14 @@ function EditProfilePage() {
   );
 }
 
-const ProfileInput = ({ label, icon, type = "text", value, onChange }) => {
+const ProfileInput = ({
+  label,
+  icon,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+}) => {
   return (
     <div className="flex flex-col">
       <label className="text-sm font-medium text-gray-500 mb-1">{label}</label>
@@ -304,6 +318,7 @@ const ProfileInput = ({ label, icon, type = "text", value, onChange }) => {
         <input
           type={type}
           value={value || ""}
+          placeholder={placeholder} // <-- use placeholder
           onChange={(e) => onChange(e.target.value)}
           className={`w-full border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow ${
             icon ? "pl-10" : ""
