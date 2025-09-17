@@ -22,6 +22,7 @@ function EditProfilePage() {
 
   // Fetch current user data
   useEffect(() => {
+    if (!userId || !token) return;
     const fetchUserData = async () => {
       try {
         const res = await fetch(
@@ -32,15 +33,16 @@ function EditProfilePage() {
         );
         if (!res.ok) throw new Error("User not found");
         const data = await res.json();
-        setUserData(data);
+        const user = data.user || data; // handle both cases
+        setUserData(user);
         setFormValues({
-          firstName: data.firstName || "",
-          middleName: data.middleName || "",
-          lastName: data.lastName || "",
-          username: data.username || "",
-          email: data.email || "",
-          contactNumber: data.contactNumber || "",
-          birthDate: data.birthDate || "",
+          firstName: user.firstName || "",
+          middleName: user.middleName || "",
+          lastName: user.lastName || "",
+          username: user.username || "",
+          email: user.email || "",
+          contactNumber: user.contactNumber || "",
+          birthDate: user.birthDate ? user.birthDate.split("T")[0] : "",
         });
       } catch (err) {
         console.error(err);
@@ -48,6 +50,8 @@ function EditProfilePage() {
     };
     fetchUserData();
   }, [userId, token]);
+
+  console.log("Stored user:", localStorage.getItem("user"));
 
   // Handle input changes
   const handleChange = (key, value) => {
