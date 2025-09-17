@@ -119,8 +119,8 @@ export default function ProfilePage() {
       lastName: userData.lastName,
       username: userData.username,
       email: userData.email,
-      phone: userData.contactNumber,
-      dateOfBirth: userData.birthDate,
+      contactNumber: userData.contactNumber,
+      birthDate: userData.birthDate,
       // Add other fields if editable
     };
 
@@ -289,7 +289,7 @@ export default function ProfilePage() {
                       <Phone className="w-4 h-4" /> Contact Number
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.phone || userData.contactNumber)}
+                      {renderField(serData.contactNumber)}
                     </div>
                   </div>
 
@@ -298,7 +298,7 @@ export default function ProfilePage() {
                       <Calendar className="w-4 h-4" /> Birth Date
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.dateOfBirth || userData.birthDate)}
+                      {renderField(userData.birthDate)}
                     </div>
                   </div>
                 </div>
