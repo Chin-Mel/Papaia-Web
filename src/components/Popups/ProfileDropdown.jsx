@@ -15,14 +15,19 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     navigate("/profile");
   };
 
+  // ✅ Sync local state whenever prop changes
+  useEffect(() => {
+    setUserData(user);
+  }, [user]);
+
   useEffect(() => {
     const updateUser = () => {
       const updatedUser = getLoggedInUser();
       setUserData(updatedUser);
     };
 
-    window.addEventListener("storage", updateUser);
-    return () => window.removeEventListener("storage", updateUser);
+    window.addEventListener("userUpdated", updateUser); // ✅ listen to custom event
+    return () => window.removeEventListener("userUpdated", updateUser);
   }, []);
 
   return (

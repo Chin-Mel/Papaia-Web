@@ -93,8 +93,8 @@ export default function ProfilePage() {
       setUserData(updatedUserData);
       localStorage.setItem("user", JSON.stringify(updatedUserData));
 
-      // ✅ Notify all components listening to storage
-      window.dispatchEvent(new Event("storage"));
+      // ✅ Dispatch a custom event immediately in the same tab
+      window.dispatchEvent(new Event("userUpdated"));
     } catch (err) {
       console.error("Error uploading profile picture:", err);
     } finally {
