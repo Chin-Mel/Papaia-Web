@@ -10,12 +10,13 @@ import {
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
+import { useNavigate } from "react-router-dom";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState({});
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user?.id;
   const token = localStorage.getItem("token");
@@ -83,9 +84,14 @@ function EditProfilePage() {
       );
 
       if (!res.ok) throw new Error("Failed to update user");
+
       const updated = await res.json();
+      // 1️⃣ Update local state
       setUserData(updated);
+      // 2️⃣ Update localStorage so other pages get fresh data
+      localStorage.setItem("user", JSON.stringify(updated));
       alert("Profile updated successfully!");
+      navigate("/profile");
     } catch (err) {
       console.error(err);
       alert("Error updating profile.");
