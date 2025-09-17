@@ -92,7 +92,7 @@ function EditProfilePage() {
           {/* Profile Picture with Status Icon */}
           <div className="relative mb-4 sm:mb-0">
             <img
-              src={userData.profileImage || "/default-user.png"}
+              src={userData.profilePicture || "/default-user.png"}
               alt="Profile"
               className="w-28 h-28 rounded-full border-4 border-white shadow-md mx-auto sm:mx-0"
             />
@@ -187,51 +187,49 @@ function EditProfilePage() {
             <ProfileInput
               label="First Name"
               icon={<User size={20} />}
-              value={formValues.firstName || userData.firstName || "First Name"} // ✅ fallback
+              value={formValues.firstName || ""} // controlled input
+              placeholder={userData.firstName || "First Name"} // show placeholder if empty
               onChange={(val) => handleChange("firstName", val)}
             />
             <ProfileInput
               label="Middle Name"
-              value={
-                formValues.middleName || userData.middleName || "Middle Name"
-              }
+              value={formValues.middleName || ""}
+              placeholder={userData.middleName || "Middle Name"}
               onChange={(val) => handleChange("middleName", val)}
             />
             <ProfileInput
               label="Last Name"
-              value={formValues.lastName || userData.lastName || "Last Name"}
+              value={formValues.lastName || ""}
+              placeholder={userData.lastName || "Last Name"}
               onChange={(val) => handleChange("lastName", val)}
             />
             <ProfileInput
               label="Username"
-              value={formValues.username || userData.username || "Username"}
+              value={formValues.username || ""}
+              placeholder={userData.username || "Username"}
               onChange={(val) => handleChange("username", val)}
             />
             <ProfileInput
               label="Email Address"
               type="email"
               icon={<Mail size={20} />}
-              value={formValues.email || userData.email || "Email"}
+              value={formValues.email || ""}
+              placeholder={userData.email || "Email"}
               onChange={(val) => handleChange("email", val)}
             />
             <ProfileInput
               label="Contact Number"
               type="tel"
               icon={<Phone size={20} />}
-              value={
-                formValues.contactNumber ||
-                userData.contactNumber ||
-                "Contact Number"
-              }
+              value={formValues.contactNumber || ""}
+              placeholder={userData.contactNumber || "Contact Number"}
               onChange={(val) => handleChange("contactNumber", val)}
             />
             <ProfileInput
               label="Birth Date"
               type="date"
               icon={<Calendar size={20} />}
-              value={
-                formValues.birthDate || userData.birthDate || "mm/dd/yyyyr"
-              }
+              value={formValues.birthDate || ""} // must be "" if empty for date input
               onChange={(val) => handleChange("birthDate", val)}
             />
           </div>
