@@ -155,30 +155,13 @@ function EditProfilePage() {
                     d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"
                   />
                 </svg>
-                Joined {userData.joinedDate || "March 2023"}
-              </div>
-              <div className="flex items-center justify-center sm:justify-start mt-1 sm:mt-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 11c0-1.105.895-2 2-2s2 .895 2 2-.895 2-2 2-2-.895-2-2zm0 0c0 1.105-.895 2-2 2s-2-.895-2-2 .895-2 2-2 2 .895 2 2z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 22s8-4.5 8-10c0-4.97-4.03-9-9-9S2 7.03 2 12c0 5.5 10 10 10 10z"
-                  />
-                </svg>
-                {userData.location || "Consolacion, Cebu"}
+                Joined{" "}
+                {userData.createdAt
+                  ? new Date(userData.createdAt).toLocaleString("default", {
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "N/A"}
               </div>
             </div>
           </div>
