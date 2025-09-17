@@ -76,6 +76,9 @@ export default function FarmDashboardPage() {
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [analyticsError, setAnalyticsError] = useState(null);
   const [farmData, setFarmData] = useState(null);
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,22 +166,6 @@ export default function FarmDashboardPage() {
     fetchFarmers();
   }, [farmId]);
 
-  // Fetch recent scans
-  useEffect(() => {
-    const fetchRecentScans = async () => {
-      try {
-        setRecentScans([]);
-      } catch (err) {
-        console.error("Error fetching recent scans:", err);
-        setRecentScans([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRecentScans();
-  }, [farmId]);
-
   // Determine farm status based on recent scans
   const getFarmStatus = () => {
     if (recentScans.length === 0) return "Inactive";
@@ -202,6 +189,59 @@ export default function FarmDashboardPage() {
         return "text-gray-600 bg-gray-100";
     }
   };
+  useEffect(() => {
+    if (!farmId) return;
+
+    const fetchAnalytics = async () => {
+      setAnalyticsLoading(true);
+      setAnalyticsError(null);
+      try {
+        let endpoint = "";
+        switch (timeFilter) {
+          case "Daily":
+            endpoint = `daily-analytics/${farmId}`;
+            break;
+          case "Weekly":
+            endpoint = `weekly-analytics/${farmId}`;
+            break;
+          case "Monthly":
+            endpoint = `monthly-analytics/${farmId}`;
+            break;
+          case "Yearly":
+            endpoint = `yearly-analytics/${farmId}`;
+            break;
+          default:
+            endpoint = `daily-analytics/${farmId}`;
+        }
+
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpoint}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || "Failed to fetch analytics");
+        }
+
+        const data = await response.json();
+        setAnalyticsData(data);
+      } catch (err) {
+        console.error("Analytics fetch error:", err.message);
+        setAnalyticsError(err.message);
+        setAnalyticsData(null);
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [farmId, timeFilter]);
 
   const handleDeactivateFarm = async (farmId) => {
     console.log("Deactivating farm with ID:", farmId);
@@ -209,7 +249,7 @@ export default function FarmDashboardPage() {
       const response = await fetch(
         `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
         {
-          method: "PATCH",
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -516,8 +556,63 @@ export default function FarmDashboardPage() {
                 <h3 className="text-xs sm:text-sm font-medium text-gray-700 mb-2">
                   {timeFilter} Farm Condition
                 </h3>
-                <div className="bg-white rounded border flex items-center justify-center h-[230px] sm:h-[290px] max-w-full mx-auto">
-                  <TrendingUp className="w-10 h-10 sm:w-12 sm:h-12 text-green-500" />
+
+                <div className="bg-white rounded border p-4 h-[230px] sm:h-[290px] max-w-full mx-auto overflow-auto">
+                  {analyticsLoading ? (
+                    <p className="text-gray-500">
+                      Loading {timeFilter.toLowerCase()} analytics...
+                    </p>
+                  ) : analyticsError ? (
+                    <p className="text-red-500">{analyticsError}</p>
+                  ) : analyticsData ? (
+                    <div className="w-full">
+                      {(() => {
+                        const statsKey = {
+                          Daily: "dailyStats",
+                          Weekly: "weeklyStats",
+                          Monthly: "monthlyStats",
+                          Yearly: "yearlyStats",
+                        }[timeFilter];
+
+                        const stats = analyticsData[statsKey] || [];
+
+                        if (stats.length === 0)
+                          return (
+                            <p className="text-gray-500">No data available</p>
+                          );
+
+                        return stats.map((item, idx) => {
+                          const label =
+                            item.day || item.week || item.month || item.year;
+                          return (
+                            <div key={idx} className="mb-2">
+                              <p className="font-semibold text-gray-700">
+                                {label}
+                              </p>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {Object.entries(item.predictions).map(
+                                  ([key, value]) => (
+                                    <span
+                                      key={key}
+                                      className={`px-2 py-1 rounded-full text-xs ${
+                                        key.toLowerCase() === "healthy"
+                                          ? "bg-green-100 text-green-800"
+                                          : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      {key}: {value}
+                                    </span>
+                                  )
+                                )}
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No analytics data</p>
+                  )}
                 </div>
               </div>
 
