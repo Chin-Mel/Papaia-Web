@@ -116,7 +116,9 @@ export default function ProfilePage() {
 
     const updatedData = {
       firstName: userData.firstName,
+      middleName: userData.middleName,
       lastName: userData.lastName,
+      username: userData.username,
       email: userData.email,
       phone: userData.phone,
       dateOfBirth: userData.dateOfBirth,
