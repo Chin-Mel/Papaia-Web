@@ -112,16 +112,15 @@ export default function ProfilePage() {
 
   // Save changes
   const handleSave = async () => {
-    if (!userData?.id) return;
-
+    if (!userData?.id) return console.error("User ID missing");
     const updatedData = {
       firstName: userData.firstName,
       middleName: userData.middleName,
       lastName: userData.lastName,
       username: userData.username,
       email: userData.email,
-      phone: userData.phone,
-      dateOfBirth: userData.dateOfBirth,
+      phone: userData.contactNumber,
+      dateOfBirth: userData.birthDate,
       // Add other fields if editable
     };
 
