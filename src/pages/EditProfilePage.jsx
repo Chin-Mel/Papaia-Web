@@ -92,10 +92,15 @@ function EditProfilePage() {
           {/* Profile Picture with Status Icon */}
           <div className="relative mb-4 sm:mb-0">
             <img
-              src={userData.profilePicture || "/default-user.png"}
-              alt="Profile"
+              src={
+                userData.profilePicture
+                  ? `https://papaiaapi.onrender.com${userData.profilePicture}`
+                  : "/default-user.png"
+              }
+              alt={`${userData.firstName || ""} ${userData.lastName || ""}`}
               className="w-28 h-28 rounded-full border-4 border-white shadow-md mx-auto sm:mx-0"
             />
+
             <div className="absolute bottom-1 right-1 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-4 border-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -187,28 +192,32 @@ function EditProfilePage() {
             <ProfileInput
               label="First Name"
               icon={<User size={20} />}
-              value={formValues.firstName || ""} // controlled input
-              placeholder={userData.firstName || "First Name"} // show placeholder if empty
+              value={formValues.firstName || ""}
+              placeholder={userData.firstName || "First Name"}
               onChange={(val) => handleChange("firstName", val)}
             />
+
             <ProfileInput
               label="Middle Name"
               value={formValues.middleName || ""}
               placeholder={userData.middleName || "Middle Name"}
               onChange={(val) => handleChange("middleName", val)}
             />
+
             <ProfileInput
               label="Last Name"
               value={formValues.lastName || ""}
               placeholder={userData.lastName || "Last Name"}
               onChange={(val) => handleChange("lastName", val)}
             />
+
             <ProfileInput
               label="Username"
               value={formValues.username || ""}
               placeholder={userData.username || "Username"}
               onChange={(val) => handleChange("username", val)}
             />
+
             <ProfileInput
               label="Email Address"
               type="email"
@@ -217,6 +226,7 @@ function EditProfilePage() {
               placeholder={userData.email || "Email"}
               onChange={(val) => handleChange("email", val)}
             />
+
             <ProfileInput
               label="Contact Number"
               type="tel"
@@ -225,11 +235,13 @@ function EditProfilePage() {
               placeholder={userData.contactNumber || "Contact Number"}
               onChange={(val) => handleChange("contactNumber", val)}
             />
+
             <ProfileInput
               label="Birth Date"
               type="date"
               icon={<Calendar size={20} />}
-              value={formValues.birthDate || ""} // must be "" if empty for date input
+              value={formValues.birthDate || ""}
+              placeholder={userData.birthDate || "mm/dd/yyyy"}
               onChange={(val) => handleChange("birthDate", val)}
             />
           </div>
@@ -317,7 +329,7 @@ const ProfileInput = ({
         <input
           type={type}
           value={value || ""}
-          placeholder={placeholder} // <-- use placeholder
+          placeholder={placeholder || ""} // fallback to empty string
           onChange={(e) => onChange(e.target.value)}
           className={`w-full border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow ${
             icon ? "pl-10" : ""
