@@ -72,7 +72,7 @@ function EditProfilePage() {
         suffix: formValues.suffix || null,
         birthDate: formValues.birthDate || null,
         contactNumber: formValues.contactNumber || userData.contactNumber,
-        profilePicture: userData.profilePicture || "",
+        profilePicture: userData.profilePicture || null,
         street: formValues.street || null,
         barangay: formValues.barangay || null,
         municipality: formValues.municipality || null,
