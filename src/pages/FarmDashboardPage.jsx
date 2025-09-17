@@ -73,17 +73,18 @@ function StatusDropdown({ value, onChange }) {
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
+  const navigate = useNavigate();
+
+  // --- State ---
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
+
   const [analyticsData, setAnalyticsData] = useState(null);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
-  const [analyticsError, setAnalyticsError] = useState(null);
   const [farmData, setFarmData] = useState(null);
   const [recentScans, setRecentScans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [farmers, setFarmers] = useState([]);
+
   const [isDeactivateFarmModalOpen, setIsDeactivateFarmModalOpen] =
     useState(false);
 
@@ -95,86 +96,99 @@ export default function FarmDashboardPage() {
   const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
     useState(false);
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
-  const [farmers, setFarmers] = useState([]);
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
-  // Fetch farm data
+  // --- Fetch farm data ---
   useEffect(() => {
+    if (!farmId) return;
     const fetchFarmData = async () => {
-      if (!farmId) {
-        setError("No farm ID provided");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const response = await fetch(
+        const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
             },
           }
         );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch farm data");
-        }
-
-        const data = await response.json();
+        const data = await res.json();
         const farm = data.farms.find((f) => f.id === farmId);
-
-        if (farm) {
-          setFarmData(farm);
-        } else {
-          setError("Farm not found");
-        }
+        if (farm) setFarmData(farm);
       } catch (err) {
-        setError(err.message);
+        console.error("Error fetching farm data:", err);
       }
     };
-
     fetchFarmData();
   }, [farmId]);
 
-  // Fetch farmers for this farm
+  // --- Fetch farmers ---
   useEffect(() => {
+    if (!farmId) return;
     const fetchFarmers = async () => {
       try {
-        const response = await fetch(
+        const res = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
             },
           }
         );
-        const data = await response.json();
+        const data = await res.json();
         if (data.status === "success") setFarmers(data.farmers);
       } catch (err) {
         console.error("Error fetching farmers:", err);
       }
     };
-
     fetchFarmers();
   }, [farmId]);
 
-  // Determine farm status based on recent scans
+  // --- Fetch analytics (with polling) ---
+  useEffect(() => {
+    if (!farmId) return;
+    const fetchAnalytics = async () => {
+      try {
+        const endpoint = {
+          Daily: "daily-analytics",
+          Weekly: "weekly-analytics",
+          Monthly: "monthly-analytics",
+          Yearly: "yearly-analytics",
+        }[timeFilter];
+
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await res.json();
+        setAnalyticsData(data);
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
+        setAnalyticsData(null);
+      }
+    };
+
+    fetchAnalytics();
+    const interval = setInterval(fetchAnalytics, 5000);
+    return () => clearInterval(interval);
+  }, [farmId, timeFilter]);
+
+  // --- Helpers ---
   const getFarmStatus = () => {
-    if (recentScans.length === 0) return "Inactive";
+    if (!recentScans.length) return "Inactive";
     const fiveDaysAgo = new Date();
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-    const recentScanExists = recentScans.some(
-      (scan) => new Date(scan.createdAt || scan.time) >= fiveDaysAgo
-    );
-    return recentScanExists ? "Active" : "Inactive";
+    return recentScans.some(
+      (s) => new Date(s.createdAt || s.time) >= fiveDaysAgo
+    )
+      ? "Active"
+      : "Inactive";
   };
 
   const getStatusColor = (status) => {
@@ -189,295 +203,10 @@ export default function FarmDashboardPage() {
         return "text-gray-600 bg-gray-100";
     }
   };
-  useEffect(() => {
-    if (!farmId) return;
-
-    const fetchAnalytics = async () => {
-      try {
-        let endpoint = "";
-        switch (timeFilter) {
-          case "Daily":
-            endpoint = `daily-analytics/${farmId}`;
-            break;
-          case "Weekly":
-            endpoint = `weekly-analytics/${farmId}`;
-            break;
-          case "Monthly":
-            endpoint = `monthly-analytics/${farmId}`;
-            break;
-          case "Yearly":
-            endpoint = `yearly-analytics/${farmId}`;
-            break;
-          default:
-            endpoint = `daily-analytics/${farmId}`;
-        }
-
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpoint}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || "Failed to fetch analytics");
-        }
-
-        const data = await response.json();
-        setAnalyticsData(data);
-      } catch (err) {
-        console.error("Analytics fetch error:", err.message);
-        setAnalyticsData(null); // clear previous data on error
-      }
-    };
-
-    // Fetch immediately
-    fetchAnalytics();
-
-    // Poll every 5 seconds for real-time updates
-    const interval = setInterval(fetchAnalytics, 5000);
-
-    return () => clearInterval(interval);
-  }, [farmId, timeFilter]);
-
-  const handleDeactivateFarm = async (farmId) => {
-    console.log("Deactivating farm with ID:", farmId);
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      let data;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          "Server did not return JSON (maybe 404 or HTML error page)"
-        );
-      }
-
-      if (!response.ok || data.status !== "success") {
-        throw new Error(data.message || "Failed to deactivate farm");
-      }
-
-      alert(data.message); // "Farm deleted successfully." (really deactivated)
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      alert("Error deactivating farm: " + err.message);
-    }
-  };
-
-  const handleAddFarmer = () => {
-    setIsAddFarmerModalOpen(true);
-  };
-
-  // Fixed handleFarmerAdded function and farmer data handling
-  const handleFarmerAdded = async (farmerData) => {
-    console.log("Adding farmer with body:", {
-      userId: farmerData.idNumber, // Changed from idNumber to userId
-      farmId: farmId,
-    });
-    try {
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/farmer",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: farmerData.idNumber, // Use userId as per API docs
-            farmId: farmId,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add farmer");
-      }
-
-      const result = await response.json();
-      console.log("Farmer added successfully:", result);
-
-      // Close the add modal first
-      setIsAddFarmerModalOpen(false);
-
-      // Refresh farmers list to get the complete farmer data
-      const farmersResponse = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (farmersResponse.ok) {
-        const farmersData = await farmersResponse.json();
-        if (farmersData.status === "success") {
-          setFarmers(farmersData.farmers || []);
-
-          // Find the newly added farmer from the refreshed list
-          // Since we don't have the exact farmer ID from the POST response,
-          // we'll show success with the basic data we have
-          setNewlyAddedFarmer(farmerData);
-          setIsFarmerAddedSuccessModalOpen(true);
-        }
-      }
-    } catch (err) {
-      console.error("Error adding farmer:", err);
-      alert("Error adding farmer: " + err.message);
-    }
-  };
-
-  const handleViewFarmer = async (farmerId) => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (data.status === "success" && data.farmer) {
-        setSelectedFarmer(data.farmer);
-        setIsFarmerDetailModalOpen(true);
-      }
-    } catch (err) {
-      console.error("Error fetching farmer details:", err);
-    }
-  };
-
-  const handleRemoveFarmerFromDetail = () => {
-    setIsFarmerDetailModalOpen(false);
-    setIsRemoveFarmerModalOpen(true);
-  };
-
-  const handleConfirmRemoveFarmer = async () => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to remove farmer");
-      }
-
-      setFarmers(farmers.filter((f) => f.id !== selectedFarmer.id));
-      setIsRemoveFarmerModalOpen(false);
-      setIsFarmerRemovedSuccessModalOpen(true);
-    } catch (err) {
-      console.error("Error removing farmer:", err);
-      alert("Error removing farmer: " + err.message);
-    }
-  };
-
-  const handleBackToDetailModal = () => {
-    setIsRemoveFarmerModalOpen(false);
-    setIsFarmerDetailModalOpen(true);
-  };
-
-  const handleSuccessModalClose = () => {
-    setIsFarmerAddedSuccessModalOpen(false);
-    setIsFarmerRemovedSuccessModalOpen(false);
-    setSelectedFarmer(null);
-    setNewlyAddedFarmer(null);
-  };
-
-  const goBack = () => {
-    window.history.back();
-  };
-
-  // Early return if no farmId
-  if (!farmId) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">Error: No farm ID provided</p>
-              <button
-                onClick={goBack}
-                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading farm data...</p>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <p className="text-red-600 mb-4">Error: {error}</p>
-              <button
-                onClick={goBack}
-                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   const farmStatus = getFarmStatus();
+
+  const goBack = () => window.history.back();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -496,7 +225,7 @@ export default function FarmDashboardPage() {
                   <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-                  {farmData?.farmName}
+                  {farmData?.farmName || "Farm Name"}
                 </h1>
                 <span
                   className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full ${
