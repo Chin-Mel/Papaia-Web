@@ -112,19 +112,36 @@ export default function ProfilePage() {
 
   // Save changes
   const handleSave = async () => {
+    if (!userData?.id) return;
+
+    const updatedData = {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      phone: userData.phone,
+      dateOfBirth: userData.dateOfBirth,
+      // Add other fields if editable
+    };
+
     try {
-      const res = await fetch(`https://papaiaapi.onrender.com/api/user/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // ✅ add auth
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `https://papaiaapi.onrender.com/api/user/${userData.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(updatedData),
+        }
+      );
 
       if (res.ok) {
-        // ✅ redirect back to frontend profile page
-        navigate(`/profile`);
+        const updatedUser = await res.json();
+        setUserData(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        window.dispatchEvent(new Event("storage")); // update dropdown/header
+        navigate("/profile");
       } else {
         console.error("Failed to update user");
       }
@@ -228,6 +245,7 @@ export default function ProfilePage() {
                   </h3>
                   <button
                     onClick={handleEditProfile}
+                    disabled={!userData}
                     className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition shadow hover:shadow-md self-center sm:self-auto"
                   >
                     <Edit3 className="w-4 h-4" />

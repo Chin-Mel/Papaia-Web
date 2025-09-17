@@ -63,14 +63,7 @@ function EditProfilePage() {
   const handleSaveChanges = async () => {
     setLoading(true);
     try {
-      const body = {};
-
-      for (let key in formValues) {
-        if (formValues[key] !== userData[key]) {
-          body[key] = formValues[key];
-        }
-      }
-
+      // Send all formValues, not just changed fields
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/user/${userId}`,
         {
@@ -79,17 +72,18 @@ function EditProfilePage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(body),
+          body: JSON.stringify(formValues),
         }
       );
 
       if (!res.ok) throw new Error("Failed to update user");
 
       const updated = await res.json();
-      // 1️⃣ Update local state
+
+      // Update local state and localStorage
       setUserData(updated);
-      // 2️⃣ Update localStorage so other pages get fresh data
       localStorage.setItem("user", JSON.stringify(updated));
+
       alert("Profile updated successfully!");
       navigate("/profile");
     } catch (err) {

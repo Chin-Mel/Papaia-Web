@@ -4,6 +4,7 @@ import defaultUserPic from "../../assets/default-user.png"; // ✅ import defaul
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(user);
 
   if (!isOpen) return null;
 
@@ -11,6 +12,16 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     onClose();
     navigate("/profile");
   };
+
+  useEffect(() => {
+    const updateUser = () => {
+      const updatedUser = getLoggedInUser();
+      setUserData(updatedUser);
+    };
+
+    window.addEventListener("storage", updateUser);
+    return () => window.removeEventListener("storage", updateUser);
+  }, []);
 
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
