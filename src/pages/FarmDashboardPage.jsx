@@ -389,23 +389,18 @@ export default function FarmDashboardPage() {
 
                 <div className="bg-white rounded border p-4 h-[230px] sm:h-[290px] max-w-full mx-auto overflow-auto">
                   {analyticsData && Object.keys(analyticsData).length > 0 ? (
-                    <div className="w-full">
-                      {(() => {
-                        const statsKey = {
-                          Daily: "dailyStats",
-                          Weekly: "weeklyStats",
-                          Monthly: "monthlyStats",
-                          Yearly: "yearlyStats",
-                        }[timeFilter];
+                    (() => {
+                      const statsKey = {
+                        Daily: "dailyStats",
+                        Weekly: "weeklyStats",
+                        Monthly: "monthlyStats",
+                        Yearly: "yearlyStats",
+                      }[timeFilter];
 
-                        const stats = analyticsData[statsKey] || [];
+                      const stats = analyticsData[statsKey] || [];
 
-                        if (stats.length === 0)
-                          return (
-                            <p className="text-gray-500">No data available</p>
-                          );
-
-                        return stats.map((item, idx) => {
+                      return stats.length > 0 ? (
+                        stats.map((item, idx) => {
                           const label =
                             item.day || item.week || item.month || item.year;
                           return (
@@ -431,11 +426,19 @@ export default function FarmDashboardPage() {
                               </div>
                             </div>
                           );
-                        });
-                      })()}
-                    </div>
+                        })
+                      ) : (
+                        <div className="text-gray-400 text-center py-8">
+                          No stats yet
+                        </div>
+                      );
+                    })()
                   ) : (
-                    <p className="text-gray-500">No analytics data</p>
+                    // Always render UI placeholders
+                    <div className="text-gray-400 text-center py-8">
+                      <p className="mb-2">Analytics will appear here</p>
+                      <div className="w-full h-24 bg-gray-100 rounded animate-pulse"></div>
+                    </div>
                   )}
                 </div>
               </div>
