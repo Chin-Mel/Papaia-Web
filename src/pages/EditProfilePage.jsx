@@ -61,25 +61,25 @@ function EditProfilePage() {
 
   // Handle save changes
   const handleSaveChanges = async () => {
+    console.log("Payload to update user:", updatedData);
     setLoading(true);
     try {
       const updatedData = {
         username: formValues.username || userData.username,
         email: formValues.email || userData.email,
         firstName: formValues.firstName || userData.firstName,
-        middleName: formValues.middleName || userData.middleName || null,
+        middleName: formValues.middleName || null,
         lastName: formValues.lastName || userData.lastName,
-        suffix: formValues.suffix || userData.suffix || null,
+        suffix: formValues.suffix || null,
         birthDate: formValues.birthDate || null,
         contactNumber: formValues.contactNumber || userData.contactNumber,
         profilePicture: userData.profilePicture || "",
-        street: formValues.street || userData.street || null,
-        barangay: formValues.barangay || userData.barangay || null,
-        municipality: formValues.municipality || userData.municipality || null,
-        province: formValues.province || userData.province || null,
-        zipCode: formValues.zipCode || userData.zipCode || null,
-        role: userData.role, // required
-        status: userData.status, // include if backend requires
+        street: formValues.street || null,
+        barangay: formValues.barangay || null,
+        municipality: formValues.municipality || null,
+        province: formValues.province || null,
+        zipCode: formValues.zipCode || null,
+        role: "owner", // required
       };
 
       const res = await fetch(
