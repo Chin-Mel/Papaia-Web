@@ -25,7 +25,7 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
       : placeholderData;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 min-h-[300px] sm:min-h-[350px]">
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-4 min-h-[300px] sm:min-h-[350px]">
       <h3 className="text-sm sm:text-base font-medium text-gray-700 mb-2">
         {timeFilter} Farm Condition
       </h3>

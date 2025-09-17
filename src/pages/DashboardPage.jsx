@@ -175,12 +175,12 @@ export default function DashboardPage() {
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto flex flex-col lg:flex-row gap-6">
           {/* Left Column - Recent Activities */}
-          <div className="w-full lg:w-50 xl:w-[330px] flex-shrink-0">
+          <div className="w-full order-3 lg:order-1 lg:w-50 xl:w-[330px] flex-shrink-0">
             <RecentActivities limit={5} />
           </div>
 
           {/* Right Column - Dashboard Content */}
-          <div className="flex-1">
+          <div className="flex-1 order-1 lg:order-2">
             {/* Dashboard Overview */}
             <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
               Dashboard Overview
@@ -266,7 +266,7 @@ export default function DashboardPage() {
             </div>
 
             {/* My Farms Section */}
-            <div>
+            <div className="order-2 lg:order-3">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
                 <h2 className="text-base sm:text-lg font-bold text-gray-800">
                   My Farms
