@@ -63,7 +63,25 @@ function EditProfilePage() {
   const handleSaveChanges = async () => {
     setLoading(true);
     try {
-      // Send all formValues, not just changed fields
+      const updatedData = {
+        username: formValues.username || userData.username,
+        email: formValues.email || userData.email,
+        password: formValues.password || "", // only if required
+        role: "owner",
+        firstName: formValues.firstName || userData.firstName,
+        middleName: formValues.middleName || "",
+        lastName: formValues.lastName || userData.lastName,
+        suffix: formValues.suffix || "",
+        birthDate: formValues.birthDate || null,
+        contactNumber: formValues.contactNumber || userData.contactNumber,
+        profilePicture: userData.profilePicture || "",
+        street: formValues.street || "",
+        barangay: formValues.barangay || "",
+        municipality: formValues.municipality || "",
+        province: formValues.province || "",
+        zipCode: formValues.zipCode || "",
+      };
+
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/user/${userId}`,
         {
@@ -72,7 +90,7 @@ function EditProfilePage() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(formValues),
+          body: JSON.stringify(updatedData),
         }
       );
 
@@ -80,7 +98,6 @@ function EditProfilePage() {
 
       const updated = await res.json();
 
-      // Update local state and localStorage
       setUserData(updated);
       localStorage.setItem("user", JSON.stringify(updated));
 
