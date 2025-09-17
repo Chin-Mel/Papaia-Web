@@ -115,6 +115,7 @@ function EditProfilePage() {
 
       alert("Profile updated successfully!");
       navigate("/profile");
+      window.dispatchEvent(new Event("userUpdated"));
     } catch (err) {
       console.error(err);
       alert("Error updating profile.");
