@@ -63,23 +63,26 @@ function EditProfilePage() {
   const handleSaveChanges = async () => {
     setLoading(true);
     try {
-      const updatedData = {
-        username: formValues.username || userData.username,
-        email: formValues.email || userData.email,
-        firstName: formValues.firstName || userData.firstName,
-        middleName: formValues.middleName || null,
-        lastName: formValues.lastName || userData.lastName,
-        suffix: formValues.suffix || null,
-        birthDate: formValues.birthDate || null,
-        contactNumber: formValues.contactNumber || userData.contactNumber,
-        profilePicture: userData.profilePicture || null,
-        street: formValues.street || null,
-        barangay: formValues.barangay || null,
-        municipality: formValues.municipality || null,
-        province: formValues.province || null,
-        zipCode: formValues.zipCode || null,
-        role: "owner", // required
-      };
+      const updatedData = {};
+
+      // Include only changed or required fields
+      [
+        "firstName",
+        "middleName",
+        "lastName",
+        "username",
+        "email",
+        "contactNumber",
+        "birthDate",
+      ].forEach((key) => {
+        if (formValues[key] && formValues[key] !== userData[key]) {
+          updatedData[key] = formValues[key];
+        }
+      });
+
+      updatedData.username = formValues.username || userData.username;
+      updatedData.email = formValues.email || userData.email;
+      updatedData.role = "owner";
 
       console.log("Payload to update user:", updatedData);
 
@@ -98,7 +101,6 @@ function EditProfilePage() {
       if (!res.ok) throw new Error("Failed to update user");
 
       const updated = await res.json();
-
       setUserData(updated);
       localStorage.setItem("user", JSON.stringify(updated));
 
