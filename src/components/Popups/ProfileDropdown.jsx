@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react"; // ✅ Add this
 import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import defaultUserPic from "../../assets/default-user.png"; // ✅ import default image
+import defaultUserPic from "../../assets/default-user.png";
+import { getLoggedInUser } from "../../utils/security"; // make sure this is imported
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
@@ -39,25 +41,27 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
           {/* Profile Picture */}
           <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
             <img
-              src={user?.profilePicture || defaultUserPic} // ✅ use uploaded or fallback
+              src={userData?.profilePicture || defaultUserPic}
               alt={
-                user?.firstName ? `${user.firstName} ${user.lastName}` : "User"
+                userData?.firstName
+                  ? `${userData.firstName} ${userData.lastName}`
+                  : "User"
               }
               className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = defaultUserPic;
-              }}
+              onError={(e) => (e.target.src = defaultUserPic)}
             />
           </div>
 
           {/* User Info */}
           <div className="flex-1">
             <h4 className="font-bold text-gray-800 text-lg">
-              {user?.firstName && user?.lastName
-                ? `${user.firstName} ${user.lastName}`
-                : user?.username || "Unknown User"}
+              {userData?.firstName && userData?.lastName
+                ? `${userData.firstName} ${userData.lastName}`
+                : userData?.username || "Unknown User"}
             </h4>
-            <p className="text-gray-600 text-sm">{user?.email || "No email"}</p>
+            <p className="text-gray-600 text-sm">
+              {userData?.email || "No email"}
+            </p>
           </div>
         </div>
       </div>
