@@ -61,7 +61,6 @@ function EditProfilePage() {
 
   // Handle save changes
   const handleSaveChanges = async () => {
-    console.log("Payload to update user:", updatedData);
     setLoading(true);
     try {
       const updatedData = {
@@ -81,6 +80,8 @@ function EditProfilePage() {
         zipCode: formValues.zipCode || null,
         role: "owner", // required
       };
+
+      console.log("Payload to update user:", updatedData);
 
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/user/${userId}`,
