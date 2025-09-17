@@ -289,7 +289,7 @@ export default function ProfilePage() {
                       <Phone className="w-4 h-4" /> Contact Number
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(serData.contactNumber)}
+                      {renderField(userData.contactNumber)}
                     </div>
                   </div>
 
