@@ -66,20 +66,20 @@ function EditProfilePage() {
       const updatedData = {
         username: formValues.username || userData.username,
         email: formValues.email || userData.email,
-        password: formValues.password || "", // only if required
-        role: "owner",
         firstName: formValues.firstName || userData.firstName,
-        middleName: formValues.middleName || "",
+        middleName: formValues.middleName || userData.middleName || null,
         lastName: formValues.lastName || userData.lastName,
-        suffix: formValues.suffix || "",
+        suffix: formValues.suffix || userData.suffix || null,
         birthDate: formValues.birthDate || null,
         contactNumber: formValues.contactNumber || userData.contactNumber,
         profilePicture: userData.profilePicture || "",
-        street: formValues.street || "",
-        barangay: formValues.barangay || "",
-        municipality: formValues.municipality || "",
-        province: formValues.province || "",
-        zipCode: formValues.zipCode || "",
+        street: formValues.street || userData.street || null,
+        barangay: formValues.barangay || userData.barangay || null,
+        municipality: formValues.municipality || userData.municipality || null,
+        province: formValues.province || userData.province || null,
+        zipCode: formValues.zipCode || userData.zipCode || null,
+        role: userData.role, // required
+        status: userData.status, // include if backend requires
       };
 
       const res = await fetch(
