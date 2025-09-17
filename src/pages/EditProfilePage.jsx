@@ -59,11 +59,11 @@ function EditProfilePage() {
     setLoading(true);
     try {
       const body = {};
-      for (let key in userData) {
-        body[key] =
-          formValues[key] !== "" && formValues[key] !== undefined
-            ? formValues[key]
-            : userData[key];
+
+      for (let key in formValues) {
+        if (formValues[key] !== userData[key]) {
+          body[key] = formValues[key];
+        }
       }
 
       const res = await fetch(
