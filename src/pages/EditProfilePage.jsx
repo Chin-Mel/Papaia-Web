@@ -131,6 +131,12 @@ function EditProfilePage() {
     }
   };
 
+  const handleCloseChangePasswordModal = () =>
+    setShowChangePasswordModal(false);
+  const handleCloseDeactivateAccountModal = () =>
+    setShowDeactivateAccountModal(false);
+  const handleCloseDeleteAccountModal = () => setShowDeleteAccountModal(false);
+
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <HeaderMain />
@@ -354,7 +360,24 @@ function EditProfilePage() {
           </div>
         </section>
       </main>
-
+      {showChangePasswordModal && (
+        <ChangePasswordModal
+          onClose={handleCloseChangePasswordModal}
+          onSubmit={handleAddFarm}
+        />
+      )}
+      {showDeactivateAccountModal && (
+        <DeactivateAccountModal
+          onClose={handleCloseDeactivateAccountModal}
+          onSubmit={handleAddFarm}
+        />
+      )}
+      {showDeleteAccountModal && (
+        <DeleteAccountModal
+          onClose={handleCloseDeleteAccountModal}
+          onSubmit={handleAddFarm}
+        />
+      )}
       <FooterMain />
     </div>
   );
