@@ -361,22 +361,13 @@ function EditProfilePage() {
         </section>
       </main>
       {showChangePasswordModal && (
-        <ChangePasswordModal
-          onClose={handleCloseChangePasswordModal}
-          onSubmit={handleAddFarm}
-        />
+        <ChangePasswordModal onClose={handleCloseChangePasswordModal} />
       )}
       {showDeactivateAccountModal && (
-        <DeactivateAccountModal
-          onClose={handleCloseDeactivateAccountModal}
-          onSubmit={handleAddFarm}
-        />
+        <DeactivateAccountModal onClose={handleCloseDeactivateAccountModal} />
       )}
       {showDeleteAccountModal && (
-        <DeleteAccountModal
-          onClose={handleCloseDeleteAccountModal}
-          onSubmit={handleAddFarm}
-        />
+        <DeleteAccountModal onClose={handleCloseDeleteAccountModal} />
       )}
       <FooterMain />
     </div>
