@@ -60,7 +60,7 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#4A7C59] to-[#F97316] p-6 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Add Farmer by ID</h2>
           <button
             onClick={onClose}

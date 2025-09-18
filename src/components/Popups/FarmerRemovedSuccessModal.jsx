@@ -6,7 +6,7 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
-        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-lg p-6 relative">
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
               <CheckCircle className="w-8 h-8 text-white" />

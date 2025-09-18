@@ -9,7 +9,7 @@ export default function FarmAddedSuccessModal({
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
         {/* Header Section with Gradient */}
-        <div className="bg-gradient-to-r from-[#4A7C59] to-[#F97316] rounded-t-lg p-6 relative">
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative">
           {/* Success Icon */}
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">

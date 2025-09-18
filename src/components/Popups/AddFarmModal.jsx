@@ -58,7 +58,7 @@ export default function AddFarmModal({ onClose, onSubmit }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-[#4A7C59] to-[#FF8C42] rounded-t-lg p-6 relative">
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
               <Leaf className="w-5 h-5 text-white" />
