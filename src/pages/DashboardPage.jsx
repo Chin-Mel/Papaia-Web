@@ -123,7 +123,6 @@ export default function DashboardPage() {
   }, []);
 
   // Handle adding a new farm
-  // Handle adding a new farm
   const handleAddFarm = async (farmData) => {
     try {
       setLoading(true);

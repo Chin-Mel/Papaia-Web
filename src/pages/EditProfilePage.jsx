@@ -11,6 +11,9 @@ import {
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
 import { useNavigate } from "react-router-dom";
+import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
+import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
+import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState({});
@@ -18,6 +21,10 @@ function EditProfilePage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
+    useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const userId = user?.id;
   const token = localStorage.getItem("token");
 
@@ -289,7 +296,11 @@ function EditProfilePage() {
                 Update your account password to keep it secure
               </p>
             </div>
-            <button className="w-full sm:w-auto flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow hover:bg-orange-600 transition-colors">
+            <button
+              onClick={() => setShowChangePasswordModal(true)}
+              disabled={loading}
+              className="w-full sm:w-auto flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow hover:bg-orange-600 transition-colors"
+            >
               <Shield size={20} className="mr-2" />
               Change Password
             </button>
@@ -312,7 +323,11 @@ function EditProfilePage() {
                   anytime.
                 </p>
               </div>
-              <button className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-500 text-red-500 font-medium hover:bg-red-500 hover:text-white transition-colors">
+              <button
+                onClick={() => setShowDeactivateAccountModal(true)}
+                disabled={loading}
+                className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-500 text-red-500 font-medium hover:bg-red-500 hover:text-white transition-colors"
+              >
                 Deactivate Account
               </button>
             </div>
@@ -327,7 +342,11 @@ function EditProfilePage() {
                   action cannot be undone.
                 </p>
               </div>
-              <button className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-800 text-red-800 font-medium hover:bg-red-800 hover:text-white transition-colors">
+              <button
+                onClick={() => setShowDeleteAccountModal(true)}
+                disabled={loading}
+                className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-800 text-red-800 font-medium hover:bg-red-800 hover:text-white transition-colors"
+              >
                 <Trash2 size={18} className="mr-2" />
                 Delete Account
               </button>
