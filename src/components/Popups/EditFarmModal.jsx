@@ -11,15 +11,15 @@ function EditFarmModal({ isOpen, onClose, farmData }) {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (farm && isOpen) {
+    if (farmData && isOpen) {
       setFormData({
-        farmName: farm.farmName || "",
-        location: farm.location || "",
-        description: farm.description || "",
-        farmImage: farm.farmImage || "",
+        farmName: farmData.farmName || "",
+        location: farmData.location || "",
+        description: farmData.description || "",
+        farmImage: farmData.farmImage || "",
       });
     }
-  }, [farm, isOpen]);
+  }, [farmData, isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -31,7 +31,7 @@ function EditFarmModal({ isOpen, onClose, farmData }) {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      await mockAPI.updateFarm(farm.id, formData);
+      await mockAPI.updateFarm(farmData.id, formData);
       onSave(formData);
       onClose();
     } catch (error) {
