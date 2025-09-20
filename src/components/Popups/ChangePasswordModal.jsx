@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AlertTriangle, X, Eye, EyeOff } from "lucide-react";
 
-export default function ChangePasswordModal() {
+export default function ChangePasswordModal([isOpen, onClose]) {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -56,6 +56,7 @@ export default function ChangePasswordModal() {
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
+    onClose();
   };
 
   const allRequirementsMet = passwordRequirements.every((req) => req.met);
@@ -103,7 +104,7 @@ export default function ChangePasswordModal() {
                 </div>
               </div>
               <button
-                onClick={handleClose}
+                onClick={onClose}
                 className="text-white hover:text-gray-200 transition-colors p-1 flex-shrink-0"
               >
                 <X className="w-5 h-5 sm:w-6 sm:h-6" />

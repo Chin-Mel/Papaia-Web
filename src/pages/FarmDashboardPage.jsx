@@ -24,6 +24,7 @@ import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
 import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModal";
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import DeactivateFarmModal from "../components/Popups/DeactivateFarmModal";
+import EditFarmModal from "../components/Popups/EditFarmModal";
 import FarmAnalytics from "./FarmAnalytics";
 
 // --- StatusDropdown Component ---
@@ -93,6 +94,7 @@ export default function FarmDashboardPage() {
   const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
   const [isDeactivateFarmModalOpen, setIsDeactivateFarmModalOpen] =
     useState(false);
+  const [isEditFarmModalOpen, setIsEditFarmModalOpen] = useState(false);
 
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
@@ -265,6 +267,8 @@ export default function FarmDashboardPage() {
     setSelectedFarmer(null);
     setNewlyAddedFarmer(null);
   };
+
+  const handleCloseEditFarmModal = () => setIsEditFarmModal(false);
 
   const handleDeactivateFarm = async (farmId) => {
     try {
@@ -467,7 +471,10 @@ export default function FarmDashboardPage() {
               <h2 className="text-base sm:text-lg font-bold text-gray-800">
                 Farm Description
               </h2>
-              <button className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+              <button
+                onClick={() => setIsEditFarmModal(true)}
+                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+              >
                 <Edit3 className="w-4 h-4" />
                 Edit Description
               </button>
