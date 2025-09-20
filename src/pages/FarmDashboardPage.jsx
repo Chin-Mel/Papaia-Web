@@ -688,6 +688,11 @@ export default function FarmDashboardPage() {
         farmId={farmId}
       />
 
+      <EditFarmModal
+        isOpen={isEditFarmModalOpen}
+        onClose={() => setIsEditFarmModalOpen(false)}
+      />
+
       <FarmerDetailModal
         isOpen={isFarmerDetailModalOpen}
         onClose={() => setIsFarmerDetailModalOpen(false)}

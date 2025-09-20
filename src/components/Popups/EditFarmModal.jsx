@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { X, Leaf, Save } from "lucide-react";
 
-function EditFarmModal({ isOpen, onClose, onSave, farm }) {
+function EditFarmModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
