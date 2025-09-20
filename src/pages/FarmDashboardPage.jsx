@@ -688,16 +688,6 @@ export default function FarmDashboardPage() {
         farmId={farmId}
       />
 
-      <Footer />
-
-      {/* Modals */}
-      <AddFarmerModal
-        isOpen={isAddFarmerModalOpen}
-        onClose={() => setIsAddFarmerModalOpen(false)}
-        onFarmerAdded={handleFarmerAdded}
-        farmId={farmId}
-      />
-
       <EditFarmModal
         isOpen={isEditFarmModalOpen}
         onClose={handleCloseEditFarmModal}
@@ -733,7 +723,7 @@ export default function FarmDashboardPage() {
       <DeactivateFarmModal
         isOpen={isDeactivateFarmModalOpen}
         onClose={() => setIsDeactivateFarmModalOpen(false)}
-        farm={farmData}
+        farmData={farmData}
         onConfirmDeactivate={handleDeactivateFarm}
       />
     </div>
