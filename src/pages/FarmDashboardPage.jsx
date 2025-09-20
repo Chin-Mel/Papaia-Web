@@ -688,9 +688,20 @@ export default function FarmDashboardPage() {
         farmId={farmId}
       />
 
+      <Footer />
+
+      {/* Modals */}
+      <AddFarmerModal
+        isOpen={isAddFarmerModalOpen}
+        onClose={() => setIsAddFarmerModalOpen(false)}
+        onFarmerAdded={handleFarmerAdded}
+        farmId={farmId}
+      />
+
       <EditFarmModal
         isOpen={isEditFarmModalOpen}
-        onClose={() => setIsEditFarmModalOpen(false)}
+        onClose={handleCloseEditFarmModal}
+        farmData={farmData}
       />
 
       <FarmerDetailModal
