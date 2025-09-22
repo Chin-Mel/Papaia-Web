@@ -1,20 +1,51 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
-export default function DeactivateAccountModal() {
+export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [reason, setReason] = useState("");
   const [otherReason, setOtherReason] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleDeactivate = () => {
+  const handleDeactivate = async () => {
     if (!acknowledged) return;
-    const selectedReason = reason === "Other" ? otherReason : reason;
-    console.log("Deactivation Reason:", selectedReason);
-    // TODO: Call API to deactivate
-    // Reset form
-    setReason("");
-    setOtherReason("");
-    setAcknowledged(false);
+
+    setIsLoading(true);
+
+    try {
+      const selectedReason = reason === "Other" ? otherReason : reason;
+
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/user/deactivate",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            reason: selectedReason,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        alert("Account deactivated successfully. You will be logged out.");
+
+        // Clear localStorage and redirect to login
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+      } else {
+        const data = await response.json();
+        alert(data.message || "Failed to deactivate account");
+      }
+    } catch (error) {
+      console.error("Error deactivating account:", error);
+      alert("Failed to deactivate account");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleClose = () => {
@@ -22,7 +53,10 @@ export default function DeactivateAccountModal() {
     setReason("");
     setOtherReason("");
     setAcknowledged(false);
+    onClose();
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
@@ -39,7 +73,7 @@ export default function DeactivateAccountModal() {
               </h2>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="text-white hover:text-gray-200 transition-colors p-1 flex-shrink-0"
             >
               <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -141,21 +175,21 @@ export default function DeactivateAccountModal() {
         <div className="flex gap-2 sm:gap-3 px-4 sm:px-6 pb-4 sm:pb-6 flex-shrink-0">
           <button
             onClick={handleClose}
-            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors text-xs sm:text-sm"
+            disabled={isLoading}
+            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
           <button
             onClick={handleDeactivate}
-            disabled={!acknowledged}
+            disabled={!acknowledged || isLoading}
             className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
-              acknowledged
+              acknowledged && !isLoading
                 ? "bg-red-400 hover:bg-red-500 text-white"
                 : "bg-red-200 text-red-400 cursor-not-allowed"
             }`}
           >
-            <span className="hidden xs:inline">Deactivate Account</span>
-            <span className="xs:hidden">Deactivate</span>
+            {isLoading ? "Deactivating..." : "Deactivate Account"}
           </button>
         </div>
       </div>
