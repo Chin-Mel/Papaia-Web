@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertTriangle, X, Eye, EyeOff } from "lucide-react";
 
 export default function ChangePasswordModal({ isOpen, onClose }) {
@@ -10,7 +10,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isCurrentPasswordVerified, setIsCurrentPasswordVerified] =
     useState(false);
-  const [isVerifyingPassword, setIsVerifyingPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -43,12 +42,9 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
     { text: "One number", met: /\d/.test(newPassword) },
   ];
 
-  // Verify current password
-  const verifyCurrentPassword = async () => {
-    if (!currentPassword) return;
-
-    setIsVerifyingPassword(true);
-    setErrors({});
+  // Verify current password when user stops typing
+  const verifyCurrentPassword = async (password) => {
+    if (!password || password.length < 3) return;
 
     try {
       const response = await fetch(
@@ -59,7 +55,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({ password: currentPassword }),
+          body: JSON.stringify({ password }),
         }
       );
 
@@ -67,37 +63,45 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
 
       if (response.ok && data.valid) {
         setIsCurrentPasswordVerified(true);
-        setErrors({});
+        setErrors((prev) => ({ ...prev, currentPassword: "" }));
       } else {
-        setErrors({ currentPassword: "Current password is incorrect" });
         setIsCurrentPasswordVerified(false);
+        setErrors((prev) => ({
+          ...prev,
+          currentPassword: "Current password is incorrect",
+        }));
       }
     } catch (error) {
       console.error("Error verifying password:", error);
-      setErrors({ currentPassword: "Failed to verify password" });
       setIsCurrentPasswordVerified(false);
-    } finally {
-      setIsVerifyingPassword(false);
+      setErrors((prev) => ({
+        ...prev,
+        currentPassword: "Failed to verify password",
+      }));
     }
   };
 
-  // Handle current password change and auto-verify
+  // Handle current password change with debouncing
   const handleCurrentPasswordChange = (value) => {
     setCurrentPassword(value);
     setIsCurrentPasswordVerified(false);
-    setErrors({});
+    setErrors((prev) => ({ ...prev, currentPassword: "" }));
 
-    // Auto-verify after user stops typing (debounced)
-    if (value.length >= 6) {
-      const timer = setTimeout(() => {
-        verifyCurrentPassword();
+    // Clear any existing timeout
+    if (window.passwordVerifyTimeout) {
+      clearTimeout(window.passwordVerifyTimeout);
+    }
+
+    // Set new timeout for verification
+    if (value.length >= 3) {
+      window.passwordVerifyTimeout = setTimeout(() => {
+        verifyCurrentPassword(value);
       }, 1000);
-      return () => clearTimeout(timer);
     }
   };
 
   const handleUpdatePassword = async () => {
-    if (!canUpdatePassword) return;
+    if (!canUpdatePassword || isLoading) return;
 
     setIsLoading(true);
     setErrors({});
@@ -141,6 +145,11 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   };
 
   const handleClose = () => {
+    // Clear any pending timeout
+    if (window.passwordVerifyTimeout) {
+      clearTimeout(window.passwordVerifyTimeout);
+    }
+
     // Reset form
     setCurrentPassword("");
     setNewPassword("");
@@ -151,12 +160,13 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   };
 
   const allRequirementsMet = passwordRequirements.every((req) => req.met);
+  const passwordsMatch = newPassword === confirmPassword;
 
   const canUpdatePassword =
     isCurrentPasswordVerified &&
     newPassword &&
     confirmPassword &&
-    newPassword === confirmPassword &&
+    passwordsMatch &&
     allRequirementsMet;
 
   if (!isOpen) return null;
@@ -164,7 +174,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md lg:max-w-lg mx-2 sm:mx-0 max-h-[95vh] sm:max-h-none overflow-hidden flex flex-col">
-        {/* Header with gradient */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -201,7 +211,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           {/* Current Password */}
           <div className="space-y-2">
             <label className="text-gray-700 font-medium text-sm sm:text-base">
-              Current Password
+              Current Password *
             </label>
             <div className="relative">
               <input
@@ -210,11 +220,11 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
                 value={currentPassword}
                 onChange={(e) => handleCurrentPasswordChange(e.target.value)}
                 className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm placeholder-gray-400 pr-12 ${
-                  errors.currentPassword ? "border-red-500" : "border-gray-200"
-                } ${
-                  isCurrentPasswordVerified
+                  errors.currentPassword
+                    ? "border-red-500"
+                    : isCurrentPasswordVerified
                     ? "border-green-500 bg-green-50"
-                    : ""
+                    : "border-gray-200"
                 }`}
               />
               <button
@@ -232,9 +242,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             {errors.currentPassword && (
               <p className="text-red-500 text-xs">{errors.currentPassword}</p>
             )}
-            {isVerifyingPassword && (
-              <p className="text-blue-500 text-xs">Verifying password...</p>
-            )}
             {isCurrentPasswordVerified && (
               <p className="text-green-500 text-xs">
                 ✓ Current password verified
@@ -242,10 +249,10 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* New Password - Only enabled after current password is verified */}
+          {/* New Password */}
           <div className="space-y-2">
             <label className="text-gray-700 font-medium text-sm sm:text-base">
-              New Password
+              New Password *
             </label>
             <div className="relative">
               <input
@@ -285,10 +292,10 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             )}
           </div>
 
-          {/* Confirm Password - Only enabled after current password is verified */}
+          {/* Confirm Password */}
           <div className="space-y-2">
             <label className="text-gray-700 font-medium text-sm sm:text-base">
-              Confirm New Password
+              Confirm New Password *
             </label>
             <div className="relative">
               <input
@@ -297,10 +304,12 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={!isCurrentPasswordVerified}
-                className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm placeholder-gray-400 pr-12 ${
+                className={`w-full px-3 sm:px-4 py-3 sm:py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm placeholder-gray-400 pr-12 ${
                   !isCurrentPasswordVerified
-                    ? "bg-gray-100 cursor-not-allowed"
-                    : ""
+                    ? "bg-gray-100 cursor-not-allowed border-gray-200"
+                    : confirmPassword && !passwordsMatch
+                    ? "border-red-500"
+                    : "border-gray-200"
                 }`}
               />
               <button
@@ -318,14 +327,14 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
             </div>
 
             {/* Password Match Error */}
-            {confirmPassword && newPassword !== confirmPassword && (
+            {confirmPassword && !passwordsMatch && (
               <p className="text-red-500 text-xs sm:text-sm">
                 Passwords do not match
               </p>
             )}
           </div>
 
-          {/* Password Requirements - Only show when current password is verified */}
+          {/* Password Requirements */}
           {isCurrentPasswordVerified && (
             <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
               <h4 className="text-gray-700 font-medium text-sm sm:text-base mb-3">
@@ -354,7 +363,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           )}
         </div>
 
-        {/* Footer buttons */}
+        {/* Footer */}
         <div className="flex gap-2 sm:gap-3 px-4 sm:px-6 pb-4 sm:pb-6 flex-shrink-0">
           <button
             onClick={handleClose}

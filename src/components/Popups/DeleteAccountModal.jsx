@@ -4,18 +4,21 @@ import { X, AlertTriangle } from "lucide-react";
 export default function DeleteAccountModal({ isOpen, onClose }) {
   const [confirmText, setConfirmText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const isDeleteEnabled = confirmText === "DELETE";
 
   const handleCancel = () => {
     setConfirmText("");
+    setError("");
     onClose();
   };
 
   const handleDelete = async () => {
-    if (!isDeleteEnabled) return;
+    if (!isDeleteEnabled || isLoading) return;
 
     setIsLoading(true);
+    setError("");
 
     try {
       const response = await fetch(
@@ -23,25 +26,26 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         {
           method: "DELETE",
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       );
 
       if (response.ok) {
-        alert("Account deleted successfully.");
+        alert("Account deleted successfully. You will be logged out.");
 
-        // Clear localStorage and redirect to home/login
+        // Clear localStorage and redirect to login
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "/";
+        window.location.href = "/login";
       } else {
         const data = await response.json();
-        alert(data.message || "Failed to delete account");
+        setError(data.message || "Failed to delete account");
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      alert("Failed to delete account");
+      setError("Failed to delete account. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -62,8 +66,7 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
           </div>
           <button
             onClick={handleCancel}
-            disabled={isLoading}
-            className="text-white hover:text-gray-200 transition-colors disabled:opacity-50"
+            className="text-white hover:text-gray-200 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -71,18 +74,27 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Warning Message */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
             <p className="text-red-700 text-sm leading-relaxed">
-              Deleting your account is permanent. This action cannot be undone.
+              <strong>Warning:</strong> Deleting your account is permanent and
+              cannot be undone. This action will permanently remove all your
+              data.
             </p>
           </div>
 
           {/* What will be lost */}
           <div>
             <h3 className="text-gray-900 font-medium mb-4">
-              What will be lost:
+              What will be permanently deleted:
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
@@ -100,7 +112,13 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
               <li className="flex items-start gap-3">
                 <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                 <span className="text-gray-700 text-sm">
-                  Subscriptions and preferences
+                  Profile information and preferences
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <X className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <span className="text-gray-700 text-sm">
+                  Account access and login credentials
                 </span>
               </li>
             </ul>
@@ -109,16 +127,19 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
           {/* Confirmation Input */}
           <div>
             <p className="text-gray-700 text-sm mb-3">
-              Type <span className="font-bold text-red-600">DELETE</span> to
-              confirm:
+              To confirm deletion, type{" "}
+              <span className="font-bold text-red-600 bg-red-50 px-1 rounded">
+                DELETE
+              </span>{" "}
+              in the box below:
             </p>
             <input
               type="text"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder="Type DELETE here"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-sm"
               disabled={isLoading}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
         </div>

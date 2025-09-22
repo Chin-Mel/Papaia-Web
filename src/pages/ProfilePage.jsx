@@ -28,9 +28,32 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!loggedInUser || !token) return;
 
+    // Set initial user data
     setUserData(loggedInUser);
 
     let mounted = true;
+
+    // Fetch latest user data from server to ensure we have current info
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          const user = data.user || data;
+          if (mounted) {
+            setUserData(user);
+            // Update localStorage with fresh data
+            localStorage.setItem("user", JSON.stringify(user));
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch fresh user data:", err.message);
+      }
+    };
 
     const fetchFarmCount = async () => {
       try {
@@ -52,10 +75,22 @@ export default function ProfilePage() {
       }
     };
 
+    fetchUserData();
     fetchFarmCount();
+
+    // Listen for user updates from other components
+    const handleUserUpdate = () => {
+      const updatedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (mounted && updatedUser.id) {
+        setUserData(updatedUser);
+      }
+    };
+
+    window.addEventListener("userUpdated", handleUserUpdate);
 
     return () => {
       mounted = false;
+      window.removeEventListener("userUpdated", handleUserUpdate);
     };
   }, []);
 
@@ -79,31 +114,35 @@ export default function ProfilePage() {
       );
 
       if (!res.ok) {
-        console.error("Failed to update profile picture");
-        return;
+        throw new Error("Failed to update profile picture");
       }
 
       const updatedUser = await res.json();
 
+      // Update userData with complete user info plus new profile picture
       const updatedUserData = {
-        ...loggedInUser,
+        ...userData,
+        ...updatedUser,
         profilePicture: updatedUser.profilePicture,
       };
 
       setUserData(updatedUserData);
       localStorage.setItem("user", JSON.stringify(updatedUserData));
 
-      // ✅ Dispatch a custom event immediately in the same tab
+      // Dispatch event to update header and other components immediately
       window.dispatchEvent(new Event("userUpdated"));
+
+      alert("Profile picture updated successfully!");
     } catch (err) {
       console.error("Error uploading profile picture:", err);
+      alert("Error uploading profile picture. Please try again.");
     } finally {
       setUploading(false);
     }
   };
 
   const handleCameraClick = () => {
-    fileInputRef.current.click();
+    fileInputRef.current?.click();
   };
 
   const handleEditProfile = () => {
@@ -116,9 +155,32 @@ export default function ProfilePage() {
     </span>
   );
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      return new Date(dateString).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
+  const getFullName = () => {
+    const { firstName, lastName, middleName } = userData;
+    if (firstName && lastName) {
+      return middleName
+        ? `${firstName} ${middleName} ${lastName}`
+        : `${firstName} ${lastName}`;
+    }
+    return userData.username || "N/A";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Header */}
+      {/* Header */}
       <HeaderMain />
 
       {/* Main Content */}
@@ -134,6 +196,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
+          {/* Hidden file input */}
           <input
             type="file"
             ref={fileInputRef}
@@ -142,11 +205,12 @@ export default function ProfilePage() {
             style={{ display: "none" }}
           />
 
-          {/* Grid */}
+          {/* Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Panel */}
+            {/* Left Panel - Profile Card */}
             <div>
               <div className="bg-white rounded-lg shadow-sm p-6 h-full flex flex-col items-center">
+                {/* Profile Picture */}
                 <div className="relative">
                   <img
                     src={
@@ -154,13 +218,14 @@ export default function ProfilePage() {
                         ? `https://papaiaapi.onrender.com${userData.profilePicture}`
                         : defaultUserPic
                     }
-                    alt={`${userData.firstName || ""} ${
-                      userData.lastName || ""
-                    }`}
+                    alt={getFullName()}
                     className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-100"
-                    onError={(e) => (e.currentTarget.src = defaultUserPic)}
+                    onError={(e) => {
+                      e.currentTarget.src = defaultUserPic;
+                    }}
                   />
 
+                  {/* Camera button */}
                   <button
                     onClick={handleCameraClick}
                     disabled={uploading}
@@ -171,13 +236,13 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
+                {/* User Info */}
                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 mt-4 mb-1 text-center">
-                  {userData.firstName && userData.lastName
-                    ? `${userData.firstName} ${userData.lastName}`
-                    : renderField(userData.username)}
+                  {getFullName()}
                 </h2>
                 <p className="text-gray-600 text-sm mb-3">Farm Owner</p>
 
+                {/* Farm Count Card */}
                 <div className="bg-green-50 rounded-lg p-4 border border-green-100 w-full">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
@@ -189,39 +254,39 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <span className="text-lg font-bold text-green-600">
-                      {farmCount || renderField(null)}
+                      {farmCount}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Panel */}
+            {/* Right Panel - Details */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm p-6">
+                {/* Section Header */}
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-3">
                   <h3 className="text-lg font-bold text-gray-800 text-center sm:text-left">
                     Personal Information
                   </h3>
                   <button
                     onClick={handleEditProfile}
-                    disabled={!userData}
-                    className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition shadow hover:shadow-md self-center sm:self-auto"
+                    disabled={!userData.id}
+                    className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition shadow hover:shadow-md self-center sm:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Edit3 className="w-4 h-4" />
                     Edit Profile
                   </button>
                 </div>
 
+                {/* Information Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                       <User className="w-4 h-4" /> Full Name
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {userData.firstName && userData.lastName
-                        ? `${userData.firstName} ${userData.lastName}`
-                        : renderField(null)}
+                      {renderField(getFullName())}
                     </div>
                   </div>
 
@@ -257,7 +322,7 @@ export default function ProfilePage() {
                       <Calendar className="w-4 h-4" /> Birth Date
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.birthDate)}
+                      {renderField(formatDate(userData.birthDate))}
                     </div>
                   </div>
                 </div>

@@ -1,4 +1,3 @@
-// imports unchanged ...
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
@@ -37,17 +36,47 @@ export default function HeaderMain() {
     loadUser();
 
     // Listen for profile updates in the same tab
-    window.addEventListener("userUpdated", loadUser);
+    const handleUserUpdate = () => {
+      loadUser();
+    };
+
+    window.addEventListener("userUpdated", handleUserUpdate);
 
     return () => {
-      window.removeEventListener("userUpdated", loadUser);
+      window.removeEventListener("userUpdated", handleUserUpdate);
     };
   }, []);
 
   const handleLogout = () => {
     secureLogout();
     setIsProfileOpen(false);
+    setIsMenuOpen(false);
     navigate("/sign-in");
+  };
+
+  // Helper function to get profile picture URL
+  const getProfilePictureUrl = () => {
+    if (userData?.profilePicture) {
+      if (userData.profilePicture.startsWith("http")) {
+        return userData.profilePicture;
+      }
+      return `https://papaiaapi.onrender.com${userData.profilePicture}`;
+    }
+    return defaultUser;
+  };
+
+  // Helper function to get display name
+  const getDisplayName = () => {
+    if (userData?.firstName && userData?.lastName) {
+      return `${userData.firstName} ${userData.lastName}`;
+    }
+    return userData?.username || "User";
+  };
+
+  // Handle mobile profile click
+  const handleMobileProfileClick = () => {
+    setIsMenuOpen(false);
+    navigate("/profile");
   };
 
   return (
@@ -80,7 +109,7 @@ export default function HeaderMain() {
 
           {/* Right: Welcome + Notifications + Profile + Burger */}
           <div className="flex items-center gap-4 relative">
-            {/* Welcome */}
+            {/* Welcome Message */}
             <span className="hidden md:block text-[#4A7C59] font-medium truncate max-w-[180px]">
               {userData
                 ? `Welcome, ${
@@ -121,7 +150,7 @@ export default function HeaderMain() {
               />
             </div>
 
-            {/* Profile */}
+            {/* Desktop Profile */}
             <div className="hidden lg:flex items-center gap-2 relative">
               <button
                 className={`flex items-center gap-2 rounded-md px-2 py-1 transition-colors
@@ -137,14 +166,12 @@ export default function HeaderMain() {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
                   <img
-                    src={
-                      userData?.profilePicture
-                        ? `https://papaiaapi.onrender.com${userData.profilePicture}`
-                        : defaultUser
-                    }
+                    src={getProfilePictureUrl()}
                     alt="User Avatar"
                     className="w-full h-full object-cover"
-                    onError={(e) => (e.target.src = defaultUser)}
+                    onError={(e) => {
+                      e.target.src = defaultUser;
+                    }}
                   />
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -178,11 +205,12 @@ export default function HeaderMain() {
         {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white p-4 shadow-lg border-t border-gray-100 space-y-3">
+            {/* Navigation Links */}
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 to={item.href}
-                className={`block cursor-pointer font-medium px-3 py-2 rounded-md text-base
+                className={`block cursor-pointer font-medium px-3 py-2 rounded-md text-base transition-colors
                   ${
                     location.pathname === item.href
                       ? "bg-[#4A7C59] text-white"
@@ -196,30 +224,30 @@ export default function HeaderMain() {
 
             <div className="border-t border-gray-200 my-2"></div>
 
-            {/* Profile Section */}
-            <div className="flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200">
+            {/* Mobile Profile Section - Clickable */}
+            <button
+              onClick={handleMobileProfileClick}
+              className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors text-left"
+            >
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
                 <img
-                  src={
-                    userData?.profilePicture
-                      ? `https://papaiaapi.onrender.com${userData.profilePicture}`
-                      : defaultUser
-                  }
+                  src={getProfilePictureUrl()}
                   alt="User Avatar"
                   className="w-full h-full object-cover"
-                  onError={(e) => (e.target.src = defaultUser)}
+                  onError={(e) => {
+                    e.target.src = defaultUser;
+                  }}
                 />
               </div>
-              <div className="flex-1">
-                <p className="font-semibold text-gray-800 text-base">
-                  {userData
-                    ? `${userData.firstName} ${userData.lastName}`
-                    : "Guest"}
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 text-base truncate">
+                  {getDisplayName()}
                 </p>
-                <p className="text-gray-500 text-sm">View Profile</p>
+                <p className="text-gray-500 text-sm truncate">View Profile</p>
               </div>
-            </div>
+            </button>
 
+            {/* Mobile Logout Button */}
             <button
               onClick={handleLogout}
               className="w-full flex items-center justify-center gap-2 py-2 px-4 border-2 border-red-500 text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors"
