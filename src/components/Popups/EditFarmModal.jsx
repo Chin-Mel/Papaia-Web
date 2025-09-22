@@ -172,11 +172,11 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   useEffect(() => {
     if (isOpen) {
       document.body.classList.add("modal-open");
-
-      return () => {
-        document.body.classList.remove("modal-open");
-      };
     }
+
+    return () => {
+      document.body.classList.remove("modal-open");
+    };
   }, [isOpen]);
 
   return (

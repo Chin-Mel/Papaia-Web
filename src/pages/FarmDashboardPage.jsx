@@ -102,26 +102,27 @@ export default function FarmDashboardPage() {
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
   // Fetch farm data
-  useEffect(() => {
+  const fetchFarmData = async () => {
     if (!farmId) return;
-    const fetchFarmData = async () => {
-      if (!farmId) return;
-      try {
-        const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await res.json();
-        const farm = data.farms.find((f) => f.id === farmId);
-        setFarmData(farm || null);
-      } catch (err) {
-        console.error("Failed to fetch farm data:", err);
-      }
-    };
+    try {
+      const res = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farms",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await res.json();
+      const farm = data.farms.find((f) => f.id === farmId);
+      setFarmData(farm || null);
+    } catch (err) {
+      console.error("Failed to fetch farm data:", err);
+    }
+  };
+
+  // Then in the first useEffect, just call it:
+  useEffect(() => {
     fetchFarmData();
   }, [farmId]);
 
