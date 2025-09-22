@@ -105,6 +105,7 @@ export default function FarmDashboardPage() {
   useEffect(() => {
     if (!farmId) return;
     const fetchFarmData = async () => {
+      if (!farmId) return;
       try {
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
@@ -127,6 +128,9 @@ export default function FarmDashboardPage() {
   // Fetch farmers
   useEffect(() => {
     if (!farmId) return;
+
+    let isMounted = true;
+
     const fetchFarmers = async () => {
       try {
         const res = await fetch(
@@ -138,17 +142,27 @@ export default function FarmDashboardPage() {
           }
         );
         const data = await res.json();
-        if (data.status === "success") setFarmers(data.farmers || []);
+        if (data.status === "success" && isMounted) {
+          setFarmers(data.farmers || []);
+        }
       } catch (err) {
         console.error(err);
       }
     };
+
     fetchFarmers();
+
+    return () => {
+      isMounted = false;
+    };
   }, [farmId]);
 
   // Fetch analytics
   useEffect(() => {
     if (!farmId) return;
+
+    let isMounted = true; // Add cleanup flag
+
     const fetchAnalytics = async () => {
       try {
         const endpointMap = {
@@ -166,15 +180,30 @@ export default function FarmDashboardPage() {
           }
         );
         const data = await res.json();
-        setAnalyticsData(data);
+
+        // Only update state if component is still mounted
+        if (isMounted) {
+          setAnalyticsData(data);
+        }
       } catch (err) {
         console.error("Analytics fetch error:", err);
-        setAnalyticsData(null);
+        if (isMounted) {
+          setAnalyticsData(null);
+        }
       }
     };
+
     fetchAnalytics();
-    const interval = setInterval(fetchAnalytics, 5000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => {
+      if (isMounted) {
+        fetchAnalytics();
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false; // Mark as unmounted
+      clearInterval(interval);
+    };
   }, [farmId, timeFilter]);
 
   // Handlers
@@ -277,7 +306,7 @@ export default function FarmDashboardPage() {
   const handleDeactivateFarm = async (farmId) => {
     try {
       const res = await fetch(
-        `https://papaiaapi.onrender.com/owner/farm/${farmId}`,
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmId}`, // Added /api/
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
