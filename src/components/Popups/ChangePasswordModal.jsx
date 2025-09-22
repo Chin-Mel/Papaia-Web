@@ -68,6 +68,18 @@ export default function ChangePasswordModal([isOpen, onClose]) {
     newPassword === confirmPassword &&
     allRequirementsMet;
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.pointerEvents = "auto";
+      };
+    }
+  }, [isOpen]);
+
   return (
     <>
       <style jsx>{`

@@ -42,6 +42,18 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
       .join(" ");
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.pointerEvents = "auto";
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden">

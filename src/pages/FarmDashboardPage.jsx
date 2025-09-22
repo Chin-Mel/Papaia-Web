@@ -118,7 +118,7 @@ export default function FarmDashboardPage() {
         const farm = data.farms.find((f) => f.id === farmId);
         setFarmData(farm || null);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch farm data:", err);
       }
     };
     fetchFarmData();
@@ -268,7 +268,11 @@ export default function FarmDashboardPage() {
     setNewlyAddedFarmer(null);
   };
 
-  const handleCloseEditFarmModal = () => setIsEditFarmModal(false);
+  const handleCloseEditFarmModal = () => setIsEditFarmModalOpen(false);
+
+  const handleFarmUpdated = () => {
+    fetchFarmData(); // Refresh farm data after successful update
+  };
 
   const handleDeactivateFarm = async (farmId) => {
     try {
@@ -692,6 +696,7 @@ export default function FarmDashboardPage() {
         isOpen={isEditFarmModalOpen}
         onClose={handleCloseEditFarmModal}
         farmData={farmData}
+        onFarmUpdated={handleFarmUpdated} // Add this prop
       />
 
       <FarmerDetailModal

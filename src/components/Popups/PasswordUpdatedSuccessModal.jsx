@@ -5,6 +5,18 @@ export default function PasswordUpdatedSuccessModal({ isOpen }) {
   const navigate = useNavigate();
   if (!isOpen) return null;
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.pointerEvents = "auto";
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div className="relative w-full max-w-md mx-auto my-20 rounded-2xl shadow-lg overflow-auto bg-white">
       {/* Top Gradient Section */}

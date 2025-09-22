@@ -33,6 +33,18 @@ export default function DeleteAccountModal() {
     );
   }
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.pointerEvents = "auto";
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-md mx-auto shadow-2xl overflow-hidden">

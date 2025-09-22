@@ -24,6 +24,18 @@ export default function DeactivateAccountModal() {
     setAcknowledged(false);
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+      document.body.style.pointerEvents = "none";
+
+      return () => {
+        document.body.style.overflow = "unset";
+        document.body.style.pointerEvents = "auto";
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md lg:max-w-lg mx-2 sm:mx-0 max-h-[95vh] sm:max-h-none overflow-hidden flex flex-col">
