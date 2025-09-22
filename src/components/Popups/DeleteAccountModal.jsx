@@ -33,16 +33,6 @@ export default function DeleteAccountModal() {
     );
   }
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("modal-open");
-
-      return () => {
-        document.body.classList.remove("modal-open");
-      };
-    }
-  }, [isOpen]);
-
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-2xl w-full max-w-md mx-auto shadow-2xl overflow-hidden">

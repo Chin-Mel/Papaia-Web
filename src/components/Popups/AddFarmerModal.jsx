@@ -56,16 +56,6 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("modal-open");
-
-      return () => {
-        document.body.classList.remove("modal-open");
-      };
-    }
-  }, [isOpen]);
-
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">

@@ -68,16 +68,6 @@ export default function ChangePasswordModal([isOpen, onClose]) {
     newPassword === confirmPassword &&
     allRequirementsMet;
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("modal-open");
-
-      return () => {
-        document.body.classList.remove("modal-open");
-      };
-    }
-  }, [isOpen]);
-
   return (
     <>
       <style jsx>{`
