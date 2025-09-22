@@ -15,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
-import AuthDebugComponent from "../components/AuthDebugComponent"; // Add this line
 
 function EditProfilePage() {
   const [userData, setUserData] = useState({});
@@ -34,7 +33,10 @@ function EditProfilePage() {
 
   // Fetch current user data
   useEffect(() => {
-    if (!userId || !token) return;
+    if (!userId || !token) {
+      navigate("/login"); // Redirect if not logged in
+      return;
+    }
 
     const fetchUserData = async () => {
       try {
@@ -65,7 +67,7 @@ function EditProfilePage() {
     };
 
     fetchUserData();
-  }, [userId, token]);
+  }, [userId, token, navigate]);
 
   // Handle input changes
   const handleChange = (key, value) => {
@@ -83,7 +85,7 @@ function EditProfilePage() {
 
     try {
       const res = await fetch(
-        "https://papaiaapi.onrender.com/api/profile-picture",
+        `https://papaiaapi.onrender.com/api/user/${userId}/profile-picture`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -157,12 +159,16 @@ function EditProfilePage() {
         }
       );
 
-      if (!res.ok) throw new Error("Failed to update user");
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || "Failed to update user");
+      }
 
       const updated = await res.json();
 
       // Preserve profile picture if it exists
       const finalUserData = {
+        ...userData,
         ...updated,
         profilePicture: userData.profilePicture || updated.profilePicture,
       };
@@ -205,9 +211,6 @@ function EditProfilePage() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
-      {/* Add the debug component - only shows in development */}
-      {process.env.NODE_ENV === "development" && <AuthDebugComponent />}
-
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
