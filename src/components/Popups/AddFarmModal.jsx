@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
 
-export default function AddFarmModal({ onClose, onSubmit }) {
+export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
