@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
   const [farmerId, setFarmerId] = useState("");
@@ -58,12 +58,10 @@ function AddFarmerModal({ isOpen, onClose, onSubmit, farmId }) {
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
+      document.body.classList.add("modal-open");
 
       return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
+        document.body.classList.remove("modal-open");
       };
     }
   }, [isOpen]);

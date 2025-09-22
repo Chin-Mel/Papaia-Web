@@ -6,12 +6,10 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
+      document.body.classList.add("modal-open");
 
       return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
+        document.body.classList.remove("modal-open");
       };
     }
   }, [isOpen]);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
 
 export default function AddFarmModal({ onClose, onSubmit }) {
@@ -57,12 +57,10 @@ export default function AddFarmModal({ onClose, onSubmit }) {
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
+      document.body.classList.add("modal-open");
 
       return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
+        document.body.classList.remove("modal-open");
       };
     }
   }, [isOpen]);
