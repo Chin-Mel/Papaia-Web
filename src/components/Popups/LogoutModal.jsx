@@ -1,4 +1,5 @@
 import { LogOut } from "lucide-react";
+import { useEffect } from "react";
 
 export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
   if (!isOpen) return null;

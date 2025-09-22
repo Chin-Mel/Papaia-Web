@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, X, Eye, EyeOff } from "lucide-react";
 
 export default function ChangePasswordModal([isOpen, onClose]) {

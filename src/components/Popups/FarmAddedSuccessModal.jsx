@@ -1,4 +1,5 @@
 import { X, CheckCircle, Leaf, MapPin, Users, TrendingUp } from "lucide-react";
+import { useEffect } from "react";
 
 export default function FarmAddedSuccessModal({
   onClose,

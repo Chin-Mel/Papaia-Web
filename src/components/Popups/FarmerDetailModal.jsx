@@ -1,4 +1,5 @@
 import { X, User, Phone, CheckCircle, Trash2 } from "lucide-react";
+import { useEffect } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
 function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, AlertTriangle } from "lucide-react";
 
 export default function DeleteAccountModal() {

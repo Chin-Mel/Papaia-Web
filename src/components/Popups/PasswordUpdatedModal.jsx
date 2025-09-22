@@ -1,16 +1,4 @@
 export default function PasswordUpdatedModal({ onClose }) {
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
-
-      return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
-      };
-    }
-  }, [isOpen]);
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white p-6 rounded-xl shadow-lg w-[400px] text-center">

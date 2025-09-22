@@ -59,18 +59,6 @@ export default function NotificationDropdown({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
-
-      return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
-      };
-    }
-  }, [isOpen]);
-
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
       {/* Header */}

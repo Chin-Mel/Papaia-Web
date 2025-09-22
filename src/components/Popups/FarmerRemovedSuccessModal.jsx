@@ -1,4 +1,5 @@
 import { X, CheckCircle, ArrowLeft, User } from "lucide-react";
+import { useEffect } from "react";
 
 function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   if (!isOpen) return null;

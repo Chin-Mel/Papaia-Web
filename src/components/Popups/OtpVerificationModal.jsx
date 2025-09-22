@@ -94,17 +94,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     setIsResending(false);
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.pointerEvents = "none";
-
-      return () => {
-        document.body.style.overflow = "unset";
-        document.body.style.pointerEvents = "auto";
-      };
-    }
-  }, [isOpen]);
   // ======= NEW UI ONLY =======
   return (
     <div className="relative w-full min-h-screen">
