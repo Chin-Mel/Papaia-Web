@@ -476,7 +476,7 @@ export default function FarmDashboardPage() {
                 Farm Description
               </h2>
               <button
-                onClick={() => setIsEditFarmModal(true)}
+                onClick={() => setIsEditFarmModalOpen(true)}
                 className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
               >
                 <Edit3 className="w-4 h-4" />
