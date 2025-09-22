@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
+import AuthDebugComponent from "../components/AuthDebugComponent"; // Add this line
 
 function EditProfilePage() {
   const [userData, setUserData] = useState({});
@@ -204,6 +205,9 @@ function EditProfilePage() {
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
+      {/* Add the debug component - only shows in development */}
+      {process.env.NODE_ENV === "development" && <AuthDebugComponent />}
+
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
