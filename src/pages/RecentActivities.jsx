@@ -3,20 +3,48 @@ import { useState, useEffect } from "react";
 export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchActivities = async () => {
     try {
       setLoading(true);
+      setError(null);
+
       const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        setError("Authentication token not found");
+        setActivities([]);
+        return;
+      }
+
+      console.log("Fetching activities...");
+
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/owner/activities",
         {
-          headers: { Authorization: `Bearer ${token}` },
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
       );
 
+      console.log("Activities API response status:", res.status);
+
+      // Handle different response statuses
+      if (res.status === 404) {
+        // API returns 404 when no activities found
+        console.log("No activities found (404)");
+        setActivities([]);
+        return;
+      }
+
       if (!res.ok) {
-        console.error("Response not ok:", res.status, res.statusText);
+        const errorText = await res.text();
+        console.error("Activities API error:", res.status, errorText);
+        setError(`API Error: ${res.status}`);
         setActivities([]);
         return;
       }
@@ -24,6 +52,7 @@ export default function RecentActivities({ limit = 5 }) {
       const data = await res.json();
       console.log("Activities response:", data);
 
+      // Handle successful response
       if (data.status === "success" && Array.isArray(data.activities)) {
         const mapped = data.activities.slice(0, limit).map((act) => {
           let style = {
@@ -34,6 +63,7 @@ export default function RecentActivities({ limit = 5 }) {
             description: act.action,
           };
 
+          // Map action types to display styles
           switch (act.action) {
             case "ADD_FARM":
               style = {
@@ -109,17 +139,25 @@ export default function RecentActivities({ limit = 5 }) {
 
           return {
             ...style,
-            time: act.createdAt,
+            time: act.createdAt || "Unknown time",
+            id: act.id,
           };
         });
 
+        console.log("Mapped activities:", mapped);
         setActivities(mapped);
+      } else if (data.message && data.message.includes("No activities found")) {
+        // Handle the case where API returns success but with "No activities found" message
+        console.log("No activities found in response");
+        setActivities([]);
       } else {
-        console.warn("No activities found or unexpected response format");
+        console.warn("Unexpected response format:", data);
+        setError("Unexpected response format");
         setActivities([]);
       }
     } catch (err) {
       console.error("Failed to fetch activities:", err);
+      setError(`Network error: ${err.message}`);
       setActivities([]);
     } finally {
       setLoading(false);
@@ -138,6 +176,7 @@ export default function RecentActivities({ limit = 5 }) {
       title: "System Ready",
       description: "No activities yet. Start by adding a farm!",
       time: "Now",
+      id: "fallback-1",
     },
   ];
 
@@ -146,19 +185,41 @@ export default function RecentActivities({ limit = 5 }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 w-full">
-      <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">
-        Recent Activities
-      </h2>
+      <div className="flex justify-between items-center mb-3 sm:mb-4">
+        <h2 className="text-base sm:text-lg font-bold text-gray-800">
+          Recent Activities
+        </h2>
+        {error && (
+          <button
+            onClick={fetchActivities}
+            className="text-xs text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            Retry
+          </button>
+        )}
+      </div>
 
       {loading ? (
         <div className="flex justify-center items-center py-8">
           <div className="text-sm text-gray-500">Loading activities...</div>
         </div>
+      ) : error ? (
+        <div className="text-center py-4">
+          <p className="text-sm text-red-500 mb-2">
+            Failed to load activities: {error}
+          </p>
+          <button
+            onClick={fetchActivities}
+            className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+          >
+            Try Again
+          </button>
+        </div>
       ) : (
         <div className="space-y-3">
           {activitiesToShow.map((act, idx) => (
             <div
-              key={idx}
+              key={act.id || idx}
               className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
             >
               <div className="flex items-start gap-3">
@@ -184,7 +245,7 @@ export default function RecentActivities({ limit = 5 }) {
         </div>
       )}
 
-      {!loading && activities.length === 0 && (
+      {!loading && !error && activities.length === 0 && (
         <div className="text-center py-4">
           <p className="text-sm text-gray-500">
             No recent activities found. Activities will appear here when you

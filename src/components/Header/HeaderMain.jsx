@@ -53,7 +53,7 @@ export default function HeaderMain() {
     navigate("/sign-in");
   };
 
-  // Helper function to get profile picture URL
+  // Fixed helper function to get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
       if (userData.profilePicture.startsWith("http")) {

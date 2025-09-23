@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
+import defaultUserPic from "../assets/default-user.png";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState({});
@@ -49,6 +50,7 @@ function EditProfilePage() {
         if (!res.ok) throw new Error("User not found");
 
         const data = await res.json();
+        // Handle both possible response formats
         const user = data.user || data;
         setUserData(user);
         setFormValues({
@@ -74,7 +76,7 @@ function EditProfilePage() {
     setFormValues({ ...formValues, [key]: value });
   };
 
-  // Handle profile picture upload - FIXED ENDPOINT
+  // Handle profile picture upload
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
@@ -84,7 +86,6 @@ function EditProfilePage() {
     formData.append("profilePicture", file);
 
     try {
-      // Fixed: Use correct endpoint from API docs
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/profile-picture`,
         {
@@ -96,13 +97,13 @@ function EditProfilePage() {
 
       if (!res.ok) throw new Error("Failed to upload profile picture");
 
-      const updatedUser = await res.json();
+      const updatedData = await res.json();
 
       // Update userData with new profile picture, preserving other data
       const updatedUserData = {
         ...userData,
-        ...updatedUser,
-        profilePicture: updatedUser.profilePicture,
+        ...updatedData,
+        profilePicture: updatedData.profilePicture,
       };
       setUserData(updatedUserData);
 
@@ -210,6 +211,19 @@ function EditProfilePage() {
     setShowDeactivateAccountModal(false);
   const handleCloseDeleteAccountModal = () => setShowDeleteAccountModal(false);
 
+  // Fixed profile picture URL generation
+  const getProfilePictureUrl = () => {
+    if (userData.profilePicture) {
+      // If it's already a full URL, use it as is
+      if (userData.profilePicture.startsWith("http")) {
+        return userData.profilePicture;
+      }
+      // If it's a relative path, prepend the API base URL
+      return `https://papaiaapi.onrender.com${userData.profilePicture}`;
+    }
+    return defaultUserPic;
+  };
+
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <HeaderMain />
@@ -229,14 +243,10 @@ function EditProfilePage() {
           {/* Profile Picture with Status Icon and Camera Button */}
           <div className="relative mb-4 sm:mb-0">
             <img
-              src={
-                userData.profilePicture
-                  ? `https://papaiaapi.onrender.com${userData.profilePicture}`
-                  : "/default-user.png"
-              }
+              src={getProfilePictureUrl()}
               alt={`${userData.firstName || ""} ${userData.lastName || ""}`}
               className="w-28 h-28 rounded-full border-4 border-white shadow-md mx-auto sm:mx-0 object-cover"
-              onError={(e) => (e.currentTarget.src = "/default-user.png")}
+              onError={(e) => (e.currentTarget.src = defaultUserPic)}
             />
 
             {/* Status Icon */}

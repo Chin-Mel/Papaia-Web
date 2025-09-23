@@ -33,7 +33,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     return () => window.removeEventListener("userUpdated", updateUser);
   }, []);
 
-  // Helper function to get profile picture URL
+  // Fixed helper function to get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
       // Check if it's already a full URL or just a path

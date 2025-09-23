@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
-import FooterMain from "../components/Footer/FooterMain";
+import Footer from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
@@ -43,6 +43,7 @@ export default function ProfilePage() {
 
         if (res.ok) {
           const data = await res.json();
+          // Handle both possible response formats
           const user = data.user || data;
           if (mounted) {
             setUserData(user);
@@ -55,7 +56,6 @@ export default function ProfilePage() {
       }
     };
 
-    // FIXED: Get farm count from the farms endpoint instead of non-existent count-farms endpoint
     const fetchFarmCount = async () => {
       try {
         const res = await fetch(
@@ -65,19 +65,15 @@ export default function ProfilePage() {
 
         if (!res.ok) {
           if (res.status === 401) console.warn("Unauthorized: invalid token");
-          else console.warn("Failed to fetch farms:", res.status);
+          else console.warn("Failed to fetch farm count:", res.status);
           return;
         }
 
         const data = await res.json();
-        if (mounted && data.status === "success" && data.farms) {
-          setFarmCount(data.farms.length);
-        } else {
-          setFarmCount(0);
-        }
+        // Use the correct property name from API docs
+        if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
         console.warn("Could not fetch farm count:", err.message);
-        setFarmCount(0);
       }
     };
 
@@ -100,7 +96,6 @@ export default function ProfilePage() {
     };
   }, []);
 
-  // FIXED: Use correct profile picture endpoint from API docs
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
@@ -111,7 +106,6 @@ export default function ProfilePage() {
     formData.append("profilePicture", file);
 
     try {
-      // Fixed: Use correct endpoint
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/profile-picture",
         {
@@ -125,13 +119,13 @@ export default function ProfilePage() {
         throw new Error("Failed to update profile picture");
       }
 
-      const updatedUser = await res.json();
+      const updatedData = await res.json();
 
-      // Update userData with complete user info plus new profile picture
+      // Update userData with new profile picture, preserving existing data
       const updatedUserData = {
         ...userData,
-        ...updatedUser,
-        profilePicture: updatedUser.profilePicture,
+        ...updatedData,
+        profilePicture: updatedData.profilePicture,
       };
 
       setUserData(updatedUserData);
@@ -186,13 +180,26 @@ export default function ProfilePage() {
     return userData.username || "N/A";
   };
 
+  // Fixed profile picture URL generation
+  const getProfilePictureUrl = () => {
+    if (userData.profilePicture) {
+      // If it's already a full URL, use it as is
+      if (userData.profilePicture.startsWith("http")) {
+        return userData.profilePicture;
+      }
+      // If it's a relative path, prepend the API base URL
+      return `https://papaiaapi.onrender.com${userData.profilePicture}`;
+    }
+    return defaultUserPic;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 mt-16 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 mt-16 px-4 sm:px-6 lg:px-8 mb-5">
         <div className="w-full">
           {/* Page Header */}
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
@@ -221,11 +228,7 @@ export default function ProfilePage() {
                 {/* Profile Picture */}
                 <div className="relative">
                   <img
-                    src={
-                      userData.profilePicture
-                        ? `https://papaiaapi.onrender.com${userData.profilePicture}`
-                        : defaultUserPic
-                    }
+                    src={getProfilePictureUrl()}
                     alt={getFullName()}
                     className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-gray-100"
                     onError={(e) => {
@@ -340,7 +343,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <FooterMain />
+      <Footer />
     </div>
   );
 }
