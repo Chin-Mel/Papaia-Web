@@ -25,13 +25,14 @@ export default function DashboardPage() {
     scansTrend: "no change",
   });
 
-  // Fetch dashboard statistics
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem("token");
       const headers = {
         Authorization: `Bearer ${token}`,
       };
+
+      console.log("Fetching dashboard stats...");
 
       // Fetch all statistics in parallel
       const [
@@ -59,12 +60,43 @@ export default function DashboardPage() {
         }),
       ]);
 
-      // Parse all responses
-      const farmCountData = await farmCountRes.json();
-      const farmerCountData = await farmerCountRes.json();
-      const scansComparisonData = await scansComparisonRes.json();
-      const farmersComparisonData = await farmersComparisonRes.json();
-      const farmsComparisonData = await farmsComparisonRes.json();
+      // Log response statuses
+      console.log("API Response statuses:", {
+        farmCount: farmCountRes.status,
+        farmerCount: farmerCountRes.status,
+        scansComparison: scansComparisonRes.status,
+        farmersComparison: farmersComparisonRes.status,
+        farmsComparison: farmsComparisonRes.status,
+      });
+
+      // Parse all responses with error handling
+      const [
+        farmCountData,
+        farmerCountData,
+        scansComparisonData,
+        farmersComparisonData,
+        farmsComparisonData,
+      ] = await Promise.all([
+        farmCountRes.ok ? farmCountRes.json().catch(() => ({})) : {},
+        farmerCountRes.ok ? farmerCountRes.json().catch(() => ({})) : {},
+        scansComparisonRes.ok
+          ? scansComparisonRes.json().catch(() => ({}))
+          : {},
+        farmersComparisonRes.ok
+          ? farmersComparisonRes.json().catch(() => ({}))
+          : {},
+        farmsComparisonRes.ok
+          ? farmsComparisonRes.json().catch(() => ({}))
+          : {},
+      ]);
+
+      console.log("Dashboard stats data:", {
+        farmCountData,
+        farmerCountData,
+        scansComparisonData,
+        farmersComparisonData,
+        farmsComparisonData,
+      });
 
       setDashboardStats({
         totalFarmers: farmerCountData.totalFarmers || 0,
@@ -86,32 +118,63 @@ export default function DashboardPage() {
   const fetchFarms = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem("token");
+
+      console.log(
+        "Fetching farms with token:",
+        token ? "Token exists" : "No token"
+      );
+
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farms",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      const data = await res.json();
-      if (data.status === "success" && data.farms) {
-        const mappedFarms = data.farms.map((f) => ({
-          id: f.id,
-          name: f.farmName,
-          desc: f.description || `Farm located in ${f.location}`,
-          location: f.location,
-          health: 95, // You might want to calculate this from farm health endpoint
-          status: f.status === "active" ? "Active" : "Inactive",
-          img:
-            f.farmImage ||
-            `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
-        }));
 
+      console.log("Farms API response status:", res.status);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Farms API error response:", errorText);
+        throw new Error(`HTTP ${res.status}: ${errorText}`);
+      }
+
+      const data = await res.json();
+      console.log("Farms API response data:", data);
+
+      if (data.status === "success" && data.farms) {
+        const mappedFarms = data.farms.map((f) => {
+          console.log("Processing farm:", f);
+
+          // Handle potentially malformed image URLs
+          let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+          if (f.farmImage && f.farmImage.startsWith("http")) {
+            farmImage = f.farmImage;
+          }
+
+          return {
+            id: f.id,
+            name: f.farmName,
+            desc: f.description || `Farm located in ${f.location}`,
+            location: f.location,
+            health: 95, // You might want to calculate this from farm health endpoint
+            status: f.status === "active" ? "Active" : "Inactive",
+            img: farmImage,
+          };
+        });
+
+        console.log("Mapped farms:", mappedFarms);
         setFarms(mappedFarms);
+      } else {
+        console.warn("Unexpected farms response format:", data);
+        setFarms([]);
       }
     } catch (err) {
       console.error("Failed to fetch farms:", err);
+      setFarms([]);
     } finally {
       setLoading(false);
     }
