@@ -7,7 +7,6 @@ import {
   Shield,
   Trash2,
   Save,
-  Camera,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
@@ -21,7 +20,7 @@ function EditProfilePage() {
   const [userData, setUserData] = useState({});
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
@@ -30,7 +29,6 @@ function EditProfilePage() {
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const userId = user?.id;
   const token = localStorage.getItem("token");
-  const fileInputRef = useRef();
 
   // Fetch current user data
   useEffect(() => {
@@ -47,24 +45,31 @@ function EditProfilePage() {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-        if (!res.ok) throw new Error("User not found");
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            alert("User not found");
+            navigate("/login");
+            return;
+          }
+          throw new Error(`Failed to fetch user data: ${res.status}`);
+        }
 
         const data = await res.json();
-        // Handle both possible response formats
-        const user = data.user || data;
-        setUserData(user);
+        // API returns user data directly based on documentation
+        setUserData(data);
         setFormValues({
-          firstName: user.firstName || "",
-          middleName: user.middleName || "",
-          lastName: user.lastName || "",
-          username: user.username || "",
-          email: user.email || "",
-          contactNumber: user.contactNumber || "",
-          birthDate: user.birthDate ? user.birthDate.split("T")[0] : "",
+          firstName: data.firstName || "",
+          middleName: data.middleName || "",
+          lastName: data.lastName || "",
+          username: data.username || "",
+          email: data.email || "",
+          contactNumber: data.contactNumber || "",
+          birthDate: data.birthDate ? data.birthDate.split("T")[0] : "",
         });
       } catch (err) {
-        console.error(err);
-        alert("Error fetching user data");
+        console.error("Error fetching user data:", err);
+        alert("Error fetching user data. Please try again.");
       }
     };
 
@@ -76,78 +81,27 @@ function EditProfilePage() {
     setFormValues({ ...formValues, [key]: value });
   };
 
-  // Handle profile picture upload
-  const handleProfilePictureUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !token) return;
-
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("profilePicture", file);
-
-    try {
-      const res = await fetch(
-        `https://papaiaapi.onrender.com/api/profile-picture`,
-        {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        }
-      );
-
-      if (!res.ok) throw new Error("Failed to upload profile picture");
-
-      const updatedData = await res.json();
-
-      // Update userData with new profile picture, preserving other data
-      const updatedUserData = {
-        ...userData,
-        ...updatedData,
-        profilePicture: updatedData.profilePicture,
-      };
-      setUserData(updatedUserData);
-
-      // Update localStorage with complete user data
-      localStorage.setItem("user", JSON.stringify(updatedUserData));
-
-      // Dispatch event to update header and other components immediately
-      window.dispatchEvent(new Event("userUpdated"));
-
-      alert("Profile picture updated successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Error uploading profile picture");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   // Handle save changes
   const handleSaveChanges = async () => {
+    if (!formValues.username || !formValues.email) {
+      alert("Username and email are required fields");
+      return;
+    }
+
     setLoading(true);
 
     try {
+      // Prepare update data - only include fields that have values
       const updatedData = {};
 
-      // Include only changed fields
-      [
-        "firstName",
-        "middleName",
-        "lastName",
-        "username",
-        "email",
-        "contactNumber",
-        "birthDate",
-      ].forEach((key) => {
-        if (formValues[key] !== userData[key]) {
+      // Add all non-empty fields to the update data
+      Object.keys(formValues).forEach((key) => {
+        if (formValues[key] !== undefined && formValues[key] !== "") {
           updatedData[key] = formValues[key];
         }
       });
 
-      // Always include required fields
-      updatedData.username = formValues.username || userData.username;
-      updatedData.email = formValues.email || userData.email;
-      updatedData.role = "owner";
+      console.log("Sending update data:", updatedData);
 
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/user/${userId}`,
@@ -163,20 +117,24 @@ function EditProfilePage() {
 
       if (!res.ok) {
         const errorText = await res.text();
-        throw new Error(errorText || "Failed to update user");
+        console.error("Update failed:", errorText);
+        throw new Error(`Failed to update profile: ${res.status}`);
       }
 
-      const updated = await res.json();
+      const updatedUser = await res.json();
+      console.log("Updated user data:", updatedUser);
 
-      // Preserve profile picture if it exists
+      // Preserve profile picture from current userData
       const finalUserData = {
-        ...userData,
-        ...updated,
-        profilePicture: userData.profilePicture || updated.profilePicture,
+        ...updatedUser,
+        profilePicture: userData.profilePicture || updatedUser.profilePicture,
       };
 
-      localStorage.setItem("user", JSON.stringify(finalUserData));
+      // Update state and localStorage
       setUserData(finalUserData);
+      localStorage.setItem("user", JSON.stringify(finalUserData));
+
+      // Update form values to reflect the saved state
       setFormValues({
         firstName: finalUserData.firstName || "",
         middleName: finalUserData.middleName || "",
@@ -194,15 +152,11 @@ function EditProfilePage() {
 
       alert("Profile updated successfully!");
     } catch (err) {
-      console.error(err);
-      alert("Error updating profile.");
+      console.error("Error updating profile:", err);
+      alert("Error updating profile. Please try again.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCameraClick = () => {
-    fileInputRef.current?.click();
   };
 
   const handleCloseChangePasswordModal = () =>
@@ -229,18 +183,9 @@ function EditProfilePage() {
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
-        {/* Profile Picture Upload Input */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleProfilePictureUpload}
-          accept="image/*"
-          style={{ display: "none" }}
-        />
-
         {/* Top Profile Info */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 pb-8 border-b border-gray-200 mb-5">
-          {/* Profile Picture with Status Icon and Camera Button */}
+          {/* Profile Picture - Display Only */}
           <div className="relative mb-4 sm:mb-0">
             <img
               src={getProfilePictureUrl()}
@@ -250,7 +195,7 @@ function EditProfilePage() {
             />
 
             {/* Status Icon */}
-            <div className="absolute bottom-1 right-8 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-4 border-white">
+            <div className="absolute bottom-1 right-2 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-4 border-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-4 h-4 text-white"
@@ -266,16 +211,6 @@ function EditProfilePage() {
                 />
               </svg>
             </div>
-
-            {/* Camera Button */}
-            <button
-              onClick={handleCameraClick}
-              disabled={uploading}
-              className="absolute bottom-1 right-1 w-7 h-7 bg-orange-500 rounded-full flex items-center justify-center border-4 border-white hover:bg-orange-600 transition-colors disabled:opacity-50"
-              title="Change profile picture"
-            >
-              <Camera className="w-4 h-4 text-white" />
-            </button>
           </div>
 
           {/* Profile Info */}
