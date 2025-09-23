@@ -59,7 +59,7 @@ export default function ProfilePage() {
     const fetchFarmCount = async () => {
       try {
         const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
+          "https://papaiaapi.onrender.com/api/owner/count-farms",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

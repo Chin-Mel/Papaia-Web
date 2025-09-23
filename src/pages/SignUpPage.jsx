@@ -7,11 +7,6 @@ import { ChevronDown } from "lucide-react";
 import BackgroundImage from "../assets/hero-background.png";
 import PapayaLogo from "../assets/papaia-logo.png";
 
-// Try different DatePicker import - this often fixes the "N is not a function" error
-// Comment out the problematic import and use native HTML date input instead
-// import DatePicker from "react-datepicker";
-// import "react-datepicker/dist/react-datepicker.css";
-
 // Icons
 import UserIcon from "../assets/user-icon.png";
 import CreateUserIcon from "../assets/create-user.png";
