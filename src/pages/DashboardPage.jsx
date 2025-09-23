@@ -25,6 +25,7 @@ export default function DashboardPage() {
     scansTrend: "no change",
   });
 
+  // Fetch dashboard statistics
   const fetchDashboardStats = async () => {
     try {
       const token = localStorage.getItem("token");
