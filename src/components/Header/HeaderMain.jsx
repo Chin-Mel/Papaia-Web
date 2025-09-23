@@ -35,7 +35,6 @@ export default function HeaderMain() {
 
     loadUser();
 
-    // Listen for profile updates in the same tab
     const handleUserUpdate = () => {
       loadUser();
     };
@@ -170,7 +169,7 @@ export default function HeaderMain() {
                     alt="User Avatar"
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.target.src = defaultUser;
+                      e.currentTarget.src = defaultUser;
                     }}
                   />
                 </div>

@@ -34,7 +34,7 @@ function EditProfilePage() {
   // Fetch current user data
   useEffect(() => {
     if (!userId || !token) {
-      navigate("/login"); // Redirect if not logged in
+      navigate("/login");
       return;
     }
 
@@ -74,7 +74,7 @@ function EditProfilePage() {
     setFormValues({ ...formValues, [key]: value });
   };
 
-  // Handle profile picture upload
+  // Handle profile picture upload - FIXED ENDPOINT
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
@@ -84,8 +84,9 @@ function EditProfilePage() {
     formData.append("profilePicture", file);
 
     try {
+      // Fixed: Use correct endpoint from API docs
       const res = await fetch(
-        `https://papaiaapi.onrender.com/api/user/${userId}/profile-picture`,
+        `https://papaiaapi.onrender.com/api/profile-picture`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },

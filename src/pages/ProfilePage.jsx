@@ -12,7 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
+import FooterMain from "../components/Footer/FooterMain";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
@@ -55,23 +55,29 @@ export default function ProfilePage() {
       }
     };
 
+    // FIXED: Get farm count from the farms endpoint instead of non-existent count-farms endpoint
     const fetchFarmCount = async () => {
       try {
         const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/count-farms",
+          "https://papaiaapi.onrender.com/api/owner/farms",
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
         if (!res.ok) {
           if (res.status === 401) console.warn("Unauthorized: invalid token");
-          else console.warn("Failed to fetch farm count:", res.status);
+          else console.warn("Failed to fetch farms:", res.status);
           return;
         }
 
         const data = await res.json();
-        if (mounted) setFarmCount(data.farmCount ?? 0);
+        if (mounted && data.status === "success" && data.farms) {
+          setFarmCount(data.farms.length);
+        } else {
+          setFarmCount(0);
+        }
       } catch (err) {
         console.warn("Could not fetch farm count:", err.message);
+        setFarmCount(0);
       }
     };
 
@@ -94,6 +100,7 @@ export default function ProfilePage() {
     };
   }, []);
 
+  // FIXED: Use correct profile picture endpoint from API docs
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
     if (!file || !token) return;
@@ -104,6 +111,7 @@ export default function ProfilePage() {
     formData.append("profilePicture", file);
 
     try {
+      // Fixed: Use correct endpoint
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/profile-picture",
         {
@@ -332,7 +340,7 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      <Footer />
+      <FooterMain />
     </div>
   );
 }
