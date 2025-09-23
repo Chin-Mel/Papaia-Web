@@ -24,6 +24,7 @@ export default function DashboardPage() {
     farmsTrend: "no change",
     scansTrend: "no change",
   });
+
   // Fetch dashboard statistics
   const fetchDashboardStats = async () => {
     try {
@@ -100,11 +101,11 @@ export default function DashboardPage() {
           name: f.farmName,
           desc: f.description || `Farm located in ${f.location}`,
           location: f.location,
-          health: 95,
-          status: "Active",
-          img: f.farmImage
-            ? `https://papaiaapi.onrender.com${f.farmImage}`
-            : `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
+          health: 95, // You might want to calculate this from farm health endpoint
+          status: f.status === "active" ? "Active" : "Inactive",
+          img:
+            f.farmImage ||
+            `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`,
         }));
 
         setFarms(mappedFarms);
@@ -136,7 +137,7 @@ export default function DashboardPage() {
       );
 
       if (farmData.farmImage) {
-        formData.append("farmImage", farmData.farmImage); // append actual file
+        formData.append("farmImage", farmData.farmImage);
       }
 
       const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
@@ -166,6 +167,23 @@ export default function DashboardPage() {
 
   const handleCloseModal = () => setShowAddFarmModal(false);
 
+  const getTrendColor = (trend) => {
+    switch (trend) {
+      case "increase":
+        return "text-green-600";
+      case "decrease":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getTrendPrefix = (trend, value) => {
+    if (trend === "increase") return "+";
+    if (trend === "decrease") return "-";
+    return "";
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
@@ -194,12 +212,15 @@ export default function DashboardPage() {
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.totalFarmers.toLocaleString()}
                   </h3>
-                  <span className="text-xs sm:text-sm font-medium text-green-600">
-                    {dashboardStats.farmersTrend === "increase"
-                      ? "+"
-                      : dashboardStats.farmersTrend === "decrease"
-                      ? "-"
-                      : ""}
+                  <span
+                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      dashboardStats.farmersTrend
+                    )}`}
+                  >
+                    {getTrendPrefix(
+                      dashboardStats.farmersTrend,
+                      dashboardStats.farmersChange
+                    )}
                     {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
                     last month
                   </span>
@@ -220,12 +241,15 @@ export default function DashboardPage() {
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.totalFarms.toLocaleString()}
                   </h3>
-                  <span className="text-xs sm:text-sm font-medium text-yellow-500">
-                    {dashboardStats.farmsTrend === "increase"
-                      ? "+"
-                      : dashboardStats.farmsTrend === "decrease"
-                      ? "-"
-                      : ""}
+                  <span
+                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      dashboardStats.farmsTrend
+                    )}`}
+                  >
+                    {getTrendPrefix(
+                      dashboardStats.farmsTrend,
+                      dashboardStats.farmsChange
+                    )}
                     {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from last
                     month
                   </span>
@@ -246,12 +270,15 @@ export default function DashboardPage() {
                   <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
                     {dashboardStats.todayScans.toLocaleString()}
                   </h3>
-                  <span className="text-xs sm:text-sm font-medium text-sky-500">
-                    {dashboardStats.scansTrend === "increase"
-                      ? "+"
-                      : dashboardStats.scansTrend === "decrease"
-                      ? "-"
-                      : ""}
+                  <span
+                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      dashboardStats.scansTrend
+                    )}`}
+                  >
+                    {getTrendPrefix(
+                      dashboardStats.scansTrend,
+                      dashboardStats.scansChange
+                    )}
                     {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
                     yesterday
                   </span>
@@ -308,7 +335,7 @@ export default function DashboardPage() {
                             className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
                               farm.status === "Active"
                                 ? "bg-green-500 text-white"
-                                : "bg-yellow-500 text-white"
+                                : "bg-red-500 text-white"
                             }`}
                           >
                             {farm.status}

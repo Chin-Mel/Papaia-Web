@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 
 export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchActivities = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/owner/activities",
@@ -13,20 +15,17 @@ export default function RecentActivities({ limit = 5 }) {
         }
       );
 
-      console.log("Response status:", res.status);
-      const text = await res.text();
-      console.log("Raw response:", text);
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Response was not JSON:", text);
+      if (!res.ok) {
+        console.error("Response not ok:", res.status, res.statusText);
+        setActivities([]);
         return;
       }
 
+      const data = await res.json();
+      console.log("Activities response:", data);
+
       if (data.status === "success" && Array.isArray(data.activities)) {
-        const mapped = data.activities.map((act) => {
+        const mapped = data.activities.slice(0, limit).map((act) => {
           let style = {
             icon: "ℹ️",
             iconBg: "bg-gray-100",
@@ -42,7 +41,9 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Farm Added",
-                description: `Added farm "${act.details.farmName}"`,
+                description: `Added farm "${
+                  act.details?.farmName || "Unknown Farm"
+                }"`,
               };
               break;
             case "REMOVE_FARMER":
@@ -51,7 +52,9 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-red-100",
                 bgColor: "bg-red-50",
                 title: "Farmer Removed",
-                description: `Removed farmer "${act.details.farmerName}"`,
+                description: `Removed farmer "${
+                  act.details?.farmerName || "Unknown Farmer"
+                }"`,
               };
               break;
             case "DEACTIVATE_FARM":
@@ -60,7 +63,9 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-orange-100",
                 bgColor: "bg-orange-50",
                 title: "Farm Deactivated",
-                description: `Deactivated farm "${act.details.farmName}"`,
+                description: `Deactivated farm "${
+                  act.details?.farmName || "Unknown Farm"
+                }"`,
               };
               break;
             case "ACTIVATE_FARM":
@@ -68,10 +73,38 @@ export default function RecentActivities({ limit = 5 }) {
                 icon: "✅",
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
-                title: "Farm Reactivated",
-                description: `Reactivated farm "${act.details.farmName}"`,
+                title: "Farm Activated",
+                description: `Activated farm "${
+                  act.details?.farmName || "Unknown Farm"
+                }"`,
               };
               break;
+            case "ADD_FARMER":
+              style = {
+                icon: "👨‍🌾",
+                iconBg: "bg-green-100",
+                bgColor: "bg-green-50",
+                title: "Farmer Added",
+                description: `Added farmer "${
+                  act.details?.farmerName ||
+                  act.details?.idNumber ||
+                  "Unknown Farmer"
+                }"`,
+              };
+              break;
+            case "UPDATE_FARM":
+              style = {
+                icon: "🔄",
+                iconBg: "bg-blue-100",
+                bgColor: "bg-blue-50",
+                title: "Farm Updated",
+                description: `Updated farm "${
+                  act.details?.farmName || "Unknown Farm"
+                }"`,
+              };
+              break;
+            default:
+              style.description = act.action.replace(/_/g, " ").toLowerCase();
           }
 
           return {
@@ -82,11 +115,14 @@ export default function RecentActivities({ limit = 5 }) {
 
         setActivities(mapped);
       } else {
+        console.warn("No activities found or unexpected response format");
         setActivities([]);
       }
     } catch (err) {
       console.error("Failed to fetch activities:", err);
       setActivities([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -113,31 +149,49 @@ export default function RecentActivities({ limit = 5 }) {
       <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">
         Recent Activities
       </h2>
-      <div className="space-y-3">
-        {activitiesToShow.map((act, idx) => (
-          <div
-            key={idx}
-            className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
-          >
-            <div className="flex items-start gap-3">
-              <div
-                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${act.iconBg} flex items-center justify-center text-xs sm:text-sm`}
-              >
-                {act.icon}
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-xs sm:text-sm text-gray-800">
-                  {act.title}
-                </p>
-                <p className="text-xs text-gray-600 mt-1">{act.description}</p>
-                <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block">
-                  {act.time}
-                </span>
+
+      {loading ? (
+        <div className="flex justify-center items-center py-8">
+          <div className="text-sm text-gray-500">Loading activities...</div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {activitiesToShow.map((act, idx) => (
+            <div
+              key={idx}
+              className={`p-4 rounded-xl ${act.bgColor} border border-gray-100`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full ${act.iconBg} flex items-center justify-center text-xs sm:text-sm flex-shrink-0`}
+                >
+                  {act.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-xs sm:text-sm text-gray-800">
+                    {act.title}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1 break-words">
+                    {act.description}
+                  </p>
+                  <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block">
+                    {act.time}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {!loading && activities.length === 0 && (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-500">
+            No recent activities found. Activities will appear here when you
+            perform actions like adding farms or managing farmers.
+          </p>
+        </div>
+      )}
     </div>
   );
 }
