@@ -81,13 +81,13 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
             <div className="space-y-4">
               {/* First Name and Middle Name - Side by side */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-500 p-2 rounded text-sm">
+                <div className="bg-gray-300 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">First Name</p>
                   <p className="text-gray-800 font-medium">
                     {farmer.firstname || farmer.firstName || "N/A"}
                   </p>
                 </div>
-                <div className="bg-gray-500 p-2 rounded text-sm">
+                <div className="bg-gray-300 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Middle Name</p>
                   <p className="text-gray-800 font-medium">
                     {farmer.middlename || farmer.middleName || "N/A"}
@@ -97,13 +97,13 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
 
               {/* Last Name and Suffix - Side by side */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-500 p-2 rounded text-sm">
+                <div className="bg-gray-300 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Last Name</p>
                   <p className="text-gray-800 font-medium">
                     {farmer.lastname || farmer.lastName || "N/A"}
                   </p>
                 </div>
-                <div className="bg-gray-500 p-2 rounded text-sm">
+                <div className="bg-gray-300 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Suffix</p>
                   <p className="text-gray-800 font-medium">
                     {farmer.suffix || "N/A"}
@@ -112,7 +112,7 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               </div>
 
               {/* Address - Full width at bottom */}
-              <div className="bg-gray-500 p-2 rounded text-sm">
+              <div className="bg-gray-300 p-2 rounded text-sm">
                 <p className="text-gray-600 text-xs">Address</p>
                 <p className="text-gray-800 font-medium">
                   {(() => {
