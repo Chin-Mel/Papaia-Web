@@ -36,10 +36,20 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
 
   if (!isOpen) return null;
 
+  // Fixed field name handling - API returns lowercase field names
   const getFullName = (farmer) => {
-    return [farmer.firstname, farmer.middlename, farmer.lastname, farmer.suffix]
-      .filter(Boolean)
-      .join(" ");
+    if (!farmer) return "Unknown Farmer";
+
+    return (
+      [
+        farmer.firstname || farmer.firstName || "",
+        farmer.middlename || farmer.middleName || "",
+        farmer.lastname || farmer.lastName || "",
+        farmer.suffix || "",
+      ]
+        .filter(Boolean)
+        .join(" ") || "Unknown Farmer"
+    );
   };
 
   return (
@@ -63,11 +73,11 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
               <h2 className="text-lg font-semibold leading-tight">
                 {getFullName(farmer)}
               </h2>
-              <p className="text-sm opacity-80">🌱 Green Valley Farm</p>
+              <p className="text-sm opacity-80">🌱 Farm Management System</p>
             </div>
             <span className="ml-auto px-2 py-1 text-xs bg-white text-green-600 rounded-full font-medium">
               {farmer?.status?.charAt(0).toUpperCase() +
-                farmer?.status?.slice(1)}
+                farmer?.status?.slice(1) || "Active"}
             </span>
           </div>
           <button

@@ -5,21 +5,12 @@ import defaultUserPic from "../../assets/default-user.png";
 function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
   if (!isOpen || !farmer) return null;
 
+  // Fixed field name handling - API returns lowercase field names
   const fullName = [
-    farmer.firstName || " ",
-    farmer.middleName || " ",
-    farmer.lastName || " ",
-    farmer.suffix || " ",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  // Address same format as fullName
-  const address = [
-    farmer.firstName || " ",
-    farmer.middleName || "N/A",
-    farmer.lastName || " ",
-    farmer.suffix || " ",
+    farmer.firstname || farmer.firstName || "",
+    farmer.middlename || farmer.middleName || "",
+    farmer.lastname || farmer.lastName || "",
+    farmer.suffix || "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -64,10 +55,10 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-bold text-gray-800 mb-1">
-                {fullName || " "}
+                {fullName || "N/A"}
               </h3>
               <p className="text-gray-500 text-sm mb-2">
-                Farmer ID: {farmer.idNumber || " "}
+                Farmer ID: {farmer.idNumber || "N/A"}
               </p>
               <span className="inline-flex items-center gap-2 px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -78,6 +69,7 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               </span>
             </div>
           </div>
+
           {/* Information Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {/* Personal Info */}
@@ -90,25 +82,27 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               </div>
               <div className="space-y-2">
                 <div className="bg-gray-50 p-2 rounded text-sm">
-                  <p className="text-gray-600 text-xs">Full Name</p>
-                  <p className="text-gray-800 font-medium">{fullName || " "}</p>
+                  <p className="text-gray-600 text-xs">First Name</p>
+                  <p className="text-gray-800 font-medium">
+                    {farmer.firstname || farmer.firstName || "N/A"}
+                  </p>
                 </div>
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Middle Name</p>
                   <p className="text-gray-800 font-medium">
-                    {farmer.middleName || " "}
+                    {farmer.middlename || farmer.middleName || "N/A"}
+                  </p>
+                </div>
+                <div className="bg-gray-50 p-2 rounded text-sm">
+                  <p className="text-gray-600 text-xs">Last Name</p>
+                  <p className="text-gray-800 font-medium">
+                    {farmer.lastname || farmer.lastName || "N/A"}
                   </p>
                 </div>
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Suffix</p>
                   <p className="text-gray-800 font-medium">
-                    {farmer.suffix || " "}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-2 rounded text-sm">
-                  <p className="text-gray-600 text-xs">Date of Birth</p>
-                  <p className="text-gray-800 font-medium">
-                    {farmer.dateOfBirth || "N/A"}
+                    {farmer.suffix || "N/A"}
                   </p>
                 </div>
               </div>
@@ -132,13 +126,15 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Phone Number</p>
                   <p className="text-gray-800 font-medium">
-                    {farmer.phone || "N/A"}
+                    {farmer.contactNumber || farmer.phone || "N/A"}
                   </p>
                 </div>
               </div>
             </div>
           </div>
-          <div className="bg-gray-50 p-2 rounded text-sm">
+
+          {/* Address */}
+          <div className="bg-gray-50 p-2 rounded text-sm mb-6">
             <p className="text-gray-600 text-xs">Address</p>
             <p className="text-gray-800 font-medium">
               {(() => {
@@ -147,7 +143,7 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                   farmer.barangay,
                   farmer.municipality,
                   farmer.province,
-                  farmer.zipCode,
+                  farmer.zipcode || farmer.zipCode,
                 ].filter(Boolean);
 
                 return addressParts.length > 0
@@ -156,25 +152,7 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               })()}
             </p>
           </div>
-          {/* Assigned Farm */}
-          {farmer.farms?.length > 0 && (
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-orange-500 text-lg">🌱</span>
-                <h4 className="font-semibold text-gray-800 text-sm">
-                  Assigned Farm
-                </h4>
-              </div>
-              <div className="bg-green-50 p-3 rounded text-sm">
-                <p className="font-medium text-gray-800">
-                  {farmer.farms[0].name}
-                </p>
-                <p className="text-gray-500 text-xs">
-                  Location: {farmer.farms[0].location}
-                </p>
-              </div>
-            </div>
-          )}
+
           {/* Remove Button */}
           <div className="flex justify-center pt-4">
             <button
