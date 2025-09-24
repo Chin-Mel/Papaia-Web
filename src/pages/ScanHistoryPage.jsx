@@ -13,15 +13,13 @@ import EyeIcon from "../assets/eye-icon.png";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
-import CheckCircleIcon from "../assets/check-circle-icon.png";
-import AlertIcon from "../assets/alert-icon.png";
 
 // Disease colors and icons mapping
 const diseaseColors = {
-  Healthy: "#00FF00", // Bright green
-  "Ring Spot Virus": "#FF8C00", // Dark orange
-  Anthracnose: "#FF0000", // Red
-  "Powdery Mildew": "#0066FF", // Blue
+  Healthy: "#00FF00",
+  "Ring Spot Virus": "#FF8C00",
+  Anthracnose: "#FF0000",
+  "Powdery Mildew": "#0066FF",
 };
 
 const diseaseIcons = {
@@ -31,22 +29,21 @@ const diseaseIcons = {
   "Powdery Mildew": "🔵",
 };
 
-// --- Helper Components defined within the file ---
-function StatusBadge({ status, prediction }) {
-  // Map prediction results to status categories
-  const getStatusFromPrediction = (pred) => {
-    if (!pred) return "healthy";
-    const predLower = pred.toLowerCase();
-    if (predLower === "healthy") return "healthy";
-    if (predLower.includes("virus") || predLower.includes("disease"))
-      return "disease-detected";
-    return "needs-attention";
-  };
+// Helper function to get status from prediction
+function getStatusFromPrediction(prediction) {
+  if (!prediction) return "healthy";
+  const predLower = prediction.toLowerCase();
+  if (predLower === "healthy") return "healthy";
+  if (predLower.includes("virus") || predLower.includes("disease"))
+    return "disease-detected";
+  return "needs-attention";
+}
 
+// Status Badge Component
+function StatusBadge({ status, prediction }) {
   const actualStatus = status || getStatusFromPrediction(prediction);
   const predictionKey = prediction || "Healthy";
   const icon = diseaseIcons[predictionKey] || diseaseIcons["Healthy"];
-  const color = diseaseColors[predictionKey] || diseaseColors["Healthy"];
 
   const statusConfig = {
     healthy: {
@@ -75,16 +72,8 @@ function StatusBadge({ status, prediction }) {
   );
 }
 
+// View Details Button Component
 function ViewDetailsButton({ status, prediction, scanId }) {
-  const getStatusFromPrediction = (pred) => {
-    if (!pred) return "healthy";
-    const predLower = pred.toLowerCase();
-    if (predLower === "healthy") return "healthy";
-    if (predLower.includes("virus") || predLower.includes("disease"))
-      return "disease-detected";
-    return "needs-attention";
-  };
-
   const actualStatus = status || getStatusFromPrediction(prediction);
 
   const colorMap = {
@@ -95,7 +84,7 @@ function ViewDetailsButton({ status, prediction, scanId }) {
 
   return (
     <Link
-      to={`/scan-details/${scanId}`}
+      to={`/scan-history-details/${scanId}`}
       className={`flex items-center gap-2 ${colorMap[actualStatus]} p-0 h-auto text-sm font-medium transition-colors`}
     >
       <img src={EyeIcon} alt="View Details" className="h-4 w-4" />
@@ -104,7 +93,6 @@ function ViewDetailsButton({ status, prediction, scanId }) {
   );
 }
 
-// --- Main Page Component ---
 export default function ScanHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [scanData, setScanData] = useState([]);
@@ -120,21 +108,21 @@ export default function ScanHistoryPage() {
 
   const reportRef = useRef(null);
   const navigate = useNavigate();
-
   const resultsPerPage = 5;
   const totalPages = Math.ceil(totalScans / resultsPerPage);
-
-  // --- Simple auth check ---
   const token = localStorage.getItem("token");
+
+  // Auth check
   useEffect(() => {
     if (!token) {
       navigate("/sign-in", { replace: true });
     }
   }, [token, navigate]);
 
-  // --- Fetch farms ---
+  // Fetch farms
   useEffect(() => {
     if (!token) return;
+
     const fetchFarms = async () => {
       try {
         const res = await fetch(
@@ -148,22 +136,92 @@ export default function ScanHistoryPage() {
         );
         if (!res.ok) throw new Error("Failed to fetch farms");
         const data = await res.json();
-        if (data.status === "success") setFarms(data.farms || []);
+        if (data.status === "success") {
+          setFarms(data.farms || []);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Farm fetch error:", err);
         setFarms([]);
       }
     };
+
     fetchFarms();
   }, [token]);
 
-  // --- Fetch all scan history from all farms ---
+  // Helper function to parse timestamp
+  const parseTimestamp = (timestamp) => {
+    try {
+      if (typeof timestamp === "string" && timestamp.includes("/")) {
+        return new Date(timestamp).toISOString();
+      }
+      return timestamp;
+    } catch (error) {
+      return new Date().toISOString();
+    }
+  };
+
+  // Helper function to apply filters
+  const applyFilters = (scans, currentFilters) => {
+    return scans.filter((scan) => {
+      // Date range filter
+      if (currentFilters.dateRange !== "all") {
+        const scanDate = new Date(scan.createdAt);
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        switch (currentFilters.dateRange) {
+          case "today":
+            if (scanDate < today) return false;
+            break;
+          case "week":
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (scanDate < weekAgo) return false;
+            break;
+          case "month":
+            const monthAgo = new Date(
+              today.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
+            if (scanDate < monthAgo) return false;
+            break;
+        }
+      }
+
+      // Status filter
+      if (currentFilters.status !== "all") {
+        const scanStatus = getStatusFromPrediction(scan.prediction);
+        if (scanStatus !== currentFilters.status) return false;
+      }
+
+      // Farm filter
+      if (
+        currentFilters.farmId !== "all" &&
+        scan.farmId !== currentFilters.farmId
+      ) {
+        return false;
+      }
+
+      // Farmer name filter
+      if (currentFilters.farmerName && scan.idNumber) {
+        const farmerQuery = currentFilters.farmerName.toLowerCase();
+        const farmerId = scan.idNumber.toLowerCase();
+        if (!farmerId.includes(farmerQuery)) return false;
+      }
+
+      return true;
+    });
+  };
+
+  // Fetch scan history
   useEffect(() => {
-    if (!token) return;
+    if (!token || farms.length === 0) return;
+
     const fetchScans = async () => {
       setLoading(true);
       try {
-        // Fetch all identification history for the owner
         const res = await fetch(
           "https://papaiaapi.onrender.com/api/owner/identification-history",
           {
@@ -178,21 +236,24 @@ export default function ScanHistoryPage() {
         const scansArray = await res.json();
 
         if (Array.isArray(scansArray)) {
-          // Get farm details to merge with scan data
+          // Create farm mapping
           const farmsMap = {};
           farms.forEach((farm) => {
             farmsMap[farm.id] = farm;
           });
 
-          // Process and filter scans
-          let processedScans = scansArray.map((scan) => ({
-            ...scan,
-            farmName: farmsMap[scan.farmId]?.farmName || "Unknown Farm",
-            // Parse timestamp if it's in MM/DD/YYYY format
-            createdAt: parseTimestamp(scan.timestamp),
-            status: getStatusFromPrediction(scan.prediction),
-            description: scan.prediction,
-          }));
+          // Process scans
+          let processedScans = scansArray.map((scan) => {
+            const farmInfo = farmsMap[scan.farmId] || {};
+            return {
+              ...scan,
+              farmName: farmInfo.farmName || "Unknown Farm",
+              createdAt: parseTimestamp(scan.timestamp),
+              status: getStatusFromPrediction(scan.prediction),
+              description: scan.prediction || "Unknown",
+              idNumber: scan.idNumber || "Unknown Farmer",
+            };
+          });
 
           // Apply filters
           processedScans = applyFilters(processedScans, filters);
@@ -214,7 +275,7 @@ export default function ScanHistoryPage() {
           setTotalScans(0);
         }
       } catch (err) {
-        console.error(err);
+        console.error("Scan fetch error:", err);
         setScanData([]);
         setTotalScans(0);
       } finally {
@@ -222,87 +283,8 @@ export default function ScanHistoryPage() {
       }
     };
 
-    // Only fetch scans if we have farms data
-    if (farms.length > 0) {
-      fetchScans();
-    }
+    fetchScans();
   }, [currentPage, filters, token, farms]);
-
-  // Helper function to parse timestamp
-  const parseTimestamp = (timestamp) => {
-    try {
-      // If timestamp is in "MM/DD/YYYY hh:mm AM/PM" format
-      if (typeof timestamp === "string" && timestamp.includes("/")) {
-        return new Date(timestamp).toISOString();
-      }
-      return timestamp;
-    } catch (error) {
-      return new Date().toISOString();
-    }
-  };
-
-  // Helper function to determine status from prediction
-  const getStatusFromPrediction = (prediction) => {
-    if (!prediction) return "healthy";
-    const predLower = prediction.toLowerCase();
-    if (predLower === "healthy") return "healthy";
-    if (predLower.includes("virus") || predLower.includes("disease"))
-      return "disease-detected";
-    return "needs-attention";
-  };
-
-  // Helper function to apply filters
-  const applyFilters = (scans, filters) => {
-    return scans.filter((scan) => {
-      // Date range filter
-      if (filters.dateRange !== "all") {
-        const scanDate = new Date(scan.createdAt);
-        const now = new Date();
-        const today = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate()
-        );
-
-        switch (filters.dateRange) {
-          case "today":
-            if (scanDate < today) return false;
-            break;
-          case "week":
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            if (scanDate < weekAgo) return false;
-            break;
-          case "month":
-            const monthAgo = new Date(
-              today.getTime() - 30 * 24 * 60 * 60 * 1000
-            );
-            if (scanDate < monthAgo) return false;
-            break;
-        }
-      }
-
-      // Status filter
-      if (filters.status !== "all") {
-        const scanStatus = getStatusFromPrediction(scan.prediction);
-        if (scanStatus !== filters.status) return false;
-      }
-
-      // Farm filter
-      if (filters.farmId !== "all" && scan.farmId !== filters.farmId) {
-        return false;
-      }
-
-      // Farmer name filter (search by idNumber since that's what we have)
-      if (
-        filters.farmerName &&
-        !scan.idNumber?.toLowerCase().includes(filters.farmerName.toLowerCase())
-      ) {
-        return false;
-      }
-
-      return true;
-    });
-  };
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({ ...prev, [filterType]: value }));
@@ -406,6 +388,7 @@ export default function ScanHistoryPage() {
                   <option value="month">Last 30 days</option>
                 </select>
               </div>
+
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Status
@@ -421,6 +404,7 @@ export default function ScanHistoryPage() {
                   <option value="needs-attention">Needs Attention</option>
                 </select>
               </div>
+
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Farmer ID
@@ -435,6 +419,7 @@ export default function ScanHistoryPage() {
                   className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
+
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Farm
@@ -499,6 +484,7 @@ export default function ScanHistoryPage() {
                               prediction={record.prediction}
                             />
                           </div>
+
                           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
                             <div className="flex items-center gap-2">
                               <img
@@ -506,7 +492,7 @@ export default function ScanHistoryPage() {
                                 alt="User"
                                 className="h-3 w-3"
                               />
-                              <span>{record.idNumber || "Unknown Farmer"}</span>
+                              <span>{record.idNumber}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <img
@@ -533,6 +519,7 @@ export default function ScanHistoryPage() {
                               </div>
                             )}
                           </div>
+
                           {record.description && (
                             <div className="flex items-center gap-2">
                               <span style={{ fontSize: "14px" }}>
@@ -540,7 +527,7 @@ export default function ScanHistoryPage() {
                                   diseaseIcons["Healthy"]}
                               </span>
                               <p
-                                className={`text-sm font-medium`}
+                                className="text-sm font-medium"
                                 style={{
                                   color:
                                     diseaseColors[record.prediction] ||
@@ -553,6 +540,7 @@ export default function ScanHistoryPage() {
                           )}
                         </div>
                       </div>
+
                       <div className="flex-shrink-0 ml-4">
                         <ViewDetailsButton
                           status={record.status}
@@ -566,7 +554,7 @@ export default function ScanHistoryPage() {
               )}
             </div>
 
-            {/* Pagination - only show if there are more than 5 scans */}
+            {/* Pagination */}
             {totalScans > resultsPerPage && (
               <div className="flex items-center justify-between p-6 border-t border-gray-200">
                 <div className="text-sm text-gray-700">
