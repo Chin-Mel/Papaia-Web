@@ -137,9 +137,70 @@ export default function RecentActivities({ limit = 5 }) {
               style.description = act.action.replace(/_/g, " ").toLowerCase();
           }
 
+          // Format the time from string to readable format
+          const formatTime = (timeString) => {
+            try {
+              // If it's in "MM/DD/YYYY hh:mm AM/PM" format, parse it
+              if (typeof timeString === "string" && timeString.includes("/")) {
+                const date = new Date(timeString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                if (diffMins < 1) return "Just now";
+                if (diffMins < 60) return `${diffMins} minutes ago`;
+                if (diffHours < 24) return `${diffHours} hours ago`;
+                if (diffDays < 7) return `${diffDays} days ago`;
+
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year:
+                    date.getFullYear() !== now.getFullYear()
+                      ? "numeric"
+                      : undefined,
+                });
+              }
+
+              // If it's already a Date object or timestamp
+              if (
+                timeString instanceof Date ||
+                !isNaN(Date.parse(timeString))
+              ) {
+                const date = new Date(timeString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / (1000 * 60));
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+                if (diffMins < 1) return "Just now";
+                if (diffMins < 60) return `${diffMins} minutes ago`;
+                if (diffHours < 24) return `${diffHours} hours ago`;
+                if (diffDays < 7) return `${diffDays} days ago`;
+
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year:
+                    date.getFullYear() !== now.getFullYear()
+                      ? "numeric"
+                      : undefined,
+                });
+              }
+
+              return timeString || "Unknown time";
+            } catch (error) {
+              console.error("Error parsing time:", error, timeString);
+              return "Unknown time";
+            }
+          };
+
           return {
             ...style,
-            time: act.createdAt || "Unknown time",
+            time: formatTime(act.createdAt),
             id: act.id,
           };
         });

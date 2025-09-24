@@ -16,6 +16,21 @@ import ClockIcon from "../assets/sh-clock-icon.png";
 import CheckCircleIcon from "../assets/check-circle-icon.png";
 import AlertIcon from "../assets/alert-icon.png";
 
+// Disease colors and icons mapping
+const diseaseColors = {
+  Healthy: "#00FF00", // Bright green
+  "Ring Spot Virus": "#FF8C00", // Dark orange
+  Anthracnose: "#FF0000", // Red
+  "Powdery Mildew": "#0066FF", // Blue
+};
+
+const diseaseIcons = {
+  Healthy: "🟢",
+  "Ring Spot Virus": "🟠",
+  Anthracnose: "🔴",
+  "Powdery Mildew": "🔵",
+};
+
 // --- Helper Components defined within the file ---
 function StatusBadge({ status, prediction }) {
   // Map prediction results to status categories
@@ -29,30 +44,32 @@ function StatusBadge({ status, prediction }) {
   };
 
   const actualStatus = status || getStatusFromPrediction(prediction);
+  const predictionKey = prediction || "Healthy";
+  const icon = diseaseIcons[predictionKey] || diseaseIcons["Healthy"];
+  const color = diseaseColors[predictionKey] || diseaseColors["Healthy"];
 
   const statusConfig = {
     healthy: {
       label: "Healthy",
       className: "bg-green-100 text-green-700 border-green-200",
-      icon: <img src={CheckCircleIcon} alt="Healthy" className="w-3 h-3" />,
     },
     "disease-detected": {
       label: "Disease Detected",
       className: "bg-red-100 text-red-700 border-red-200",
-      icon: <img src={AlertIcon} alt="Alert" className="w-3 h-4" />,
     },
     "needs-attention": {
       label: "Needs Attention",
       className: "bg-yellow-100 text-yellow-700 border-yellow-200",
-      icon: <img src={AlertIcon} alt="Attention" className="w-3 h-4" />,
     },
   };
+
   const config = statusConfig[actualStatus] || statusConfig.healthy;
+
   return (
     <div
       className={`${config.className} flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-medium`}
     >
-      {config.icon}
+      <span style={{ fontSize: "12px" }}>{icon}</span>
       {config.label}
     </div>
   );
@@ -75,9 +92,10 @@ function ViewDetailsButton({ status, prediction, scanId }) {
     "disease-detected": "text-[#EF4444] hover:text-red-600",
     "needs-attention": "text-[#F59E0B] hover:text-yellow-600",
   };
+
   return (
     <Link
-      to={`/scan-history-details/${scanId}`}
+      to={`/scan-details/${scanId}`}
       className={`flex items-center gap-2 ${colorMap[actualStatus]} p-0 h-auto text-sm font-medium transition-colors`}
     >
       <img src={EyeIcon} alt="View Details" className="h-4 w-4" />
@@ -516,15 +534,22 @@ export default function ScanHistoryPage() {
                             )}
                           </div>
                           {record.description && (
-                            <p
-                              className={`text-sm font-medium ${
-                                record.status === "disease-detected"
-                                  ? "text-red-600"
-                                  : "text-gray-600"
-                              }`}
-                            >
-                              {record.description}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <span style={{ fontSize: "14px" }}>
+                                {diseaseIcons[record.prediction] ||
+                                  diseaseIcons["Healthy"]}
+                              </span>
+                              <p
+                                className={`text-sm font-medium`}
+                                style={{
+                                  color:
+                                    diseaseColors[record.prediction] ||
+                                    diseaseColors["Healthy"],
+                                }}
+                              >
+                                {record.description}
+                              </p>
+                            </div>
                           )}
                         </div>
                       </div>

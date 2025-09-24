@@ -142,9 +142,9 @@ export default function RecentScans({ farmId }) {
   const getDiseaseIcon = (prediction) => {
     const diseaseIcons = {
       Healthy: "🟢",
-      "Ring Spot Virus": "🔴",
-      Anthracnose: "🟠",
-      "Powdery Mildew": "🟡",
+      "Ring Spot Virus": "🟠",
+      Anthracnose: "🔴",
+      "Powdery Mildew": "🔵",
     };
     return diseaseIcons[prediction] || "📊";
   };
@@ -280,7 +280,7 @@ export default function RecentScans({ farmId }) {
                 </p>
 
                 {/* Farm ID */}
-                <p className="text-xs text-gray-500">Farm ID: {farmId}</p>
+                <p className="text-xs text-gray-500">Farm ID: {idNumber}</p>
 
                 {/* Scan ID if available */}
                 {scan.id && (

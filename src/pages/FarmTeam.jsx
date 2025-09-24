@@ -83,6 +83,7 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
         const data = await response.json();
         if (data.status === "success" && isMounted) {
           // The API already returns full farmer details including user information
+          console.log("Fetched farmers:", data.farmers); // For debugging
           setFarmers(data.farmers || []);
         }
       } catch (error) {
@@ -160,10 +161,9 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
       farmer.barangay,
       farmer.municipality,
       farmer.province,
-      farmer.zipcode,
     ].filter(Boolean);
 
-    return addressParts.length > 0 ? addressParts.join(", ") : "N/A";
+    return addressParts.length > 0 ? addressParts.join(", ") : "No address";
   };
 
   // Pagination controls
@@ -224,31 +224,27 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
       {/* Results Summary */}
       <div className="flex justify-between items-center mb-4 text-sm text-gray-600">
         <p>
-          Showing {startIndex + 1}-{Math.min(endIndex, filteredFarmers.length)}{" "}
-          of {filteredFarmers.length} farmers
+          Showing {currentFarmers.length > 0 ? startIndex + 1 : 0}-
+          {Math.min(endIndex, filteredFarmers.length)} of{" "}
+          {filteredFarmers.length} farmers
         </p>
         {filteredFarmers.length !== farmers.length && (
           <p>(Filtered from {farmers.length} total)</p>
         )}
       </div>
 
-      {/* Table Header */}
-      <div
-        className="grid gap-2 sm:gap-4 border-b border-gray-200 pb-2 mb-4 text-gray-600 text-xs sm:text-sm font-medium bg-[#F9FAFB] items-center"
-        style={{
-          gridTemplateColumns: "4fr 2fr 5fr 2fr 2fr",
-        }}
-      >
-        <div className="text-left pl-2 sm:pl-4 pt-2">Farmer</div>
-        <div className="text-left pl-2 sm:pl-4 pt-2">Farmer ID</div>
-        <div className="text-left pl-2 sm:pl-4 pt-2 truncate">Address</div>
-        <div className="text-left pl-2 sm:pl-4 pt-2">Status</div>
-        <div className="text-left pl-2 sm:pl-4 pt-2">Actions</div>
+      {/* Table Header - Hidden on mobile */}
+      <div className="hidden sm:grid grid-cols-12 gap-4 border-b border-gray-200 pb-2 mb-4 text-gray-600 text-sm font-medium bg-gray-50 px-4 py-2 rounded-t-lg">
+        <div className="col-span-3 text-left">Farmer</div>
+        <div className="col-span-2 text-left">Farmer ID</div>
+        <div className="col-span-4 text-left">Address</div>
+        <div className="col-span-1 text-left">Status</div>
+        <div className="col-span-2 text-left">Actions</div>
       </div>
 
       {/* Farmers List */}
       {currentFarmers.length === 0 ? (
-        <div className="text-center py-6 sm:py-8 col-span-6">
+        <div className="text-center py-6 sm:py-8">
           <User className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2" />
           <p className="text-sm sm:text-base text-gray-500">
             {farmers.length === 0
@@ -265,68 +261,124 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
           )}
         </div>
       ) : (
-        currentFarmers.map((farmer) => (
-          <div
-            key={farmer.id}
-            className="grid gap-2 sm:gap-4 py-3 border-b border-gray-100 text-xs sm:text-sm sm:items-center items-start hover:bg-gray-50 transition-colors"
-            style={{
-              gridTemplateColumns: "4fr 2fr 5fr 2fr 2fr",
-            }}
-          >
-            {/* Farmer Info with Profile Picture */}
-            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4">
-              <img
-                src={farmer.profilePicture || "/assets/default-user.png"}
-                alt={formatName(farmer)}
-                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border border-gray-200"
-                onError={(e) => {
-                  e.target.src = "/assets/default-user.png";
-                }}
-              />
-              <div>
-                <p className="font-medium text-gray-800 text-xs sm:text-sm">
-                  {formatName(farmer)}
-                </p>
-                <p className="text-xs text-gray-600">
-                  {farmer.role || "Farmer"}
-                </p>
+        <div className="space-y-4">
+          {currentFarmers.map((farmer) => (
+            <div
+              key={farmer.id}
+              className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+            >
+              {/* Mobile Layout */}
+              <div className="sm:hidden">
+                <div className="flex items-start gap-3 mb-3">
+                  <img
+                    src={farmer.profilePicture || "/assets/default-user.png"}
+                    alt={formatName(farmer)}
+                    className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                    onError={(e) => {
+                      e.target.src = "/assets/default-user.png";
+                    }}
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">
+                      {formatName(farmer)}
+                    </h3>
+                    <p className="text-xs text-gray-600 font-mono mt-1">
+                      ID: {farmer.idNumber || "N/A"}
+                    </p>
+                    <div className="mt-2">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          farmer.status
+                        )}`}
+                      >
+                        {farmer.status.charAt(0).toUpperCase() +
+                          farmer.status.slice(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <p className="text-xs text-gray-600 mb-1">Address:</p>
+                  <p className="text-sm text-gray-800">
+                    {formatAddress(farmer)}
+                  </p>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => onViewFarmer(farmer.id)}
+                    className="text-green-500 hover:underline text-sm transition-all duration-150 active:scale-95"
+                  >
+                    View Details
+                  </button>
+                </div>
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden sm:grid grid-cols-12 gap-4 items-center">
+                {/* Farmer Info with Profile Picture */}
+                <div className="col-span-3 flex items-center gap-3">
+                  <img
+                    src={farmer.profilePicture || "/assets/default-user.png"}
+                    alt={formatName(farmer)}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                    onError={(e) => {
+                      e.target.src = "/assets/default-user.png";
+                    }}
+                  />
+                  <div>
+                    <p className="font-medium text-gray-800 text-sm">
+                      {formatName(farmer)}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      {farmer.role || "Farmer"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Farmer ID */}
+                <div className="col-span-2">
+                  <p className="text-sm text-gray-700 font-mono">
+                    {farmer.idNumber || "N/A"}
+                  </p>
+                </div>
+
+                {/* Address */}
+                <div className="col-span-4">
+                  <p
+                    className="text-sm text-gray-700 truncate"
+                    title={formatAddress(farmer)}
+                  >
+                    {formatAddress(farmer)}
+                  </p>
+                </div>
+
+                {/* Status */}
+                <div className="col-span-1">
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                      farmer.status
+                    )}`}
+                  >
+                    {farmer.status.charAt(0).toUpperCase() +
+                      farmer.status.slice(1)}
+                  </span>
+                </div>
+
+                {/* Actions */}
+                <div className="col-span-2">
+                  <button
+                    onClick={() => onViewFarmer(farmer.id)}
+                    className="text-green-500 hover:underline text-sm transition-all duration-150 active:scale-95"
+                  >
+                    View Details
+                  </button>
+                </div>
               </div>
             </div>
-
-            {/* Farmer ID */}
-            <div className="pl-2 sm:pl-4 text-gray-700 font-mono">
-              {farmer.idNumber || "N/A"}
-            </div>
-
-            {/* Address */}
-            <div className="pl-2 sm:pl-4 text-xs sm:text-sm text-gray-700">
-              <p className="truncate" title={formatAddress(farmer)}>
-                {formatAddress(farmer)}
-              </p>
-            </div>
-
-            {/* Status */}
-            <div className="pl-2 sm:pl-4">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  farmer.status
-                )}`}
-              >
-                {farmer.status.charAt(0).toUpperCase() + farmer.status.slice(1)}
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="pl-2 sm:pl-4">
-              <button
-                onClick={() => onViewFarmer(farmer.id)}
-                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer text-green-500 hover:underline text-xs sm:text-sm"
-              >
-                View Details
-              </button>
-            </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
 
       {/* Pagination */}
