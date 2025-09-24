@@ -12,8 +12,64 @@ import {
   Bar,
 } from "recharts";
 
-export default function FarmAnalytics({ analyticsData, timeFilter }) {
+export default function FarmAnalytics({ farmId, timeFilter }) {
   const [chartType, setChartType] = useState("line");
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  // Fetch analytics data
+  useEffect(() => {
+    if (!farmId) return;
+
+    let isMounted = true;
+
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      try {
+        const endpointMap = {
+          Daily: "daily-analytics",
+          Weekly: "weekly-analytics",
+          Monthly: "monthly-analytics",
+          Yearly: "yearly-analytics",
+        };
+
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+
+        if (isMounted) {
+          setAnalyticsData(data);
+        }
+      } catch (error) {
+        console.error("Analytics fetch error:", error);
+        if (isMounted) {
+          setAnalyticsData(null);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchAnalytics();
+    const interval = setInterval(() => {
+      if (isMounted) {
+        fetchAnalytics();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [farmId, timeFilter]);
 
   // Create placeholder data based on time filter
   const getPlaceholderData = () => {
@@ -47,7 +103,7 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
     }
   };
 
-  // Process analytics data based on the new API structure
+  // Process analytics data
   const processAnalyticsData = () => {
     if (!analyticsData || analyticsData.error) {
       return getPlaceholderData();
@@ -68,7 +124,6 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
       );
       const diseaseTypes = Object.keys(predictions).length;
 
-      // Get the period label based on time filter
       let period = "";
       if (item.day) period = item.day;
       else if (item.week) period = item.week;
@@ -79,14 +134,14 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
         period,
         totalPredictions,
         diseaseTypes,
-        predictions, // Keep original predictions for tooltip
+        predictions,
       };
     });
   };
 
   const chartData = processAnalyticsData();
 
-  // Custom tooltip to show disease breakdown
+  // Custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -94,7 +149,7 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
           <p className="font-semibold text-gray-800 mb-2">{label}</p>
           <p className="text-blue-600 mb-1">
-            Total Predictions: {data.totalPredictions}
+            Total Scans: {data.totalPredictions}
           </p>
           <p className="text-green-600 mb-2">
             Disease Types: {data.diseaseTypes}
@@ -119,43 +174,84 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
 
   const hasData = chartData.some((item) => item.totalPredictions > 0);
 
+  // Calculate total scans for the current time period
+  const totalScans = chartData.reduce(
+    (sum, item) => sum + item.totalPredictions,
+    0
+  );
+
+  // Calculate unique diseases
+  const uniqueDiseases = [
+    ...new Set(
+      chartData.flatMap((item) => Object.keys(item.predictions || {}))
+    ),
+  ].length;
+
+  // Calculate health score (percentage of healthy predictions)
+  const healthyScans = chartData.reduce((sum, item) => {
+    return sum + (item.predictions?.Healthy || 0);
+  }, 0);
+  const healthScore =
+    totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
+
+  // Calculate disease score (percentage of disease predictions)
+  const diseaseScans = totalScans - healthyScans;
+  const diseaseScore =
+    totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+        <div className="flex justify-center items-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 flex flex-col">
-      {/* Chart Type Toggle */}
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setChartType("line")}
-          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-            chartType === "line"
-              ? "bg-blue-100 text-blue-700"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          Line Chart
-        </button>
-        <button
-          onClick={() => setChartType("bar")}
-          className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-            chartType === "bar"
-              ? "bg-blue-100 text-blue-700"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
-        >
-          Bar Chart
-        </button>
+    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+        <h2 className="text-base sm:text-lg font-bold text-gray-800">
+          Farm Analytics
+        </h2>
+
+        {/* Chart Type Toggle */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setChartType("line")}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              chartType === "line"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Line Chart
+          </button>
+          <button
+            onClick={() => setChartType("bar")}
+            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+              chartType === "bar"
+                ? "bg-blue-100 text-blue-700"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            Bar Chart
+          </button>
+        </div>
       </div>
 
       {/* Chart Container */}
-      <div className="flex-1 w-full" style={{ minHeight: "250px" }}>
+      <div className="flex-1 w-full" style={{ minHeight: "200px" }}>
         {!hasData ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
                 📊
               </div>
-              <p>No prediction data available</p>
+              <p>No scan data available</p>
               <p className="text-xs mt-1">
-                Data will appear when farmers make predictions
+                Data will appear when farmers make scans
               </p>
             </div>
           </div>
@@ -183,7 +279,7 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
                   stroke="#3b82f6"
                   strokeWidth={2}
                   dot={{ r: 4 }}
-                  name="Total Predictions"
+                  name="Total Scans"
                 />
                 <Line
                   type="monotone"
@@ -213,7 +309,7 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
                 <Bar
                   dataKey="totalPredictions"
                   fill="#3b82f6"
-                  name="Total Predictions"
+                  name="Total Scans"
                   radius={[2, 2, 0, 0]}
                 />
                 <Bar
@@ -229,30 +325,26 @@ export default function FarmAnalytics({ analyticsData, timeFilter }) {
       </div>
 
       {/* Summary Stats */}
-      {hasData && (
-        <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-          <div className="bg-blue-50 rounded-lg p-3">
-            <p className="text-lg font-semibold text-blue-600">
-              {chartData.reduce((sum, item) => sum + item.totalPredictions, 0)}
-            </p>
-            <p className="text-xs text-blue-600">Total Predictions</p>
-          </div>
-          <div className="bg-amber-50 rounded-lg p-3">
-            <p className="text-lg font-semibold text-amber-600">
-              {
-                [
-                  ...new Set(
-                    chartData.flatMap((item) =>
-                      Object.keys(item.predictions || {})
-                    )
-                  ),
-                ].length
-              }
-            </p>
-            <p className="text-xs text-amber-600">Unique Diseases</p>
-          </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+        <div className="text-center">
+          <p className="text-green-600 font-semibold text-lg sm:text-xl">
+            {totalScans}
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Total Scans</p>
         </div>
-      )}
+        <div className="text-center">
+          <p className="text-blue-600 font-semibold text-lg sm:text-xl">
+            {healthScore}%
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Health Score</p>
+        </div>
+        <div className="text-center">
+          <p className="text-orange-600 font-semibold text-lg sm:text-xl">
+            {diseaseScore}%
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Disease Score</p>
+        </div>
+      </div>
     </div>
   );
 }
