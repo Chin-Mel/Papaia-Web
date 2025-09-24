@@ -261,109 +261,108 @@ export default function DashboardPage() {
 
       {/* Scrollable main content */}
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-        <div className="w-full max-w-8xl mx-auto flex flex-col lg:flex-row gap-6">
-          {/* Left Column - Recent Activities */}
-          <div className="w-full order-3 lg:order-1 lg:w-50 xl:w-[330px] flex-shrink-0">
-            <RecentActivities limit={5} />
-          </div>
-
-          {/* Right Column - Dashboard Content */}
-          <div className="flex-1 order-1 lg:order-2">
-            {/* Dashboard Overview */}
-            <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-              Dashboard Overview
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-8">
-              {/* Farmers */}
-              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                <div>
-                  <p className="text-sm sm:text-base text-gray-600 mb-2">
-                    All Farmers
-                  </p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-                    {dashboardStats.totalFarmers.toLocaleString()}
-                  </h3>
-                  <span
-                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                      dashboardStats.farmersTrend
-                    )}`}
-                  >
-                    {getTrendPrefix(
-                      dashboardStats.farmersTrend,
-                      dashboardStats.farmersChange
-                    )}
-                    {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
-                    last month
-                  </span>
+        <div className="w-full max-w-8xl mx-auto">
+          {/* Mobile Layout */}
+          <div className="block lg:hidden">
+            {/* Dashboard Overview - Mobile */}
+            <div className="mb-6">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+                Dashboard Overview
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+                {/* Farmers */}
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      All Farmers
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.totalFarmers.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmersTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(
+                        dashboardStats.farmersTrend,
+                        dashboardStats.farmersChange
+                      )}
+                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmersCount}
+                    alt="Farmers"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                  />
                 </div>
-                <img
-                  src={FarmersCount}
-                  alt="Farmers"
-                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
-                />
-              </div>
 
-              {/* Farms */}
-              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                <div>
-                  <p className="text-sm sm:text-base text-gray-600 mb-2">
-                    All Farms
-                  </p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-                    {dashboardStats.totalFarms.toLocaleString()}
-                  </h3>
-                  <span
-                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                      dashboardStats.farmsTrend
-                    )}`}
-                  >
-                    {getTrendPrefix(
-                      dashboardStats.farmsTrend,
-                      dashboardStats.farmsChange
-                    )}
-                    {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from last
-                    month
-                  </span>
+                {/* Farms */}
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      All Farms
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.totalFarms.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmsTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(
+                        dashboardStats.farmsTrend,
+                        dashboardStats.farmsChange
+                      )}
+                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmsCount}
+                    alt="Farms"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                  />
                 </div>
-                <img
-                  src={FarmsCount}
-                  alt="Farms"
-                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
-                />
-              </div>
 
-              {/* Scans */}
-              <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                <div>
-                  <p className="text-sm sm:text-base text-gray-600 mb-2">
-                    Today's Scans
-                  </p>
-                  <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
-                    {dashboardStats.todayScans.toLocaleString()}
-                  </h3>
-                  <span
-                    className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                      dashboardStats.scansTrend
-                    )}`}
-                  >
-                    {getTrendPrefix(
-                      dashboardStats.scansTrend,
-                      dashboardStats.scansChange
-                    )}
-                    {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
-                    yesterday
-                  </span>
+                {/* Scans */}
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md sm:col-span-2">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      Today's Scans
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.todayScans.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.scansTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(
+                        dashboardStats.scansTrend,
+                        dashboardStats.scansChange
+                      )}
+                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+                      yesterday
+                    </span>
+                  </div>
+                  <img
+                    src={ScansCount}
+                    alt="Scans"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                  />
                 </div>
-                <img
-                  src={ScansCount}
-                  alt="Scans"
-                  className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
-                />
               </div>
             </div>
 
             {/* Recent Activities - Mobile */}
-            <RecentActivities limit={5} />
+            <div className="mb-6">
+              <RecentActivities limit={5} />
+            </div>
 
             {/* My Farms Section - Mobile */}
             <div>
@@ -381,7 +380,7 @@ export default function DashboardPage() {
                 </button>
               </div>
 
-              {/* Farms Grid */}
+              {/* Farms Grid - Mobile */}
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="text-gray-500">Loading farms...</div>
@@ -442,7 +441,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Desktop Layout - Side by side */}
+          {/* Desktop Layout */}
           <div className="hidden lg:flex gap-6">
             {/* Left Column - Recent Activities */}
             <div className="w-[330px] flex-shrink-0">
@@ -451,22 +450,20 @@ export default function DashboardPage() {
 
             {/* Right Column - Dashboard Content */}
             <div className="flex-1">
-              {/* Dashboard Overview */}
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+              {/* Dashboard Overview - Desktop */}
+              <h2 className="text-lg font-bold text-gray-800 mb-4">
                 Dashboard Overview
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 mb-8 min-h-[200px]">
+              <div className="grid grid-cols-3 gap-5 mb-8">
                 {/* Farmers */}
-                <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
                   <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      All Farmers
-                    </p>
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                    <p className="text-base text-gray-600 mb-2">All Farmers</p>
+                    <h3 className="text-3xl font-bold text-gray-800">
                       {dashboardStats.totalFarmers.toLocaleString()}
                     </h3>
                     <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      className={`text-sm font-medium ${getTrendColor(
                         dashboardStats.farmersTrend
                       )}`}
                     >
@@ -481,21 +478,19 @@ export default function DashboardPage() {
                   <img
                     src={FarmersCount}
                     alt="Farmers"
-                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                    className="w-14 h-14 object-contain"
                   />
                 </div>
 
                 {/* Farms */}
-                <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
                   <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      All Farms
-                    </p>
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                    <p className="text-base text-gray-600 mb-2">All Farms</p>
+                    <h3 className="text-3xl font-bold text-gray-800">
                       {dashboardStats.totalFarms.toLocaleString()}
                     </h3>
                     <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      className={`text-sm font-medium ${getTrendColor(
                         dashboardStats.farmsTrend
                       )}`}
                     >
@@ -510,21 +505,21 @@ export default function DashboardPage() {
                   <img
                     src={FarmsCount}
                     alt="Farms"
-                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                    className="w-14 h-14 object-contain"
                   />
                 </div>
 
                 {/* Scans */}
-                <div className="p-4 sm:p-5 lg:p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
                   <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                    <p className="text-base text-gray-600 mb-2">
                       Today's Scans
                     </p>
-                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+                    <h3 className="text-3xl font-bold text-gray-800">
                       {dashboardStats.todayScans.toLocaleString()}
                     </h3>
                     <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                      className={`text-sm font-medium ${getTrendColor(
                         dashboardStats.scansTrend
                       )}`}
                     >
@@ -539,36 +534,34 @@ export default function DashboardPage() {
                   <img
                     src={ScansCount}
                     alt="Scans"
-                    className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 object-contain"
+                    className="w-14 h-14 object-contain"
                   />
                 </div>
               </div>
 
-              {/* My Farms Section */}
+              {/* My Farms Section - Desktop */}
               <div>
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
-                  <h2 className="text-base sm:text-lg font-bold text-gray-800">
-                    My Farms
-                  </h2>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
                   <button
                     onClick={() => setShowAddFarmModal(true)}
                     disabled={loading}
-                    className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-base transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Plus size={16} />
                     {loading ? "Loading..." : "Add Farm"}
                   </button>
                 </div>
 
-                {/* Farms Grid */}
+                {/* Farms Grid - Desktop */}
                 {loading ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="text-gray-500">Loading farms...</div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     {farms.length === 0 ? (
-                      <div className="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 text-gray-500">
+                      <div className="col-span-3 text-center py-12 text-gray-500">
                         No farms added yet. Click "Add Farm" to get started!
                       </div>
                     ) : (
@@ -582,10 +575,10 @@ export default function DashboardPage() {
                             <img
                               src={farm.img}
                               alt={farm.name}
-                              className="w-full h-32 sm:h-40 lg:h-48 object-cover"
+                              className="w-full h-48 object-cover"
                             />
                             <span
-                              className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
+                              className={`absolute top-3 right-3 px-2.5 py-1.5 text-xs rounded-full font-medium ${
                                 farm.status === "Active"
                                   ? "bg-green-500 text-white"
                                   : "bg-red-500 text-white"
@@ -594,20 +587,20 @@ export default function DashboardPage() {
                               {farm.status}
                             </span>
                           </div>
-                          <div className="p-3 sm:p-4">
-                            <h3 className="font-bold text-xs sm:text-base lg:text-lg text-gray-800 mb-1">
+                          <div className="p-4">
+                            <h3 className="font-bold text-lg text-gray-800 mb-1">
                               {farm.name}
                             </h3>
-                            <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
+                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                               {farm.desc}
                             </p>
                             <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
                                 <MapPin size={12} /> {farm.location}
                               </div>
                               <div className="flex items-center gap-1">
                                 <Leaf size={12} className="text-green-500" />
-                                <span className="text-[10px] sm:text-xs font-medium text-green-600">
+                                <span className="text-xs font-medium text-green-600">
                                   {farm.health}% Health
                                 </span>
                               </div>
