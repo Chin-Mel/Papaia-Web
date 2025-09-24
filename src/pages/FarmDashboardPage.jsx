@@ -210,13 +210,26 @@ export default function FarmDashboardPage() {
   // Handlers
   const handleAddFarmer = () => setIsAddFarmerModalOpen(true);
 
-  const handleFarmerAdded = (farmerData, refreshedFarmers) => {
-    setIsAddFarmerModalOpen(false);
-    setNewlyAddedFarmer(farmerData);
-    setIsFarmerAddedSuccessModalOpen(true);
+  const handleFarmerAdded = async (farmerData) => {
+    try {
+      // Modal already handled the API call, just update UI and refresh list
+      setIsAddFarmerModalOpen(false);
+      setNewlyAddedFarmer(farmerData);
+      setIsFarmerAddedSuccessModalOpen(true);
 
-    if (refreshedFarmers && refreshedFarmers.length >= 0) {
-      setFarmers(refreshedFarmers);
+      // Refresh farmers list from backend (similar to how AddFarmModal refreshes farms)
+      const farmersRes = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const farmersData = await farmersRes.json();
+      if (farmersData.status === "success") {
+        setFarmers(farmersData.farmers || []);
+      }
+    } catch (err) {
+      console.error("Error refreshing farmers list:", err);
     }
   };
 
