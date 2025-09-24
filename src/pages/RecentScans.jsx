@@ -4,10 +4,46 @@ import { Leaf, Eye } from "lucide-react";
 export default function RecentScans({ farmId }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [farmers, setFarmers] = useState([]);
 
-  // Fetch recent scans for the farm
+  // First fetch farmers for this farm to get their names
   useEffect(() => {
     if (!farmId) return;
+
+    let isMounted = true;
+
+    const fetchFarmers = async () => {
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted && data.status === "success") {
+            setFarmers(data.farmers || []);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching farmers:", error);
+      }
+    };
+
+    fetchFarmers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [farmId]);
+
+  // Fetch recent scans for the farm - only scans by assigned farmers
+  useEffect(() => {
+    if (!farmId || farmers.length === 0) return;
 
     let isMounted = true;
 
@@ -26,10 +62,19 @@ export default function RecentScans({ farmId }) {
         if (response.ok) {
           const data = await response.json();
           if (isMounted) {
-            // Sort by timestamp (most recent first) and take only the latest 10
-            const sortedScans = (data || [])
+            // Get list of farmer idNumbers for this farm
+            const farmerIdNumbers = farmers.map((farmer) => farmer.idNumber);
+
+            // Filter scans to only include those made by assigned farmers
+            const filteredScans = (data || []).filter((scan) =>
+              farmerIdNumbers.includes(scan.idNumber)
+            );
+
+            // Sort by timestamp (most recent first) and take only the latest 5
+            const sortedScans = filteredScans
               .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-              .slice(0, 10);
+              .slice(0, 5);
+
             setRecentScans(sortedScans);
           }
         } else {
@@ -62,7 +107,22 @@ export default function RecentScans({ farmId }) {
       isMounted = false;
       clearInterval(interval);
     };
-  }, [farmId]);
+  }, [farmId, farmers]);
+
+  // Get farmer name by idNumber
+  const getFarmerName = (idNumber) => {
+    const farmer = farmers.find((f) => f.idNumber === idNumber);
+    if (!farmer) return "Unknown Farmer";
+
+    const nameParts = [
+      farmer.firstname,
+      farmer.middlename,
+      farmer.lastname,
+      farmer.suffix,
+    ].filter(Boolean);
+
+    return nameParts.length > 0 ? nameParts.join(" ") : "Unknown Farmer";
+  };
 
   // Get disease icon based on prediction
   const getDiseaseIcon = (prediction) => {
@@ -166,7 +226,7 @@ export default function RecentScans({ farmId }) {
             No recent scans available
           </p>
           <p className="text-xs text-gray-400 mt-1">
-            Scans will appear when farmers make predictions
+            Scans will appear when assigned farmers make predictions
           </p>
         </div>
       ) : (
@@ -207,32 +267,22 @@ export default function RecentScans({ farmId }) {
                 </div>
 
                 <p className="text-xs text-gray-600 truncate">
-                  Farmer ID: {scan.idNumber}
+                  ID: {scan.idNumber}
                 </p>
 
-                {scan.confidence && (
-                  <div className="mt-1">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                          style={{
-                            width: `${(scan.confidence * 100).toFixed(0)}%`,
-                          }}
-                        ></div>
-                      </div>
-                      <span className="text-xs text-gray-500">
-                        {(scan.confidence * 100).toFixed(0)}%
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <p className="text-xs text-gray-600 truncate">
+                  {getFarmerName(scan.idNumber)}
+                </p>
               </div>
 
               {/* View Details Button */}
               <button
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-white rounded-lg transition-colors"
                 title="View scan details"
+                onClick={() => {
+                  // You can add a modal or navigation to scan details here
+                  console.log("View scan details for:", scan.id);
+                }}
               >
                 <Eye className="w-4 h-4" />
               </button>
@@ -245,7 +295,8 @@ export default function RecentScans({ farmId }) {
       {recentScans.length > 0 && (
         <div className="mt-4 pt-3 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            Showing {Math.min(10, recentScans.length)} most recent scans
+            Showing {Math.min(5, recentScans.length)} most recent scans by
+            assigned farmers
           </p>
         </div>
       )}

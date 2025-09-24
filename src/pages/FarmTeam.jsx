@@ -55,7 +55,7 @@ function StatusDropdown({ value, onChange }) {
   );
 }
 
-export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
+export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,7 +65,7 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
   const [currentPage, setCurrentPage] = useState(1);
   const farmersPerPage = 5;
 
-  // Fetch farmers
+  // Fetch farmers with full details
   useEffect(() => {
     if (!farmId) return;
 
@@ -84,6 +84,7 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
         );
         const data = await response.json();
         if (data.status === "success" && isMounted) {
+          // The API already returns full farmer details including user information
           setFarmers(data.farmers || []);
         }
       } catch (error) {
@@ -110,6 +111,7 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
       (farmer.firstname || "").toLowerCase().includes(searchLower) ||
+      (farmer.middlename || "").toLowerCase().includes(searchLower) ||
       (farmer.lastname || "").toLowerCase().includes(searchLower) ||
       (farmer.idNumber || "").toLowerCase().includes(searchLower);
 
@@ -133,11 +135,11 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Active":
+      case "active":
         return "text-green-600 bg-green-100";
-      case "Pending":
+      case "pending":
         return "text-orange-600 bg-orange-100";
-      case "Inactive":
+      case "inactive":
         return "text-red-600 bg-red-100";
       default:
         return "text-gray-600 bg-gray-100";
@@ -145,9 +147,9 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
   };
 
   const formatName = (farmer) => {
-    const firstName = farmer.firstname || farmer.firstName || "";
-    const middleName = farmer.middlename || farmer.middleName || "";
-    const lastName = farmer.lastname || farmer.lastName || "";
+    const firstName = farmer.firstname || "";
+    const middleName = farmer.middlename || "";
+    const lastName = farmer.lastname || "";
     const suffix = farmer.suffix || "";
 
     const nameParts = [firstName, middleName, lastName, suffix].filter(Boolean);
@@ -160,10 +162,20 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
       farmer.barangay,
       farmer.municipality,
       farmer.province,
-      farmer.zipcode || farmer.zipCode,
+      farmer.zipcode,
     ].filter(Boolean);
 
     return addressParts.length > 0 ? addressParts.join(", ") : "N/A";
+  };
+
+  // Get phone number - check multiple possible field names
+  const getPhoneNumber = (farmer) => {
+    return farmer.contactNumber || farmer.phone || farmer.phoneNumber || "N/A";
+  };
+
+  // Get email - check multiple possible field names
+  const getEmail = (farmer) => {
+    return farmer.email || farmer.emailAddress || "N/A";
   };
 
   // Pagination controls
@@ -304,11 +316,11 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
               <div className="space-y-1">
                 <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
                   <Phone className="w-3 h-3" />
-                  {farmer.contactNumber || farmer.phone || "N/A"}
+                  {getPhoneNumber(farmer)}
                 </p>
                 <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
                   <Mail className="w-3 h-3" />
-                  {farmer.email || "N/A"}
+                  {getEmail(farmer)}
                 </p>
               </div>
             </div>
@@ -324,7 +336,7 @@ export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
             <div className="pl-2 sm:pl-4">
               <span
                 className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                  farmer.status.charAt(0).toUpperCase() + farmer.status.slice(1)
+                  farmer.status
                 )}`}
               >
                 {farmer.status.charAt(0).toUpperCase() + farmer.status.slice(1)}

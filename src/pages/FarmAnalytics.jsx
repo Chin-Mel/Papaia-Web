@@ -41,10 +41,17 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
             },
           }
         );
-        const data = await response.json();
 
-        if (isMounted) {
-          setAnalyticsData(data);
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted) {
+            setAnalyticsData(data);
+          }
+        } else {
+          console.error("Analytics API error:", response.status);
+          if (isMounted) {
+            setAnalyticsData(null);
+          }
         }
       } catch (error) {
         console.error("Analytics fetch error:", error);
@@ -71,49 +78,17 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     };
   }, [farmId, timeFilter]);
 
-  // Create placeholder data based on time filter
-  const getPlaceholderData = () => {
-    switch (timeFilter) {
-      case "Daily":
-        return Array.from({ length: 7 }, (_, i) => ({
-          period: `Day ${i + 1}`,
-          totalPredictions: 0,
-          diseaseTypes: 0,
-        }));
-      case "Weekly":
-        return Array.from({ length: 4 }, (_, i) => ({
-          period: `Week ${i + 1}`,
-          totalPredictions: 0,
-          diseaseTypes: 0,
-        }));
-      case "Monthly":
-        return Array.from({ length: 6 }, (_, i) => ({
-          period: `Month ${i + 1}`,
-          totalPredictions: 0,
-          diseaseTypes: 0,
-        }));
-      case "Yearly":
-        return Array.from({ length: 3 }, (_, i) => ({
-          period: `${2023 + i}`,
-          totalPredictions: 0,
-          diseaseTypes: 0,
-        }));
-      default:
-        return [];
-    }
-  };
-
   // Process analytics data
   const processAnalyticsData = () => {
     if (!analyticsData || analyticsData.error) {
-      return getPlaceholderData();
+      return [];
     }
 
     const statsKey = `${timeFilter.toLowerCase()}Stats`;
     const stats = analyticsData[statsKey];
 
     if (!stats || !Array.isArray(stats)) {
-      return getPlaceholderData();
+      return [];
     }
 
     return stats.map((item) => {
@@ -122,7 +97,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         (sum, count) => sum + count,
         0
       );
-      const diseaseTypes = Object.keys(predictions).length;
 
       let period = "";
       if (item.day) period = item.day;
@@ -130,16 +104,50 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       else if (item.month) period = item.month;
       else if (item.year) period = item.year;
 
+      // Create individual disease count entries for the chart
+      const diseaseEntries = {};
+      Object.entries(predictions).forEach(([disease, count]) => {
+        diseaseEntries[disease] = count;
+      });
+
       return {
         period,
         totalPredictions,
-        diseaseTypes,
+        ...diseaseEntries,
         predictions,
       };
     });
   };
 
   const chartData = processAnalyticsData();
+
+  // Get all unique disease types from the data
+  const getAllDiseaseTypes = () => {
+    const diseases = new Set();
+    chartData.forEach((item) => {
+      if (item.predictions) {
+        Object.keys(item.predictions).forEach((disease) =>
+          diseases.add(disease)
+        );
+      }
+    });
+    return Array.from(diseases);
+  };
+
+  const diseaseTypes = getAllDiseaseTypes();
+
+  // Color mapping for different diseases
+  const diseaseColors = {
+    Healthy: "#22c55e",
+    "Ring Spot Virus": "#ef4444",
+    Anthracnose: "#f97316",
+    "Powdery Mildew": "#eab308",
+  };
+
+  // Get color for disease type
+  const getDiseaseColor = (disease, index) => {
+    return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
+  };
 
   // Custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
@@ -148,11 +156,8 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
           <p className="font-semibold text-gray-800 mb-2">{label}</p>
-          <p className="text-blue-600 mb-1">
+          <p className="text-blue-600 mb-2">
             Total Scans: {data.totalPredictions}
-          </p>
-          <p className="text-green-600 mb-2">
-            Disease Types: {data.diseaseTypes}
           </p>
           {data.predictions && Object.keys(data.predictions).length > 0 && (
             <div className="border-t pt-2 mt-2">
@@ -180,13 +185,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     0
   );
 
-  // Calculate unique diseases
-  const uniqueDiseases = [
-    ...new Set(
-      chartData.flatMap((item) => Object.keys(item.predictions || {}))
-    ),
-  ].length;
-
   // Calculate health score (percentage of healthy predictions)
   const healthyScans = chartData.reduce((sum, item) => {
     return sum + (item.predictions?.Healthy || 0);
@@ -213,7 +211,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
-          Farm Analytics
+          Farm Analytics ({timeFilter})
         </h2>
 
         {/* Chart Type Toggle */}
@@ -273,22 +271,17 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="totalPredictions"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  name="Total Scans"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="diseaseTypes"
-                  stroke="#f59e0b"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  name="Disease Types"
-                />
+                {diseaseTypes.map((disease, index) => (
+                  <Line
+                    key={disease}
+                    type="monotone"
+                    dataKey={disease}
+                    stroke={getDiseaseColor(disease, index)}
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    name={disease}
+                  />
+                ))}
               </LineChart>
             ) : (
               <BarChart
@@ -306,18 +299,15 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Bar
-                  dataKey="totalPredictions"
-                  fill="#3b82f6"
-                  name="Total Scans"
-                  radius={[2, 2, 0, 0]}
-                />
-                <Bar
-                  dataKey="diseaseTypes"
-                  fill="#f59e0b"
-                  name="Disease Types"
-                  radius={[2, 2, 0, 0]}
-                />
+                {diseaseTypes.map((disease, index) => (
+                  <Bar
+                    key={disease}
+                    dataKey={disease}
+                    fill={getDiseaseColor(disease, index)}
+                    name={disease}
+                    radius={[2, 2, 0, 0]}
+                  />
+                ))}
               </BarChart>
             )}
           </ResponsiveContainer>
@@ -336,13 +326,13 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           <p className="text-blue-600 font-semibold text-lg sm:text-xl">
             {healthScore}%
           </p>
-          <p className="text-sm sm:text-base text-gray-600">Health Score</p>
+          <p className="text-sm sm:text-base text-gray-600">Healthy</p>
         </div>
         <div className="text-center">
           <p className="text-orange-600 font-semibold text-lg sm:text-xl">
             {diseaseScore}%
           </p>
-          <p className="text-sm sm:text-base text-gray-600">Disease Score</p>
+          <p className="text-sm sm:text-base text-gray-600">Diseases</p>
         </div>
       </div>
     </div>
