@@ -93,8 +93,24 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
         ...data.farmer,
       };
 
-      // Call the parent handler with the farmer data
-      onFarmerAdded(farmerData);
+      // Refresh the farmers list directly
+      const refreshedFarmersRes = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // Call the parent handler with both farmer data and refreshed list
+      let refreshedFarmers = [];
+      if (refreshedFarmersRes.ok) {
+        const refreshedData = await refreshedFarmersRes.json();
+        if (refreshedData.status === "success") {
+          refreshedFarmers = refreshedData.farmers || [];
+        }
+      }
+
+      onFarmerAdded(farmerData, refreshedFarmers);
 
       // Reset form and close modal
       setFarmerId("");

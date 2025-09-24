@@ -210,55 +210,13 @@ export default function FarmDashboardPage() {
   // Handlers
   const handleAddFarmer = () => setIsAddFarmerModalOpen(true);
 
-  const handleFarmerAdded = async (farmerData) => {
-    try {
-      console.log("Adding farmer with data:", farmerData);
+  const handleFarmerAdded = (farmerData, refreshedFarmers) => {
+    setIsAddFarmerModalOpen(false);
+    setNewlyAddedFarmer(farmerData);
+    setIsFarmerAddedSuccessModalOpen(true);
 
-      const res = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/farmer",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-          // Fixed: Use idNumber instead of userId to match API docs
-          body: JSON.stringify({
-            idNumber: farmerData.idNumber,
-            farmId,
-          }),
-        }
-      );
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(
-          errorData.message || `Failed to add farmer (${res.status})`
-        );
-      }
-
-      const data = await res.json();
-      console.log("Farmer added response:", data);
-
-      // Close modal and show success
-      setIsAddFarmerModalOpen(false);
-      setNewlyAddedFarmer(farmerData);
-      setIsFarmerAddedSuccessModalOpen(true);
-
-      // Refresh farmers list
-      const farmersRes = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const farmersData = await farmersRes.json();
-      if (farmersData.status === "success") {
-        setFarmers(farmersData.farmers || []);
-      }
-    } catch (err) {
-      console.error("Error adding farmer:", err);
-      alert("Error adding farmer: " + err.message);
+    if (refreshedFarmers && refreshedFarmers.length >= 0) {
+      setFarmers(refreshedFarmers);
     }
   };
 

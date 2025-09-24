@@ -70,17 +70,17 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
             </div>
           </div>
 
-          {/* Information Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            {/* Personal Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <User className="w-4 h-4 text-orange-500" />
-                <h4 className="font-semibold text-gray-800 text-sm">
-                  Personal Information
-                </h4>
-              </div>
-              <div className="space-y-2">
+          {/* Personal Info */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <User className="w-4 h-4 text-orange-500" />
+              <h4 className="font-semibold text-gray-800 text-sm">
+                Personal Information
+              </h4>
+            </div>
+            <div className="space-y-4">
+              {/* First Name and Middle Name - Side by side */}
+              <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">First Name</p>
                   <p className="text-gray-800 font-medium">
@@ -93,6 +93,10 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                     {farmer.middlename || farmer.middleName || "N/A"}
                   </p>
                 </div>
+              </div>
+
+              {/* Last Name and Suffix - Side by side */}
+              <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 p-2 rounded text-sm">
                   <p className="text-gray-600 text-xs">Last Name</p>
                   <p className="text-gray-800 font-medium">
@@ -106,31 +110,31 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                   </p>
                 </div>
               </div>
+
+              {/* Address - Full width at bottom */}
+              <div className="bg-gray-50 p-2 rounded text-sm">
+                <p className="text-gray-600 text-xs">Address</p>
+                <p className="text-gray-800 font-medium">
+                  {(() => {
+                    const addressParts = [
+                      farmer.street,
+                      farmer.barangay,
+                      farmer.municipality,
+                      farmer.province,
+                      farmer.zipcode || farmer.zipCode,
+                    ].filter(Boolean);
+
+                    return addressParts.length > 0
+                      ? addressParts.join(", ")
+                      : "N/A";
+                  })()}
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Address */}
-          <div className="bg-gray-50 p-2 rounded text-sm mb-6">
-            <p className="text-gray-600 text-xs">Address</p>
-            <p className="text-gray-800 font-medium">
-              {(() => {
-                const addressParts = [
-                  farmer.street,
-                  farmer.barangay,
-                  farmer.municipality,
-                  farmer.province,
-                  farmer.zipcode || farmer.zipCode,
-                ].filter(Boolean);
-
-                return addressParts.length > 0
-                  ? addressParts.join(", ")
-                  : "N/A";
-              })()}
-            </p>
-          </div>
-
           {/* Remove Button */}
-          <div className="flex justify-center pt-4">
+          <div className="flex justify-center pt-4 px-6">
             <button
               onClick={onRemoveFarmer}
               className="w-full px-6 py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm"
