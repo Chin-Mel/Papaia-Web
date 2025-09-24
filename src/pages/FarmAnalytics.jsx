@@ -105,10 +105,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       console.log(`Processing item ${index}:`, item);
 
       const predictions = item.predictions || {};
-      const totalPredictions = Object.values(predictions).reduce(
-        (sum, count) => sum + count,
-        0
-      );
 
       // Get the period based on the time filter
       let period = "";
@@ -118,16 +114,12 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       else if (item.year) period = item.year;
 
       // Create individual disease count entries for the chart
-      const diseaseEntries = {};
-      Object.entries(predictions).forEach(([disease, count]) => {
-        diseaseEntries[disease] = count;
-      });
-
       const result = {
         period,
-        totalPredictions,
-        ...diseaseEntries,
-        predictions,
+        Healthy: predictions.Healthy || 0,
+        "Ring Spot Virus": predictions["Ring Spot Virus"] || 0,
+        Anthracnose: predictions.Anthracnose || 0,
+        "Powdery Mildew": predictions["Powdery Mildew"] || 0,
       };
 
       console.log(`Processed item ${index}:`, result);
@@ -140,121 +132,48 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
   const chartData = processAnalyticsData();
 
-  // Get all unique disease types from the data
-  const getAllDiseaseTypes = () => {
-    const diseases = new Set();
-    chartData.forEach((item) => {
-      if (item.predictions) {
-        Object.keys(item.predictions).forEach((disease) =>
-          diseases.add(disease)
-        );
-      }
-    });
-    return Array.from(diseases);
-  };
-
-  const diseaseTypes = getAllDiseaseTypes();
-
-  // Color mapping matching RecentScans component
+  // Fixed color mapping as requested
   const diseaseColors = {
     Healthy: "#22c55e", // Green
-    "Ring Spot Virus": "#ef4444", // Red
-    Anthracnose: "#f97316", // Orange
-    "Powdery Mildew": "#eab308", // Yellow
-  };
-
-  // Get color for disease type
-  const getDiseaseColor = (disease, index) => {
-    return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
+    "Ring Spot Virus": "#f97316", // Orange
+    Anthracnose: "#ef4444", // Red
+    "Powdery Mildew": "#3b82f6", // Blue
   };
 
   // Enhanced custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
-      const data = payload[0].payload;
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm max-w-xs">
           <p className="font-semibold text-gray-800 mb-2">{label}</p>
-          <p className="text-blue-600 mb-2">
-            Total Scans: {data.totalPredictions}
-          </p>
-          {data.predictions && Object.keys(data.predictions).length > 0 && (
-            <div className="border-t pt-2 mt-2">
-              <p className="font-medium text-gray-700 mb-1">
-                Disease Breakdown:
-              </p>
-              {Object.entries(data.predictions)
-                .sort(([, a], [, b]) => b - a) // Sort by count descending
-                .map(([disease, count]) => (
+          {payload
+            .filter((item) => item.value > 0)
+            .sort((a, b) => b.value - a.value)
+            .map((item, index) => (
+              <div
+                key={index}
+                className="flex justify-between items-center text-xs text-gray-600 mb-1"
+              >
+                <span className="flex items-center gap-2">
                   <div
-                    key={disease}
-                    className="flex justify-between items-center text-xs text-gray-600 mb-1"
-                  >
-                    <span className="flex items-center gap-2">
-                      <div
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: getDiseaseColor(disease) }}
-                      ></div>
-                      {disease}
-                    </span>
-                    <span className="font-medium">{count}</span>
-                  </div>
-                ))}
-            </div>
-          )}
+                    className="w-2 h-2 rounded-full"
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  {item.dataKey}
+                </span>
+                <span className="font-medium">{item.value}</span>
+              </div>
+            ))}
         </div>
       );
     }
     return null;
   };
 
-  const hasData =
-    chartData &&
-    chartData.length > 0 &&
-    chartData.some((item) => item.totalPredictions > 0);
+  const hasData = chartData && chartData.length > 0;
 
   console.log("Chart data:", chartData);
   console.log("Has data:", hasData);
-  console.log("Disease types:", diseaseTypes);
-
-  // Calculate summary statistics
-  const totalScans = chartData.reduce(
-    (sum, item) => sum + item.totalPredictions,
-    0
-  );
-
-  // Calculate health score (percentage of healthy predictions)
-  const healthyScans = chartData.reduce((sum, item) => {
-    return sum + (item.predictions?.Healthy || 0);
-  }, 0);
-  const healthScore =
-    totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
-
-  // Calculate disease score (percentage of disease predictions)
-  const diseaseScans = totalScans - healthyScans;
-  const diseaseScore =
-    totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
-
-  // Get most common disease
-  const getMostCommonDisease = () => {
-    const diseaseCount = {};
-    chartData.forEach((item) => {
-      if (item.predictions) {
-        Object.entries(item.predictions).forEach(([disease, count]) => {
-          if (disease !== "Healthy") {
-            diseaseCount[disease] = (diseaseCount[disease] || 0) + count;
-          }
-        });
-      }
-    });
-
-    const sortedDiseases = Object.entries(diseaseCount).sort(
-      ([, a], [, b]) => b - a
-    );
-    return sortedDiseases.length > 0 ? sortedDiseases[0] : null;
-  };
-
-  const mostCommonDisease = getMostCommonDisease();
 
   // Loading state
   if (loading) {
@@ -298,7 +217,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       </div>
 
       {/* Chart Container */}
-      <div className="flex-1 w-full" style={{ minHeight: "300px" }}>
+      <div className="flex-1 w-full" style={{ minHeight: "350px" }}>
         {!hasData ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">
             <div className="text-center">
@@ -312,11 +231,11 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
             </div>
           </div>
         ) : (
-          <div style={{ width: "100%", height: "300px" }}>
+          <div style={{ width: "100%", height: "350px" }}>
             <ResponsiveContainer>
               <LineChart
                 data={chartData}
-                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                margin={{ top: 40, right: 30, left: 60, bottom: 60 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
@@ -325,48 +244,71 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
                   angle={-45}
                   textAnchor="end"
                   height={60}
+                  label={{
+                    value: "Date",
+                    position: "insideBottom",
+                    offset: -10,
+                    style: { textAnchor: "middle" },
+                  }}
                 />
-                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                <YAxis
+                  tick={{ fontSize: 11 }}
+                  allowDecimals={false}
+                  label={{
+                    value: "Scan Count",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: { textAnchor: "middle" },
+                  }}
+                />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                {diseaseTypes.map((disease, index) => (
-                  <Line
-                    key={disease}
-                    type="monotone"
-                    dataKey={disease}
-                    stroke={getDiseaseColor(disease, index)}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name={disease}
-                    connectNulls={false}
-                  />
-                ))}
+                <Legend
+                  verticalAlign="top"
+                  align="right"
+                  iconType="line"
+                  wrapperStyle={{ paddingBottom: "20px" }}
+                />
+
+                <Line
+                  type="monotone"
+                  dataKey="Healthy"
+                  stroke={diseaseColors.Healthy}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: diseaseColors.Healthy }}
+                  name="Healthy"
+                  connectNulls={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Ring Spot Virus"
+                  stroke={diseaseColors["Ring Spot Virus"]}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: diseaseColors["Ring Spot Virus"] }}
+                  name="Ring Spot Virus"
+                  connectNulls={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Anthracnose"
+                  stroke={diseaseColors.Anthracnose}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: diseaseColors.Anthracnose }}
+                  name="Anthracnose"
+                  connectNulls={false}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Powdery Mildew"
+                  stroke={diseaseColors["Powdery Mildew"]}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: diseaseColors["Powdery Mildew"] }}
+                  name="Powdery Mildew"
+                  connectNulls={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
-      </div>
-
-      {/* Enhanced Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-        <div className="text-center">
-          <p className="text-green-600 font-semibold text-lg sm:text-xl">
-            {totalScans}
-          </p>
-          <p className="text-sm sm:text-base text-gray-600">Total Scans</p>
-        </div>
-        <div className="text-center">
-          <p className="text-blue-600 font-semibold text-lg sm:text-xl">
-            {healthScore}%
-          </p>
-          <p className="text-sm sm:text-base text-gray-600">Healthy</p>
-        </div>
-        <div className="text-center">
-          <p className="text-orange-600 font-semibold text-lg sm:text-xl">
-            {diseaseScore}%
-          </p>
-          <p className="text-sm sm:text-base text-gray-600">Diseases</p>
-        </div>
       </div>
     </div>
   );
