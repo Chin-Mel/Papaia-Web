@@ -53,7 +53,7 @@ function StatusDropdown({ value, onChange }) {
   );
 }
 
-export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
+export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
