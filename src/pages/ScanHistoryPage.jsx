@@ -350,7 +350,7 @@ export default function ScanHistoryPage() {
       <HeaderMain />
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 mt-16">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Scan History

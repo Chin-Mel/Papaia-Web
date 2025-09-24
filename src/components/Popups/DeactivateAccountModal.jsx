@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
 export default function DeactivateAccountModal({ isOpen, onClose }) {
@@ -6,25 +6,33 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [otherReason, setOtherReason] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleDeactivate = async () => {
     if (!acknowledged) return;
 
     setIsLoading(true);
+    setError("");
 
     try {
       const selectedReason = reason === "Other" ? otherReason : reason;
 
+      // Note: The API documentation doesn't show a deactivate endpoint
+      // This endpoint may need to be created or you might need to use a different approach
+      // For now, using a generic user update endpoint
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/user/deactivate",
+        `https://papaiaapi.onrender.com/api/user/${
+          JSON.parse(localStorage.getItem("user"))?.id
+        }`,
         {
-          method: "PATCH",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
-            reason: selectedReason,
+            status: "inactive",
+            deactivationReason: selectedReason,
           }),
         }
       );
@@ -37,12 +45,24 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
         localStorage.removeItem("user");
         window.location.href = "/login";
       } else {
-        const data = await response.json();
-        alert(data.message || "Failed to deactivate account");
+        const errorText = await response.text();
+        let errorMessage;
+
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage =
+            errorData.error ||
+            errorData.message ||
+            "Failed to deactivate account";
+        } catch {
+          errorMessage = `Failed to deactivate account (${response.status})`;
+        }
+
+        setError(errorMessage);
       }
     } catch (error) {
       console.error("Error deactivating account:", error);
-      alert("Failed to deactivate account");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +73,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
     setReason("");
     setOtherReason("");
     setAcknowledged(false);
+    setError("");
     onClose();
   };
 
@@ -83,6 +104,13 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
 
         {/* Body */}
         <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Warning message */}
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4">
             <div className="flex items-start gap-2 sm:gap-3">
@@ -100,10 +128,14 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
 
           {/* Reason selection */}
           <div className="space-y-2 sm:space-y-3">
+            <label className="text-gray-700 font-medium text-sm sm:text-base mb-2 block">
+              Why are you deactivating your account?
+            </label>
             {[
               "I no longer use the app",
               "I want to take a break",
               "Privacy concerns",
+              "Technical issues",
               "Other",
             ].map((item) => (
               <label
@@ -116,10 +148,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
                   value={item}
                   checked={reason === item}
                   onChange={() => setReason(item)}
-                  className="appearance-none w-4 h-4 sm:w-5 sm:h-5
-                   border-2 border-gray-300 rounded-full
-                   checked:bg-orange-500 checked:border-orange-500
-                   focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 border-gray-300 focus:ring-orange-400 focus:ring-2"
                 />
                 <span className="text-gray-700 text-xs sm:text-sm group-hover:text-gray-900 transition-colors">
                   {item}
@@ -130,43 +159,35 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
 
           {/* Other reason input */}
           {reason === "Other" && (
-            <input
-              type="text"
-              placeholder="Please specify..."
-              value={otherReason}
-              onChange={(e) => setOtherReason(e.target.value)}
-              className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg 
-               focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
-               text-xs sm:text-sm placeholder-gray-400 mt-2 sm:mt-3"
-            />
+            <div className="space-y-2">
+              <label className="text-gray-700 font-medium text-sm">
+                Please specify:
+              </label>
+              <input
+                type="text"
+                placeholder="Tell us more about your reason..."
+                value={otherReason}
+                onChange={(e) => setOtherReason(e.target.value)}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg 
+                 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
+                 text-xs sm:text-sm placeholder-gray-400"
+                disabled={isLoading}
+              />
+            </div>
           )}
 
           {/* Acknowledgment checkbox */}
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-start gap-2 cursor-pointer">
             <input
               type="checkbox"
               checked={acknowledged}
               onChange={() => setAcknowledged(!acknowledged)}
-              className="peer sr-only" // hides the actual checkbox
+              className="mt-0.5 w-4 h-4 sm:w-5 sm:h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-400 focus:ring-2"
+              disabled={isLoading}
             />
-            <div
-              className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-300 rounded 
-                  peer-checked:bg-orange-500 flex items-center justify-center"
-            >
-              <svg
-                className="hidden peer-checked:block w-3 h-3 sm:w-4 sm:h-4 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
             <span className="text-gray-700 text-xs sm:text-sm leading-relaxed">
-              I understand my account will be hidden until I reactivate.
+              I understand that my account will be temporarily disabled and I
+              can reactivate it by logging back in at any time.
             </span>
           </label>
         </div>
@@ -182,9 +203,17 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           </button>
           <button
             onClick={handleDeactivate}
-            disabled={!acknowledged || isLoading}
+            disabled={
+              !acknowledged ||
+              !reason ||
+              (reason === "Other" && !otherReason.trim()) ||
+              isLoading
+            }
             className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
-              acknowledged && !isLoading
+              acknowledged &&
+              reason &&
+              (reason !== "Other" || otherReason.trim()) &&
+              !isLoading
                 ? "bg-red-400 hover:bg-red-500 text-white"
                 : "bg-red-200 text-red-400 cursor-not-allowed"
             }`}

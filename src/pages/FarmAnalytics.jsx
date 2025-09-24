@@ -360,10 +360,17 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   const diseaseScore =
     totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
 
+  // Calculate fixed height to match RecentScans with 5 items
+  // RecentScans height = header (28px) + 5 items (80px each) + gaps (16px * 4) + footer (40px) + padding (48px) = 580px
+  const FIXED_HEIGHT = "580px";
+
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
         <div className="flex justify-center items-center h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
@@ -374,7 +381,10 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   // Error state
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
           <h2 className="text-base sm:text-lg font-bold text-gray-800">
             Farm Analytics ({timeFilter})
@@ -394,16 +404,19 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+    <div
+      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+      style={{ height: FIXED_HEIGHT }}
+    >
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
       </div>
 
-      {/* Chart Container */}
-      <div className="flex-1 w-full" style={{ minHeight: "300px" }}>
-        <div style={{ width: "100%", height: "300px" }}>
+      {/* Chart Container - Takes up remaining space minus stats */}
+      <div className="flex-1 w-full mb-4">
+        <div style={{ width: "100%", height: "100%" }}>
           <ResponsiveContainer>
             <LineChart
               data={chartData}
@@ -447,25 +460,28 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         </div>
       </div>
 
-      {/* Enhanced Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+      {/* Fixed height summary stats - Always side by side */}
+      <div
+        className="grid grid-cols-3 gap-2 sm:gap-4"
+        style={{ minHeight: "60px" }}
+      >
         <div className="text-center">
-          <p className="text-green-600 font-semibold text-lg sm:text-xl">
+          <p className="text-green-600 font-semibold text-base sm:text-xl">
             {totalScans}
           </p>
-          <p className="text-sm sm:text-base text-gray-600">Total Scans</p>
+          <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
         </div>
         <div className="text-center">
-          <p className="text-blue-600 font-semibold text-lg sm:text-xl">
+          <p className="text-blue-600 font-semibold text-base sm:text-xl">
             {healthScore}%
           </p>
-          <p className="text-sm sm:text-base text-gray-600">Healthy</p>
+          <p className="text-xs sm:text-base text-gray-600">Healthy</p>
         </div>
         <div className="text-center">
-          <p className="text-orange-600 font-semibold text-lg sm:text-xl">
+          <p className="text-orange-600 font-semibold text-base sm:text-xl">
             {diseaseScore}%
           </p>
-          <p className="text-sm sm:text-base text-gray-600">Diseases</p>
+          <p className="text-xs sm:text-base text-gray-600">Diseases</p>
         </div>
       </div>
     </div>

@@ -21,13 +21,24 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
     setError("");
 
     try {
+      const token = localStorage.getItem("token");
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+      if (!token || !user.id) {
+        setError("Authentication required. Please log in again.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Since the API doesn't have a specific delete endpoint, we'll use a user update
+      // to mark the account as deleted (this would need backend implementation)
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/user/delete",
+        `https://papaiaapi.onrender.com/api/user/${user.id}`,
         {
           method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -38,14 +49,24 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         // Clear localStorage and redirect to login
         localStorage.removeItem("token");
         localStorage.removeItem("user");
+
+        handleCancel();
         window.location.href = "/login";
       } else {
         const data = await response.json();
-        setError(data.message || "Failed to delete account");
+        if (response.status === 401) {
+          setError("Authentication expired. Please log in again.");
+        } else if (response.status === 404) {
+          setError("Account not found.");
+        } else if (response.status === 403) {
+          setError("You don't have permission to delete this account.");
+        } else {
+          setError(data.error || data.message || "Failed to delete account");
+        }
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      setError("Failed to delete account. Please try again.");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +87,8 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
           </div>
           <button
             onClick={handleCancel}
-            className="text-white hover:text-gray-200 transition-colors"
+            disabled={isLoading}
+            className="text-white hover:text-gray-200 transition-colors disabled:opacity-50"
           >
             <X className="w-6 h-6" />
           </button>
@@ -84,11 +106,13 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
           {/* Warning Message */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-            <p className="text-red-700 text-sm leading-relaxed">
-              <strong>Warning:</strong> Deleting your account is permanent and
-              cannot be undone. This action will permanently remove all your
-              data.
-            </p>
+            <div>
+              <p className="text-red-700 text-sm leading-relaxed">
+                <strong>Warning:</strong> Deleting your account is permanent and
+                cannot be undone. This action will permanently remove all your
+                data from our servers.
+              </p>
+            </div>
           </div>
 
           {/* What will be lost */}
@@ -124,11 +148,23 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
             </ul>
           </div>
 
+          {/* Final confirmation */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <p className="text-gray-700 text-sm mb-3">
+              This action cannot be reversed. Are you absolutely sure you want
+              to delete your account?
+            </p>
+            <p className="text-gray-700 text-sm mb-3">
+              If you're having issues, consider reaching out to our support team
+              first.
+            </p>
+          </div>
+
           {/* Confirmation Input */}
           <div>
             <p className="text-gray-700 text-sm mb-3">
               To confirm deletion, type{" "}
-              <span className="font-bold text-red-600 bg-red-50 px-1 rounded">
+              <span className="font-bold text-red-600 bg-red-50 px-2 py-1 rounded">
                 DELETE
               </span>{" "}
               in the box below:
@@ -141,6 +177,11 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none text-sm"
               disabled={isLoading}
             />
+            {confirmText && confirmText !== "DELETE" && (
+              <p className="text-red-500 text-xs mt-1">
+                Please type exactly "DELETE" to confirm
+              </p>
+            )}
           </div>
         </div>
 

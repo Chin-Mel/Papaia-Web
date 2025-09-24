@@ -21,7 +21,7 @@ import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
 import RecentScans from "./RecentScans";
-import FarmTeam from "./FarmTeam";
+import FarmTeam from "./Farmteam";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();

@@ -216,11 +216,14 @@ export default function RecentScans({ farmId }) {
       : `ID: ${idNumber}`;
   };
 
+  // Calculate fixed height to match FarmAnalytics
+  const FIXED_HEIGHT = "580px";
+
   if (loading) {
     return (
       <div
         className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ minHeight: window.innerWidth >= 1024 ? "450px" : "auto" }}
+        style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
           Recent Scans
@@ -235,14 +238,7 @@ export default function RecentScans({ farmId }) {
   return (
     <div
       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-      style={{
-        minHeight:
-          window.innerWidth >= 1024
-            ? "450px"
-            : recentScans.length > 0
-            ? `${Math.min(recentScans.length, 5) * 100 + 150}px`
-            : "200px",
-      }}
+      style={{ height: FIXED_HEIGHT }}
     >
       <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
         Recent Scans
@@ -259,79 +255,92 @@ export default function RecentScans({ farmId }) {
           </p>
         </div>
       ) : (
-        <div className="space-y-4 flex-1">
-          {recentScans.map((scan, index) => (
-            <div
-              key={`${scan.id || scan.timestamp}-${index}`}
-              className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              {/* Scan Image */}
-              <div className="relative flex-shrink-0">
-                <img
-                  src={scan.imageUrl}
-                  alt="Scan"
-                  className="w-16 h-16 rounded-lg object-cover border border-gray-200"
-                  onError={handleImageError}
-                />
-                <div
-                  className="w-16 h-16 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                  style={{ display: "none" }}
-                >
-                  No Image
+        <div className="flex-1 flex flex-col">
+          {/* Scan items container - fixed size for 5 items */}
+          <div className="space-y-4" style={{ minHeight: "400px" }}>
+            {recentScans.map((scan, index) => (
+              <div
+                key={`${scan.id || scan.timestamp}-${index}`}
+                className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                style={{ minHeight: "80px" }}
+              >
+                {/* Scan Image */}
+                <div className="relative flex-shrink-0">
+                  <img
+                    src={scan.imageUrl}
+                    alt="Scan"
+                    className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                    onError={handleImageError}
+                  />
+                  <div
+                    className="w-16 h-16 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                    style={{ display: "none" }}
+                  >
+                    No Image
+                  </div>
+                  <div className="absolute -top-1 -right-1 text-lg">
+                    {getDiseaseIcon(scan.prediction)}
+                  </div>
                 </div>
-                <div className="absolute -top-1 -right-1 text-lg">
-                  {getDiseaseIcon(scan.prediction)}
-                </div>
-              </div>
 
-              {/* Scan Details */}
-              <div className="flex-1 min-w-0">
-                {/* Disease Name */}
-                <p
-                  className={`font-semibold text-sm mb-1 ${getStatusColor(
-                    scan.prediction
-                  )}`}
-                >
-                  {scan.prediction}
-                </p>
-
-                {/* Date */}
-                <p className="text-xs text-gray-600 mb-1">
-                  {formatDateTime(scan.timestamp)}
-                </p>
-
-                {/* Farmer Name */}
-                <p className="text-xs text-gray-500">
-                  By: {getFarmerName(scan.idNumber)}
-                </p>
-
-                {/* Scan ID if available */}
-                {scan.id && (
-                  <p className="text-xs text-gray-400 mt-1">
-                    Scan: #{scan.id.slice(-8)}
+                {/* Scan Details */}
+                <div className="flex-1 min-w-0">
+                  {/* Disease Name */}
+                  <p
+                    className={`font-semibold text-sm mb-1 ${getStatusColor(
+                      scan.prediction
+                    )}`}
+                  >
+                    {scan.prediction}
                   </p>
-                )}
-              </div>
-            </div>
-          ))}
 
-          {/* Add empty space fillers if less than 5 scans for desktop only */}
-          {window.innerWidth >= 1024 &&
-            recentScans.length < 5 &&
-            Array.from({ length: 5 - recentScans.length }).map((_, index) => (
-              <div key={`empty-${index}`} className="h-20"></div>
+                  {/* Date */}
+                  <p className="text-xs text-gray-600 mb-1">
+                    {formatDateTime(scan.timestamp)}
+                  </p>
+
+                  {/* Farmer Name */}
+                  <p className="text-xs text-gray-500">
+                    By: {getFarmerName(scan.idNumber)}
+                  </p>
+
+                  {/* Scan ID if available */}
+                  {scan.id && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Scan: #{scan.id.slice(-8)}
+                    </p>
+                  )}
+                </div>
+              </div>
             ))}
+
+            {/* Add placeholder items if less than 5 scans to maintain consistent height */}
+            {Array.from({ length: Math.max(0, 5 - recentScans.length) }).map(
+              (_, index) => (
+                <div
+                  key={`placeholder-${index}`}
+                  style={{ minHeight: "80px" }}
+                  className="opacity-0"
+                >
+                  {/* Invisible placeholder to maintain layout */}
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Footer info - fixed at bottom */}
+          <div
+            className="mt-4 pt-3 border-t border-gray-200 text-center"
+            style={{ minHeight: "40px" }}
+          >
+            <p className="text-xs text-gray-500">
+              {recentScans.length > 0
+                ? `Showing ${recentScans.length} most recent scans`
+                : "No scans from assigned farmers yet"}
+            </p>
+          </div>
         </div>
       )}
-
-      {/* Footer info */}
-      <div className="mt-4 pt-3 border-t border-gray-200 text-center">
-        <p className="text-xs text-gray-500">
-          {recentScans.length > 0
-            ? `Showing ${recentScans.length} most recent scans`
-            : "No scans from assigned farmers yet"}
-        </p>
-      </div>
     </div>
   );
 }
