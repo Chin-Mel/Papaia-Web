@@ -14,42 +14,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [farmers, setFarmers] = useState([]);
-
-  // Fetch farmers for this farm
-  useEffect(() => {
-    if (!farmId) return;
-
-    let isMounted = true;
-
-    const fetchFarmers = async () => {
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (isMounted && data.status === "success") {
-            setFarmers(data.farmers || []);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching farmers:", error);
-      }
-    };
-
-    fetchFarmers();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [farmId]);
+  const [farmCreatedYear, setFarmCreatedYear] = useState(null);
 
   // Fetch analytics data
   useEffect(() => {
@@ -62,9 +27,15 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       setError(null);
 
       try {
-        // First get all scans for this farm
+        const endpointMap = {
+          Daily: "daily-analytics",
+          Weekly: "weekly-analytics",
+          Monthly: "monthly-analytics",
+          Yearly: "yearly-analytics",
+        };
+
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/identification-history/${farmId}`,
+          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -74,6 +45,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`${timeFilter} Analytics Response:`, data);
           if (isMounted) {
             setAnalyticsData(data);
           }
@@ -103,97 +75,67 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return () => {
       isMounted = false;
     };
-  }, [farmId]);
+  }, [farmId, timeFilter]);
 
-  // Process analytics data
-  const processAnalyticsData = () => {
-    if (
-      !analyticsData ||
-      !Array.isArray(analyticsData) ||
-      farmers.length === 0
-    ) {
-      return [];
-    }
+  // Generate default time periods
+  const generateDefaultData = () => {
+    const now = new Date();
+    let data = [];
 
-    // Get farmer ID numbers for filtering
-    const farmerIdNumbers = farmers.map((farmer) => farmer.idNumber);
-
-    // Filter scans to only include those by assigned farmers
-    const farmerScans = analyticsData.filter((scan) =>
-      farmerIdNumbers.includes(scan.idNumber)
-    );
-
-    // Parse timestamp helper
-    const parseTimestamp = (timestamp) => {
-      if (!timestamp) return new Date(0);
-
-      try {
-        const [datePart, timePart, period] = timestamp.split(/\s+/);
-        const [month, day, year] = datePart.split("/");
-        const [hours, minutes] = timePart.split(":");
-
-        let hour24 = parseInt(hours);
-        if (period === "PM" && hour24 !== 12) hour24 += 12;
-        if (period === "AM" && hour24 === 12) hour24 = 0;
-
-        return new Date(year, month - 1, day, hour24, minutes);
-      } catch (error) {
-        return new Date(timestamp);
-      }
-    };
-
-    // Generate complete time periods based on filter
-    const generateTimePeriods = () => {
-      const now = new Date();
-      const periods = [];
-
-      if (timeFilter === "Daily") {
-        // Show 7 days of the week
-        const weekDays = [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ];
-        const startOfWeek = new Date(now);
-        startOfWeek.setDate(now.getDate() - now.getDay());
-
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(startOfWeek);
-          date.setDate(startOfWeek.getDate() + i);
-          periods.push({
-            key: date.toISOString().split("T")[0],
-            label: weekDays[i],
-            date: date,
+    switch (timeFilter) {
+      case "Daily":
+        // Generate last 11 days
+        for (let i = 10; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(date.getDate() - i);
+          data.push({
+            period: date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+            totalPredictions: 0,
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+            predictions: {},
           });
         }
-      } else if (timeFilter === "Weekly") {
-        // Show 4-5 weeks of current month
-        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
 
-        let weekCount = 1;
-        let currentWeekStart = new Date(startOfMonth);
+      case "Weekly":
+        // Generate last 9 weeks
+        for (let i = 8; i >= 0; i--) {
+          const startDate = new Date(now);
+          const dayOfWeek = startDate.getDay();
+          const startOfWeek = new Date(startDate);
+          startOfWeek.setDate(startDate.getDate() - dayOfWeek - i * 7);
 
-        while (currentWeekStart <= endOfMonth) {
-          const weekEnd = new Date(currentWeekStart);
-          weekEnd.setDate(currentWeekStart.getDate() + 6);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
 
-          periods.push({
-            key: `week-${weekCount}`,
-            label: `Week ${weekCount}`,
-            start: new Date(currentWeekStart),
-            end: weekEnd,
+          const weekLabel = `${startOfWeek.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })} - ${endOfWeek.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}`;
+
+          data.push({
+            period: weekLabel,
+            totalPredictions: 0,
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+            predictions: {},
           });
-
-          currentWeekStart.setDate(currentWeekStart.getDate() + 7);
-          weekCount++;
         }
-      } else if (timeFilter === "Monthly") {
-        // Show all 12 months
+        break;
+
+      case "Monthly":
+        // Generate all 12 months of current year
         const months = [
           "Jan",
           "Feb",
@@ -208,100 +150,150 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           "Nov",
           "Dec",
         ];
-        for (let i = 0; i < 12; i++) {
-          periods.push({
-            key: `month-${i}`,
-            label: months[i],
-            month: i,
-            year: now.getFullYear(),
+        months.forEach((month) => {
+          data.push({
+            period: `${month} ${now.getFullYear()}`,
+            totalPredictions: 0,
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+            predictions: {},
           });
-        }
-      } else if (timeFilter === "Yearly") {
-        // Show 5-7 years (adjust based on farm creation or current year)
+        });
+        break;
+
+      case "Yearly":
+        // Generate 7 years starting from farm creation year or current year - 6
         const currentYear = now.getFullYear();
-        for (let i = currentYear - 4; i <= currentYear + 2; i++) {
-          periods.push({
-            key: `year-${i}`,
-            label: i.toString(),
-            year: i,
+        const startYear = farmCreatedYear || currentYear - 6;
+        for (let year = startYear; year <= startYear + 6; year++) {
+          data.push({
+            period: year.toString(),
+            totalPredictions: 0,
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+            predictions: {},
           });
         }
+        break;
+    }
+
+    return data;
+  };
+
+  // Process analytics data
+  const processAnalyticsData = () => {
+    console.log("Processing analytics data:", analyticsData);
+
+    // Start with default data structure
+    let defaultData = generateDefaultData();
+
+    if (!analyticsData) {
+      console.log("No analytics data available, returning default data");
+      return defaultData;
+    }
+
+    if (analyticsData.error) {
+      console.log("Analytics data contains error:", analyticsData.error);
+      return defaultData;
+    }
+
+    // Get the correct stats key based on time filter
+    const statsKey = `${timeFilter.toLowerCase()}Stats`;
+    const stats = analyticsData[statsKey];
+
+    console.log(`Looking for ${statsKey}:`, stats);
+
+    if (!stats || !Array.isArray(stats)) {
+      console.log("Stats not found or not an array:", stats);
+      return defaultData;
+    }
+
+    // Merge API data with default data
+    stats.forEach((apiItem) => {
+      const predictions = apiItem.predictions || {};
+
+      // Get the period based on the time filter
+      let period = "";
+      if (apiItem.day) period = apiItem.day;
+      else if (apiItem.week) period = apiItem.week;
+      else if (apiItem.month) period = apiItem.month;
+      else if (apiItem.year) period = apiItem.year;
+
+      // Find matching period in default data
+      const defaultIndex = defaultData.findIndex(
+        (item) =>
+          item.period === period ||
+          item.period.includes(period) ||
+          period.includes(item.period)
+      );
+
+      if (defaultIndex !== -1) {
+        // Calculate total predictions
+        const totalPredictions = Object.values(predictions).reduce(
+          (sum, count) => sum + count,
+          0
+        );
+
+        // Update the matching period with actual data
+        defaultData[defaultIndex] = {
+          ...defaultData[defaultIndex],
+          totalPredictions,
+          predictions,
+          // Add individual disease counts
+          ...predictions,
+        };
       }
-
-      return periods;
-    };
-
-    const timePeriods = generateTimePeriods();
-
-    // Group scans by time period
-    const groupedData = timePeriods.map((period) => {
-      const periodScans = farmerScans.filter((scan) => {
-        const scanDate = parseTimestamp(scan.timestamp);
-
-        if (timeFilter === "Daily") {
-          return scanDate.toISOString().split("T")[0] === period.key;
-        } else if (timeFilter === "Weekly") {
-          return scanDate >= period.start && scanDate <= period.end;
-        } else if (timeFilter === "Monthly") {
-          return (
-            scanDate.getMonth() === period.month &&
-            scanDate.getFullYear() === period.year
-          );
-        } else if (timeFilter === "Yearly") {
-          return scanDate.getFullYear() === period.year;
-        }
-        return false;
-      });
-
-      // Count predictions by disease type
-      const diseaseCounts = {
-        Healthy: 0,
-        "Ring Spot Virus": 0,
-        Anthracnose: 0,
-        "Powdery Mildew": 0,
-      };
-
-      periodScans.forEach((scan) => {
-        if (diseaseCounts.hasOwnProperty(scan.prediction)) {
-          diseaseCounts[scan.prediction]++;
-        }
-      });
-
-      return {
-        period: period.label,
-        ...diseaseCounts,
-      };
     });
 
-    return groupedData;
+    console.log("Final processed data:", defaultData);
+    return defaultData;
   };
 
   const chartData = processAnalyticsData();
 
-  // Get diseases that have been scanned (have at least one count > 0)
-  const getScannedDiseases = () => {
-    const scannedDiseases = new Set();
+  // Get all unique disease types from the data
+  const getAllDiseaseTypes = () => {
+    const diseases = new Set();
     chartData.forEach((item) => {
-      Object.entries(item).forEach(([key, value]) => {
-        if (key !== "period" && value > 0) {
-          scannedDiseases.add(key);
-        }
-      });
+      if (item.predictions) {
+        Object.keys(item.predictions).forEach((disease) =>
+          diseases.add(disease)
+        );
+      }
     });
-    return Array.from(scannedDiseases);
+
+    // Always include these disease types for consistency
+    const defaultDiseases = [
+      "Healthy",
+      "Ring Spot Virus",
+      "Anthracnose",
+      "Powdery Mildew",
+    ];
+    defaultDiseases.forEach((disease) => diseases.add(disease));
+
+    return Array.from(diseases);
   };
 
-  const scannedDiseases = getScannedDiseases();
+  const diseaseTypes = getAllDiseaseTypes();
 
-  // Fixed color mapping
+  // Color mapping matching RecentScans component
   const diseaseColors = {
     Healthy: "#22c55e", // Green
     "Ring Spot Virus": "#f97316", // Orange
     Anthracnose: "#ef4444", // Red
-    "Powdery Mildew": "#3b82f6", // Blue
+    "Powdery Mildew": "#add8e6", // blue
   };
 
-  // Custom tooltip
+  // Get color for disease type
+  const getDiseaseColor = (disease, index) => {
+    return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
+  };
+
+  // Enhanced custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -341,24 +333,32 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return null;
   };
 
-  // Custom Legend
-  const CustomLegend = ({ payload }) => {
-    return (
-      <div className="flex flex-wrap justify-end gap-4 mb-4 text-xs">
-        {payload.map((entry, index) => (
-          <div key={index} className="flex items-center gap-1">
-            <div
-              className="w-3 h-3 rounded-sm"
-              style={{ backgroundColor: entry.color }}
-            ></div>
-            <span className="text-gray-600">{entry.value}</span>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const hasData =
+    chartData &&
+    chartData.length > 0 &&
+    chartData.some((item) => item.totalPredictions > 0);
 
-  const hasData = chartData && chartData.length > 0;
+  console.log("Chart data:", chartData);
+  console.log("Has data:", hasData);
+  console.log("Disease types:", diseaseTypes);
+
+  // Calculate summary statistics
+  const totalScans = chartData.reduce(
+    (sum, item) => sum + item.totalPredictions,
+    0
+  );
+
+  // Calculate health score (percentage of healthy predictions)
+  const healthyScans = chartData.reduce((sum, item) => {
+    return sum + (item.predictions?.Healthy || 0);
+  }, 0);
+  const healthScore =
+    totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
+
+  // Calculate disease score (percentage of disease predictions)
+  const diseaseScans = totalScans - healthyScans;
+  const diseaseScore =
+    totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
 
   // Loading state
   if (loading) {
@@ -402,69 +402,61 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       </div>
 
       {/* Chart Container */}
-      <div className="flex-1 w-full" style={{ minHeight: "350px" }}>
-        {!hasData || scannedDiseases.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-            <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-                📊
-              </div>
-              <p>No scan data available</p>
-              <p className="text-xs mt-1">
-                Data will appear when assigned farmers make scans
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div style={{ width: "100%", height: "350px" }}>
-            <ResponsiveContainer>
-              <LineChart
-                data={chartData}
-                margin={{ top: 40, right: 30, left: 60, bottom: 60 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis
-                  dataKey="period"
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                  label={{
-                    value: "Time Period",
-                    position: "insideBottom",
-                    offset: -10,
-                    style: { textAnchor: "middle" },
-                  }}
+      <div className="flex-1 w-full" style={{ minHeight: "300px" }}>
+        <div style={{ width: "100%", height: "300px" }}>
+          <ResponsiveContainer>
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 11 }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {diseaseTypes.map((disease, index) => (
+                <Line
+                  key={disease}
+                  type="monotone"
+                  dataKey={disease}
+                  stroke={getDiseaseColor(disease, index)}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  name={disease}
+                  connectNulls={false}
                 />
-                <YAxis
-                  tick={{ fontSize: 11 }}
-                  allowDecimals={false}
-                  label={{
-                    value: "Scan Count",
-                    angle: -90,
-                    position: "insideLeft",
-                    style: { textAnchor: "middle" },
-                  }}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend content={<CustomLegend />} />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-                {scannedDiseases.map((disease) => (
-                  <Line
-                    key={disease}
-                    type="monotone"
-                    dataKey={disease}
-                    stroke={diseaseColors[disease]}
-                    strokeWidth={2}
-                    dot={{ r: 4, fill: diseaseColors[disease] }}
-                    name={disease}
-                    connectNulls={false}
-                  />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        )}
+      {/* Enhanced Summary Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+        <div className="text-center">
+          <p className="text-green-600 font-semibold text-lg sm:text-xl">
+            {totalScans}
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Total Scans</p>
+        </div>
+        <div className="text-center">
+          <p className="text-blue-600 font-semibold text-lg sm:text-xl">
+            {healthScore}%
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Healthy</p>
+        </div>
+        <div className="text-center">
+          <p className="text-orange-600 font-semibold text-lg sm:text-xl">
+            {diseaseScore}%
+          </p>
+          <p className="text-sm sm:text-base text-gray-600">Diseases</p>
+        </div>
       </div>
     </div>
   );
