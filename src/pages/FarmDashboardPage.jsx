@@ -212,6 +212,8 @@ export default function FarmDashboardPage() {
 
   const handleFarmerAdded = async (farmerData) => {
     try {
+      console.log("Adding farmer with data:", farmerData);
+
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farmer",
         {
@@ -220,10 +222,25 @@ export default function FarmDashboardPage() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ userId: farmerData.idNumber, farmId }),
+          // Fixed: Use idNumber instead of userId to match API docs
+          body: JSON.stringify({
+            idNumber: farmerData.idNumber,
+            farmId,
+          }),
         }
       );
-      if (!res.ok) throw new Error("Failed to add farmer");
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(
+          errorData.message || `Failed to add farmer (${res.status})`
+        );
+      }
+
+      const data = await res.json();
+      console.log("Farmer added response:", data);
+
+      // Close modal and show success
       setIsAddFarmerModalOpen(false);
       setNewlyAddedFarmer(farmerData);
       setIsFarmerAddedSuccessModalOpen(true);
@@ -236,11 +253,12 @@ export default function FarmDashboardPage() {
         }
       );
       const farmersData = await farmersRes.json();
-      if (farmersData.status === "success")
+      if (farmersData.status === "success") {
         setFarmers(farmersData.farmers || []);
+      }
     } catch (err) {
-      console.error(err);
-      alert(err.message);
+      console.error("Error adding farmer:", err);
+      alert("Error adding farmer: " + err.message);
     }
   };
 
