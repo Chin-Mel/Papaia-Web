@@ -44,11 +44,13 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log(`${timeFilter} Analytics Response:`, data);
           if (isMounted) {
             setAnalyticsData(data);
           }
         } else {
-          console.error("Analytics API error:", response.status);
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Analytics API error:", response.status, errorData);
           if (isMounted) {
             setAnalyticsData(null);
           }
@@ -74,18 +76,31 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
   // Process analytics data
   const processAnalyticsData = () => {
-    if (!analyticsData || analyticsData.error) {
+    console.log("Processing analytics data:", analyticsData);
+
+    if (!analyticsData) {
+      console.log("No analytics data available");
+      return [];
+    }
+
+    if (analyticsData.error) {
+      console.log("Analytics data contains error:", analyticsData.error);
       return [];
     }
 
     const statsKey = `${timeFilter.toLowerCase()}Stats`;
     const stats = analyticsData[statsKey];
 
+    console.log(`Looking for ${statsKey}:`, stats);
+
     if (!stats || !Array.isArray(stats)) {
+      console.log("Stats not found or not an array:", stats);
       return [];
     }
 
-    return stats.map((item) => {
+    const processedData = stats.map((item, index) => {
+      console.log(`Processing item ${index}:`, item);
+
       const predictions = item.predictions || {};
       const totalPredictions = Object.values(predictions).reduce(
         (sum, count) => sum + count,
@@ -104,13 +119,19 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         diseaseEntries[disease] = count;
       });
 
-      return {
+      const result = {
         period,
         totalPredictions,
         ...diseaseEntries,
         predictions,
       };
+
+      console.log(`Processed item ${index}:`, result);
+      return result;
     });
+
+    console.log("Final processed data:", processedData);
+    return processedData;
   };
 
   const chartData = processAnalyticsData();
@@ -174,7 +195,14 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return null;
   };
 
-  const hasData = chartData.some((item) => item.totalPredictions > 0);
+  const hasData =
+    chartData &&
+    chartData.length > 0 &&
+    chartData.some((item) => item.totalPredictions > 0);
+
+  console.log("Chart data:", chartData);
+  console.log("Has data:", hasData);
+  console.log("Disease types:", diseaseTypes);
 
   // Calculate total scans for the current time period
   const totalScans = chartData.reduce(
