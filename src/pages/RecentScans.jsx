@@ -25,6 +25,7 @@ export default function RecentScans({ farmId }) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("Farmers data:", data);
           if (isMounted && data.status === "success") {
             setFarmers(data.farmers || []);
           }
@@ -61,16 +62,27 @@ export default function RecentScans({ farmId }) {
 
         if (response.ok) {
           const data = await response.json();
+          console.log("All scans data:", data);
+
           if (isMounted) {
             // Get list of farmer idNumbers for this farm
             const farmerIdNumbers = farmers.map((farmer) => farmer.idNumber);
+            console.log("Farmer ID numbers:", farmerIdNumbers);
 
             // Filter scans to only include those made by assigned farmers
-            const filteredScans = (data || []).filter((scan) =>
-              farmerIdNumbers.includes(scan.idNumber)
-            );
+            const filteredScans = (data || []).filter((scan) => {
+              const isAssignedFarmer = farmerIdNumbers.includes(scan.idNumber);
+              if (!isAssignedFarmer) {
+                console.log(
+                  `Scan by ${scan.idNumber} filtered out - not assigned to this farm`
+                );
+              }
+              return isAssignedFarmer;
+            });
 
-            // Sort by timestamp (most recent first) and take only the latest 5
+            console.log("Filtered scans:", filteredScans);
+
+            // Sort by timestamp (most recent first) and take more scans (10 instead of 5)
             const sortedScans = filteredScans
               .sort((a, b) => {
                 // Handle MM/DD/YYYY HH:MM AM/PM format
@@ -96,8 +108,9 @@ export default function RecentScans({ farmId }) {
                   parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)
                 );
               })
-              .slice(0, 5);
+              .slice(0, 10); // Show 10 recent scans instead of 5
 
+            console.log("Final sorted scans:", sortedScans);
             setRecentScans(sortedScans);
           }
         } else {
@@ -244,9 +257,9 @@ export default function RecentScans({ farmId }) {
         </div>
       ) : (
         <div className="space-y-3 flex-1 overflow-y-auto">
-          {recentScans.map((scan) => (
+          {recentScans.map((scan, index) => (
             <div
-              key={scan.id}
+              key={`${scan.id || scan.timestamp}-${index}`} // Better key handling
               className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
             >
               {/* Scan Image */}
@@ -286,6 +299,13 @@ export default function RecentScans({ farmId }) {
                 <p className="text-xs text-gray-600 truncate">
                   {getFarmerName(scan.idNumber)}
                 </p>
+
+                {/* Show scan ID or unique identifier if available */}
+                {scan.id && (
+                  <p className="text-xs text-gray-400 truncate">
+                    Scan: #{scan.id}
+                  </p>
+                )}
               </div>
 
               {/* View Details Button */}
@@ -294,7 +314,7 @@ export default function RecentScans({ farmId }) {
                 title="View scan details"
                 onClick={() => {
                   // You can add a modal or navigation to scan details here
-                  console.log("View scan details for:", scan.id);
+                  console.log("View scan details for:", scan);
                 }}
               >
                 <Eye className="w-4 h-4" />
@@ -308,7 +328,7 @@ export default function RecentScans({ farmId }) {
       {recentScans.length > 0 && (
         <div className="mt-4 pt-3 border-t border-gray-200 text-center">
           <p className="text-xs text-gray-500">
-            Showing {Math.min(5, recentScans.length)} most recent scans by
+            Showing {Math.min(7, recentScans.length)} most recent scans by
             assigned farmers
           </p>
         </div>
