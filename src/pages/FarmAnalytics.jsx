@@ -8,14 +8,12 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
 
 export default function FarmAnalytics({ farmId, timeFilter }) {
-  const [chartType, setChartType] = useState("line");
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch analytics data
   useEffect(() => {
@@ -25,6 +23,8 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
     const fetchAnalytics = async () => {
       setLoading(true);
+      setError(null);
+
       try {
         const endpointMap = {
           Daily: "daily-analytics",
@@ -52,12 +52,14 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           const errorData = await response.json().catch(() => ({}));
           console.error("Analytics API error:", response.status, errorData);
           if (isMounted) {
+            setError(errorData.error || `HTTP ${response.status} error`);
             setAnalyticsData(null);
           }
         }
       } catch (error) {
         console.error("Analytics fetch error:", error);
         if (isMounted) {
+          setError("Failed to load analytics data");
           setAnalyticsData(null);
         }
       } finally {
@@ -88,6 +90,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       return [];
     }
 
+    // Get the correct stats key based on time filter
     const statsKey = `${timeFilter.toLowerCase()}Stats`;
     const stats = analyticsData[statsKey];
 
@@ -107,6 +110,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         0
       );
 
+      // Get the period based on the time filter
       let period = "";
       if (item.day) period = item.day;
       else if (item.week) period = item.week;
@@ -151,15 +155,12 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
   const diseaseTypes = getAllDiseaseTypes();
 
-  // Color mapping for different diseases
+  // Color mapping matching RecentScans component
   const diseaseColors = {
-    Healthy: "#22c55e",
-    "Ring Spot Virus": "#ef4444",
-    Anthracnose: "#f97316",
-    "Powdery Mildew": "#eab308",
-    "Bacterial Leaf Spot": "#3b82f6",
-    "Black Spot": "#1f2937",
-    "Mosaic Virus": "#8b5cf6",
+    Healthy: "#22c55e", // Green
+    "Ring Spot Virus": "#ef4444", // Red
+    Anthracnose: "#f97316", // Orange
+    "Powdery Mildew": "#eab308", // Yellow
   };
 
   // Get color for disease type
@@ -167,12 +168,12 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
   };
 
-  // Custom tooltip
+  // Enhanced custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm max-w-xs">
           <p className="font-semibold text-gray-800 mb-2">{label}</p>
           <p className="text-blue-600 mb-2">
             Total Scans: {data.totalPredictions}
@@ -182,11 +183,23 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
               <p className="font-medium text-gray-700 mb-1">
                 Disease Breakdown:
               </p>
-              {Object.entries(data.predictions).map(([disease, count]) => (
-                <p key={disease} className="text-xs text-gray-600">
-                  {disease}: {count}
-                </p>
-              ))}
+              {Object.entries(data.predictions)
+                .sort(([, a], [, b]) => b - a) // Sort by count descending
+                .map(([disease, count]) => (
+                  <div
+                    key={disease}
+                    className="flex justify-between items-center text-xs text-gray-600 mb-1"
+                  >
+                    <span className="flex items-center gap-2">
+                      <div
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: getDiseaseColor(disease) }}
+                      ></div>
+                      {disease}
+                    </span>
+                    <span className="font-medium">{count}</span>
+                  </div>
+                ))}
             </div>
           )}
         </div>
@@ -204,7 +217,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   console.log("Has data:", hasData);
   console.log("Disease types:", diseaseTypes);
 
-  // Calculate total scans for the current time period
+  // Calculate summary statistics
   const totalScans = chartData.reduce(
     (sum, item) => sum + item.totalPredictions,
     0
@@ -222,11 +235,55 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   const diseaseScore =
     totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
 
+  // Get most common disease
+  const getMostCommonDisease = () => {
+    const diseaseCount = {};
+    chartData.forEach((item) => {
+      if (item.predictions) {
+        Object.entries(item.predictions).forEach(([disease, count]) => {
+          if (disease !== "Healthy") {
+            diseaseCount[disease] = (diseaseCount[disease] || 0) + count;
+          }
+        });
+      }
+    });
+
+    const sortedDiseases = Object.entries(diseaseCount).sort(
+      ([, a], [, b]) => b - a
+    );
+    return sortedDiseases.length > 0 ? sortedDiseases[0] : null;
+  };
+
+  const mostCommonDisease = getMostCommonDisease();
+
+  // Loading state
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
         <div className="flex justify-center items-center h-full">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2 sm:gap-0">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800">
+            Farm Analytics ({timeFilter})
+          </h2>
+        </div>
+        <div className="flex items-center justify-center h-full text-red-500 text-sm">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-2 bg-red-100 rounded-full flex items-center justify-center">
+              ⚠️
+            </div>
+            <p className="font-medium">Error loading analytics</p>
+            <p className="text-xs mt-1 text-gray-500">{error}</p>
+          </div>
         </div>
       </div>
     );
@@ -238,34 +295,10 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
-
-        {/* Chart Type Toggle */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => setChartType("line")}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              chartType === "line"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Line Chart
-          </button>
-          <button
-            onClick={() => setChartType("bar")}
-            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-              chartType === "bar"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-            }`}
-          >
-            Bar Chart
-          </button>
-        </div>
       </div>
 
       {/* Chart Container */}
-      <div className="flex-1 w-full" style={{ minHeight: "200px" }}>
+      <div className="flex-1 w-full" style={{ minHeight: "300px" }}>
         {!hasData ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-sm">
             <div className="text-center">
@@ -280,66 +313,39 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            {chartType === "line" ? (
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis
-                  dataKey="period"
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
+            <LineChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis
+                dataKey="period"
+                tick={{ fontSize: 11 }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+              />
+              <YAxis tick={{ fontSize: 11 }} />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              {diseaseTypes.map((disease, index) => (
+                <Line
+                  key={disease}
+                  type="monotone"
+                  dataKey={disease}
+                  stroke={getDiseaseColor(disease, index)}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  name={disease}
+                  connectNulls={false}
                 />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                {diseaseTypes.map((disease, index) => (
-                  <Line
-                    key={disease}
-                    type="monotone"
-                    dataKey={disease}
-                    stroke={getDiseaseColor(disease, index)}
-                    strokeWidth={2}
-                    dot={{ r: 4 }}
-                    name={disease}
-                  />
-                ))}
-              </LineChart>
-            ) : (
-              <BarChart
-                data={chartData}
-                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis
-                  dataKey="period"
-                  tick={{ fontSize: 11 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
-                />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                {diseaseTypes.map((disease, index) => (
-                  <Bar
-                    key={disease}
-                    dataKey={disease}
-                    fill={getDiseaseColor(disease, index)}
-                    name={disease}
-                    radius={[2, 2, 0, 0]}
-                  />
-                ))}
-              </BarChart>
-            )}
+              ))}
+            </LineChart>
           </ResponsiveContainer>
         )}
       </div>
 
-      {/* Summary Stats */}
+      {/* Enhanced Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
         <div className="text-center">
           <p className="text-green-600 font-semibold text-lg sm:text-xl">
