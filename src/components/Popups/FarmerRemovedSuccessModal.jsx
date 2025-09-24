@@ -44,7 +44,6 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
                   <p className="text-gray-600 text-sm mb-1">
                     Farmer ID: {farmer.idNumber || farmer.idnumber}
                   </p>
-                  <p className="text-gray-600 text-sm">Email: {farmer.email}</p>
                 </div>
                 <span className="px-3 py-1 bg-red-500 text-white text-xs rounded-full font-medium">
                   Removed
