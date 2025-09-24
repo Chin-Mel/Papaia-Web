@@ -312,36 +312,38 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
             </div>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis
-                dataKey="period"
-                tick={{ fontSize: 11 }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              {diseaseTypes.map((disease, index) => (
-                <Line
-                  key={disease}
-                  type="monotone"
-                  dataKey={disease}
-                  stroke={getDiseaseColor(disease, index)}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  name={disease}
-                  connectNulls={false}
+          <div style={{ width: "100%", height: "300px" }}>
+            <ResponsiveContainer>
+              <LineChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="period"
+                  tick={{ fontSize: 11 }}
+                  angle={-45}
+                  textAnchor="end"
+                  height={60}
                 />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                {diseaseTypes.map((disease, index) => (
+                  <Line
+                    key={disease}
+                    type="monotone"
+                    dataKey={disease}
+                    stroke={getDiseaseColor(disease, index)}
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    name={disease}
+                    connectNulls={false}
+                  />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         )}
       </div>
 
