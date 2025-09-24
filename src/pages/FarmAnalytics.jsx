@@ -283,9 +283,9 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   // Color mapping matching RecentScans component
   const diseaseColors = {
     Healthy: "#22c55e", // Green
-    "Ring Spot Virus": "#f97316", // Orange
-    Anthracnose: "#ef4444", // Red
-    "Powdery Mildew": "#add8e6", // blue
+    "Ring Spot Virus": "#ef4444", // Red
+    Anthracnose: "#f97316", // Orange
+    "Powdery Mildew": "#eab308", // Yellow
   };
 
   // Get color for disease type
@@ -419,7 +419,17 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
               />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend />
+              <Legend
+                verticalAlign="top"
+                align="right"
+                iconType="rect"
+                iconSize={8}
+                wrapperStyle={{
+                  fontSize: "10px",
+                  paddingBottom: "10px",
+                  lineHeight: "14px",
+                }}
+              />
               {diseaseTypes.map((disease, index) => (
                 <Line
                   key={disease}

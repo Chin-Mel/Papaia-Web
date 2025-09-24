@@ -17,7 +17,19 @@ import CheckCircleIcon from "../assets/check-circle-icon.png";
 import AlertIcon from "../assets/alert-icon.png";
 
 // --- Helper Components defined within the file ---
-function StatusBadge({ status }) {
+function StatusBadge({ status, prediction }) {
+  // Map prediction results to status categories
+  const getStatusFromPrediction = (pred) => {
+    if (!pred) return "healthy";
+    const predLower = pred.toLowerCase();
+    if (predLower === "healthy") return "healthy";
+    if (predLower.includes("virus") || predLower.includes("disease"))
+      return "disease-detected";
+    return "needs-attention";
+  };
+
+  const actualStatus = status || getStatusFromPrediction(prediction);
+
   const statusConfig = {
     healthy: {
       label: "Healthy",
@@ -35,7 +47,7 @@ function StatusBadge({ status }) {
       icon: <img src={AlertIcon} alt="Attention" className="w-3 h-4" />,
     },
   };
-  const config = statusConfig[status] || statusConfig.healthy;
+  const config = statusConfig[actualStatus] || statusConfig.healthy;
   return (
     <div
       className={`${config.className} flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-medium`}
@@ -46,7 +58,18 @@ function StatusBadge({ status }) {
   );
 }
 
-function ViewDetailsButton({ status, scanId }) {
+function ViewDetailsButton({ status, prediction, scanId }) {
+  const getStatusFromPrediction = (pred) => {
+    if (!pred) return "healthy";
+    const predLower = pred.toLowerCase();
+    if (predLower === "healthy") return "healthy";
+    if (predLower.includes("virus") || predLower.includes("disease"))
+      return "disease-detected";
+    return "needs-attention";
+  };
+
+  const actualStatus = status || getStatusFromPrediction(prediction);
+
   const colorMap = {
     healthy: "text-[#22C55E] hover:text-green-600",
     "disease-detected": "text-[#EF4444] hover:text-red-600",
@@ -55,7 +78,7 @@ function ViewDetailsButton({ status, scanId }) {
   return (
     <Link
       to={`/scan-history-details/${scanId}`}
-      className={`flex items-center gap-2 ${colorMap[status]} p-0 h-auto text-sm font-medium transition-colors`}
+      className={`flex items-center gap-2 ${colorMap[actualStatus]} p-0 h-auto text-sm font-medium transition-colors`}
     >
       <img src={EyeIcon} alt="View Details" className="h-4 w-4" />
       View Details
@@ -116,22 +139,15 @@ export default function ScanHistoryPage() {
     fetchFarms();
   }, [token]);
 
-  // --- Fetch scans ---
+  // --- Fetch all scan history from all farms ---
   useEffect(() => {
     if (!token) return;
     const fetchScans = async () => {
       setLoading(true);
       try {
-        const queryParams = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: resultsPerPage.toString(),
-          ...(filters.dateRange !== "all" && { dateRange: filters.dateRange }),
-          ...(filters.status !== "all" && { status: filters.status }),
-          ...(filters.farmId !== "all" && { farmId: filters.farmId }),
-          ...(filters.farmerName && { farmerName: filters.farmerName }),
-        });
+        // Fetch all identification history for the owner
         const res = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/scans?${queryParams}`,
+          "https://papaiaapi.onrender.com/api/owner/identification-history",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -139,11 +155,45 @@ export default function ScanHistoryPage() {
             },
           }
         );
-        if (!res.ok) throw new Error("Failed to fetch scans");
-        const data = await res.json();
-        if (data.status === "success") {
-          setScanData(data.scans || []);
-          setTotalScans(data.totalCount || 0);
+
+        if (!res.ok) throw new Error("Failed to fetch scan history");
+        const scansArray = await res.json();
+
+        if (Array.isArray(scansArray)) {
+          // Get farm details to merge with scan data
+          const farmsMap = {};
+          farms.forEach((farm) => {
+            farmsMap[farm.id] = farm;
+          });
+
+          // Process and filter scans
+          let processedScans = scansArray.map((scan) => ({
+            ...scan,
+            farmName: farmsMap[scan.farmId]?.farmName || "Unknown Farm",
+            // Parse timestamp if it's in MM/DD/YYYY format
+            createdAt: parseTimestamp(scan.timestamp),
+            status: getStatusFromPrediction(scan.prediction),
+            description: scan.prediction,
+          }));
+
+          // Apply filters
+          processedScans = applyFilters(processedScans, filters);
+
+          // Sort by date (newest first)
+          processedScans.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+
+          // Apply pagination
+          const startIndex = (currentPage - 1) * resultsPerPage;
+          const endIndex = startIndex + resultsPerPage;
+          const paginatedScans = processedScans.slice(startIndex, endIndex);
+
+          setScanData(paginatedScans);
+          setTotalScans(processedScans.length);
+        } else {
+          setScanData([]);
+          setTotalScans(0);
         }
       } catch (err) {
         console.error(err);
@@ -153,8 +203,88 @@ export default function ScanHistoryPage() {
         setLoading(false);
       }
     };
-    fetchScans();
-  }, [currentPage, filters, token]);
+
+    // Only fetch scans if we have farms data
+    if (farms.length > 0) {
+      fetchScans();
+    }
+  }, [currentPage, filters, token, farms]);
+
+  // Helper function to parse timestamp
+  const parseTimestamp = (timestamp) => {
+    try {
+      // If timestamp is in "MM/DD/YYYY hh:mm AM/PM" format
+      if (typeof timestamp === "string" && timestamp.includes("/")) {
+        return new Date(timestamp).toISOString();
+      }
+      return timestamp;
+    } catch (error) {
+      return new Date().toISOString();
+    }
+  };
+
+  // Helper function to determine status from prediction
+  const getStatusFromPrediction = (prediction) => {
+    if (!prediction) return "healthy";
+    const predLower = prediction.toLowerCase();
+    if (predLower === "healthy") return "healthy";
+    if (predLower.includes("virus") || predLower.includes("disease"))
+      return "disease-detected";
+    return "needs-attention";
+  };
+
+  // Helper function to apply filters
+  const applyFilters = (scans, filters) => {
+    return scans.filter((scan) => {
+      // Date range filter
+      if (filters.dateRange !== "all") {
+        const scanDate = new Date(scan.createdAt);
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+
+        switch (filters.dateRange) {
+          case "today":
+            if (scanDate < today) return false;
+            break;
+          case "week":
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (scanDate < weekAgo) return false;
+            break;
+          case "month":
+            const monthAgo = new Date(
+              today.getTime() - 30 * 24 * 60 * 60 * 1000
+            );
+            if (scanDate < monthAgo) return false;
+            break;
+        }
+      }
+
+      // Status filter
+      if (filters.status !== "all") {
+        const scanStatus = getStatusFromPrediction(scan.prediction);
+        if (scanStatus !== filters.status) return false;
+      }
+
+      // Farm filter
+      if (filters.farmId !== "all" && scan.farmId !== filters.farmId) {
+        return false;
+      }
+
+      // Farmer name filter (search by idNumber since that's what we have)
+      if (
+        filters.farmerName &&
+        !scan.idNumber?.toLowerCase().includes(filters.farmerName.toLowerCase())
+      ) {
+        return false;
+      }
+
+      return true;
+    });
+  };
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({ ...prev, [filterType]: value }));
@@ -207,6 +337,13 @@ export default function ScanHistoryPage() {
       </button>
     );
   };
+
+  // Calculate pagination display values
+  const startResult = Math.min(
+    (currentPage - 1) * resultsPerPage + 1,
+    totalScans
+  );
+  const endResult = Math.min(currentPage * resultsPerPage, totalScans);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -268,11 +405,11 @@ export default function ScanHistoryPage() {
               </div>
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Farmer
+                  Farmer ID
                 </label>
                 <input
                   type="text"
-                  placeholder="Search farmer name..."
+                  placeholder="Search farmer ID..."
                   value={filters.farmerName}
                   onChange={(e) =>
                     handleFilterChange("farmerName", e.target.value)
@@ -323,7 +460,10 @@ export default function ScanHistoryPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
                         <img
-                          src={record.imageUrl || record.image}
+                          src={
+                            record.imageUrl ||
+                            "https://via.placeholder.com/80x80?text=No+Image"
+                          }
                           alt={record.farmName}
                           className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                           onError={(e) => {
@@ -336,7 +476,10 @@ export default function ScanHistoryPage() {
                             <h3 className="text-lg font-semibold text-gray-900 truncate">
                               {record.farmName}
                             </h3>
-                            <StatusBadge status={record.status} />
+                            <StatusBadge
+                              status={record.status}
+                              prediction={record.prediction}
+                            />
                           </div>
                           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
                             <div className="flex items-center gap-2">
@@ -345,7 +488,7 @@ export default function ScanHistoryPage() {
                                 alt="User"
                                 className="h-3 w-3"
                               />
-                              <span>{record.farmerName}</span>
+                              <span>{record.idNumber || "Unknown Farmer"}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <img
@@ -353,9 +496,7 @@ export default function ScanHistoryPage() {
                                 alt="Calendar"
                                 className="h-3 w-3"
                               />
-                              <span>
-                                {formatDate(record.createdAt || record.date)}
-                              </span>
+                              <span>{formatDate(record.createdAt)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <img
@@ -363,10 +504,16 @@ export default function ScanHistoryPage() {
                                 alt="Time"
                                 className="h-3.5 w-3.5"
                               />
-                              <span>
-                                {formatTime(record.createdAt || record.time)}
-                              </span>
+                              <span>{formatTime(record.createdAt)}</span>
                             </div>
+                            {record.confidence && (
+                              <div className="flex items-center gap-2">
+                                <span>
+                                  Confidence:{" "}
+                                  {Math.round(record.confidence * 100)}%
+                                </span>
+                              </div>
+                            )}
                           </div>
                           {record.description && (
                             <p
@@ -384,6 +531,7 @@ export default function ScanHistoryPage() {
                       <div className="flex-shrink-0 ml-4">
                         <ViewDetailsButton
                           status={record.status}
+                          prediction={record.prediction}
                           scanId={record.id}
                         />
                       </div>
