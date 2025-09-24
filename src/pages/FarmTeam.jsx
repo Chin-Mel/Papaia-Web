@@ -4,8 +4,6 @@ import {
   ChevronDown,
   Plus,
   User,
-  Phone,
-  Mail,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -55,7 +53,7 @@ function StatusDropdown({ value, onChange }) {
   );
 }
 
-export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
+export default function FarmTeam({ farmId, onAddFarmer, onViewFarmer }) {
   const [farmers, setFarmers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -168,16 +166,6 @@ export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
     return addressParts.length > 0 ? addressParts.join(", ") : "N/A";
   };
 
-  // Get phone number - check multiple possible field names
-  const getPhoneNumber = (farmer) => {
-    return farmer.contactNumber || farmer.phone || farmer.phoneNumber || "N/A";
-  };
-
-  // Get email - check multiple possible field names
-  const getEmail = (farmer) => {
-    return farmer.email || farmer.emailAddress || "N/A";
-  };
-
   // Pagination controls
   const goToPage = (page) => {
     setCurrentPage(Math.max(1, Math.min(page, totalPages)));
@@ -248,12 +236,11 @@ export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
       <div
         className="grid gap-2 sm:gap-4 border-b border-gray-200 pb-2 mb-4 text-gray-600 text-xs sm:text-sm font-medium bg-[#F9FAFB] items-center"
         style={{
-          gridTemplateColumns: "3fr 2fr 2.5fr 4fr 2fr 2fr",
+          gridTemplateColumns: "4fr 2fr 5fr 2fr 2fr",
         }}
       >
         <div className="text-left pl-2 sm:pl-4 pt-2">Farmer</div>
         <div className="text-left pl-2 sm:pl-4 pt-2">Farmer ID</div>
-        <div className="text-left pl-2 sm:pl-4 pt-2">Contact</div>
         <div className="text-left pl-2 sm:pl-4 pt-2 truncate">Address</div>
         <div className="text-left pl-2 sm:pl-4 pt-2">Status</div>
         <div className="text-left pl-2 sm:pl-4 pt-2">Actions</div>
@@ -283,7 +270,7 @@ export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
             key={farmer.id}
             className="grid gap-2 sm:gap-4 py-3 border-b border-gray-100 text-xs sm:text-sm sm:items-center items-start hover:bg-gray-50 transition-colors"
             style={{
-              gridTemplateColumns: "3fr 2fr 2.5fr 4fr 2fr 2fr",
+              gridTemplateColumns: "4fr 2fr 5fr 2fr 2fr",
             }}
           >
             {/* Farmer Info with Profile Picture */}
@@ -309,20 +296,6 @@ export default function Farmteam({ farmId, onAddFarmer, onViewFarmer }) {
             {/* Farmer ID */}
             <div className="pl-2 sm:pl-4 text-gray-700 font-mono">
               {farmer.idNumber || "N/A"}
-            </div>
-
-            {/* Contact */}
-            <div className="pl-2 sm:pl-4">
-              <div className="space-y-1">
-                <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
-                  {getPhoneNumber(farmer)}
-                </p>
-                <p className="text-xs sm:text-sm text-gray-700 flex items-center gap-1">
-                  <Mail className="w-3 h-3" />
-                  {getEmail(farmer)}
-                </p>
-              </div>
             </div>
 
             {/* Address */}

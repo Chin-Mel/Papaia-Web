@@ -66,15 +66,9 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     };
 
     fetchAnalytics();
-    const interval = setInterval(() => {
-      if (isMounted) {
-        fetchAnalytics();
-      }
-    }, 30000); // Refresh every 30 seconds
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
   }, [farmId, timeFilter]);
 
@@ -142,6 +136,9 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     "Ring Spot Virus": "#ef4444",
     Anthracnose: "#f97316",
     "Powdery Mildew": "#eab308",
+    "Bacterial Leaf Spot": "#3b82f6",
+    "Black Spot": "#1f2937",
+    "Mosaic Virus": "#8b5cf6",
   };
 
   // Get color for disease type

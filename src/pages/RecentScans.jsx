@@ -72,7 +72,30 @@ export default function RecentScans({ farmId }) {
 
             // Sort by timestamp (most recent first) and take only the latest 5
             const sortedScans = filteredScans
-              .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+              .sort((a, b) => {
+                // Handle MM/DD/YYYY HH:MM AM/PM format
+                const parseTimestamp = (timestamp) => {
+                  if (!timestamp) return new Date(0);
+
+                  try {
+                    const [datePart, timePart, period] = timestamp.split(/\s+/);
+                    const [month, day, year] = datePart.split("/");
+                    const [hours, minutes] = timePart.split(":");
+
+                    let hour24 = parseInt(hours);
+                    if (period === "PM" && hour24 !== 12) hour24 += 12;
+                    if (period === "AM" && hour24 === 12) hour24 = 0;
+
+                    return new Date(year, month - 1, day, hour24, minutes);
+                  } catch (error) {
+                    return new Date(timestamp);
+                  }
+                };
+
+                return (
+                  parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)
+                );
+              })
               .slice(0, 5);
 
             setRecentScans(sortedScans);
@@ -96,16 +119,9 @@ export default function RecentScans({ farmId }) {
     };
 
     fetchRecentScans();
-    // Refresh scans every 30 seconds
-    const interval = setInterval(() => {
-      if (isMounted) {
-        fetchRecentScans();
-      }
-    }, 30000);
 
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
   }, [farmId, farmers]);
 
@@ -131,9 +147,6 @@ export default function RecentScans({ farmId }) {
       "Ring Spot Virus": "🔴",
       Anthracnose: "🟠",
       "Powdery Mildew": "🟡",
-      "Bacterial Leaf Spot": "🔵",
-      "Black Spot": "⚫",
-      "Mosaic Virus": "🟪",
     };
     return diseaseIcons[prediction] || "📊";
   };
