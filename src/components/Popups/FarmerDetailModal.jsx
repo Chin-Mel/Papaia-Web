@@ -107,30 +107,6 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
                 </div>
               </div>
             </div>
-
-            {/* Contact Info */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 mb-2">
-                <Phone className="w-4 h-4 text-orange-500" />
-                <h4 className="font-semibold text-gray-800 text-sm">
-                  Contact Information
-                </h4>
-              </div>
-              <div className="space-y-2">
-                <div className="bg-gray-50 p-2 rounded text-sm">
-                  <p className="text-gray-600 text-xs">Email Address</p>
-                  <p className="text-gray-800 font-medium">
-                    {farmer.email || "N/A"}
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-2 rounded text-sm">
-                  <p className="text-gray-600 text-xs">Phone Number</p>
-                  <p className="text-gray-800 font-medium">
-                    {farmer.contactNumber || farmer.phone || "N/A"}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Address */}

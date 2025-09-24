@@ -1,45 +1,12 @@
-import { useEffect, useState } from "react";
 import { X, Check, ArrowLeft } from "lucide-react";
 
-function FarmerAddedSuccessModal({ isOpen, onClose, farmerId, farmId, token }) {
-  const [farmer, setFarmer] = useState(null);
-  const [farmName, setFarmName] = useState("");
-
-  useEffect(() => {
-    if (isOpen && farmerId && farmId) {
-      // Fetch farmer details
-      fetch(`https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "success") {
-            setFarmer(data.farmer);
-          }
-        })
-        .catch((err) => console.error("Error fetching farmer:", err));
-
-      // Fetch farm name
-      fetch(`https://papaiaapi.onrender.com/api/owner/farms`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.status === "success") {
-            const farm = data.farms.find((f) => f.id === farmId);
-            if (farm) setFarmName(farm.farmName);
-          }
-        })
-        .catch((err) => console.error("Error fetching farms:", err));
-    }
-  }, [isOpen, farmerId, farmId, token]);
-
+function FarmerAddedSuccessModal({ isOpen, onClose, farmer }) {
   if (!isOpen) return null;
 
   const fullName = farmer
-    ? `${farmer.firstname} ${farmer.middlename ? farmer.middlename + " " : ""}${
-        farmer.lastname
-      } ${farmer.suffix || ""}`
+    ? [farmer.firstname, farmer.middlename, farmer.lastname, farmer.suffix]
+        .filter(Boolean)
+        .join(" ")
     : "";
 
   return (
@@ -79,15 +46,16 @@ function FarmerAddedSuccessModal({ isOpen, onClose, farmerId, farmId, token }) {
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center text-white font-bold">
-                    {farmer.firstname?.[0] || "?"}
+                    {farmer.firstname?.[0] || "F"}
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold text-gray-900">{fullName}</h3>
+                  <h3 className="font-semibold text-gray-900">
+                    {fullName || "Farmer"}
+                  </h3>
                   <p className="text-sm text-gray-500">
-                    Farmer ID: {farmer.id}
+                    ID: {farmer.idNumber || farmer.id || "N/A"}
                   </p>
-                  <p className="text-sm text-gray-500">Farm: {farmName}</p>
                 </div>
               </div>
               <span className="bg-green-100 text-green-600 text-sm px-3 py-1 rounded-full font-medium">

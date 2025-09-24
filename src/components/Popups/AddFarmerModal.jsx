@@ -18,6 +18,28 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
+
+      // First, check if farmer already exists in this farm
+      const existingFarmersRes = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (existingFarmersRes.ok) {
+        const existingData = await existingFarmersRes.json();
+        const existingFarmer = existingData.farmers?.find(
+          (farmer) => farmer.idNumber === farmerId.trim()
+        );
+
+        if (existingFarmer) {
+          alert("This farmer is already added to this farm.");
+          setIsLoading(false);
+          return;
+        }
+      }
+
       console.log("Adding farmer with data:", { idNumber: farmerId, farmId });
 
       const response = await fetch(
@@ -29,7 +51,7 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            idNumber: farmerId,
+            idNumber: farmerId.trim(),
             farmId: farmId,
           }),
         }
@@ -46,10 +68,28 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
       const data = await response.json();
       console.log("Farmer added response:", data);
 
+      // Fetch the complete farmer details using the new endpoint
+      const farmerDetailsRes = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${
+          data.farmer?.id || farmerId
+        }`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      let farmerDetails = null;
+      if (farmerDetailsRes.ok) {
+        const detailsData = await farmerDetailsRes.json();
+        if (detailsData.status === "success") {
+          farmerDetails = detailsData.farmer;
+        }
+      }
+
       // Create farmer data object to pass back
       const farmerData = {
         idNumber: farmerId,
-        // Add any other returned data from the API response
+        ...farmerDetails,
         ...data.farmer,
       };
 

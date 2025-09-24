@@ -42,7 +42,7 @@ function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
                     {farmer.lastname || farmer.lastName}
                   </h3>
                   <p className="text-gray-600 text-sm mb-1">
-                    Farmer ID: {farmer.id || farmer.farmerId}
+                    Farmer ID: {farmer.idNumber || farmer.idnumber}
                   </p>
                   <p className="text-gray-600 text-sm">Email: {farmer.email}</p>
                 </div>
