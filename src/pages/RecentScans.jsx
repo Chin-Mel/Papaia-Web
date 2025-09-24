@@ -208,9 +208,20 @@ export default function RecentScans({ farmId }) {
     e.target.nextSibling.style.display = "flex";
   };
 
+  // Get farmer name by idNumber
+  const getFarmerName = (idNumber) => {
+    const farmer = farmers.find((f) => f.idNumber === idNumber);
+    return farmer
+      ? farmer.fullName || farmer.name || `Farmer ${idNumber}`
+      : `ID: ${idNumber}`;
+  };
+
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ minHeight: window.innerWidth >= 1024 ? "450px" : "auto" }}
+      >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
           Recent Scans
         </h2>
@@ -222,7 +233,17 @@ export default function RecentScans({ farmId }) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col min-h-[450px]">
+    <div
+      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+      style={{
+        minHeight:
+          window.innerWidth >= 1024
+            ? "450px"
+            : recentScans.length > 0
+            ? `${Math.min(recentScans.length, 5) * 100 + 150}px`
+            : "200px",
+      }}
+    >
       <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
         Recent Scans
       </h2>
@@ -279,8 +300,10 @@ export default function RecentScans({ farmId }) {
                   {formatDateTime(scan.timestamp)}
                 </p>
 
-                {/* Farm ID */}
-                <p className="text-xs text-gray-500">Farm ID: {idNumber}</p>
+                {/* Farmer Name */}
+                <p className="text-xs text-gray-500">
+                  By: {getFarmerName(scan.idNumber)}
+                </p>
 
                 {/* Scan ID if available */}
                 {scan.id && (
@@ -292,8 +315,9 @@ export default function RecentScans({ farmId }) {
             </div>
           ))}
 
-          {/* Add empty space fillers if less than 5 scans */}
-          {recentScans.length < 5 &&
+          {/* Add empty space fillers if less than 5 scans for desktop only */}
+          {window.innerWidth >= 1024 &&
+            recentScans.length < 5 &&
             Array.from({ length: 5 - recentScans.length }).map((_, index) => (
               <div key={`empty-${index}`} className="h-20"></div>
             ))}

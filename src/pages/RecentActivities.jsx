@@ -33,18 +33,19 @@ export default function RecentActivities({ limit = 5 }) {
 
       console.log("Activities API response status:", res.status);
 
-      // Handle different response statuses
-      if (res.status === 404) {
-        // API returns 404 when no activities found
-        console.log("No activities found (404)");
-        setActivities([]);
-        return;
-      }
-
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Activities API error:", res.status, errorText);
-        setError(`API Error: ${res.status}`);
+        const errorData = await res.json().catch(() => ({}));
+        if (
+          res.status === 404 ||
+          errorData.message?.includes("No activities found")
+        ) {
+          console.log("No activities found");
+          setActivities([]);
+          return;
+        }
+
+        console.error("Activities API error:", res.status, errorData);
+        setError(errorData.message || `API Error: ${res.status}`);
         setActivities([]);
         return;
       }
@@ -52,7 +53,7 @@ export default function RecentActivities({ limit = 5 }) {
       const data = await res.json();
       console.log("Activities response:", data);
 
-      // Handle successful response
+      // Handle the updated API response format
       if (data.status === "success" && Array.isArray(data.activities)) {
         const mapped = data.activities.slice(0, limit).map((act) => {
           let style = {
@@ -83,7 +84,9 @@ export default function RecentActivities({ limit = 5 }) {
                 bgColor: "bg-red-50",
                 title: "Farmer Removed",
                 description: `Removed farmer "${
-                  act.details?.farmerName || "Unknown Farmer"
+                  act.details?.farmerName ||
+                  act.details?.farmerId ||
+                  "Unknown Farmer"
                 }"`,
               };
               break;
@@ -137,64 +140,60 @@ export default function RecentActivities({ limit = 5 }) {
               style.description = act.action.replace(/_/g, " ").toLowerCase();
           }
 
-          // Format the time from string to readable format
+          // Format the time from MM/DD/YYYY hh:mm AM/PM format
           const formatTime = (timeString) => {
             try {
-              // If it's in "MM/DD/YYYY hh:mm AM/PM" format, parse it
-              if (typeof timeString === "string" && timeString.includes("/")) {
-                const date = new Date(timeString);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMins = Math.floor(diffMs / (1000 * 60));
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              if (!timeString) return "Unknown time";
 
-                if (diffMins < 1) return "Just now";
-                if (diffMins < 60) return `${diffMins} minutes ago`;
-                if (diffHours < 24) return `${diffHours} hours ago`;
-                if (diffDays < 7) return `${diffDays} days ago`;
+              // Parse MM/DD/YYYY hh:mm AM/PM format
+              const parts = timeString.split(/\s+/);
+              if (parts.length < 3) return timeString; // Invalid format
 
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year:
-                    date.getFullYear() !== now.getFullYear()
-                      ? "numeric"
-                      : undefined,
-                });
+              const [datePart, timePart, period] = parts;
+              const [month, day, year] = datePart.split("/");
+              const [hours, minutes] = timePart.split(":");
+
+              let hour24 = parseInt(hours);
+              if (period === "PM" && hour24 !== 12) hour24 += 12;
+              if (period === "AM" && hour24 === 12) hour24 = 0;
+
+              const parsedDate = new Date(
+                parseInt(year),
+                parseInt(month) - 1,
+                parseInt(day),
+                hour24,
+                parseInt(minutes)
+              );
+
+              if (isNaN(parsedDate.getTime())) {
+                return timeString; // Return original if parsing fails
               }
 
-              // If it's already a Date object or timestamp
-              if (
-                timeString instanceof Date ||
-                !isNaN(Date.parse(timeString))
-              ) {
-                const date = new Date(timeString);
-                const now = new Date();
-                const diffMs = now - date;
-                const diffMins = Math.floor(diffMs / (1000 * 60));
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              const now = new Date();
+              const diffMs = now - parsedDate;
+              const diffMins = Math.floor(diffMs / (1000 * 60));
+              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+              const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-                if (diffMins < 1) return "Just now";
-                if (diffMins < 60) return `${diffMins} minutes ago`;
-                if (diffHours < 24) return `${diffHours} hours ago`;
-                if (diffDays < 7) return `${diffDays} days ago`;
+              if (diffMins < 1) return "Just now";
+              if (diffMins < 60)
+                return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+              if (diffHours < 24)
+                return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+              if (diffDays < 7)
+                return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
 
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year:
-                    date.getFullYear() !== now.getFullYear()
-                      ? "numeric"
-                      : undefined,
-                });
-              }
-
-              return timeString || "Unknown time";
+              return parsedDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year:
+                  parsedDate.getFullYear() !== now.getFullYear()
+                    ? "numeric"
+                    : undefined,
+              });
             } catch (error) {
               console.error("Error parsing time:", error, timeString);
-              return "Unknown time";
+              return timeString || "Unknown time";
             }
           };
 
@@ -207,13 +206,9 @@ export default function RecentActivities({ limit = 5 }) {
 
         console.log("Mapped activities:", mapped);
         setActivities(mapped);
-      } else if (data.message && data.message.includes("No activities found")) {
-        // Handle the case where API returns success but with "No activities found" message
-        console.log("No activities found in response");
-        setActivities([]);
       } else {
-        console.warn("Unexpected response format:", data);
-        setError("Unexpected response format");
+        // Handle case where no activities exist yet
+        console.log("No activities data in response");
         setActivities([]);
       }
     } catch (err) {
