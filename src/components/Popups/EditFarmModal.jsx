@@ -83,12 +83,30 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.farmName.trim()) {
-      newErrors.farmName = "Farm name is required";
+    // Check if at least one field has been modified or image is selected
+    const hasChanges =
+      formData.farmName.trim() !== (farmData?.farmName || "") ||
+      formData.location.trim() !== (farmData?.location || "") ||
+      formData.description.trim() !== (farmData?.description || "") ||
+      selectedImage !== null;
+
+    if (!hasChanges) {
+      newErrors.general = "Please make at least one change before saving";
     }
 
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
+    // Basic validation - at least require farm name and location if they're being changed
+    if (
+      formData.farmName.trim() === "" &&
+      formData.farmName !== (farmData?.farmName || "")
+    ) {
+      newErrors.farmName = "Farm name cannot be empty";
+    }
+
+    if (
+      formData.location.trim() === "" &&
+      formData.location !== (farmData?.location || "")
+    ) {
+      newErrors.location = "Location cannot be empty";
     }
 
     setErrors(newErrors);
@@ -104,53 +122,89 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
     try {
       const formDataToSend = new FormData();
+      let hasData = false;
 
-      // Only append fields that have values
-      if (formData.farmName.trim()) {
+      // Only append fields that have been modified
+      if (formData.farmName.trim() !== (farmData?.farmName || "")) {
         formDataToSend.append("farmName", formData.farmName.trim());
+        hasData = true;
       }
-      if (formData.location.trim()) {
+
+      if (formData.location.trim() !== (farmData?.location || "")) {
         formDataToSend.append("location", formData.location.trim());
+        hasData = true;
       }
-      if (formData.description.trim()) {
+
+      if (formData.description.trim() !== (farmData?.description || "")) {
         formDataToSend.append("description", formData.description.trim());
+        hasData = true;
       }
+
       if (selectedImage) {
         formDataToSend.append("farmImage", selectedImage);
+        hasData = true;
       }
+
+      if (!hasData) {
+        setErrors({
+          general: "No changes detected. Please modify at least one field.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      console.log(
+        "Sending PATCH request to:",
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`
+      );
 
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
         {
-          method: "PUT",
+          method: "PATCH", // Changed from PUT to PATCH
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            // Don't set Content-Type when using FormData, let the browser set it with boundary
           },
           body: formDataToSend,
         }
       );
 
+      console.log("Response status:", response.status);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
+
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage =
+            errorData.message || `HTTP error! status: ${response.status}`;
+        } catch {
+          errorMessage = `HTTP error! status: ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      console.log("Success response:", data);
 
       if (data.status === "success") {
         // Call the callback to refresh farm data in parent component
         if (onFarmUpdated) {
           onFarmUpdated();
         }
-        onClose();
+        handleClose();
 
-        // Show success message (optional)
+        // Show success message
         alert("Farm updated successfully!");
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
     } catch (error) {
       console.error("Error updating farm:", error);
-      alert(`Failed to update farm: ${error.message}`);
+      setErrors({ general: `Failed to update farm: ${error.message}` });
     } finally {
       setIsLoading(false);
     }
@@ -158,10 +212,15 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
   const handleClose = () => {
     // Clean up image preview URL to prevent memory leaks
-    if (selectedImage && imagePreview) {
+    if (selectedImage && imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
     setSelectedImage(null);
+    setFormData({
+      farmName: "",
+      location: "",
+      description: "",
+    });
     setImagePreview("");
     setErrors({});
     onClose();
@@ -196,6 +255,13 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* General Error Message */}
+          {errors.general && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              {errors.general}
+            </div>
+          )}
+
           {/* Farm Image Section */}
           <div>
             <label className="block text-gray-800 font-medium mb-3">
@@ -219,7 +285,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
               <label className="absolute bottom-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2">
                 <Upload className="w-4 h-4" />
-                Change Image
+                {imagePreview ? "Change Image" : "Upload Image"}
                 <input
                   type="file"
                   accept="image/*"
@@ -238,7 +304,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-800 font-medium mb-2">
-                Farm Name *
+                Farm Name
               </label>
               <input
                 type="text"
@@ -257,7 +323,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
             <div>
               <label className="block text-gray-800 font-medium mb-2">
-                Location *
+                Location
               </label>
               <input
                 type="text"

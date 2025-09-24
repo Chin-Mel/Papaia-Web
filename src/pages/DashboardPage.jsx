@@ -115,6 +115,30 @@ export default function DashboardPage() {
     }
   };
 
+  // Fetch farm health data
+  const fetchFarmHealth = async (farmId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.healthPercentage || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.error(`Error fetching health for farm ${farmId}:`, error);
+      return 0;
+    }
+  };
+
   // Fetch farms from backend
   const fetchFarms = async () => {
     try {
@@ -147,34 +171,40 @@ export default function DashboardPage() {
       console.log("Farms API response data:", data);
 
       if (data.status === "success" && data.farms) {
-        const mappedFarms = data.farms.map((f) => {
-          console.log("Processing farm:", f);
+        // Fetch farms with health data
+        const mappedFarmsWithHealth = await Promise.all(
+          data.farms.map(async (f) => {
+            console.log("Processing farm:", f);
 
-          // Handle potentially malformed image URLs
-          let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
-          if (f.farmImage && f.farmImage.startsWith("http")) {
-            farmImage = f.farmImage;
-          }
+            // Handle potentially malformed image URLs
+            let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+            if (f.farmImage && f.farmImage.startsWith("http")) {
+              farmImage = f.farmImage;
+            }
 
-          return {
-            id: f.id,
-            name: f.farmName,
-            desc: f.description || `Farm located in ${f.location}`,
-            location: f.location,
-            health: 95, // You might want to calculate this from farm health endpoint
-            status: f.status === "active" ? "Active" : "Inactive",
-            img: farmImage,
-          };
-        });
+            // Fetch health data for each farm
+            const health = await fetchFarmHealth(f.id);
+
+            return {
+              id: f.id,
+              name: f.farmName,
+              desc: f.description || `Farm located in ${f.location}`,
+              location: f.location,
+              health: health,
+              status: f.status === "active" ? "Active" : "Inactive",
+              img: farmImage,
+            };
+          })
+        );
 
         // Sort farms: Active first, Inactive last
-        const sortedFarms = mappedFarms.sort((a, b) => {
+        const sortedFarms = mappedFarmsWithHealth.sort((a, b) => {
           if (a.status === "Active" && b.status === "Inactive") return -1;
           if (a.status === "Inactive" && b.status === "Active") return 1;
           return 0;
         });
 
-        console.log("Mapped and sorted farms:", sortedFarms);
+        console.log("Mapped and sorted farms with health:", sortedFarms);
         setFarms(sortedFarms);
       } else {
         console.warn("Unexpected farms response format:", data);
@@ -253,6 +283,21 @@ export default function DashboardPage() {
     if (trend === "increase") return "+";
     if (trend === "decrease") return "-";
     return "";
+  };
+
+  // Get health color based on percentage
+  const getHealthColor = (healthPercentage) => {
+    if (healthPercentage >= 80) {
+      return "text-green-600"; // Excellent health
+    } else if (healthPercentage >= 60) {
+      return "text-yellow-600"; // Good health
+    } else if (healthPercentage >= 40) {
+      return "text-orange-600"; // Fair health
+    } else if (healthPercentage >= 20) {
+      return "text-red-600"; // Poor health
+    } else {
+      return "text-gray-600"; // No data or very poor health
+    }
   };
 
   return (
@@ -427,7 +472,11 @@ export default function DashboardPage() {
                             </div>
                             <div className="flex items-center gap-1">
                               <Leaf size={12} className="text-green-500" />
-                              <span className="text-[10px] sm:text-xs font-medium text-green-600">
+                              <span
+                                className={`text-[10px] sm:text-xs font-medium ${getHealthColor(
+                                  farm.health
+                                )}`}
+                              >
                                 {farm.health}% Health
                               </span>
                             </div>
@@ -600,7 +649,11 @@ export default function DashboardPage() {
                               </div>
                               <div className="flex items-center gap-1">
                                 <Leaf size={12} className="text-green-500" />
-                                <span className="text-xs font-medium text-green-600">
+                                <span
+                                  className={`text-xs font-medium ${getHealthColor(
+                                    farm.health
+                                  )}`}
+                                >
                                   {farm.health}% Health
                                 </span>
                               </div>

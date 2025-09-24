@@ -63,52 +63,59 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md sm:max-w-lg">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-4 sm:p-5 relative">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center">
               {isActive ? (
-                <ToggleRight className="w-5 h-5 text-green-500" />
+                <ToggleRight className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
               ) : (
-                <ToggleLeft className="w-5 h-5 text-gray-400" />
+                <ToggleLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               )}
             </div>
-            <h2 className="text-xl font-bold text-white">{actionText} Farm</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              {actionText} Farm
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 text-white hover:text-gray-200 transition-colors"
             disabled={isLoading}
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
           {/* Farm Details */}
-          <div className="bg-green-50 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Leaf className="w-5 h-5 text-white" />
+          <div className="bg-green-50 rounded-lg p-3 sm:p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Leaf className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-800 text-lg">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-gray-800 text-base sm:text-lg truncate">
                   {farmData.farmName}
                 </h3>
-                <div className="flex items-center gap-1 text-gray-700 text-sm mb-2">
-                  <MapPin className="w-3 h-3 text-green-600" />
-                  {farmData.location || "No location specified"}
+                <div className="flex items-center gap-1 text-gray-700 text-xs sm:text-sm mb-2">
+                  <MapPin className="w-3 h-3 text-green-600 flex-shrink-0" />
+                  <span className="truncate">
+                    {farmData.location || "No location specified"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">Current Status:</span>
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    Status:
+                  </span>
                   <div className="flex items-center gap-1">
                     {isActive ? (
-                      <CheckCircle className="w-4 h-4 text-green-500" />
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-red-500" />
+                      <XCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />
                     )}
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${
                         isActive
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-700"
@@ -123,43 +130,44 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
           </div>
 
           {/* Status Change Information */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-medium text-gray-800 mb-2">
-              What happens when you {actionText.toLowerCase()} this farm?
+          <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+            <h4 className="font-medium text-gray-800 mb-2 text-sm sm:text-base">
+              What happens when you {actionText.toLowerCase()}?
             </h4>
 
             {isActive ? (
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Farmers will no longer be able to make new scans</li>
-                <li>• The farm will be hidden from active farm lists</li>
-                <li>• Existing data and analytics will be preserved</li>
-                <li>• You can reactivate the farm anytime</li>
+              <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
+                <li>• Farmers can't make new scans</li>
+                <li>• Hidden from active farm lists</li>
+                <li>• Data and analytics preserved</li>
+                <li>• Can reactivate anytime</li>
               </ul>
             ) : (
-              <ul className="text-sm text-gray-600 space-y-1">
-                <li>• Farmers will be able to make scans again</li>
-                <li>• The farm will appear in active farm lists</li>
-                <li>• All previous data will remain accessible</li>
-                <li>• Analytics will resume updating with new scans</li>
+              <ul className="text-xs sm:text-sm text-gray-600 space-y-1">
+                <li>• Farmers can make scans again</li>
+                <li>• Appears in active farm lists</li>
+                <li>• Previous data remains accessible</li>
+                <li>• Analytics resume updating</li>
               </ul>
             )}
           </div>
 
           {/* Confirmation Message */}
           <div className="text-center">
-            <p className="text-gray-800 font-medium">
-              Are you sure you want to {actionText.toLowerCase()} this farm?
+            <p className="text-gray-800 font-medium text-sm sm:text-base">
+              {actionText} this farm?
             </p>
-            <p className="text-sm text-gray-600 mt-1">
-              This action can be reversed at any time.
+            <p className="text-xs sm:text-sm text-gray-600 mt-1">
+              This action can be reversed anytime.
             </p>
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex justify-between">
+        {/* Footer */}
+        <div className="p-4 sm:p-5 border-t border-gray-200 flex flex-col sm:flex-row gap-3 sm:gap-0 sm:justify-between">
           <button
             onClick={onClose}
-            className="px-6 py-3 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="px-4 sm:px-6 py-2 sm:py-3 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base"
             disabled={isLoading}
           >
             Cancel
@@ -167,7 +175,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
           <button
             onClick={handleToggleStatus}
             disabled={isLoading}
-            className={`px-6 py-3 rounded-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base ${
               actionColor === "red"
                 ? "bg-red-500 text-white hover:bg-red-600"
                 : "bg-green-500 text-white hover:bg-green-600"
