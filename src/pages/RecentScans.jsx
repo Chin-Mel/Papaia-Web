@@ -108,7 +108,7 @@ export default function RecentScans({ farmId }) {
                   parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)
                 );
               })
-              .slice(0, 5); // Show only 5 recent scans
+              .slice(0, 4); // Show only 5 recent scans
 
             console.log("Final sorted scans:", sortedScans);
             setRecentScans(sortedScans);
@@ -315,7 +315,7 @@ export default function RecentScans({ farmId }) {
             ))}
 
             {/* Add placeholder items if less than 5 scans to maintain consistent height */}
-            {Array.from({ length: Math.max(0, 5 - recentScans.length) }).map(
+            {Array.from({ length: Math.max(0, 4 - recentScans.length) }).map(
               (_, index) => (
                 <div
                   key={`placeholder-${index}`}
