@@ -274,7 +274,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     Healthy: "#22c55e",
     "Ring Spot Virus": "#ef4444",
     Anthracnose: "#f97316",
-    "Powdery Mildew": "#eab308",
+    "Powdery Mildew": "#0046FF",
   };
 
   // Get color for disease type
