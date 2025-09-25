@@ -217,7 +217,7 @@ export default function RecentScans({ farmId }) {
   };
 
   // Calculate fixed height to match FarmAnalytics
-  const FIXED_HEIGHT = "580px";
+  const FIXED_HEIGHT = "590px";
 
   if (loading) {
     return (

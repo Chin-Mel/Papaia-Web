@@ -104,7 +104,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         break;
 
       case "Weekly":
-        // Generate last 9 weeks
         for (let i = 8; i >= 0; i--) {
           const startDate = new Date(now);
           const dayOfWeek = startDate.getDay();
@@ -135,7 +134,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         break;
 
       case "Monthly":
-        // Generate all 12 months of current year
         const months = [
           "Jan",
           "Feb",
@@ -164,7 +162,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         break;
 
       case "Yearly":
-        // Generate 7 years starting from farm creation year or current year - 6
         const currentYear = now.getFullYear();
         const startYear = farmCreatedYear || currentYear - 6;
         for (let year = startYear; year <= startYear + 6; year++) {
@@ -184,11 +181,9 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return data;
   };
 
-  // Process analytics data
   const processAnalyticsData = () => {
     console.log("Processing analytics data:", analyticsData);
 
-    // Start with default data structure
     let defaultData = generateDefaultData();
 
     if (!analyticsData) {
@@ -201,7 +196,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       return defaultData;
     }
 
-    // Get the correct stats key based on time filter
     const statsKey = `${timeFilter.toLowerCase()}Stats`;
     const stats = analyticsData[statsKey];
 
@@ -212,11 +206,9 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       return defaultData;
     }
 
-    // Merge API data with default data
     stats.forEach((apiItem) => {
       const predictions = apiItem.predictions || {};
 
-      // Get the period based on the time filter
       let period = "";
       if (apiItem.day) period = apiItem.day;
       else if (apiItem.week) period = apiItem.week;
@@ -238,12 +230,10 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           0
         );
 
-        // Update the matching period with actual data
         defaultData[defaultIndex] = {
           ...defaultData[defaultIndex],
           totalPredictions,
           predictions,
-          // Add individual disease counts
           ...predictions,
         };
       }
@@ -280,12 +270,11 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
   const diseaseTypes = getAllDiseaseTypes();
 
-  // Color mapping matching RecentScans component
   const diseaseColors = {
-    Healthy: "#22c55e", // Green
-    "Ring Spot Virus": "#ef4444", // Red
-    Anthracnose: "#f97316", // Orange
-    "Powdery Mildew": "#eab308", // Yellow
+    Healthy: "#22c55e",
+    "Ring Spot Virus": "#ef4444",
+    Anthracnose: "#f97316",
+    "Powdery Mildew": "#eab308",
   };
 
   // Get color for disease type
@@ -309,7 +298,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
                 Disease Breakdown:
               </p>
               {Object.entries(data.predictions)
-                .sort(([, a], [, b]) => b - a) // Sort by count descending
+                .sort(([, a], [, b]) => b - a)
                 .map(([disease, count]) => (
                   <div
                     key={disease}
@@ -342,29 +331,23 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   console.log("Has data:", hasData);
   console.log("Disease types:", diseaseTypes);
 
-  // Calculate summary statistics
   const totalScans = chartData.reduce(
     (sum, item) => sum + item.totalPredictions,
     0
   );
 
-  // Calculate health score (percentage of healthy predictions)
   const healthyScans = chartData.reduce((sum, item) => {
     return sum + (item.predictions?.Healthy || 0);
   }, 0);
   const healthScore =
     totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
 
-  // Calculate disease score (percentage of disease predictions)
   const diseaseScans = totalScans - healthyScans;
   const diseaseScore =
     totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
 
-  // Calculate fixed height to match RecentScans with 5 items
-  // RecentScans height = header (28px) + 5 items (80px each) + gaps (16px * 4) + footer (40px) + padding (48px) = 580px
   const FIXED_HEIGHT = "580px";
 
-  // Loading state
   if (loading) {
     return (
       <div
@@ -378,7 +361,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div
@@ -414,7 +396,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         </h2>
       </div>
 
-      {/* Chart Container - Takes up remaining space minus stats */}
       <div className="flex-1 w-full mb-4">
         <div style={{ width: "100%", height: "100%" }}>
           <ResponsiveContainer>
