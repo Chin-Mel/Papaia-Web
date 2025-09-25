@@ -21,7 +21,7 @@ import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
 import RecentScans from "./RecentScans";
-import FarmTeam from "./FarmTeam";
+import FarmTeams from "./FarmTeams";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
@@ -313,7 +313,7 @@ export default function FarmDashboardPage() {
           </div>
 
           {/* Farm Team */}
-          <FarmTeam
+          <FarmTeams
             farmId={farmId}
             onAddFarmer={handleAddFarmer}
             onViewFarmer={handleViewFarmer}
