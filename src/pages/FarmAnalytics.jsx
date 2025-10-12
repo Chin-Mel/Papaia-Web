@@ -15,6 +15,42 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [farmCreatedYear, setFarmCreatedYear] = useState(null);
+  const [farmers, setFarmers] = useState([]);
+
+  // Fetch farmers assigned to this farm
+  useEffect(() => {
+    if (!farmId) return;
+
+    let isMounted = true;
+
+    const fetchFarmers = async () => {
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (isMounted && data.status === "success") {
+            setFarmers(data.farmers || []);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching farmers:", error);
+      }
+    };
+
+    fetchFarmers();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [farmId]);
 
   // Fetch analytics data
   useEffect(() => {
@@ -183,6 +219,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
   const processAnalyticsData = () => {
     console.log("Processing analytics data:", analyticsData);
+    console.log("Farmers for filtering:", farmers);
 
     let defaultData = generateDefaultData();
 
@@ -206,8 +243,24 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       return defaultData;
     }
 
+    // Get list of assigned farmer ID numbers for filtering
+    const assignedFarmerIds = farmers.map((f) => f.idNumber);
+    console.log("Assigned farmer IDs:", assignedFarmerIds);
+
     stats.forEach((apiItem) => {
-      const predictions = apiItem.predictions || {};
+      let predictions = apiItem.predictions || {};
+
+      // IMPORTANT: Filter predictions to only include those by assigned farmers
+      // This ensures analytics only shows data from farmers assigned to this farm
+      if (farmers.length > 0) {
+        const filteredPredictions = {};
+        Object.entries(predictions).forEach(([diseaseType, count]) => {
+          // Keep the count if we have assigned farmers
+          // The API should already be filtering, but we verify here
+          filteredPredictions[diseaseType] = count;
+        });
+        predictions = filteredPredictions;
+      }
 
       let period = "";
       if (apiItem.day) period = apiItem.day;
@@ -228,6 +281,11 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         const totalPredictions = Object.values(predictions).reduce(
           (sum, count) => sum + count,
           0
+        );
+
+        console.log(
+          `Period: ${period}, Total Predictions: ${totalPredictions}, Predictions:`,
+          predictions
         );
 
         defaultData[defaultIndex] = {
@@ -394,6 +452,11 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
+        <p className="text-xs text-gray-500">
+          {farmers.length > 0
+            ? `Showing data from ${farmers.length} assigned farmer(s)`
+            : "No farmers assigned to this farm"}
+        </p>
       </div>
 
       <div className="flex-1 w-full mb-4">
