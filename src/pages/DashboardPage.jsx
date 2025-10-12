@@ -17,6 +17,7 @@ export default function DashboardPage() {
     totalFarmers: 0,
     totalFarms: 0,
     todayScans: 0,
+    yesterdayScans: 0,
     farmersChange: 0,
     farmsChange: 0,
     scansChange: 0,
@@ -24,6 +25,28 @@ export default function DashboardPage() {
     farmsTrend: "no change",
     scansTrend: "no change",
   });
+
+  // Helper function to parse timestamp and check if it's today or yesterday
+  const isToday = (timestampStr) => {
+    const today = new Date();
+    const todayStr = today.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+    return timestampStr.includes(todayStr);
+  };
+
+  const isYesterday = (timestampStr) => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+    return timestampStr.includes(yesterdayStr);
+  };
 
   // Fetch dashboard statistics
   const fetchDashboardStats = async () => {
@@ -39,7 +62,7 @@ export default function DashboardPage() {
       const [
         farmCountRes,
         farmerCountRes,
-        scansComparisonRes,
+        identificationHistoryRes,
         farmersComparisonRes,
         farmsComparisonRes,
       ] = await Promise.all([
@@ -50,8 +73,10 @@ export default function DashboardPage() {
           headers,
         }),
         fetch(
-          "https://papaiaapi.onrender.com/api/owner/identification-comparison",
-          { headers }
+          "https://papaiaapi.onrender.com/api/owner/identification-history",
+          {
+            headers,
+          }
         ),
         fetch("https://papaiaapi.onrender.com/api/owner/farmers-comparison", {
           headers,
@@ -65,7 +90,7 @@ export default function DashboardPage() {
       console.log("API Response statuses:", {
         farmCount: farmCountRes.status,
         farmerCount: farmerCountRes.status,
-        scansComparison: scansComparisonRes.status,
+        identificationHistory: identificationHistoryRes.status,
         farmersComparison: farmersComparisonRes.status,
         farmsComparison: farmsComparisonRes.status,
       });
@@ -74,15 +99,15 @@ export default function DashboardPage() {
       const [
         farmCountData,
         farmerCountData,
-        scansComparisonData,
+        identificationData,
         farmersComparisonData,
         farmsComparisonData,
       ] = await Promise.all([
         farmCountRes.ok ? farmCountRes.json().catch(() => ({})) : {},
         farmerCountRes.ok ? farmerCountRes.json().catch(() => ({})) : {},
-        scansComparisonRes.ok
-          ? scansComparisonRes.json().catch(() => ({}))
-          : {},
+        identificationHistoryRes.ok
+          ? identificationHistoryRes.json().catch(() => [])
+          : [],
         farmersComparisonRes.ok
           ? farmersComparisonRes.json().catch(() => ({}))
           : {},
@@ -91,10 +116,42 @@ export default function DashboardPage() {
           : {},
       ]);
 
+      // Calculate today's and yesterday's scans from identification history
+      const todayScansCount = Array.isArray(identificationData)
+        ? identificationData.filter((pred) => isToday(pred.timestamp)).length
+        : 0;
+
+      const yesterdayScansCount = Array.isArray(identificationData)
+        ? identificationData.filter((pred) => isYesterday(pred.timestamp))
+            .length
+        : 0;
+
+      // Calculate percentage change
+      let scansChangePercent = 0;
+      let scansTrendType = "no change";
+
+      if (yesterdayScansCount > 0) {
+        scansChangePercent = (
+          ((todayScansCount - yesterdayScansCount) / yesterdayScansCount) *
+          100
+        ).toFixed(2);
+        if (todayScansCount > yesterdayScansCount) {
+          scansTrendType = "increase";
+        } else if (todayScansCount < yesterdayScansCount) {
+          scansTrendType = "decrease";
+        }
+      } else if (todayScansCount > 0) {
+        scansChangePercent = 100;
+        scansTrendType = "increase";
+      }
+
       console.log("Dashboard stats data:", {
         farmCountData,
         farmerCountData,
-        scansComparisonData,
+        todayScans: todayScansCount,
+        yesterdayScans: yesterdayScansCount,
+        scansChangePercent,
+        scansTrendType,
         farmersComparisonData,
         farmsComparisonData,
       });
@@ -102,13 +159,14 @@ export default function DashboardPage() {
       setDashboardStats({
         totalFarmers: farmerCountData.totalFarmers || 0,
         totalFarms: farmCountData.farmCount || 0,
-        todayScans: scansComparisonData.today || 0,
+        todayScans: todayScansCount,
+        yesterdayScans: yesterdayScansCount,
         farmersChange: farmersComparisonData.percentageChange || 0,
         farmsChange: farmsComparisonData.percentageChange || 0,
-        scansChange: scansComparisonData.changePercent || 0,
+        scansChange: parseFloat(scansChangePercent) || 0,
         farmersTrend: farmersComparisonData.trend || "no change",
         farmsTrend: farmsComparisonData.trend || "no change",
-        scansTrend: scansComparisonData.trend || "no change",
+        scansTrend: scansTrendType,
       });
     } catch (err) {
       console.error("Failed to fetch dashboard stats:", err);

@@ -83,18 +83,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const validateForm = () => {
     const newErrors = {};
 
-    // Check if at least one field has been modified or image is selected
-    const hasChanges =
-      formData.farmName.trim() !== (farmData?.farmName || "") ||
-      formData.location.trim() !== (farmData?.location || "") ||
-      formData.description.trim() !== (farmData?.description || "") ||
-      selectedImage !== null;
-
-    if (!hasChanges) {
-      newErrors.general = "Please make at least one change before saving";
-    }
-
-    // Basic validation - at least require farm name and location if they're being changed
+    // Check if farm name is being changed and is empty
     if (
       formData.farmName.trim() === "" &&
       formData.farmName !== (farmData?.farmName || "")
@@ -102,6 +91,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       newErrors.farmName = "Farm name cannot be empty";
     }
 
+    // Check if location is being changed and is empty
     if (
       formData.location.trim() === "" &&
       formData.location !== (farmData?.location || "")
@@ -118,41 +108,38 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       return;
     }
 
+    // Build form data with only changed fields
+    const formDataToSend = new FormData();
+
+    if (formData.farmName.trim() !== (farmData?.farmName || "")) {
+      formDataToSend.append("farmName", formData.farmName.trim());
+    }
+
+    if (formData.location.trim() !== (farmData?.location || "")) {
+      formDataToSend.append("location", formData.location.trim());
+    }
+
+    if (formData.description.trim() !== (farmData?.description || "")) {
+      formDataToSend.append("description", formData.description.trim());
+    }
+
+    if (selectedImage) {
+      formDataToSend.append("farmImage", selectedImage);
+    }
+
+    // Check if at least one field has been added to FormData
+    const hasChanges = Array.from(formDataToSend.entries()).length > 0;
+
+    if (!hasChanges) {
+      setErrors({
+        general: "Please make at least one change before saving",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const formDataToSend = new FormData();
-      let hasData = false;
-
-      // Only append fields that have been modified
-      if (formData.farmName.trim() !== (farmData?.farmName || "")) {
-        formDataToSend.append("farmName", formData.farmName.trim());
-        hasData = true;
-      }
-
-      if (formData.location.trim() !== (farmData?.location || "")) {
-        formDataToSend.append("location", formData.location.trim());
-        hasData = true;
-      }
-
-      if (formData.description.trim() !== (farmData?.description || "")) {
-        formDataToSend.append("description", formData.description.trim());
-        hasData = true;
-      }
-
-      if (selectedImage) {
-        formDataToSend.append("farmImage", selectedImage);
-        hasData = true;
-      }
-
-      if (!hasData) {
-        setErrors({
-          general: "No changes detected. Please modify at least one field.",
-        });
-        setIsLoading(false);
-        return;
-      }
-
       console.log(
         "Sending PATCH request to:",
         `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`
@@ -161,10 +148,9 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
         {
-          method: "PATCH", // Changed from PUT to PATCH
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            // Don't set Content-Type when using FormData, let the browser set it with boundary
           },
           body: formDataToSend,
         }
@@ -191,13 +177,10 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       console.log("Success response:", data);
 
       if (data.status === "success") {
-        // Call the callback to refresh farm data in parent component
         if (onFarmUpdated) {
           onFarmUpdated();
         }
         handleClose();
-
-        // Show success message
         alert("Farm updated successfully!");
       } else {
         throw new Error(data.message || "Failed to update farm");
