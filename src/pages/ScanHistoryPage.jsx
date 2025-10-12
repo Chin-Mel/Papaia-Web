@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +40,55 @@ function getStatusFromPrediction(prediction) {
   return "needs-attention";
 }
 
+// Dropdown Component
+function FilterDropdown({ label, value, onChange, options }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="flex flex-col space-y-2" ref={dropdownRef}>
+      <label className="text-xs sm:text-sm font-medium text-gray-700">
+        {label}
+      </label>
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-100 bg-white transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
+        >
+          <span className="truncate">{value}</span>
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        </button>
+        {isOpen && (
+          <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <li
+                key={option}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+                className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm whitespace-nowrap"
+              >
+                {option}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // Status Badge Component
 function StatusBadge({ status, prediction }) {
   const actualStatus = status || getStatusFromPrediction(prediction);
@@ -64,10 +114,11 @@ function StatusBadge({ status, prediction }) {
 
   return (
     <div
-      className={`${config.className} flex items-center gap-1 px-3 py-1 rounded-full border text-sm font-medium`}
+      className={`${config.className} flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full border text-xs sm:text-sm font-medium whitespace-nowrap`}
     >
       <span style={{ fontSize: "12px" }}>{icon}</span>
-      {config.label}
+      <span className="hidden sm:inline">{config.label}</span>
+      <span className="sm:hidden">{config.label.split(" ")[0]}</span>
     </div>
   );
 }
@@ -85,10 +136,11 @@ function ViewDetailsButton({ status, prediction, scanId }) {
   return (
     <Link
       to={`/scan-history-details/${scanId}`}
-      className={`flex items-center gap-2 ${colorMap[actualStatus]} p-0 h-auto text-sm font-medium transition-colors`}
+      className={`flex items-center gap-1 sm:gap-2 ${colorMap[actualStatus]} p-0 h-auto text-xs sm:text-sm font-medium transition-colors`}
     >
-      <img src={EyeIcon} alt="View Details" className="h-4 w-4" />
-      View Details
+      <img src={EyeIcon} alt="View Details" className="h-3 w-3 sm:h-4 sm:w-4" />
+      <span className="hidden sm:inline">View Details</span>
+      <span className="sm:hidden">View</span>
     </Link>
   );
 }
@@ -100,8 +152,8 @@ export default function ScanHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [totalScans, setTotalScans] = useState(0);
   const [filters, setFilters] = useState({
-    dateRange: "all",
-    status: "all",
+    dateRange: "All Time",
+    status: "All Status",
     farmId: "all",
     farmerName: "",
   });
@@ -164,7 +216,7 @@ export default function ScanHistoryPage() {
   const applyFilters = (scans, currentFilters) => {
     return scans.filter((scan) => {
       // Date range filter
-      if (currentFilters.dateRange !== "all") {
+      if (currentFilters.dateRange !== "All Time") {
         const scanDate = new Date(scan.createdAt);
         const now = new Date();
         const today = new Date(
@@ -174,14 +226,14 @@ export default function ScanHistoryPage() {
         );
 
         switch (currentFilters.dateRange) {
-          case "today":
+          case "Today":
             if (scanDate < today) return false;
             break;
-          case "week":
+          case "Last 7 days":
             const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
             if (scanDate < weekAgo) return false;
             break;
-          case "month":
+          case "Last 30 days":
             const monthAgo = new Date(
               today.getTime() - 30 * 24 * 60 * 60 * 1000
             );
@@ -191,9 +243,14 @@ export default function ScanHistoryPage() {
       }
 
       // Status filter
-      if (currentFilters.status !== "all") {
+      if (currentFilters.status !== "All Status") {
         const scanStatus = getStatusFromPrediction(scan.prediction);
-        if (scanStatus !== currentFilters.status) return false;
+        const filterMap = {
+          Healthy: "healthy",
+          "Disease Detected": "disease-detected",
+          "Needs Attention": "needs-attention",
+        };
+        if (scanStatus !== filterMap[currentFilters.status]) return false;
       }
 
       // Farm filter
@@ -327,7 +384,7 @@ export default function ScanHistoryPage() {
       <button
         key={page}
         onClick={() => setCurrentPage(page)}
-        className={`min-w-[30px] h-[30px] px-2 rounded-md text-sm font-medium transition-colors ${
+        className={`min-w-[30px] h-[30px] px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
           isActive
             ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600"
             : "border border-gray-300 text-black hover:bg-gray-50"
@@ -348,65 +405,51 @@ export default function ScanHistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 mt-16">
+      <main className="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
                 Scan History
               </h1>
-              <p className="text-base text-gray-600">
-                Track all crop health scans and analysis results of all farms
+              <p className="text-xs sm:text-base text-gray-600">
+                Track all crop health scans and analysis results
               </p>
             </div>
             <button
               onClick={handleExport}
-              className="flex items-center justify-center gap-2 h-10 px-4 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+              className="flex items-center justify-center gap-2 h-9 sm:h-10 px-3 sm:px-4 border border-gray-300 rounded-md bg-white hover:bg-gray-50 text-xs sm:text-sm font-medium text-gray-700 transition-colors w-full sm:w-auto"
             >
               <img src={DownloadIcon} alt="Download" className="h-4 w-4" />
-              Export
+              <span>Export</span>
             </button>
           </div>
 
           {/* Filters */}
-          <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Date Range
-                </label>
-                <select
-                  value={filters.dateRange}
-                  onChange={(e) =>
-                    handleFilterChange("dateRange", e.target.value)
-                  }
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="all">All Time</option>
-                  <option value="today">Today</option>
-                  <option value="week">Last 7 days</option>
-                  <option value="month">Last 30 days</option>
-                </select>
-              </div>
+          <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+              <FilterDropdown
+                label="Date Range"
+                value={filters.dateRange}
+                onChange={(value) => handleFilterChange("dateRange", value)}
+                options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
+              />
+
+              <FilterDropdown
+                label="Status"
+                value={filters.status}
+                onChange={(value) => handleFilterChange("status", value)}
+                options={[
+                  "All Status",
+                  "Healthy",
+                  "Disease Detected",
+                  "Needs Attention",
+                ]}
+              />
 
               <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) => handleFilterChange("status", e.target.value)}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="healthy">Healthy</option>
-                  <option value="disease-detected">Disease Detected</option>
-                  <option value="needs-attention">Needs Attention</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">
                   Farmer ID
                 </label>
                 <input
@@ -416,132 +459,135 @@ export default function ScanHistoryPage() {
                   onChange={(e) =>
                     handleFilterChange("farmerName", e.target.value)
                   }
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="h-9 sm:h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
 
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Farm
-                </label>
-                <select
-                  value={filters.farmId}
-                  onChange={(e) => handleFilterChange("farmId", e.target.value)}
-                  className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                >
-                  <option value="all">All Farms</option>
-                  {farms.map((farm) => (
-                    <option key={farm.id} value={farm.id}>
-                      {farm.farmName}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FilterDropdown
+                label="Farm"
+                value={
+                  filters.farmId === "all"
+                    ? "All Farms"
+                    : farms.find((f) => f.id === filters.farmId)?.farmName ||
+                      "All Farms"
+                }
+                onChange={(value) => {
+                  const farm = farms.find((f) => f.farmName === value);
+                  handleFilterChange("farmId", farm?.id || "all");
+                }}
+                options={["All Farms", ...farms.map((farm) => farm.farmName)]}
+              />
             </div>
           </div>
 
           {/* Scan History List */}
           <div
             ref={reportRef}
-            className="bg-white rounded-xl border border-gray-200 shadow-sm"
+            className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
           >
-            <div className="space-y-4 p-6">
+            <div className="divide-y divide-gray-200">
               {loading ? (
-                <div className="text-center py-8">
-                  <div className="text-gray-500">Loading scans...</div>
+                <div className="text-center py-8 sm:py-12">
+                  <div className="text-gray-500 text-sm sm:text-base">
+                    Loading scans...
+                  </div>
                 </div>
               ) : scanData.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-gray-500">No scans found</div>
+                <div className="text-center py-8 sm:py-12">
+                  <div className="text-gray-500 text-sm sm:text-base">
+                    No scans found
+                  </div>
                 </div>
               ) : (
                 scanData.map((record) => (
                   <div
                     key={record.id}
-                    className="bg-white rounded-xl border border-gray-200 p-6"
+                    className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <img
-                          src={
-                            record.imageUrl ||
-                            "https://via.placeholder.com/80x80?text=No+Image"
-                          }
-                          alt={record.farmName}
-                          className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/80x80?text=No+Image";
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-lg font-semibold text-gray-900 truncate">
-                              {record.farmName}
-                            </h3>
-                            <StatusBadge
-                              status={record.status}
-                              prediction={record.prediction}
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                      {/* Image */}
+                      <img
+                        src={
+                          record.imageUrl ||
+                          "https://via.placeholder.com/80x80?text=No+Image"
+                        }
+                        alt={record.farmName}
+                        className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://via.placeholder.com/80x80?text=No+Image";
+                        }}
+                      />
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                          <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            {record.farmName}
+                          </h3>
+                          <StatusBadge
+                            status={record.status}
+                            prediction={record.prediction}
+                          />
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
+                          <div className="flex items-center gap-1">
+                            <img
+                              src={UserIcon}
+                              alt="User"
+                              className="h-3 w-3"
                             />
+                            <span className="truncate">{record.idNumber}</span>
                           </div>
-
-                          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-2">
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={UserIcon}
-                                alt="User"
-                                className="h-3 w-3"
-                              />
-                              <span>{record.idNumber}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={CalendarIcon}
-                                alt="Calendar"
-                                className="h-3 w-3"
-                              />
-                              <span>{formatDate(record.createdAt)}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <img
-                                src={ClockIcon}
-                                alt="Time"
-                                className="h-3.5 w-3.5"
-                              />
-                              <span>{formatTime(record.createdAt)}</span>
-                            </div>
-                            {record.confidence && (
-                              <div className="flex items-center gap-2">
-                                <span>
-                                  Confidence:{" "}
-                                  {Math.round(record.confidence * 100)}%
-                                </span>
-                              </div>
-                            )}
+                          <div className="flex items-center gap-1">
+                            <img
+                              src={CalendarIcon}
+                              alt="Calendar"
+                              className="h-3 w-3"
+                            />
+                            <span>{formatDate(record.createdAt)}</span>
                           </div>
-
-                          {record.description && (
-                            <div className="flex items-center gap-2">
-                              <span style={{ fontSize: "14px" }}>
-                                {diseaseIcons[record.prediction] ||
-                                  diseaseIcons["Healthy"]}
+                          <div className="flex items-center gap-1">
+                            <img
+                              src={ClockIcon}
+                              alt="Time"
+                              className="h-3 w-3"
+                            />
+                            <span>{formatTime(record.createdAt)}</span>
+                          </div>
+                          {record.confidence && (
+                            <div className="text-xs sm:text-sm">
+                              <span>
+                                Confidence:{" "}
+                                {Math.round(record.confidence * 100)}%
                               </span>
-                              <p
-                                className="text-sm font-medium"
-                                style={{
-                                  color:
-                                    diseaseColors[record.prediction] ||
-                                    diseaseColors["Healthy"],
-                                }}
-                              >
-                                {record.description}
-                              </p>
                             </div>
                           )}
                         </div>
-                      </div>
 
-                      <div className="flex-shrink-0 ml-4">
+                        {/* Disease Info */}
+                        {record.description && (
+                          <div className="flex items-center gap-2 mb-3">
+                            <span style={{ fontSize: "14px" }}>
+                              {diseaseIcons[record.prediction] ||
+                                diseaseIcons["Healthy"]}
+                            </span>
+                            <p
+                              className="text-xs sm:text-sm font-medium"
+                              style={{
+                                color:
+                                  diseaseColors[record.prediction] ||
+                                  diseaseColors["Healthy"],
+                              }}
+                            >
+                              {record.description}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* View Details Button */}
                         <ViewDetailsButton
                           status={record.status}
                           prediction={record.prediction}
@@ -556,20 +602,20 @@ export default function ScanHistoryPage() {
 
             {/* Pagination */}
             {totalScans > resultsPerPage && (
-              <div className="flex items-center justify-between p-6 border-t border-gray-200">
-                <div className="text-sm text-gray-700">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 border-t border-gray-200">
+                <div className="text-xs sm:text-sm text-gray-700">
                   Showing {startResult} to {endResult} of{" "}
                   {totalScans.toLocaleString()} results
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-x-auto">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   >
                     Previous
                   </button>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                       renderPageButton
                     )}
@@ -579,7 +625,7 @@ export default function ScanHistoryPage() {
                       setCurrentPage(Math.min(totalPages, currentPage + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="h-[30px] px-3 border border-gray-300 rounded-md text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                   >
                     Next
                   </button>

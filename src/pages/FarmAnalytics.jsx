@@ -471,11 +471,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
-        <p className="text-xs text-gray-500">
-          {farmers.length > 0
-            ? `${totalScans} total scans from ${farmers.length} farmer(s)`
-            : "No farmers assigned to this farm"}
-        </p>
       </div>
 
       <div className="flex-1 w-full mb-4">
