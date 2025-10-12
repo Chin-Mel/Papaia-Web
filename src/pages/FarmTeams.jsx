@@ -64,7 +64,7 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
   const [currentPage, setCurrentPage] = useState(1);
   const farmersPerPage = 5;
 
-  // Fetch farmers with full details
+  // Fetch farmers with FULL details (same approach as modal)
   useEffect(() => {
     if (!farmId) return;
 
@@ -75,7 +75,8 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
       try {
         console.log("🔍 Fetching farmers for farm:", farmId);
 
-        const response = await fetch(
+        // Step 1: Get the list of farmer IDs
+        const listResponse = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           {
             headers: {
@@ -84,29 +85,56 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
           }
         );
 
-        const data = await response.json();
-        console.log("📥 Raw API response:", data);
+        const listData = await listResponse.json();
+        console.log("📥 Farmer list response:", listData);
 
-        if (data.status === "success" && isMounted) {
-          const farmersList = data.farmers || [];
-          console.log("👥 Farmers list:", farmersList);
+        if (listData.status === "success" && isMounted) {
+          const farmersList = listData.farmers || [];
+          console.log("👥 Raw farmers list:", farmersList);
 
-          // Log each farmer's structure
-          farmersList.forEach((farmer, index) => {
-            console.log(`Farmer ${index + 1}:`, {
-              id: farmer.id,
-              idNumber: farmer.idNumber,
-              firstname: farmer.firstname,
-              middlename: farmer.middlename,
-              lastname: farmer.lastname,
-              status: farmer.status,
-              profilePicture: farmer.profilePicture,
-            });
-          });
+          // Step 2: Fetch FULL details for each farmer (same as modal does)
+          const farmersWithFullDetails = await Promise.all(
+            farmersList.map(async (farmer) => {
+              try {
+                console.log(`🔍 Fetching details for farmer ${farmer.id}...`);
 
-          setFarmers(farmersList);
+                const detailResponse = await fetch(
+                  `https://papaiaapi.onrender.com/api/owner/farmer/${farmer.id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                  }
+                );
+
+                const detailData = await detailResponse.json();
+                console.log(`✅ Farmer ${farmer.id} details:`, detailData);
+
+                if (detailData.status === "success" && detailData.farmer) {
+                  // Return the FULL farmer data from detail endpoint
+                  return detailData.farmer;
+                }
+
+                // Fallback to list data if detail fetch fails
+                console.warn(`⚠️ Using list data for farmer ${farmer.id}`);
+                return farmer;
+              } catch (error) {
+                console.error(
+                  `❌ Error fetching details for farmer ${farmer.id}:`,
+                  error
+                );
+                return farmer; // Fallback to list data
+              }
+            })
+          );
+
+          console.log(
+            "✅ All farmers with FULL details:",
+            farmersWithFullDetails
+          );
+          setFarmers(farmersWithFullDetails);
         } else {
-          console.warn("⚠️ Unexpected response format:", data);
+          console.warn("⚠️ Unexpected response format:", listData);
           setFarmers([]);
         }
       } catch (error) {
@@ -128,14 +156,14 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
     };
   }, [farmId]);
 
-  // Helper function to format name - handles all variations
+  // Helper function to format name - SAME AS MODAL
   const formatName = (farmer) => {
     if (!farmer) {
       console.warn("⚠️ formatName called with no farmer data");
       return "N/A";
     }
 
-    // Try all possible field name variations
+    // Try all possible field name variations (same as modal)
     const firstName = farmer.firstname || farmer.firstName || "";
     const middleName = farmer.middlename || farmer.middleName || "";
     const lastName = farmer.lastname || farmer.lastName || "";
@@ -144,7 +172,14 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
     const nameParts = [firstName, middleName, lastName, suffix].filter(Boolean);
     const fullName = nameParts.length > 0 ? nameParts.join(" ") : "N/A";
 
-    console.log(`📛 Formatted name for ${farmer.idNumber}:`, fullName);
+    console.log(`📛 Formatted name for ${farmer.idNumber}:`, {
+      firstName,
+      middleName,
+      lastName,
+      suffix,
+      fullName,
+    });
+
     return fullName;
   };
 
@@ -235,6 +270,7 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
       <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-20">
         <div className="flex justify-center items-center h-40">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+          <p className="ml-3 text-gray-600">Loading farmer details...</p>
         </div>
       </div>
     );
@@ -506,7 +542,6 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
     </div>
   );
 }
-
 //old
 // import React, { useState, useEffect, useRef } from "react";
 // import {
