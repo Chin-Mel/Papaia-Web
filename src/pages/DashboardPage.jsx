@@ -441,13 +441,17 @@ export default function DashboardPage() {
                       <Link
                         key={farm.id}
                         to={`/farm-dashboard/${farm.id}`}
-                        className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
+                        className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                          farm.status === "Active" ? "bg-white" : "bg-gray-300"
+                        }`}
                       >
                         <div className="relative">
                           <img
                             src={farm.img}
                             alt={farm.name}
-                            className="w-full h-32 sm:h-40 object-cover"
+                            className={`w-full h-32 sm:h-40 object-cover ${
+                              farm.status === "Inactive" ? "opacity-50" : ""
+                            }`}
                           />
                           <span
                             className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
@@ -618,13 +622,19 @@ export default function DashboardPage() {
                         <Link
                           key={farm.id}
                           to={`/farm-dashboard/${farm.id}`}
-                          className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
+                          className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                            farm.status === "Active"
+                              ? "bg-white"
+                              : "bg-gray-300"
+                          }`}
                         >
                           <div className="relative">
                             <img
                               src={farm.img}
                               alt={farm.name}
-                              className="w-full h-48 object-cover"
+                              className={`w-full h-48 object-cover ${
+                                farm.status === "Inactive" ? "opacity-50" : ""
+                              }`}
                             />
                             <span
                               className={`absolute top-3 right-3 px-2.5 py-1.5 text-xs rounded-full font-medium ${
