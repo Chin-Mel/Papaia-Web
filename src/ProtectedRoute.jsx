@@ -1,29 +1,24 @@
-// ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import jwt_decode from "jwt-decode"; // default import should work with the latest version
+import { jwtDecode } from "jwt-decode";
 
-const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token"); // check for JWT
+export default function ProtectedRoute({ children }) {
+  const token = localStorage.getItem("token");
 
   if (!token) {
-    return <Navigate to="/" replace />; // redirect if not logged in
+    return <Navigate to="/" replace />;
   }
 
   try {
-    const { exp } = jwt_decode(token);
+    const { exp } = jwtDecode(token);
     if (Date.now() >= exp * 1000) {
-      // Token expired
       localStorage.removeItem("token");
       return <Navigate to="/sign-in" replace />;
     }
   } catch (err) {
-    // Invalid token
     localStorage.removeItem("token");
     return <Navigate to="/" replace />;
   }
 
-  return children; // render protected page
-};
-
-export default ProtectedRoute;
+  return children;
+}
