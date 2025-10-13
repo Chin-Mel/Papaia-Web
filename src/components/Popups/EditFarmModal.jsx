@@ -88,19 +88,30 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     const formDataToSend = new FormData();
     let hasChanges = false;
 
-    // Only add fields that have actually changed
-    if (formData.farmName.trim() !== (farmData?.farmName || "")) {
-      formDataToSend.append("farmName", formData.farmName.trim());
-      hasChanges = true;
+    // Only add fields that have actually changed and are not empty
+    const trimmedFarmName = formData.farmName.trim();
+    const trimmedLocation = formData.location.trim();
+    const trimmedDescription = formData.description.trim();
+
+    if (trimmedFarmName !== (farmData?.farmName || "")) {
+      // Only send if not empty or if we're clearing it
+      if (trimmedFarmName !== "") {
+        formDataToSend.append("farmName", trimmedFarmName);
+        hasChanges = true;
+      }
     }
 
-    if (formData.location.trim() !== (farmData?.location || "")) {
-      formDataToSend.append("location", formData.location.trim());
-      hasChanges = true;
+    if (trimmedLocation !== (farmData?.location || "")) {
+      // Only send if not empty or if we're clearing it
+      if (trimmedLocation !== "") {
+        formDataToSend.append("location", trimmedLocation);
+        hasChanges = true;
+      }
     }
 
-    if (formData.description.trim() !== (farmData?.description || "")) {
-      formDataToSend.append("description", formData.description.trim());
+    if (trimmedDescription !== (farmData?.description || "")) {
+      // Description can be empty
+      formDataToSend.append("description", trimmedDescription);
       hasChanges = true;
     }
 
@@ -124,6 +135,12 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
         "Sending PATCH request to:",
         `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`
       );
+
+      // Log what we're sending for debugging
+      console.log("FormData contents:");
+      for (let pair of formDataToSend.entries()) {
+        console.log(pair[0], pair[1]);
+      }
 
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
