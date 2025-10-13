@@ -10,10 +10,27 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
+export default function FarmAnalytics({
+  farmId,
+  timeFilter,
+  dateRange,
+  onTimeFilterChange,
+  onDateRangeChange,
+}) {
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
+  const dateRangeOptions = [
+    "All Time",
+    "Today",
+    "Last 7 Days",
+    "Last 30 Days",
+    "Last 3 Months",
+    "Last 6 Months",
+    "This Year",
+  ];
 
   useEffect(() => {
     if (!farmId) return;
@@ -421,11 +438,41 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
 
   if (loading) {
     return (
-      <div
-        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex justify-center items-center h-full">
+      <div className="bg-white rounded-lg shadow-sm">
+        {/* Header with filters */}
+        <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+            <h2 className="text-base sm:text-lg font-bold text-gray-800">
+              Farm Analytics ({timeFilter})
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {timeFilters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => onTimeFilterChange(filter)}
+                  className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                    timeFilter === filter
+                      ? "bg-green-700 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+              <DateRangeDropdown
+                value={dateRange}
+                onChange={onDateRangeChange}
+                options={dateRangeOptions}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Loading state */}
+        <div
+          className="flex justify-center items-center"
+          style={{ height: FIXED_HEIGHT }}
+        >
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
       </div>
@@ -434,11 +481,41 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
 
   if (error) {
     return (
-      <div
-        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center justify-center h-full text-red-500 text-sm">
+      <div className="bg-white rounded-lg shadow-sm">
+        {/* Header with filters */}
+        <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+            <h2 className="text-base sm:text-lg font-bold text-gray-800">
+              Farm Analytics ({timeFilter})
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+              {timeFilters.map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => onTimeFilterChange(filter)}
+                  className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                    timeFilter === filter
+                      ? "bg-green-700 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+              <DateRangeDropdown
+                value={dateRange}
+                onChange={onDateRangeChange}
+                options={dateRangeOptions}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Error state */}
+        <div
+          className="flex items-center justify-center text-red-500 text-sm"
+          style={{ height: FIXED_HEIGHT }}
+        >
           <div className="text-center">
             <div className="w-16 h-16 mx-auto mb-2 bg-red-100 rounded-full flex items-center justify-center">
               ⚠️
@@ -452,12 +529,39 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
   }
 
   return (
-    <div
-      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-      style={{ height: FIXED_HEIGHT }}
-    >
-      <div className="flex-1 w-full mb-4">
-        <div style={{ width: "100%", height: "100%" }}>
+    <div className="bg-white rounded-lg shadow-sm">
+      {/* Header with filters */}
+      <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800">
+            Farm Analytics ({timeFilter})
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            {timeFilters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => onTimeFilterChange(filter)}
+                className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                  timeFilter === filter
+                    ? "bg-green-700 text-white"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {filter}
+              </button>
+            ))}
+            <DateRangeDropdown
+              value={dateRange}
+              onChange={onDateRangeChange}
+              options={dateRangeOptions}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div className="px-4 sm:px-6 pb-4 sm:pb-6">
+        <div style={{ width: "100%", height: "450px" }}>
           <ResponsiveContainer>
             <LineChart
               data={chartData}
@@ -499,31 +603,87 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
             </LineChart>
           </ResponsiveContainer>
         </div>
-      </div>
 
-      <div
-        className="grid grid-cols-3 gap-2 sm:gap-4"
-        style={{ minHeight: "60px" }}
-      >
-        <div className="text-center">
-          <p className="text-green-600 font-semibold text-base sm:text-xl">
-            {totalScans}
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
-        </div>
-        <div className="text-center">
-          <p className="text-blue-600 font-semibold text-base sm:text-xl">
-            {healthScore}%
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-        </div>
-        <div className="text-center">
-          <p className="text-orange-600 font-semibold text-base sm:text-xl">
-            {diseaseScore}%
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+        {/* Summary Stats */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 mt-6">
+          <div className="text-center">
+            <p className="text-green-600 font-semibold text-base sm:text-xl">
+              {totalScans}
+            </p>
+            <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
+          </div>
+          <div className="text-center">
+            <p className="text-blue-600 font-semibold text-base sm:text-xl">
+              {healthScore}%
+            </p>
+            <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+          </div>
+          <div className="text-center">
+            <p className="text-orange-600 font-semibold text-base sm:text-xl">
+              {diseaseScore}%
+            </p>
+            <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Date Range Dropdown Component
+function DateRangeDropdown({ value, onChange, options }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer flex items-center gap-1"
+      >
+        {value}
+        <svg
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-10"
+            onClick={() => setIsOpen(false)}
+          />
+          <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+            {options.map((option) => (
+              <button
+                key={option}
+                onClick={() => {
+                  onChange(option);
+                  setIsOpen(false);
+                }}
+                className={`w-full text-left px-4 py-2 text-xs sm:text-sm hover:bg-gray-50 transition-colors ${
+                  value === option
+                    ? "bg-green-50 text-green-700 font-medium"
+                    : "text-gray-700"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
