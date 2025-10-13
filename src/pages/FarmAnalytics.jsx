@@ -107,11 +107,22 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     }
 
     // Merge API data into default data
+    console.log("Stats array from API:", statsArray);
+    console.log("Period key:", periodKey);
+    console.log(
+      "Default data periods:",
+      defaultData.map((d) => d.period)
+    );
+
     statsArray.forEach((stat) => {
       const period = stat[periodKey];
+      console.log("Looking for period:", period);
+
       const matchingIndex = defaultData.findIndex(
         (item) => item.period === period
       );
+
+      console.log("Matching index found:", matchingIndex);
 
       if (matchingIndex !== -1) {
         const predictions = stat.predictions || {};
@@ -126,10 +137,18 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           totalPredictions,
           ...predictions,
         };
+        console.log(
+          "Updated data at index",
+          matchingIndex,
+          ":",
+          defaultData[matchingIndex]
+        );
+      } else {
+        console.warn("No matching period found for:", period);
       }
     });
 
-    console.log("Processed chart data:", defaultData);
+    console.log("Final processed chart data:", defaultData);
     return defaultData;
   };
 
