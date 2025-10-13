@@ -59,47 +59,64 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
         const data = await response.json();
         console.log("📥 Analytics data received:", data);
 
-        // Process data based on time filter
+        // Process data based on time filter - FIXED: Access arrays directly from root
         let processedData = [];
-        if (timeFilter === "Daily" && data.dailyStats) {
+
+        if (
+          timeFilter === "Daily" &&
+          data.dailyStats &&
+          Array.isArray(data.dailyStats)
+        ) {
           processedData = data.dailyStats.map((stat) => ({
             period: stat.day,
             ...stat.predictions,
-            totalPredictions: Object.values(stat.predictions).reduce(
+            totalPredictions: Object.values(stat.predictions || {}).reduce(
               (a, b) => a + b,
               0
             ),
-            predictions: stat.predictions,
+            predictions: stat.predictions || {},
           }));
-        } else if (timeFilter === "Weekly" && data.weeklyStats) {
+        } else if (
+          timeFilter === "Weekly" &&
+          data.weeklyStats &&
+          Array.isArray(data.weeklyStats)
+        ) {
           processedData = data.weeklyStats.map((stat) => ({
             period: stat.week,
             ...stat.predictions,
-            totalPredictions: Object.values(stat.predictions).reduce(
+            totalPredictions: Object.values(stat.predictions || {}).reduce(
               (a, b) => a + b,
               0
             ),
-            predictions: stat.predictions,
+            predictions: stat.predictions || {},
           }));
-        } else if (timeFilter === "Monthly" && data.monthlyStats) {
+        } else if (
+          timeFilter === "Monthly" &&
+          data.monthlyStats &&
+          Array.isArray(data.monthlyStats)
+        ) {
           processedData = data.monthlyStats.map((stat) => ({
             period: stat.month,
             ...stat.predictions,
-            totalPredictions: Object.values(stat.predictions).reduce(
+            totalPredictions: Object.values(stat.predictions || {}).reduce(
               (a, b) => a + b,
               0
             ),
-            predictions: stat.predictions,
+            predictions: stat.predictions || {},
           }));
-        } else if (timeFilter === "Yearly" && data.yearlyStats) {
+        } else if (
+          timeFilter === "Yearly" &&
+          data.yearlyStats &&
+          Array.isArray(data.yearlyStats)
+        ) {
           processedData = data.yearlyStats.map((stat) => ({
             period: stat.year,
             ...stat.predictions,
-            totalPredictions: Object.values(stat.predictions).reduce(
+            totalPredictions: Object.values(stat.predictions || {}).reduce(
               (a, b) => a + b,
               0
             ),
-            predictions: stat.predictions,
+            predictions: stat.predictions || {},
           }));
         }
 
@@ -295,6 +312,26 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
             </div>
             <p className="font-medium">Error loading analytics</p>
             <p className="text-xs mt-1 text-gray-500">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no data
+  if (chartData.length === 0) {
+    return (
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
+        <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
+              📊
+            </div>
+            <p className="font-medium">No analytics data available</p>
+            <p className="text-xs mt-1">Data will appear once scans are made</p>
           </div>
         </div>
       </div>
