@@ -17,6 +17,7 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
+import DateRangeDropdown from "../components/DateRangeDropdown";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
@@ -33,6 +34,7 @@ export default function FarmDashboardPage() {
 
   // Time filter for analytics
   const [timeFilter, setTimeFilter] = useState("Daily");
+  const [dateRange, setDateRange] = useState("All Time");
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
@@ -51,6 +53,15 @@ export default function FarmDashboardPage() {
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
+  const dateRangeOptions = [
+    "All Time",
+    "Today",
+    "Last 7 Days",
+    "Last 30 Days",
+    "Last 3 Months",
+    "Last 6 Months",
+    "This Year",
+  ];
 
   // Fetch farm data
   const fetchFarmData = async () => {
@@ -267,24 +278,44 @@ export default function FarmDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Farm Analytics - 2/3 width */}
             <div className="lg:col-span-2">
-              <div className="mb-4">
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                  {timeFilters.map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setTimeFilter(filter)}
-                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
-                        timeFilter === filter
-                          ? "bg-green-700 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
+              {/* Analytics Title and Filters - Inline */}
+              <div className="bg-white rounded-t-lg shadow-sm px-4 sm:px-6 pt-4 sm:pt-6 pb-3">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+                  <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                    Farm Analytics ({timeFilter})
+                  </h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Time Filter Buttons */}
+                    {timeFilters.map((filter) => (
+                      <button
+                        key={filter}
+                        onClick={() => setTimeFilter(filter)}
+                        className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
+                          timeFilter === filter
+                            ? "bg-green-700 text-white"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {filter}
+                      </button>
+                    ))}
+                    {/* Date Range Dropdown */}
+                    <DateRangeDropdown
+                      value={dateRange}
+                      onChange={setDateRange}
+                      options={dateRangeOptions}
+                    />
+                  </div>
                 </div>
               </div>
-              <FarmAnalytics farmId={farmId} timeFilter={timeFilter} />
+              {/* Analytics Chart */}
+              <div className="bg-white rounded-b-lg shadow-sm overflow-hidden">
+                <FarmAnalytics
+                  farmId={farmId}
+                  timeFilter={timeFilter}
+                  dateRange={dateRange}
+                />
+              </div>
             </div>
 
             {/* Recent Scans - 1/3 width */}
