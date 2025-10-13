@@ -1,7 +1,7 @@
 // ProtectedRoute.jsx
 import React from "react";
 import { Navigate } from "react-router-dom";
-import jwt_decode from "jwt-decode";
+import jwt_decode from "jwt-decode"; // default import should work with the latest version
 
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem("token"); // check for JWT

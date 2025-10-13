@@ -17,7 +17,7 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
-import DateRangeDropdown from "../components/DateRangeDropdown";
+import DateRangeDropdown from "../components/Popups/DateRangeDropdown";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
