@@ -80,56 +80,36 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-
-    // Check if farm name is being changed and is empty
-    if (
-      formData.farmName.trim() === "" &&
-      formData.farmName !== (farmData?.farmName || "")
-    ) {
-      newErrors.farmName = "Farm name cannot be empty";
-    }
-
-    // Check if location is being changed and is empty
-    if (
-      formData.location.trim() === "" &&
-      formData.location !== (farmData?.location || "")
-    ) {
-      newErrors.location = "Location cannot be empty";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSave = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    // Clear any previous errors
+    setErrors({});
 
     // Build form data with only changed fields
     const formDataToSend = new FormData();
+    let hasChanges = false;
 
+    // Only add fields that have actually changed
     if (formData.farmName.trim() !== (farmData?.farmName || "")) {
       formDataToSend.append("farmName", formData.farmName.trim());
+      hasChanges = true;
     }
 
     if (formData.location.trim() !== (farmData?.location || "")) {
       formDataToSend.append("location", formData.location.trim());
+      hasChanges = true;
     }
 
     if (formData.description.trim() !== (farmData?.description || "")) {
       formDataToSend.append("description", formData.description.trim());
+      hasChanges = true;
     }
 
     if (selectedImage) {
       formDataToSend.append("farmImage", selectedImage);
+      hasChanges = true;
     }
 
-    // Check if at least one field has been added to FormData
-    const hasChanges = Array.from(formDataToSend.entries()).length > 0;
-
+    // Check if at least one field has been changed
     if (!hasChanges) {
       setErrors({
         general: "Please make at least one change before saving",
@@ -248,7 +228,10 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           {/* Farm Image Section */}
           <div>
             <label className="block text-gray-800 font-medium mb-3">
-              Farm Image
+              Farm Image{" "}
+              <span className="text-gray-500 text-sm font-normal">
+                (Optional)
+              </span>
             </label>
             <div className="relative">
               {imagePreview ? (
@@ -287,46 +270,45 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-gray-800 font-medium mb-2">
-                Farm Name
+                Farm Name{" "}
+                <span className="text-gray-500 text-sm font-normal">
+                  (Optional)
+                </span>
               </label>
               <input
                 type="text"
                 value={formData.farmName}
                 onChange={(e) => handleInputChange("farmName", e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white ${
-                  errors.farmName ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
                 placeholder="Enter farm name"
                 disabled={isLoading}
               />
-              {errors.farmName && (
-                <p className="text-red-500 text-sm mt-1">{errors.farmName}</p>
-              )}
             </div>
 
             <div>
               <label className="block text-gray-800 font-medium mb-2">
-                Location
+                Location{" "}
+                <span className="text-gray-500 text-sm font-normal">
+                  (Optional)
+                </span>
               </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => handleInputChange("location", e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white ${
-                  errors.location ? "border-red-500" : "border-gray-300"
-                }`}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
                 placeholder="Enter location"
                 disabled={isLoading}
               />
-              {errors.location && (
-                <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-              )}
             </div>
           </div>
 
           <div>
             <label className="block text-gray-800 font-medium mb-2">
-              Farm Description
+              Farm Description{" "}
+              <span className="text-gray-500 text-sm font-normal">
+                (Optional)
+              </span>
             </label>
             <textarea
               value={formData.description}
