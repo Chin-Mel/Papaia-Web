@@ -59,7 +59,7 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
         const data = await response.json();
         console.log("📥 Analytics data received:", data);
 
-        // Process data based on time filter - FIXED: Access arrays directly from root
+        // Process data based on time filter
         let processedData = [];
 
         if (
@@ -120,13 +120,18 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
           }));
         }
 
+        // Generate default periods and merge with real data
+        const defaultData = generateDefaultData();
+        const mergedData = mergeDataWithDefaults(defaultData, processedData);
+
         // Apply date range filter if needed
+        let finalData = mergedData;
         if (dateRange !== "All Time") {
-          processedData = filterByDateRange(processedData, dateRange);
+          finalData = filterByDateRange(mergedData, dateRange);
         }
 
-        console.log("✅ Processed chart data:", processedData);
-        setChartData(processedData);
+        console.log("✅ Final chart data:", finalData);
+        setChartData(finalData);
       } catch (err) {
         console.error("❌ Analytics fetch error:", err);
         setError(err.message);
@@ -138,6 +143,126 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
 
     fetchAnalytics();
   }, [farmId, timeFilter, dateRange]);
+
+  // Generate default time periods
+  const generateDefaultData = () => {
+    const now = new Date();
+    let data = [];
+
+    switch (timeFilter) {
+      case "Daily":
+        for (let i = 10; i >= 0; i--) {
+          const date = new Date(now);
+          date.setDate(date.getDate() - i);
+          data.push({
+            period: date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
+            totalPredictions: 0,
+            predictions: {},
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+          });
+        }
+        break;
+
+      case "Weekly":
+        for (let i = 8; i >= 0; i--) {
+          const startDate = new Date(now);
+          const dayOfWeek = startDate.getDay();
+          const startOfWeek = new Date(startDate);
+          startOfWeek.setDate(startDate.getDate() - dayOfWeek - i * 7);
+
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+          data.push({
+            period: `${startOfWeek.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })} - ${endOfWeek.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}`,
+            totalPredictions: 0,
+            predictions: {},
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+          });
+        }
+        break;
+
+      case "Monthly":
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        months.forEach((month) => {
+          data.push({
+            period: `${month} ${now.getFullYear()}`,
+            totalPredictions: 0,
+            predictions: {},
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+          });
+        });
+        break;
+
+      case "Yearly":
+        const currentYear = now.getFullYear();
+        for (let year = currentYear - 6; year <= currentYear; year++) {
+          data.push({
+            period: year.toString(),
+            totalPredictions: 0,
+            predictions: {},
+            Healthy: 0,
+            "Ring Spot Virus": 0,
+            Anthracnose: 0,
+            "Powdery Mildew": 0,
+          });
+        }
+        break;
+    }
+
+    return data;
+  };
+
+  // Merge API data with default periods
+  const mergeDataWithDefaults = (defaultData, apiData) => {
+    const merged = [...defaultData];
+
+    apiData.forEach((apiItem) => {
+      const matchingIndex = merged.findIndex(
+        (item) => item.period === apiItem.period
+      );
+
+      if (matchingIndex !== -1) {
+        merged[matchingIndex] = {
+          ...merged[matchingIndex],
+          ...apiItem,
+        };
+      }
+    });
+
+    return merged;
+  };
 
   const filterByDateRange = (data, range) => {
     const now = new Date();
@@ -175,17 +300,27 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
 
   const parsePeriodDate = (period) => {
     try {
+      const now = new Date();
+
       // Handle different period formats
       if (period.includes("-")) {
-        // Weekly format: "Sep 21 - Sep 27, 2025"
+        // Weekly format: "Sep 21 - Sep 27, 2025" or "Sep 21 - Sep 27"
         const parts = period.split("-")[0].trim();
-        return new Date(parts + ", " + new Date().getFullYear());
+        const yearMatch = period.match(/\d{4}/);
+        const year = yearMatch ? yearMatch[0] : now.getFullYear();
+        return new Date(`${parts}, ${year}`);
       } else if (period.includes(",")) {
-        // Daily or Monthly format with comma
+        // Daily or Monthly format with comma: "Sep 21, 2025"
         return new Date(period);
-      } else {
+      } else if (period.match(/^[A-Za-z]{3}\s\d{4}$/)) {
+        // Monthly format without comma: "Sep 2025"
+        return new Date(period + " 1");
+      } else if (period.match(/^\d{4}$/)) {
         // Yearly format: "2025"
         return new Date(parseInt(period), 0, 1);
+      } else {
+        // Fallback for other formats
+        return new Date(period + ", " + now.getFullYear());
       }
     } catch {
       return new Date();
@@ -206,15 +341,11 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
   const getAllDiseaseTypes = () => {
     const diseases = new Set();
     chartData.forEach((item) => {
-      Object.keys(item).forEach((key) => {
-        if (
-          key !== "period" &&
-          key !== "totalPredictions" &&
-          key !== "predictions"
-        ) {
-          diseases.add(key);
-        }
-      });
+      if (item.predictions) {
+        Object.keys(item.predictions).forEach((disease) =>
+          diseases.add(disease)
+        );
+      }
     });
 
     // Ensure default diseases are included
@@ -274,12 +405,14 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
     (sum, item) => sum + (item.totalPredictions || 0),
     0
   );
-  const healthyScans = chartData.reduce(
-    (sum, item) => sum + (item.Healthy || 0),
-    0
-  );
+
+  const healthyScans = chartData.reduce((sum, item) => {
+    return sum + (item.predictions?.Healthy || item.Healthy || 0);
+  }, 0);
+
   const healthScore =
     totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
+
   const diseaseScans = totalScans - healthyScans;
   const diseaseScore =
     totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
@@ -312,26 +445,6 @@ export default function FarmAnalytics({ farmId, timeFilter, dateRange }) {
             </div>
             <p className="font-medium">Error loading analytics</p>
             <p className="text-xs mt-1 text-gray-500">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show message if no data
-  if (chartData.length === 0) {
-    return (
-      <div
-        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center">
-              📊
-            </div>
-            <p className="font-medium">No analytics data available</p>
-            <p className="text-xs mt-1">Data will appear once scans are made</p>
           </div>
         </div>
       </div>
