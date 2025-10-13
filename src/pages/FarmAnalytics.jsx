@@ -11,11 +11,12 @@ import {
 } from "recharts";
 
 export default function FarmAnalytics({ farmId, timeFilter }) {
-  const [chartData, setChartData] = useState([]);
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [farmCreatedYear, setFarmCreatedYear] = useState(null);
 
-  // Fetch analytics data based on timeFilter
+  // Fetch analytics data
   useEffect(() => {
     if (!farmId) return;
 
@@ -26,7 +27,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       setError(null);
 
       try {
-        // Map timeFilter to the correct endpoint
         const endpointMap = {
           Daily: "daily-analytics",
           Weekly: "weekly-analytics",
@@ -34,9 +34,8 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           Yearly: "yearly-analytics",
         };
 
-        const endpoint = endpointMap[timeFilter];
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -46,24 +45,23 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("Analytics data:", data);
-
+          console.log(`${timeFilter} Analytics Response:`, data);
           if (isMounted) {
-            const processedData = processAnalyticsData(data, timeFilter);
-            setChartData(processedData);
+            setAnalyticsData(data);
           }
         } else {
-          console.error("Failed to fetch analytics");
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Analytics API error:", response.status, errorData);
           if (isMounted) {
-            setError("Failed to load analytics data");
-            setChartData(generateDefaultData(timeFilter));
+            setError(errorData.error || `HTTP ${response.status} error`);
+            setAnalyticsData(null);
           }
         }
       } catch (error) {
         console.error("Analytics fetch error:", error);
         if (isMounted) {
           setError("Failed to load analytics data");
-          setChartData(generateDefaultData(timeFilter));
+          setAnalyticsData(null);
         }
       } finally {
         if (isMounted) {
@@ -79,103 +77,28 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     };
   }, [farmId, timeFilter]);
 
-  // Process API response into chart format
-  const processAnalyticsData = (data, filter) => {
-    const defaultData = generateDefaultData(filter);
-
-    // Get the stats array based on the filter
-    let statsArray = [];
-    let periodKey = "";
-
-    switch (filter) {
-      case "Daily":
-        statsArray = data.dailyStats || [];
-        periodKey = "day";
-        break;
-      case "Weekly":
-        statsArray = data.weeklyStats || [];
-        periodKey = "week";
-        break;
-      case "Monthly":
-        statsArray = data.monthlyStats || [];
-        periodKey = "month";
-        break;
-      case "Yearly":
-        statsArray = data.yearlyStats || [];
-        periodKey = "year";
-        break;
-    }
-
-    // Merge API data into default data
-    console.log("Stats array from API:", statsArray);
-    console.log("Period key:", periodKey);
-    console.log(
-      "Default data periods:",
-      defaultData.map((d) => d.period)
-    );
-
-    statsArray.forEach((stat) => {
-      const period = stat[periodKey];
-      console.log("Looking for period:", period);
-
-      const matchingIndex = defaultData.findIndex(
-        (item) => item.period === period
-      );
-
-      console.log("Matching index found:", matchingIndex);
-
-      if (matchingIndex !== -1) {
-        const predictions = stat.predictions || {};
-        const totalPredictions = Object.values(predictions).reduce(
-          (sum, count) => sum + count,
-          0
-        );
-
-        defaultData[matchingIndex] = {
-          ...defaultData[matchingIndex],
-          predictions,
-          totalPredictions,
-          ...predictions,
-        };
-        console.log(
-          "Updated data at index",
-          matchingIndex,
-          ":",
-          defaultData[matchingIndex]
-        );
-      } else {
-        console.warn("No matching period found for:", period);
-      }
-    });
-
-    console.log("Final processed chart data:", defaultData);
-    return defaultData;
-  };
-
-  // Generate default time periods with zero values
-  const generateDefaultData = (filter) => {
+  // Generate default time periods
+  const generateDefaultData = () => {
     const now = new Date();
     let data = [];
 
-    switch (filter) {
+    switch (timeFilter) {
       case "Daily":
+        // Generate last 11 days
         for (let i = 10; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - i);
           data.push({
-            period: date
-              .toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-              })
-              .replace(",", ""),
+            period: date.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            }),
             totalPredictions: 0,
-            predictions: {},
             Healthy: 0,
             "Ring Spot Virus": 0,
             Anthracnose: 0,
             "Powdery Mildew": 0,
+            predictions: {},
           });
         }
         break;
@@ -190,55 +113,66 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
           const endOfWeek = new Date(startOfWeek);
           endOfWeek.setDate(startOfWeek.getDate() + 6);
 
+          const weekLabel = `${startOfWeek.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })} - ${endOfWeek.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          })}`;
+
           data.push({
-            period: `${startOfWeek.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            })} - ${endOfWeek.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}`,
+            period: weekLabel,
             totalPredictions: 0,
-            predictions: {},
             Healthy: 0,
             "Ring Spot Virus": 0,
             Anthracnose: 0,
             "Powdery Mildew": 0,
+            predictions: {},
           });
         }
         break;
 
       case "Monthly":
-        for (let i = 11; i >= 0; i--) {
-          const date = new Date(now);
-          date.setMonth(date.getMonth() - i);
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        months.forEach((month) => {
           data.push({
-            period: date.toLocaleDateString("en-US", {
-              month: "short",
-              year: "numeric",
-            }),
+            period: `${month} ${now.getFullYear()}`,
             totalPredictions: 0,
-            predictions: {},
             Healthy: 0,
             "Ring Spot Virus": 0,
             Anthracnose: 0,
             "Powdery Mildew": 0,
+            predictions: {},
           });
-        }
+        });
         break;
 
       case "Yearly":
         const currentYear = now.getFullYear();
-        for (let year = currentYear - 6; year <= currentYear; year++) {
+        const startYear = farmCreatedYear || currentYear - 6;
+        for (let year = startYear; year <= startYear + 6; year++) {
           data.push({
             period: year.toString(),
             totalPredictions: 0,
-            predictions: {},
             Healthy: 0,
             "Ring Spot Virus": 0,
             Anthracnose: 0,
             "Powdery Mildew": 0,
+            predictions: {},
           });
         }
         break;
@@ -247,7 +181,71 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return data;
   };
 
-  // Get all unique disease types
+  const processAnalyticsData = () => {
+    console.log("Processing analytics data:", analyticsData);
+
+    let defaultData = generateDefaultData();
+
+    if (!analyticsData) {
+      console.log("No analytics data available, returning default data");
+      return defaultData;
+    }
+
+    if (analyticsData.error) {
+      console.log("Analytics data contains error:", analyticsData.error);
+      return defaultData;
+    }
+
+    const statsKey = `${timeFilter.toLowerCase()}Stats`;
+    const stats = analyticsData[statsKey];
+
+    console.log(`Looking for ${statsKey}:`, stats);
+
+    if (!stats || !Array.isArray(stats)) {
+      console.log("Stats not found or not an array:", stats);
+      return defaultData;
+    }
+
+    stats.forEach((apiItem) => {
+      const predictions = apiItem.predictions || {};
+
+      let period = "";
+      if (apiItem.day) period = apiItem.day;
+      else if (apiItem.week) period = apiItem.week;
+      else if (apiItem.month) period = apiItem.month;
+      else if (apiItem.year) period = apiItem.year;
+
+      // Find matching period in default data
+      const defaultIndex = defaultData.findIndex(
+        (item) =>
+          item.period === period ||
+          item.period.includes(period) ||
+          period.includes(item.period)
+      );
+
+      if (defaultIndex !== -1) {
+        // Calculate total predictions
+        const totalPredictions = Object.values(predictions).reduce(
+          (sum, count) => sum + count,
+          0
+        );
+
+        defaultData[defaultIndex] = {
+          ...defaultData[defaultIndex],
+          totalPredictions,
+          predictions,
+          ...predictions,
+        };
+      }
+    });
+
+    console.log("Final processed data:", defaultData);
+    return defaultData;
+  };
+
+  const chartData = processAnalyticsData();
+
+  // Get all unique disease types from the data
   const getAllDiseaseTypes = () => {
     const diseases = new Set();
     chartData.forEach((item) => {
@@ -258,6 +256,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       }
     });
 
+    // Always include these disease types for consistency
     const defaultDiseases = [
       "Healthy",
       "Ring Spot Virus",
@@ -278,10 +277,12 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     "Powdery Mildew": "#0046FF",
   };
 
+  // Get color for disease type
   const getDiseaseColor = (disease, index) => {
     return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
   };
 
+  // Enhanced custom tooltip
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -321,6 +322,15 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
     return null;
   };
 
+  const hasData =
+    chartData &&
+    chartData.length > 0 &&
+    chartData.some((item) => item.totalPredictions > 0);
+
+  console.log("Chart data:", chartData);
+  console.log("Has data:", hasData);
+  console.log("Disease types:", diseaseTypes);
+
   const totalScans = chartData.reduce(
     (sum, item) => sum + item.totalPredictions,
     0
@@ -329,7 +339,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
   const healthyScans = chartData.reduce((sum, item) => {
     return sum + (item.predictions?.Healthy || 0);
   }, 0);
-
   const healthScore =
     totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
 
@@ -432,6 +441,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         </div>
       </div>
 
+      {/* Fixed height summary stats - Always side by side */}
       <div
         className="grid grid-cols-3 gap-2 sm:gap-4"
         style={{ minHeight: "60px" }}
