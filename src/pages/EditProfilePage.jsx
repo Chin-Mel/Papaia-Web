@@ -21,36 +21,79 @@ function EditProfilePage() {
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const [debugInfo, setDebugInfo] = useState(null);
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
+
+  // Debug: Log what's in localStorage
+  const userFromStorage = localStorage.getItem("user");
+  const tokenFromStorage = localStorage.getItem("token");
+
+  console.log("=== EDIT PROFILE DEBUG ===");
+  console.log("Raw user from localStorage:", userFromStorage);
+  console.log("Token exists:", !!tokenFromStorage);
+
+  let user = null;
+  let userId = null;
+
+  try {
+    user = userFromStorage ? JSON.parse(userFromStorage) : null;
+    console.log("Parsed user object:", user);
+
+    // Try different possible ID field names
+    userId = user?.id || user?._id || user?.userId || user?.ID;
+    console.log("Extracted userId:", userId);
+    console.log("User object keys:", user ? Object.keys(user) : "null");
+  } catch (error) {
+    console.error("Error parsing user from localStorage:", error);
+  }
+
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
     useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
-  const userId = user?.id;
-  const token = localStorage.getItem("token");
+  const token = tokenFromStorage;
 
   // Fetch current user data
   useEffect(() => {
     if (!userId || !token) {
-      navigate("/login");
+      console.log("Missing credentials - userId:", userId, "token:", !!token);
+      setDebugInfo({
+        error: "Missing authentication",
+        userId: userId,
+        hasToken: !!token,
+        userObject: user,
+      });
+
+      // Don't redirect immediately, show debug info
+      setInitialLoad(false);
       return;
     }
 
     const fetchUserData = async () => {
+      const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
+      console.log("Fetching user from:", url);
+
       try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${userId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        console.log("Response status:", res.status);
+        console.log("Response ok:", res.ok);
 
         if (!res.ok) {
           if (res.status === 404) {
-            alert("User not found");
-            navigate("/login");
+            setDebugInfo({
+              error: "User not found (404)",
+              userId: userId,
+              url: url,
+              suggestion:
+                "The user ID in localStorage may be invalid or the user was deleted",
+            });
+
+            // Show error but don't redirect yet
+            setInitialLoad(false);
             return;
           }
           throw new Error(`Failed to fetch user data: ${res.status}`);
@@ -69,9 +112,14 @@ function EditProfilePage() {
           contactNumber: data.contactNumber || "",
           birthDate: data.birthDate ? data.birthDate.split("T")[0] : "",
         });
+        setDebugInfo(null); // Clear debug info on success
       } catch (err) {
         console.error("Error fetching user data:", err);
-        alert("Error fetching user data. Please try again.");
+        setDebugInfo({
+          error: err.message,
+          userId: userId,
+          url: url,
+        });
       } finally {
         setInitialLoad(false);
       }
@@ -100,20 +148,17 @@ function EditProfilePage() {
     setLoading(true);
 
     try {
-      // Send only modified fields (API uses partial updates)
       const updatedData = {};
 
       Object.keys(formValues).forEach((key) => {
         const newValue = formValues[key];
         const oldValue = userData[key];
 
-        // Include field if it's different from current value
         if (newValue !== oldValue && newValue !== "") {
           updatedData[key] = newValue;
         }
       });
 
-      // If no changes detected, inform user
       if (Object.keys(updatedData).length === 0) {
         alert("No changes detected");
         setLoading(false);
@@ -147,12 +192,10 @@ function EditProfilePage() {
       const updatedUser = await res.json();
       console.log("Updated user response:", updatedUser);
 
-      // Update local state and localStorage
       const mergedData = { ...userData, ...updatedData };
       setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
 
-      // Update form values to match saved state
       setFormValues({
         firstName: mergedData.firstName || "",
         middleName: mergedData.middleName || "",
@@ -165,7 +208,6 @@ function EditProfilePage() {
           : "",
       });
 
-      // Dispatch event to update other components
       window.dispatchEvent(new Event("userUpdated"));
 
       alert("Profile updated successfully!");
@@ -183,7 +225,6 @@ function EditProfilePage() {
     setShowDeactivateAccountModal(false);
   const handleCloseDeleteAccountModal = () => setShowDeleteAccountModal(false);
 
-  // Fixed profile picture URL generation
   const getProfilePictureUrl = () => {
     if (userData.profilePicture) {
       if (userData.profilePicture.startsWith("http")) {
@@ -192,6 +233,13 @@ function EditProfilePage() {
       return `https://papaiaapi.onrender.com${userData.profilePicture}`;
     }
     return defaultUserPic;
+  };
+
+  // Handle clearing localStorage and redirecting to login
+  const handleClearAndLogin = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   if (initialLoad) {
@@ -206,6 +254,61 @@ function EditProfilePage() {
     );
   }
 
+  // Show debug information if there's an error
+  if (debugInfo) {
+    return (
+      <div className="bg-white min-h-screen flex flex-col font-sans">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xl font-bold">!</span>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-red-800 mb-2">
+                  Authentication Error
+                </h2>
+                <p className="text-red-700 mb-4">{debugInfo.error}</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 mb-4 font-mono text-sm">
+              <h3 className="font-bold text-gray-800 mb-2">
+                Debug Information:
+              </h3>
+              <pre className="whitespace-pre-wrap text-gray-700">
+                {JSON.stringify(debugInfo, null, 2)}
+              </pre>
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <h3 className="font-bold text-yellow-800 mb-2">
+                Possible Solutions:
+              </h3>
+              <ul className="list-disc list-inside text-yellow-700 space-y-1">
+                <li>Your session may have expired - try logging in again</li>
+                <li>The user ID in localStorage may be corrupted</li>
+                <li>Your account may have been deleted from the database</li>
+                <li>
+                  Check with your administrator if the API is working correctly
+                </li>
+              </ul>
+            </div>
+
+            <button
+              onClick={handleClearAndLogin}
+              className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            >
+              Clear Session & Return to Login
+            </button>
+          </div>
+        </main>
+        <FooterMain />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <HeaderMain />
@@ -213,7 +316,6 @@ function EditProfilePage() {
       <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
         {/* Top Profile Info */}
         <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 pb-8 border-b border-gray-200 mb-5">
-          {/* Profile Picture - Display Only */}
           <div className="relative mb-4 sm:mb-0">
             <img
               src={getProfilePictureUrl()}
@@ -222,7 +324,6 @@ function EditProfilePage() {
               onError={(e) => (e.currentTarget.src = defaultUserPic)}
             />
 
-            {/* Status Icon */}
             <div className="absolute bottom-1 right-2 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-4 border-white">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -241,14 +342,12 @@ function EditProfilePage() {
             </div>
           </div>
 
-          {/* Profile Info */}
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
               {userData.firstName} {userData.lastName}
             </h1>
             <p className="text-base sm:text-lg text-gray-500">Farm Owner</p>
 
-            {/* Extra Details */}
             <div className="flex flex-col sm:flex-row sm:space-x-6 mt-3 text-gray-500 text-sm sm:text-base">
               <div className="flex items-center justify-center sm:justify-start">
                 <svg
