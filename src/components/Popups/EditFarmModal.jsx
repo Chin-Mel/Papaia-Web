@@ -84,33 +84,38 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     // Clear any previous errors
     setErrors({});
 
+    // Validate that we have a farm ID
+    if (!farmData?.id) {
+      setErrors({ general: "Farm ID is missing. Please try again." });
+      return;
+    }
+
     // Build form data with only changed fields
     const formDataToSend = new FormData();
     let hasChanges = false;
 
-    // Only add fields that have actually changed and are not empty
+    // Get trimmed values
     const trimmedFarmName = formData.farmName.trim();
     const trimmedLocation = formData.location.trim();
     const trimmedDescription = formData.description.trim();
 
-    if (trimmedFarmName !== (farmData?.farmName || "")) {
-      // Only send if not empty or if we're clearing it
-      if (trimmedFarmName !== "") {
-        formDataToSend.append("farmName", trimmedFarmName);
-        hasChanges = true;
-      }
+    // Get original values (handle undefined/null)
+    const originalFarmName = (farmData?.farmName || "").trim();
+    const originalLocation = (farmData?.location || "").trim();
+    const originalDescription = (farmData?.description || "").trim();
+
+    // Check and add changed fields
+    if (trimmedFarmName !== originalFarmName && trimmedFarmName !== "") {
+      formDataToSend.append("farmName", trimmedFarmName);
+      hasChanges = true;
     }
 
-    if (trimmedLocation !== (farmData?.location || "")) {
-      // Only send if not empty or if we're clearing it
-      if (trimmedLocation !== "") {
-        formDataToSend.append("location", trimmedLocation);
-        hasChanges = true;
-      }
+    if (trimmedLocation !== originalLocation && trimmedLocation !== "") {
+      formDataToSend.append("location", trimmedLocation);
+      hasChanges = true;
     }
 
-    if (trimmedDescription !== (farmData?.description || "")) {
-      // Description can be empty
+    if (trimmedDescription !== originalDescription) {
       formDataToSend.append("description", trimmedDescription);
       hasChanges = true;
     }
@@ -131,27 +136,25 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     setIsLoading(true);
 
     try {
-      console.log(
-        "Sending PATCH request to:",
-        `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`
-      );
+      const url = `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`;
 
-      // Log what we're sending for debugging
+      console.log("Sending PATCH request to:", url);
+      console.log("Farm ID:", farmData.id);
       console.log("FormData contents:");
       for (let pair of formDataToSend.entries()) {
-        console.log(pair[0], pair[1]);
+        console.log(
+          pair[0],
+          typeof pair[1] === "object" ? "File object" : pair[1]
+        );
       }
 
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: formDataToSend,
-        }
-      );
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formDataToSend,
+      });
 
       console.log("Response status:", response.status);
 
