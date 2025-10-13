@@ -14,6 +14,8 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
   useEffect(() => {
     if (farmData && isOpen) {
+      console.log("🔍 Farm data loaded:", farmData);
+
       setFormData({
         farmName: farmData.farmName || "",
         location: farmData.location || "",
@@ -81,14 +83,19 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   };
 
   const handleSave = async () => {
+    console.log("💾 Starting save process...");
+
     // Clear any previous errors
     setErrors({});
 
     // Validate that we have a farm ID
     if (!farmData?.id) {
+      console.error("❌ Farm ID is missing");
       setErrors({ general: "Farm ID is missing. Please try again." });
       return;
     }
+
+    console.log("✅ Farm ID:", farmData.id);
 
     // Build form data with only changed fields
     const formDataToSend = new FormData();
@@ -100,104 +107,156 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     const trimmedDescription = formData.description.trim();
 
     // Get original values (handle undefined/null)
-    const originalFarmName = (farmData?.farmName || "").trim();
-    const originalLocation = (farmData?.location || "").trim();
-    const originalDescription = (farmData?.description || "").trim();
+    const originalFarmName = String(farmData?.farmName || "").trim();
+    const originalLocation = String(farmData?.location || "").trim();
+    const originalDescription = String(farmData?.description || "").trim();
 
-    // Check and add changed fields
-    if (trimmedFarmName !== originalFarmName && trimmedFarmName !== "") {
+    console.log("📊 Comparing values:");
+    console.log("Farm Name:", {
+      original: originalFarmName,
+      new: trimmedFarmName,
+    });
+    console.log("Location:", {
+      original: originalLocation,
+      new: trimmedLocation,
+    });
+    console.log("Description:", {
+      original: originalDescription,
+      new: trimmedDescription,
+    });
+
+    // Check and add changed fields - ALLOW EMPTY VALUES
+    if (trimmedFarmName !== originalFarmName) {
       formDataToSend.append("farmName", trimmedFarmName);
       hasChanges = true;
+      console.log("✏️ Farm name changed");
     }
 
-    if (trimmedLocation !== originalLocation && trimmedLocation !== "") {
+    if (trimmedLocation !== originalLocation) {
       formDataToSend.append("location", trimmedLocation);
       hasChanges = true;
+      console.log("✏️ Location changed");
     }
 
     if (trimmedDescription !== originalDescription) {
       formDataToSend.append("description", trimmedDescription);
       hasChanges = true;
+      console.log("✏️ Description changed");
     }
 
     if (selectedImage) {
       formDataToSend.append("farmImage", selectedImage);
       hasChanges = true;
+      console.log("✏️ Image changed");
     }
 
     // Check if at least one field has been changed
     if (!hasChanges) {
+      console.warn("⚠️ No changes detected");
       setErrors({
         general: "Please make at least one change before saving",
       });
       return;
     }
 
+    console.log("📤 Sending changes to server...");
     setIsLoading(true);
 
     try {
       const url = `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`;
+      const token = localStorage.getItem("token");
 
-      console.log("Sending PATCH request to:", url);
-      console.log("Farm ID:", farmData.id);
-      console.log("FormData contents:");
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.");
+      }
+
+      console.log("🌐 Request URL:", url);
+      console.log("🔑 Token exists:", !!token);
+      console.log("📦 FormData contents:");
       for (let pair of formDataToSend.entries()) {
         console.log(
           pair[0],
-          typeof pair[1] === "object" ? "File object" : pair[1]
+          typeof pair[1] === "object" ? `File: ${pair[1].name}` : pair[1]
         );
       }
 
       const response = await fetch(url, {
         method: "PATCH",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
+          // Don't set Content-Type for FormData - browser will set it with boundary
         },
         body: formDataToSend,
       });
 
-      console.log("Response status:", response.status);
+      console.log("📥 Response status:", response.status);
+      console.log(
+        "📥 Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
+      // Get response text first
+      const responseText = await response.text();
+      console.log("📥 Raw response:", responseText);
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error response:", errorText);
-
         let errorMessage;
         try {
-          const errorData = JSON.parse(errorText);
+          const errorData = JSON.parse(responseText);
           errorMessage =
             errorData.message || `HTTP error! status: ${response.status}`;
+          console.error("❌ Error data:", errorData);
         } catch {
-          errorMessage = `HTTP error! status: ${response.status}`;
+          errorMessage = `HTTP error! status: ${response.status}. Response: ${responseText}`;
         }
         throw new Error(errorMessage);
       }
 
-      const data = await response.json();
-      console.log("Success response:", data);
+      // Parse successful response
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error("❌ Failed to parse response:", e);
+        throw new Error("Invalid response from server");
+      }
+
+      console.log("✅ Success response:", data);
 
       if (data.status === "success") {
+        console.log("🎉 Farm updated successfully!");
+
+        // Call the update callback
         if (onFarmUpdated) {
           onFarmUpdated();
         }
+
+        // Close modal
         handleClose();
+
+        // Show success message
         alert("Farm updated successfully!");
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
     } catch (error) {
-      console.error("Error updating farm:", error);
-      setErrors({ general: `Failed to update farm: ${error.message}` });
+      console.error("❌ Error updating farm:", error);
+      setErrors({
+        general: `Failed to update farm: ${error.message}`,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
+    console.log("🔒 Closing modal...");
+
     // Clean up image preview URL to prevent memory leaks
     if (selectedImage && imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
+
     setSelectedImage(null);
     setFormData({
       farmName: "",
@@ -259,15 +318,24 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
                   src={imagePreview}
                   alt="Farm preview"
                   className="w-full h-64 object-cover rounded-lg border-2 border-gray-300"
+                  onError={(e) => {
+                    console.error("Failed to load image:", imagePreview);
+                    e.target.src = "";
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
                 />
-              ) : (
-                <div className="w-full h-64 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                  <div className="text-center">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No image selected</p>
-                  </div>
+              ) : null}
+
+              <div
+                className="w-full h-64 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center"
+                style={{ display: imagePreview ? "none" : "flex" }}
+              >
+                <div className="text-center">
+                  <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500">No image selected</p>
                 </div>
-              )}
+              </div>
 
               <label className="absolute bottom-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2">
                 <Upload className="w-4 h-4" />
