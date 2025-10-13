@@ -7,6 +7,7 @@ import {
   Shield,
   Trash2,
   Save,
+  AlertCircle,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
@@ -17,60 +18,60 @@ import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
 import defaultUserPic from "../assets/default-user.png";
 
 function EditProfilePage() {
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
-  const [debugInfo, setDebugInfo] = useState(null);
+  const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-
-  // Debug: Log what's in localStorage
-  const userFromStorage = localStorage.getItem("user");
-  const tokenFromStorage = localStorage.getItem("token");
-
-  console.log("=== EDIT PROFILE DEBUG ===");
-  console.log("Raw user from localStorage:", userFromStorage);
-  console.log("Token exists:", !!tokenFromStorage);
-
-  let user = null;
-  let userId = null;
-
-  try {
-    user = userFromStorage ? JSON.parse(userFromStorage) : null;
-    console.log("Parsed user object:", user);
-
-    // Try different possible ID field names
-    userId = user?.id || user?._id || user?.userId || user?.ID;
-    console.log("Extracted userId:", userId);
-    console.log("User object keys:", user ? Object.keys(user) : "null");
-  } catch (error) {
-    console.error("Error parsing user from localStorage:", error);
-  }
 
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
     useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
-  const token = tokenFromStorage;
+
+  // Get user data from localStorage
+  const getUserFromStorage = () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      if (!userStr || !token) {
+        return { user: null, token: null, error: "Not authenticated" };
+      }
+
+      const user = JSON.parse(userStr);
+
+      // Try to extract user ID from various possible fields
+      const userId = user?.id || user?._id || user?.userId || user?.user_id;
+
+      if (!userId) {
+        return {
+          user: null,
+          token: null,
+          error: "User ID not found in stored data",
+        };
+      }
+
+      return { user, userId, token, error: null };
+    } catch (err) {
+      console.error("Error parsing user data:", err);
+      return { user: null, token: null, error: "Invalid user data in storage" };
+    }
+  };
 
   // Fetch current user data
   useEffect(() => {
-    if (!userId || !token) {
-      console.log("Missing credentials - userId:", userId, "token:", !!token);
-      setDebugInfo({
-        error: "Missing authentication",
-        userId: userId,
-        hasToken: !!token,
-        userObject: user,
-      });
-
-      // Don't redirect immediately, show debug info
-      setInitialLoad(false);
-      return;
-    }
-
     const fetchUserData = async () => {
+      const { userId, token, error: authError } = getUserFromStorage();
+
+      if (authError) {
+        setError(authError);
+        setInitialLoad(false);
+        return;
+      }
+
       const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
       console.log("Fetching user from:", url);
 
@@ -80,23 +81,17 @@ function EditProfilePage() {
         });
 
         console.log("Response status:", res.status);
-        console.log("Response ok:", res.ok);
 
         if (!res.ok) {
-          if (res.status === 404) {
-            setDebugInfo({
-              error: "User not found (404)",
-              userId: userId,
-              url: url,
-              suggestion:
-                "The user ID in localStorage may be invalid or the user was deleted",
-            });
-
-            // Show error but don't redirect yet
-            setInitialLoad(false);
-            return;
+          if (res.status === 401) {
+            throw new Error("Session expired. Please log in again.");
           }
-          throw new Error(`Failed to fetch user data: ${res.status}`);
+          if (res.status === 404) {
+            throw new Error(
+              "User not found. Your account may have been deleted."
+            );
+          }
+          throw new Error(`Failed to fetch user data (Status: ${res.status})`);
         }
 
         const data = await res.json();
@@ -112,21 +107,17 @@ function EditProfilePage() {
           contactNumber: data.contactNumber || "",
           birthDate: data.birthDate ? data.birthDate.split("T")[0] : "",
         });
-        setDebugInfo(null); // Clear debug info on success
+        setError(null);
       } catch (err) {
         console.error("Error fetching user data:", err);
-        setDebugInfo({
-          error: err.message,
-          userId: userId,
-          url: url,
-        });
+        setError(err.message);
       } finally {
         setInitialLoad(false);
       }
     };
 
     fetchUserData();
-  }, [userId, token, navigate]);
+  }, []);
 
   // Handle input changes
   const handleChange = (key, value) => {
@@ -135,23 +126,30 @@ function EditProfilePage() {
 
   // Handle save changes
   const handleSaveChanges = async () => {
-    if (!formValues.username || !formValues.email) {
-      alert("Username and email are required fields");
+    // Validate required fields
+    if (!formValues.firstName?.trim() || !formValues.lastName?.trim()) {
+      alert("First name and last name are required fields");
       return;
     }
 
-    if (!formValues.firstName || !formValues.lastName) {
-      alert("First name and last name are required fields");
+    if (!formValues.username?.trim() || !formValues.email?.trim()) {
+      alert("Username and email are required fields");
       return;
     }
 
     setLoading(true);
 
     try {
-      const updatedData = {};
+      const { userId, token } = getUserFromStorage();
 
+      if (!userId || !token) {
+        throw new Error("Authentication error. Please log in again.");
+      }
+
+      // Build update object with only changed fields
+      const updatedData = {};
       Object.keys(formValues).forEach((key) => {
-        const newValue = formValues[key];
+        const newValue = formValues[key]?.trim();
         const oldValue = userData[key];
 
         if (newValue !== oldValue && newValue !== "") {
@@ -185,17 +183,21 @@ function EditProfilePage() {
         throw new Error(
           errorData.error ||
             errorData.message ||
-            `Failed to update profile: ${res.status}`
+            `Failed to update profile (Status: ${res.status})`
         );
       }
 
-      const updatedUser = await res.json();
-      console.log("Updated user response:", updatedUser);
+      const response = await res.json();
+      console.log("Update response:", response);
 
+      // Merge updated data with existing data
       const mergedData = { ...userData, ...updatedData };
       setUserData(mergedData);
+
+      // Update localStorage with new data
       localStorage.setItem("user", JSON.stringify(mergedData));
 
+      // Update form values to match merged data
       setFormValues({
         firstName: mergedData.firstName || "",
         middleName: mergedData.middleName || "",
@@ -208,6 +210,7 @@ function EditProfilePage() {
           : "",
       });
 
+      // Dispatch event to update other components
       window.dispatchEvent(new Event("userUpdated"));
 
       alert("Profile updated successfully!");
@@ -226,7 +229,7 @@ function EditProfilePage() {
   const handleCloseDeleteAccountModal = () => setShowDeleteAccountModal(false);
 
   const getProfilePictureUrl = () => {
-    if (userData.profilePicture) {
+    if (userData?.profilePicture) {
       if (userData.profilePicture.startsWith("http")) {
         return userData.profilePicture;
       }
@@ -235,64 +238,53 @@ function EditProfilePage() {
     return defaultUserPic;
   };
 
-  // Handle clearing localStorage and redirecting to login
   const handleClearAndLogin = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     navigate("/login");
   };
 
+  // Loading state
   if (initialLoad) {
     return (
       <div className="bg-white min-h-screen flex flex-col font-sans">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your profile...</p>
+          </div>
         </main>
         <FooterMain />
       </div>
     );
   }
 
-  // Show debug information if there's an error
-  if (debugInfo) {
+  // Error state
+  if (error) {
     return (
       <div className="bg-white min-h-screen flex flex-col font-sans">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
+          <div className="max-w-lg w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
             <div className="flex items-start gap-3 mb-4">
               <div className="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xl font-bold">!</span>
+                <AlertCircle className="text-white" size={24} />
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-red-800 mb-2">
-                  Authentication Error
+                  Unable to Load Profile
                 </h2>
-                <p className="text-red-700 mb-4">{debugInfo.error}</p>
+                <p className="text-red-700 mb-4">{error}</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-lg p-4 mb-4 font-mono text-sm">
-              <h3 className="font-bold text-gray-800 mb-2">
-                Debug Information:
-              </h3>
-              <pre className="whitespace-pre-wrap text-gray-700">
-                {JSON.stringify(debugInfo, null, 2)}
-              </pre>
-            </div>
-
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <h3 className="font-bold text-yellow-800 mb-2">
-                Possible Solutions:
-              </h3>
+              <h3 className="font-bold text-yellow-800 mb-2">What to do:</h3>
               <ul className="list-disc list-inside text-yellow-700 space-y-1">
-                <li>Your session may have expired - try logging in again</li>
-                <li>The user ID in localStorage may be corrupted</li>
-                <li>Your account may have been deleted from the database</li>
-                <li>
-                  Check with your administrator if the API is working correctly
-                </li>
+                <li>Your session may have expired</li>
+                <li>Try logging in again</li>
+                <li>If the problem persists, contact support</li>
               </ul>
             </div>
 
@@ -300,7 +292,7 @@ function EditProfilePage() {
               onClick={handleClearAndLogin}
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
             >
-              Clear Session & Return to Login
+              Return to Login
             </button>
           </div>
         </main>
@@ -309,6 +301,7 @@ function EditProfilePage() {
     );
   }
 
+  // Main content
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
       <HeaderMain />
@@ -319,7 +312,7 @@ function EditProfilePage() {
           <div className="relative mb-4 sm:mb-0">
             <img
               src={getProfilePictureUrl()}
-              alt={`${userData.firstName || ""} ${userData.lastName || ""}`}
+              alt={`${userData?.firstName || ""} ${userData?.lastName || ""}`}
               className="w-28 h-28 rounded-full border-4 border-white shadow-md mx-auto sm:mx-0 object-cover"
               onError={(e) => (e.currentTarget.src = defaultUserPic)}
             />
@@ -344,7 +337,7 @@ function EditProfilePage() {
 
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              {userData.firstName} {userData.lastName}
+              {userData?.firstName} {userData?.lastName}
             </h1>
             <p className="text-base sm:text-lg text-gray-500">Farm Owner</p>
 
@@ -365,7 +358,7 @@ function EditProfilePage() {
                   />
                 </svg>
                 Joined{" "}
-                {userData.createdAt
+                {userData?.createdAt
                   ? new Date(userData.createdAt).toLocaleString("default", {
                       month: "long",
                       year: "numeric",
@@ -397,7 +390,7 @@ function EditProfilePage() {
               label="First Name"
               icon={<User size={20} />}
               value={formValues.firstName}
-              placeholder={userData.firstName || "First Name"}
+              placeholder="First Name"
               onChange={(val) => handleChange("firstName", val)}
             />
 
@@ -405,7 +398,7 @@ function EditProfilePage() {
               label="Middle Name"
               icon={<User size={20} />}
               value={formValues.middleName}
-              placeholder={userData.middleName || "Middle Name"}
+              placeholder="Middle Name (Optional)"
               onChange={(val) => handleChange("middleName", val)}
             />
 
@@ -413,7 +406,7 @@ function EditProfilePage() {
               label="Last Name"
               icon={<User size={20} />}
               value={formValues.lastName}
-              placeholder={userData.lastName || "Last Name"}
+              placeholder="Last Name"
               onChange={(val) => handleChange("lastName", val)}
             />
 
@@ -421,7 +414,7 @@ function EditProfilePage() {
               label="Username"
               icon={<User size={20} />}
               value={formValues.username}
-              placeholder={userData.username || "Username"}
+              placeholder="Username"
               onChange={(val) => handleChange("username", val)}
             />
 
@@ -430,7 +423,7 @@ function EditProfilePage() {
               type="email"
               icon={<Mail size={20} />}
               value={formValues.email}
-              placeholder={userData.email || "Email"}
+              placeholder="Email"
               onChange={(val) => handleChange("email", val)}
             />
 
@@ -439,7 +432,7 @@ function EditProfilePage() {
               type="tel"
               icon={<Phone size={20} />}
               value={formValues.contactNumber}
-              placeholder={userData.contactNumber || "Contact Number"}
+              placeholder="Contact Number (Optional)"
               onChange={(val) => handleChange("contactNumber", val)}
             />
 
@@ -448,7 +441,7 @@ function EditProfilePage() {
               type="date"
               icon={<Calendar size={20} />}
               value={formValues.birthDate}
-              placeholder={userData.birthDate || "mm/dd/yyyy"}
+              placeholder="mm/dd/yyyy"
               onChange={(val) => handleChange("birthDate", val)}
             />
           </div>
