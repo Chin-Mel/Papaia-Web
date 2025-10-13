@@ -11,59 +11,32 @@ import {
 } from "recharts";
 
 export default function FarmAnalytics({ farmId, timeFilter }) {
-  const [allScans, setAllScans] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [farmers, setFarmers] = useState([]);
 
-  // Fetch farmers assigned to this farm
+  // Fetch analytics data based on timeFilter
   useEffect(() => {
     if (!farmId) return;
 
     let isMounted = true;
 
-    const fetchFarmers = async () => {
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          if (isMounted && data.status === "success") {
-            setFarmers(data.farmers || []);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching farmers:", error);
-      }
-    };
-
-    fetchFarmers();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [farmId]);
-
-  // Fetch all identification history (like RecentScans does)
-  useEffect(() => {
-    if (!farmId || farmers.length === 0) return;
-
-    let isMounted = true;
-
-    const fetchScans = async () => {
+    const fetchAnalytics = async () => {
       setLoading(true);
       setError(null);
 
       try {
+        // Map timeFilter to the correct endpoint
+        const endpointMap = {
+          Daily: "daily-analytics",
+          Weekly: "weekly-analytics",
+          Monthly: "monthly-analytics",
+          Yearly: "yearly-analytics",
+        };
+
+        const endpoint = endpointMap[timeFilter];
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/identification-history/${farmId}`,
+          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -73,36 +46,24 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("All scans data:", data);
+          console.log("Analytics data:", data);
 
           if (isMounted) {
-            // Get list of farmer idNumbers for this farm
-            const farmerIdNumbers = farmers.map((farmer) => farmer.idNumber);
-            console.log("Farmer ID numbers:", farmerIdNumbers);
-
-            // Filter scans to only include those made by assigned farmers
-            const filteredScans = (data || []).filter((scan) => {
-              return farmerIdNumbers.includes(scan.idNumber);
-            });
-
-            console.log(
-              "Filtered scans by assigned farmers:",
-              filteredScans.length
-            );
-            setAllScans(filteredScans);
+            const processedData = processAnalyticsData(data, timeFilter);
+            setChartData(processedData);
           }
         } else {
-          console.error("Failed to fetch scans");
+          console.error("Failed to fetch analytics");
           if (isMounted) {
             setError("Failed to load analytics data");
-            setAllScans([]);
+            setChartData(generateDefaultData(timeFilter));
           }
         }
       } catch (error) {
         console.error("Analytics fetch error:", error);
         if (isMounted) {
           setError("Failed to load analytics data");
-          setAllScans([]);
+          setChartData(generateDefaultData(timeFilter));
         }
       } finally {
         if (isMounted) {
@@ -111,113 +72,85 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
       }
     };
 
-    fetchScans();
+    fetchAnalytics();
 
     return () => {
       isMounted = false;
     };
-  }, [farmId, farmers]);
+  }, [farmId, timeFilter]);
 
-  // Parse timestamp to Date object
-  const parseTimestamp = (timestamp) => {
-    if (!timestamp) return new Date(0);
+  // Process API response into chart format
+  const processAnalyticsData = (data, filter) => {
+    const defaultData = generateDefaultData(filter);
 
-    try {
-      const [datePart, timePart, period] = timestamp.split(/\s+/);
-      if (!datePart || !timePart) return new Date(0);
+    // Get the stats array based on the filter
+    let statsArray = [];
+    let periodKey = "";
 
-      const [month, day, year] = datePart.split("/");
-      const [hours, minutes] = timePart.split(":");
-
-      let hour24 = parseInt(hours);
-      if (period === "PM" && hour24 !== 12) hour24 += 12;
-      if (period === "AM" && hour24 === 12) hour24 = 0;
-
-      return new Date(year, month - 1, day, hour24, minutes);
-    } catch (error) {
-      return new Date(0);
+    switch (filter) {
+      case "Daily":
+        statsArray = data.dailyStats || [];
+        periodKey = "day";
+        break;
+      case "Weekly":
+        statsArray = data.weeklyStats || [];
+        periodKey = "week";
+        break;
+      case "Monthly":
+        statsArray = data.monthlyStats || [];
+        periodKey = "month";
+        break;
+      case "Yearly":
+        statsArray = data.yearlyStats || [];
+        periodKey = "year";
+        break;
     }
-  };
 
-  // Group scans by period based on timeFilter
-  const groupScansByPeriod = () => {
-    const grouped = {};
+    // Merge API data into default data
+    statsArray.forEach((stat) => {
+      const period = stat[periodKey];
+      const matchingIndex = defaultData.findIndex(
+        (item) => item.period === period
+      );
 
-    allScans.forEach((scan) => {
-      const date = parseTimestamp(scan.timestamp);
-      let periodKey = "";
+      if (matchingIndex !== -1) {
+        const predictions = stat.predictions || {};
+        const totalPredictions = Object.values(predictions).reduce(
+          (sum, count) => sum + count,
+          0
+        );
 
-      switch (timeFilter) {
-        case "Daily":
-          periodKey = date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          });
-          break;
-
-        case "Weekly":
-          const dayOfWeek = date.getDay();
-          const startOfWeek = new Date(date);
-          startOfWeek.setDate(date.getDate() - dayOfWeek);
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-
-          periodKey = `${startOfWeek.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })} - ${endOfWeek.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })}`;
-          break;
-
-        case "Monthly":
-          periodKey = date.toLocaleDateString("en-US", {
-            month: "short",
-            year: "numeric",
-          });
-          break;
-
-        case "Yearly":
-          periodKey = date.getFullYear().toString();
-          break;
-
-        default:
-          periodKey = date.toLocaleDateString();
-      }
-
-      if (!grouped[periodKey]) {
-        grouped[periodKey] = {
-          period: periodKey,
-          predictions: {},
-          totalPredictions: 0,
+        defaultData[matchingIndex] = {
+          ...defaultData[matchingIndex],
+          predictions,
+          totalPredictions,
+          ...predictions,
         };
       }
-
-      const disease = scan.prediction || "Unknown";
-      grouped[periodKey].predictions[disease] =
-        (grouped[periodKey].predictions[disease] || 0) + 1;
-      grouped[periodKey].totalPredictions += 1;
     });
 
-    return Object.values(grouped);
+    console.log("Processed chart data:", defaultData);
+    return defaultData;
   };
 
-  // Generate default time periods
-  const generateDefaultData = () => {
+  // Generate default time periods with zero values
+  const generateDefaultData = (filter) => {
     const now = new Date();
     let data = [];
 
-    switch (timeFilter) {
+    switch (filter) {
       case "Daily":
         for (let i = 10; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - i);
           data.push({
-            period: date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            }),
+            period: date
+              .toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })
+              .replace(",", ""),
             totalPredictions: 0,
             predictions: {},
             Healthy: 0,
@@ -245,6 +178,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
             })} - ${endOfWeek.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
+              year: "numeric",
             })}`,
             totalPredictions: 0,
             predictions: {},
@@ -257,23 +191,14 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         break;
 
       case "Monthly":
-        const months = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ];
-        months.forEach((month) => {
+        for (let i = 11; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(date.getMonth() - i);
           data.push({
-            period: `${month} ${now.getFullYear()}`,
+            period: date.toLocaleDateString("en-US", {
+              month: "short",
+              year: "numeric",
+            }),
             totalPredictions: 0,
             predictions: {},
             Healthy: 0,
@@ -281,7 +206,7 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
             Anthracnose: 0,
             "Powdery Mildew": 0,
           });
-        });
+        }
         break;
 
       case "Yearly":
@@ -302,36 +227,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
 
     return data;
   };
-
-  // Process scans into chart data
-  const processChartData = () => {
-    let defaultData = generateDefaultData();
-    const groupedData = groupScansByPeriod();
-
-    console.log("Grouped data:", groupedData);
-    console.log("Total scans being processed:", allScans.length);
-
-    // Merge grouped data into default data
-    groupedData.forEach((groupItem) => {
-      const matchingIndex = defaultData.findIndex(
-        (item) => item.period === groupItem.period
-      );
-
-      if (matchingIndex !== -1) {
-        defaultData[matchingIndex] = {
-          ...defaultData[matchingIndex],
-          predictions: groupItem.predictions,
-          totalPredictions: groupItem.totalPredictions,
-          ...groupItem.predictions,
-        };
-      }
-    });
-
-    console.log("Final chart data:", defaultData);
-    return defaultData;
-  };
-
-  const chartData = processChartData();
 
   // Get all unique disease types
   const getAllDiseaseTypes = () => {
@@ -471,11 +366,6 @@ export default function FarmAnalytics({ farmId, timeFilter }) {
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
-        <p className="text-xs text-gray-500">
-          {farmers.length > 0
-            ? `${totalScans} total scans from ${farmers.length} farmer(s)`
-            : "No farmers assigned to this farm"}
-        </p>
       </div>
 
       <div className="flex-1 w-full mb-4">
