@@ -30,14 +30,18 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         return;
       }
 
-      // Since the API doesn't have a specific delete endpoint, we'll use a user update
-      // to mark the account as deleted (this would need backend implementation)
+      // NOTE: The API documentation doesn't specify a DELETE user endpoint
+      // You may need to contact your backend developer to implement this endpoint
+      // Common approaches:
+      // 1. DELETE /api/user/:id (hard delete - completely removes user)
+      // 2. PATCH /api/user/:id with status: "deleted" (soft delete - marks as deleted)
+
+      // Attempting DELETE /api/user/:id
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/user/${user.id}`,
         {
           method: "DELETE",
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         }
@@ -53,15 +57,21 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         handleCancel();
         window.location.href = "/login";
       } else {
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
         if (response.status === 401) {
           setError("Authentication expired. Please log in again.");
         } else if (response.status === 404) {
-          setError("Account not found.");
+          setError(
+            "Account not found or endpoint not implemented. Please contact support."
+          );
         } else if (response.status === 403) {
           setError("You don't have permission to delete this account.");
         } else {
-          setError(data.error || data.message || "Failed to delete account");
+          setError(
+            data.error ||
+              data.message ||
+              "Failed to delete account. Endpoint may not be implemented."
+          );
         }
       }
     } catch (error) {
@@ -102,6 +112,20 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
               {error}
             </div>
           )}
+
+          {/* API Implementation Note */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-blue-700 text-sm leading-relaxed">
+                  <strong>Note:</strong> The delete account endpoint may not be
+                  fully implemented in the API. If you encounter errors, please
+                  contact your system administrator.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Warning Message */}
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">

@@ -15,30 +15,22 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
     setError("");
 
     try {
-      const selectedReason = reason === "Other" ? otherReason : reason;
-
-      // Note: The API documentation doesn't show a deactivate endpoint
-      // This endpoint may need to be created or you might need to use a different approach
-      // For now, using a generic user update endpoint
+      // Use PATCH method for /deactivate endpoint
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/user/${
-          JSON.parse(localStorage.getItem("user"))?.id
-        }`,
+        "https://papaiaapi.onrender.com/api/deactivate",
         {
-          method: "PUT",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          body: JSON.stringify({
-            status: "inactive",
-            deactivationReason: selectedReason,
-          }),
         }
       );
 
       if (response.ok) {
-        alert("Account deactivated successfully. You will be logged out.");
+        alert(
+          "Account deactivated successfully. You can reactivate it by logging in again."
+        );
 
         // Clear localStorage and redirect to login
         localStorage.removeItem("token");
@@ -203,17 +195,9 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           </button>
           <button
             onClick={handleDeactivate}
-            disabled={
-              !acknowledged ||
-              !reason ||
-              (reason === "Other" && !otherReason.trim()) ||
-              isLoading
-            }
+            disabled={!acknowledged || isLoading}
             className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg font-medium text-xs sm:text-sm transition-colors ${
-              acknowledged &&
-              reason &&
-              (reason !== "Other" || otherReason.trim()) &&
-              !isLoading
+              acknowledged && !isLoading
                 ? "bg-red-400 hover:bg-red-500 text-white"
                 : "bg-red-200 text-red-400 cursor-not-allowed"
             }`}

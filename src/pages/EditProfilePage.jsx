@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Mail,
   Phone,
@@ -20,6 +20,7 @@ function EditProfilePage() {
   const [userData, setUserData] = useState({});
   const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -56,7 +57,8 @@ function EditProfilePage() {
         }
 
         const data = await res.json();
-        // API returns user data directly based on documentation
+        console.log("User data received:", data);
+
         setUserData(data);
         setFormValues({
           firstName: data.firstName || "",
@@ -70,6 +72,8 @@ function EditProfilePage() {
       } catch (err) {
         console.error("Error fetching user data:", err);
         alert("Error fetching user data. Please try again.");
+      } finally {
+        setInitialLoad(false);
       }
     };
 
@@ -88,18 +92,33 @@ function EditProfilePage() {
       return;
     }
 
+    if (!formValues.firstName || !formValues.lastName) {
+      alert("First name and last name are required fields");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Prepare update data - only include fields that have values
+      // Send only modified fields (API uses partial updates)
       const updatedData = {};
 
-      // Add all non-empty fields to the update data
       Object.keys(formValues).forEach((key) => {
-        if (formValues[key] !== undefined && formValues[key] !== "") {
-          updatedData[key] = formValues[key];
+        const newValue = formValues[key];
+        const oldValue = userData[key];
+
+        // Include field if it's different from current value
+        if (newValue !== oldValue && newValue !== "") {
+          updatedData[key] = newValue;
         }
       });
+
+      // If no changes detected, inform user
+      if (Object.keys(updatedData).length === 0) {
+        alert("No changes detected");
+        setLoading(false);
+        return;
+      }
 
       console.log("Sending update data:", updatedData);
 
@@ -116,34 +135,33 @@ function EditProfilePage() {
       );
 
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Update failed:", errorText);
-        throw new Error(`Failed to update profile: ${res.status}`);
+        const errorData = await res.json().catch(() => ({}));
+        console.error("Update failed:", errorData);
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            `Failed to update profile: ${res.status}`
+        );
       }
 
       const updatedUser = await res.json();
-      console.log("Updated user data:", updatedUser);
+      console.log("Updated user response:", updatedUser);
 
-      // Preserve profile picture from current userData
-      const finalUserData = {
-        ...updatedUser,
-        profilePicture: userData.profilePicture || updatedUser.profilePicture,
-      };
+      // Update local state and localStorage
+      const mergedData = { ...userData, ...updatedData };
+      setUserData(mergedData);
+      localStorage.setItem("user", JSON.stringify(mergedData));
 
-      // Update state and localStorage
-      setUserData(finalUserData);
-      localStorage.setItem("user", JSON.stringify(finalUserData));
-
-      // Update form values to reflect the saved state
+      // Update form values to match saved state
       setFormValues({
-        firstName: finalUserData.firstName || "",
-        middleName: finalUserData.middleName || "",
-        lastName: finalUserData.lastName || "",
-        username: finalUserData.username || "",
-        email: finalUserData.email || "",
-        contactNumber: finalUserData.contactNumber || "",
-        birthDate: finalUserData.birthDate
-          ? finalUserData.birthDate.split("T")[0]
+        firstName: mergedData.firstName || "",
+        middleName: mergedData.middleName || "",
+        lastName: mergedData.lastName || "",
+        username: mergedData.username || "",
+        email: mergedData.email || "",
+        contactNumber: mergedData.contactNumber || "",
+        birthDate: mergedData.birthDate
+          ? mergedData.birthDate.split("T")[0]
           : "",
       });
 
@@ -153,7 +171,7 @@ function EditProfilePage() {
       alert("Profile updated successfully!");
     } catch (err) {
       console.error("Error updating profile:", err);
-      alert("Error updating profile. Please try again.");
+      alert(err.message || "Error updating profile. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -168,15 +186,25 @@ function EditProfilePage() {
   // Fixed profile picture URL generation
   const getProfilePictureUrl = () => {
     if (userData.profilePicture) {
-      // If it's already a full URL, use it as is
       if (userData.profilePicture.startsWith("http")) {
         return userData.profilePicture;
       }
-      // If it's a relative path, prepend the API base URL
       return `https://papaiaapi.onrender.com${userData.profilePicture}`;
     }
     return defaultUserPic;
   };
+
+  if (initialLoad) {
+    return (
+      <div className="bg-white min-h-screen flex flex-col font-sans">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+        </main>
+        <FooterMain />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen flex flex-col font-sans">
