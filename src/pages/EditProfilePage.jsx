@@ -16,6 +16,7 @@ import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
 import defaultUserPic from "../assets/default-user.png";
+import { getLoggedInUser } from "../utils/security";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -34,19 +35,14 @@ function EditProfilePage() {
   // Get user data from localStorage
   const getUserFromStorage = () => {
     try {
-      const userStr = localStorage.getItem("user");
+      const user = getLoggedInUser();
       const token = localStorage.getItem("token");
 
-      if (!userStr || !token) {
+      if (!user || !token) {
         return { user: null, token: null, error: "Not authenticated" };
       }
 
-      const user = JSON.parse(userStr);
-
-      // Try to extract user ID from various possible fields
-      const userId = user?.id || user?._id || user?.userId || user?.user_id;
-
-      if (!userId) {
+      if (!user.id) {
         return {
           user: null,
           token: null,
@@ -54,9 +50,9 @@ function EditProfilePage() {
         };
       }
 
-      return { user, userId, token, error: null };
+      return { user, userId: user.id, token, error: null };
     } catch (err) {
-      console.error("Error parsing user data:", err);
+      console.error("Error getting user data:", err);
       return { user: null, token: null, error: "Invalid user data in storage" };
     }
   };
