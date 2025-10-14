@@ -60,13 +60,25 @@ function EditProfilePage() {
   // Fetch current user data
   useEffect(() => {
     const fetchUserData = async () => {
-      const { userId, token, error: authError } = getUserFromStorage();
+      const { user, userId, token, error: authError } = getUserFromStorage();
 
       if (authError) {
         setError(authError);
         setInitialLoad(false);
         return;
       }
+
+      // SET DATA FROM LOCALSTORAGE FIRST (like Profile Page does)
+      setUserData(user);
+      setFormValues({
+        firstName: user.firstName || "",
+        middleName: user.middleName || "",
+        lastName: user.lastName || "",
+        username: user.username || "",
+        email: user.email || "",
+        contactNumber: user.contactNumber || "",
+        birthDate: user.birthDate ? user.birthDate.split("T")[0] : "",
+      });
 
       const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
       console.log("Fetching user from:", url);
@@ -78,35 +90,38 @@ function EditProfilePage() {
 
         console.log("Response status:", res.status);
 
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error("Session expired. Please log in again.");
-          }
-          if (res.status === 404) {
-            throw new Error(
-              "User not found. Your account may have been deleted."
-            );
-          }
-          throw new Error(`Failed to fetch user data (Status: ${res.status})`);
+        // ONLY UPDATE IF SUCCESSFUL (like Profile Page does)
+        if (res.ok) {
+          const data = await res.json();
+          // Handle both possible response formats
+          const freshUser = data.user || data;
+          console.log("User data received:", freshUser);
+
+          setUserData(freshUser);
+          setFormValues({
+            firstName: freshUser.firstName || "",
+            middleName: freshUser.middleName || "",
+            lastName: freshUser.lastName || "",
+            username: freshUser.username || "",
+            email: freshUser.email || "",
+            contactNumber: freshUser.contactNumber || "",
+            birthDate: freshUser.birthDate
+              ? freshUser.birthDate.split("T")[0]
+              : "",
+          });
+
+          // Update localStorage with fresh data
+          localStorage.setItem("user", JSON.stringify(freshUser));
+          setError(null);
+        } else {
+          // If fetch fails, just use localStorage data (don't show error)
+          console.warn(
+            `Could not fetch fresh user data (Status: ${res.status}), using localStorage`
+          );
         }
-
-        const data = await res.json();
-        console.log("User data received:", data);
-
-        setUserData(data);
-        setFormValues({
-          firstName: data.firstName || "",
-          middleName: data.middleName || "",
-          lastName: data.lastName || "",
-          username: data.username || "",
-          email: data.email || "",
-          contactNumber: data.contactNumber || "",
-          birthDate: data.birthDate ? data.birthDate.split("T")[0] : "",
-        });
-        setError(null);
       } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(err.message);
+        // If fetch fails, just use localStorage data (don't show error)
+        console.warn("Could not fetch fresh user data:", err.message);
       } finally {
         setInitialLoad(false);
       }
@@ -256,7 +271,7 @@ function EditProfilePage() {
     );
   }
 
-  // Error state
+  // Error state (only for auth errors, not API failures)
   if (error) {
     return (
       <div className="bg-white min-h-screen flex flex-col font-sans">
