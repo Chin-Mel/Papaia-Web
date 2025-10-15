@@ -48,11 +48,15 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   // Helper function to get user's display name
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
-      return `${userData.firstName} ${userData.lastName}`;
+      const middleInitial = userData.middleName
+        ? `${userData.middleName.charAt(0)}. `
+        : "";
+      const suffix = userData.suffix ? ` ${userData.suffix}` : "";
+
+      return `${userData.firstName} ${middleInitial}${userData.lastName}${suffix}`;
     }
     return userData?.username || "Unknown User";
   };
-
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
       {/* Header */}

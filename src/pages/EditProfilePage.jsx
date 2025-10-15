@@ -395,7 +395,7 @@ function EditProfilePage() {
               {userData?.firstName}{" "}
               {userData?.middleName ? `${userData.middleName.charAt(0)}. ` : ""}
               {userData?.lastName}
-              {userData?.suffix ? userData.suffix : ""}
+              {userData?.suffix ? ` ${userData.suffix}` : ""}
             </h1>
             <p className="text-base sm:text-lg text-gray-500">Farm Owner</p>
 
