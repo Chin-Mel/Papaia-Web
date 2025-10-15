@@ -1,24 +1,28 @@
+// components/Header/HeaderMain.js
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ChevronDown, LogOut, Bell } from "lucide-react";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
+import { useNotifications } from "../../hooks/useNotifications";
 
 import papaiaLogo from "../../assets/papaia-logo.png";
-import notificationIcon from "../../assets/bell-icon.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
 import defaultUser from "../../assets/default-user.png";
 
 import ProfileDropdown from "../Popups/ProfileDropdown";
 import NotificationDropdown from "../Popups/NotificationDropdown";
-import { ChevronDown, LogOut } from "lucide-react";
 
 export default function HeaderMain() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [notificationCount] = useState(3);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Use the notifications hook
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
+    useNotifications();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard" },
@@ -53,7 +57,7 @@ export default function HeaderMain() {
     navigate("/sign-in");
   };
 
-  // Fixed helper function to get profile picture URL
+  // Get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
       if (userData.profilePicture.startsWith("http")) {
@@ -64,7 +68,7 @@ export default function HeaderMain() {
     return defaultUser;
   };
 
-  // Helper function to get display name
+  // Get display name
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
       return `${userData.firstName} ${userData.lastName}`;
@@ -78,8 +82,46 @@ export default function HeaderMain() {
     navigate("/profile");
   };
 
+  // Handle notification click
+  const handleNotificationClick = () => {
+    setIsNotifOpen(!isNotifOpen);
+    setIsProfileOpen(false);
+
+    // Optional: Auto mark all as read when opening
+    if (!isNotifOpen && unreadCount > 0) {
+      setTimeout(() => markAllAsRead(), 500);
+    }
+  };
+
   return (
     <>
+      {/* Toast Animation Styles */}
+      <style>{`
+        @keyframes slide-in {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slide-out {
+          from {
+            transform: translateX(0);
+            opacity: 1;
+          }
+          to {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+        }
+        .animate-slide-in {
+          animation: slide-in 0.3s ease-out;
+        }
+      `}</style>
+
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-3 sm:px-4">
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Left: Logo + Nav */}
@@ -117,7 +159,7 @@ export default function HeaderMain() {
                 : "Loading..."}
             </span>
 
-            {/* Notification */}
+            {/* Notification Bell with Red Dot */}
             <div className="relative">
               <button
                 className={`relative cursor-pointer p-2 rounded-full transition-colors
@@ -126,26 +168,28 @@ export default function HeaderMain() {
                       ? "bg-gray-100 text-[#4A7C59]"
                       : "text-[#4A7C59] hover:text-black hover:bg-gray-100"
                   }`}
-                onClick={() => {
-                  setIsNotifOpen(!isNotifOpen);
-                  setIsProfileOpen(false);
-                }}
+                onClick={handleNotificationClick}
                 aria-label="Notifications"
               >
-                <img
-                  src={notificationIcon}
-                  alt="Notifications"
-                  className="w-5 h-5"
-                />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
-                    {notificationCount}
+                <Bell className="w-5 h-5" />
+
+                {/* Red dot indicator - only shows when there are unread notifications */}
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
                   </span>
                 )}
               </button>
+
               <NotificationDropdown
                 isOpen={isNotifOpen}
                 onClose={() => setIsNotifOpen(false)}
+                notifications={notifications}
+                unreadCount={unreadCount}
+                loading={loading}
+                markAsRead={markAsRead}
+                markAllAsRead={markAllAsRead}
               />
             </div>
 
@@ -223,7 +267,7 @@ export default function HeaderMain() {
 
             <div className="border-t border-gray-200 my-2"></div>
 
-            {/* Mobile Profile Section - Clickable */}
+            {/* Mobile Profile Section */}
             <button
               onClick={handleMobileProfileClick}
               className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors text-left"
