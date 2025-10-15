@@ -32,6 +32,22 @@ function EditProfilePage() {
     useState(false);
   const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
+  // Helper function to format date for input[type="date"]
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    try {
+      const date = new Date(dateString);
+      // Get YYYY-MM-DD format
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    } catch (err) {
+      console.error("Error formatting date:", err);
+      return "";
+    }
+  };
+
   // Get user data from localStorage
   const getUserFromStorage = () => {
     try {
@@ -77,7 +93,7 @@ function EditProfilePage() {
         username: user.username || "",
         email: user.email || "",
         contactNumber: user.contactNumber || "",
-        birthDate: user.birthDate ? user.birthDate.split("T")[0] : "",
+        birthDate: formatDateForInput(user.birthDate),
       });
 
       const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
@@ -105,9 +121,7 @@ function EditProfilePage() {
             username: freshUser.username || "",
             email: freshUser.email || "",
             contactNumber: freshUser.contactNumber || "",
-            birthDate: freshUser.birthDate
-              ? freshUser.birthDate.split("T")[0]
-              : "",
+            birthDate: formatDateForInput(freshUser.birthDate),
           });
 
           // Update localStorage with fresh data
@@ -137,14 +151,29 @@ function EditProfilePage() {
 
   // Handle save changes
   const handleSaveChanges = async () => {
-    // Validate required fields
-    if (!formValues.firstName?.trim() || !formValues.lastName?.trim()) {
-      alert("First name and last name are required fields");
+    // Validate required fields - they cannot be empty
+    if (!formValues.firstName?.trim()) {
+      alert("First name is required and cannot be empty");
       return;
     }
 
-    if (!formValues.username?.trim() || !formValues.email?.trim()) {
-      alert("Username and email are required fields");
+    if (!formValues.lastName?.trim()) {
+      alert("Last name is required and cannot be empty");
+      return;
+    }
+
+    if (!formValues.username?.trim()) {
+      alert("Username is required and cannot be empty");
+      return;
+    }
+
+    if (!formValues.email?.trim()) {
+      alert("Email is required and cannot be empty");
+      return;
+    }
+
+    if (!formValues.contactNumber?.trim()) {
+      alert("Contact number is required and cannot be empty");
       return;
     }
 
@@ -160,10 +189,21 @@ function EditProfilePage() {
       // Build update object with only changed fields
       const updatedData = {};
       Object.keys(formValues).forEach((key) => {
-        const newValue = formValues[key]?.trim();
-        const oldValue = userData[key];
+        let newValue = formValues[key];
 
-        if (newValue !== oldValue && newValue !== "") {
+        // Trim string values, but keep empty strings for optional fields
+        if (typeof newValue === "string" && key !== "birthDate") {
+          newValue = newValue.trim();
+        }
+
+        const oldValue =
+          key === "birthDate"
+            ? formatDateForInput(userData[key])
+            : userData[key];
+
+        // Include the field if it changed
+        // For optional fields (middleName, birthDate), allow empty values
+        if (newValue !== oldValue) {
           updatedData[key] = newValue;
         }
       });
@@ -203,12 +243,12 @@ function EditProfilePage() {
 
       // Merge updated data with existing data
       const mergedData = { ...userData, ...updatedData };
-      setUserData(mergedData);
 
-      // Update localStorage with new data
+      // Update both state and localStorage immediately
+      setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
 
-      // Update form values to match merged data
+      // Update form values to match merged data (with proper date formatting)
       setFormValues({
         firstName: mergedData.firstName || "",
         middleName: mergedData.middleName || "",
@@ -216,12 +256,10 @@ function EditProfilePage() {
         username: mergedData.username || "",
         email: mergedData.email || "",
         contactNumber: mergedData.contactNumber || "",
-        birthDate: mergedData.birthDate
-          ? mergedData.birthDate.split("T")[0]
-          : "",
+        birthDate: formatDateForInput(mergedData.birthDate),
       });
 
-      // Dispatch event to update other components
+      // Dispatch event to update other components (Header, ProfilePage, etc.)
       window.dispatchEvent(new Event("userUpdated"));
 
       alert("Profile updated successfully!");
@@ -406,10 +444,10 @@ function EditProfilePage() {
             />
 
             <ProfileInput
-              label="Middle Name"
+              label="Middle Name (Optional)"
               icon={<User size={20} />}
               value={formValues.middleName}
-              placeholder="Middle Name (Optional)"
+              placeholder="Middle Name"
               onChange={(val) => handleChange("middleName", val)}
             />
 
@@ -443,12 +481,13 @@ function EditProfilePage() {
               type="tel"
               icon={<Phone size={20} />}
               value={formValues.contactNumber}
-              placeholder="Contact Number (Optional)"
+              placeholder="Contact Number"
               onChange={(val) => handleChange("contactNumber", val)}
+              required
             />
 
             <ProfileInput
-              label="Birth Date"
+              label="Birth Date (Optional)"
               type="date"
               icon={<Calendar size={20} />}
               value={formValues.birthDate}
