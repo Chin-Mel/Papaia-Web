@@ -5,8 +5,6 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  if (!isOpen) return null;
-
   // Close on Escape
   useEffect(() => {
     const handleEsc = (e) => {
@@ -17,6 +15,8 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
