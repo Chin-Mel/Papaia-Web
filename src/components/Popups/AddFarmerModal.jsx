@@ -1,21 +1,21 @@
 import { X } from "lucide-react";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 
 function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const modalRef = useRef(null);
 
   if (!isOpen) return null;
 
+  // Close on Escape
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
   const handleSubmit = async (e) => {
