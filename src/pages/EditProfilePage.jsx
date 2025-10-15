@@ -648,40 +648,48 @@ const ProfileInput = ({
 };
 
 const ProfileSelect = ({ label, value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayValue = value || "Select Suffix";
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" ref={dropdownRef}>
       <label className="text-sm font-medium text-gray-500 mb-1">{label}</label>
-      <div className="relative flex items-center">
-        <div className="absolute left-3 text-gray-400 pointer-events-none">
-          <User size={20} />
-        </div>
-        <select
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full border border-gray-300 rounded-xl p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow appearance-none bg-white cursor-pointer"
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-xl flex justify-between items-center text-sm hover:bg-gray-100 bg-white transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer text-gray-800"
         >
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <div className="absolute right-3 text-gray-400 pointer-events-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </div>
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        </button>
+        {isOpen && (
+          <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <li
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className="px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-sm whitespace-nowrap"
+              >
+                {option.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
