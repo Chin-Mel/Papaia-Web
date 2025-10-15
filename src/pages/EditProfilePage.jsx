@@ -493,6 +493,15 @@ function EditProfilePage() {
               value={formValues.birthDate}
               placeholder="mm/dd/yyyy"
               onChange={(val) => handleChange("birthDate", val)}
+              max={(() => {
+                const today = new Date();
+                const maxDate = new Date(
+                  today.getFullYear() - 18,
+                  today.getMonth(),
+                  today.getDate()
+                );
+                return maxDate.toISOString().split("T")[0];
+              })()}
             />
           </div>
         </section>
@@ -602,6 +611,7 @@ const ProfileInput = ({
   value,
   onChange,
   placeholder,
+  max,
 }) => {
   return (
     <div className="flex flex-col">
@@ -613,6 +623,7 @@ const ProfileInput = ({
           value={value || ""}
           placeholder={placeholder || ""}
           onChange={(e) => onChange(e.target.value)}
+          max={max}
           className={`w-full border border-gray-300 rounded-xl p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow ${
             icon ? "pl-10" : ""
           }`}
