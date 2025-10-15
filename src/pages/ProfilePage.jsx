@@ -171,11 +171,18 @@ export default function ProfilePage() {
   };
 
   const getFullName = () => {
-    const { firstName, lastName, middleName } = userData;
+    const { firstName, lastName, middleName, suffix } = userData;
     if (firstName && lastName) {
-      return middleName
+      let fullName = middleName
         ? `${firstName} ${middleName} ${lastName}`
         : `${firstName} ${lastName}`;
+
+      // Add suffix if it exists
+      if (suffix) {
+        fullName += ` ${suffix}`;
+      }
+
+      return fullName;
     }
     return userData.username || "N/A";
   };
