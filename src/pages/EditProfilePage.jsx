@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Mail,
   Phone,
@@ -8,6 +8,7 @@ import {
   Trash2,
   Save,
   AlertCircle,
+  ChevronDown,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
@@ -299,7 +300,7 @@ function EditProfilePage() {
   // Loading state
   if (initialLoad) {
     return (
-      <div className="bg-white min-h-screen flex flex-col font-sans">
+      <div className="bg-white min-h-screen flex flex-col">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -315,7 +316,7 @@ function EditProfilePage() {
   // Error state (only for auth errors, not API failures)
   if (error) {
     return (
-      <div className="bg-white min-h-screen flex flex-col font-sans">
+      <div className="bg-white min-h-screen flex flex-col">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center p-4">
           <div className="max-w-lg w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
@@ -355,7 +356,7 @@ function EditProfilePage() {
 
   // Main content
   return (
-    <div className="bg-white min-h-screen flex flex-col font-sans">
+    <div className="bg-white min-h-screen flex flex-col">
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
