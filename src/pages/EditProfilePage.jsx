@@ -90,6 +90,7 @@ function EditProfilePage() {
         firstName: user.firstName || "",
         middleName: user.middleName || "",
         lastName: user.lastName || "",
+        suffix: user.suffix || "",
         username: user.username || "",
         email: user.email || "",
         contactNumber: user.contactNumber || "",
@@ -118,6 +119,7 @@ function EditProfilePage() {
             firstName: freshUser.firstName || "",
             middleName: freshUser.middleName || "",
             lastName: freshUser.lastName || "",
+            suffix: freshUser.suffix || "",
             username: freshUser.username || "",
             email: freshUser.email || "",
             contactNumber: freshUser.contactNumber || "",
@@ -253,6 +255,7 @@ function EditProfilePage() {
         firstName: mergedData.firstName || "",
         middleName: mergedData.middleName || "",
         lastName: mergedData.lastName || "",
+        suffix: mergedData.suffix || "",
         username: mergedData.username || "",
         email: mergedData.email || "",
         contactNumber: mergedData.contactNumber || "",
@@ -459,6 +462,21 @@ function EditProfilePage() {
               onChange={(val) => handleChange("lastName", val)}
             />
 
+            <ProfileSelect
+              label="Suffix (Optional)"
+              value={formValues.suffix}
+              onChange={(val) => handleChange("suffix", val)}
+              options={[
+                { value: "", label: "Select Suffix" },
+                { value: "Jr.", label: "Jr." },
+                { value: "Sr.", label: "Sr." },
+                { value: "II", label: "II" },
+                { value: "III", label: "III" },
+                { value: "IV", label: "IV" },
+                { value: "V", label: "V" },
+              ]}
+            />
+
             <ProfileInput
               label="Username"
               icon={<User size={20} />}
@@ -624,6 +642,46 @@ const ProfileInput = ({
             icon ? "pl-10" : ""
           }`}
         />
+      </div>
+    </div>
+  );
+};
+
+const ProfileSelect = ({ label, value, onChange, options }) => {
+  return (
+    <div className="flex flex-col">
+      <label className="text-sm font-medium text-gray-500 mb-1">{label}</label>
+      <div className="relative flex items-center">
+        <div className="absolute left-3 text-gray-400 pointer-events-none">
+          <User size={20} />
+        </div>
+        <select
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow appearance-none bg-white cursor-pointer"
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        <div className="absolute right-3 text-gray-400 pointer-events-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );
