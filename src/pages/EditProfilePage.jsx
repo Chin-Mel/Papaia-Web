@@ -495,12 +495,8 @@ function EditProfilePage() {
               onChange={(val) => handleChange("birthDate", val)}
               max={(() => {
                 const today = new Date();
-                const maxDate = new Date(
-                  today.getFullYear() - 18,
-                  today.getMonth(),
-                  today.getDate()
-                );
-                return maxDate.toISOString().split("T")[0];
+                today.setFullYear(today.getFullYear() - 18);
+                return today.toISOString().split("T")[0];
               })()}
             />
           </div>
