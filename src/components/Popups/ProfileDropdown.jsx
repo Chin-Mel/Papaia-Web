@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import defaultUserPic from "../../assets/default-user.png";
@@ -7,8 +7,20 @@ import { getLoggedInUser } from "../../utils/security";
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(user);
+  const dropdownRef = useRef(null);
 
   if (!isOpen) return null;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const goToProfilePage = () => {
     onClose();

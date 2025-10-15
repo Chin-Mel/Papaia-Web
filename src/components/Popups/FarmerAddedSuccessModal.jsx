@@ -1,4 +1,5 @@
 import { X, Check, ArrowLeft } from "lucide-react";
+import { useRef, useEffect } from "react";
 
 function FarmerAddedSuccessModal({ isOpen, onClose, farmer }) {
   if (!isOpen) return null;
@@ -8,6 +9,17 @@ function FarmerAddedSuccessModal({ isOpen, onClose, farmer }) {
         .filter(Boolean)
         .join(" ")
     : "";
+
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">

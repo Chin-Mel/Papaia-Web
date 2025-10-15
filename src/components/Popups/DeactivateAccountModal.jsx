@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, X } from "lucide-react";
 
 export default function DeactivateAccountModal({ isOpen, onClose }) {
@@ -7,6 +7,18 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [acknowledged, setAcknowledged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const modalRef = useRef(null);
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleDeactivate = async () => {
     if (!acknowledged) return;

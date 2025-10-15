@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
 
 function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
@@ -11,6 +11,18 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const [imagePreview, setImagePreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const modalRef = useRef(null);
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   useEffect(() => {
     if (farmData && isOpen) {

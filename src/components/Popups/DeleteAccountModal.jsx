@@ -1,12 +1,24 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X, AlertTriangle } from "lucide-react";
 
 export default function DeleteAccountModal({ isOpen, onClose }) {
   const [confirmText, setConfirmText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const modalRef = useRef(null);
 
   const isDeleteEnabled = confirmText === "DELETE";
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleCancel = () => {
     setConfirmText("");

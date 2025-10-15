@@ -13,6 +13,18 @@ import {
 function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
   const [confirmationText, setConfirmationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const modalRef = useRef(null);
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleConfirmRemove = async () => {
     if (confirmationText.toUpperCase() === "REMOVE") {

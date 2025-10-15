@@ -1,5 +1,5 @@
 import { X, User, Phone, CheckCircle, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
 function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
@@ -14,6 +14,17 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
   ]
     .filter(Boolean)
     .join(" ");
+
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">

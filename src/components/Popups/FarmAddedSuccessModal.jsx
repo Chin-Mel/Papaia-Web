@@ -1,11 +1,21 @@
 import { X, CheckCircle, Leaf, MapPin, Users, TrendingUp } from "lucide-react";
-import { useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 
 export default function FarmAddedSuccessModal({
   onClose,
   onViewDashboard,
   onAddAnother,
 }) {
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full">

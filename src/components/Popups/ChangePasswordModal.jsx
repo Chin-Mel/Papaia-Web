@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, X, Eye, EyeOff } from "lucide-react";
 
 export default function ChangePasswordModal({ isOpen, onClose }) {
@@ -10,6 +10,18 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const modalRef = useRef(null);
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   // Password strength calculation
   const getPasswordStrength = (password) => {

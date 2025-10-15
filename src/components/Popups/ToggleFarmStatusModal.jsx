@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   X,
   ToggleLeft,
@@ -12,6 +12,18 @@ import {
 
 function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
   const [isLoading, setIsLoading] = useState(false);
+  const modalRef = useRef(null);
+
+  // 👇 Close when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleToggleStatus = async () => {
     if (!farmData) return;

@@ -1,8 +1,19 @@
 import { X, CheckCircle, ArrowLeft, User } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   if (!isOpen) return null;
+
+  const modalRef = useRef(null);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">

@@ -1,11 +1,22 @@
 import { X } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const modalRef = useRef(null);
 
   if (!isOpen) return null;
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [onClose]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
