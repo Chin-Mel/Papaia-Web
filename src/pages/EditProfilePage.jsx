@@ -10,6 +10,7 @@ import {
   AlertCircle,
   ChevronDown,
 } from "lucide-react";
+import { Navigate } from "react-router-dom";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/FooterMain";
 import { useNavigate } from "react-router-dom";
@@ -267,6 +268,7 @@ function EditProfilePage() {
       window.dispatchEvent(new Event("userUpdated"));
 
       alert("Profile updated successfully!");
+      navigate("/profile");
     } catch (err) {
       console.error("Error updating profile:", err);
       alert(err.message || "Error updating profile. Please try again.");
