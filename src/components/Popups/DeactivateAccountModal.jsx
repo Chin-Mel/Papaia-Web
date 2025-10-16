@@ -85,7 +85,10 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-2 sm:p-4">
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md lg:max-w-lg mx-2 sm:mx-0 max-h-[95vh] sm:max-h-none overflow-hidden flex flex-col">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md lg:max-w-lg mx-2 sm:mx-0 max-h-[90vh] overflow-hidden flex flex-col"
+      >
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-4 sm:px-6 py-3 sm:py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -106,7 +109,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Body */}
+        {/* Body - Scrollable */}
         <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 overflow-y-auto flex-1">
           {/* Error Message */}
           {error && (

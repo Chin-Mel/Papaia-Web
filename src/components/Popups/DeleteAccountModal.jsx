@@ -98,9 +98,12 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl w-full max-w-md mx-auto shadow-2xl overflow-hidden">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl w-full max-w-md mx-auto shadow-2xl max-h-[90vh] overflow-hidden flex flex-col"
+      >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-red-500" />
@@ -116,8 +119,8 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
+        {/* Content - Scrollable */}
+        <div className="p-6 space-y-6 overflow-y-auto flex-1">
           {/* Error Message */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
@@ -222,7 +225,7 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="px-6 pb-6 flex flex-col sm:flex-row gap-3 sm:gap-4">
+        <div className="px-6 pb-6 flex flex-col sm:flex-row gap-3 sm:gap-4 flex-shrink-0">
           <button
             onClick={handleCancel}
             disabled={isLoading}
