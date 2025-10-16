@@ -110,7 +110,6 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
             <p className="text-gray-600 text-sm truncate">
               {userData?.email || "No email"}
             </p>
-            <p className="text-gray-400 text-xs mt-1">View Profile</p>
           </div>
         </div>
       </div>
@@ -120,6 +119,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
         <button
           onClick={() => {
             onClose();
+            navigate("/pricing");
             alert("Plans & Pricing clicked");
           }}
           className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
