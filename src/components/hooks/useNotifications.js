@@ -45,31 +45,16 @@ export function useNotifications() {
         token.substring(0, 20) + "..."
       );
 
-      // Try without /api prefix first
-      let url = "https://papaiaapi.onrender.com/notifications";
-      console.log("Trying URL:", url);
-
-      let response = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      // If 404, try with /api prefix
-      if (response.status === 404) {
-        url = "https://papaiaapi.onrender.com/api/notifications";
-        console.log("First URL failed, trying:", url);
-
-        response = await fetch(url, {
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/notifications",
+        {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        });
-      }
+        }
+      );
 
       console.log("Response status:", response.status);
 
@@ -157,7 +142,7 @@ export function useNotifications() {
       }
 
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/notifications/${notificationId}/read`,
+        `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
         {
           method: "PUT",
           headers: {
@@ -206,7 +191,7 @@ export function useNotifications() {
       const results = await Promise.allSettled(
         unreadNotifications.map((n) =>
           fetch(
-            `https://papaiaapi.onrender.com/api/notifications/${n.id}/read`,
+            `https://papaiaapi.onrender.com/api/owner/notifications/${n.id}/read`,
             {
               method: "PUT",
               headers: {
