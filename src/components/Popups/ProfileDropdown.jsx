@@ -120,7 +120,6 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
           onClick={() => {
             onClose();
             navigate("/pricing");
-            alert("Plans & Pricing clicked");
           }}
           className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
         >

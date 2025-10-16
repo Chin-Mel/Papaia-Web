@@ -28,12 +28,12 @@ export default function FooterStart() {
             <h3 className="text-white text-base font-semibold">Product</h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="/pricing"
+                <Link
+                  to="/pricing-home"
                   className="text-gray-300 hover:text-white transition-colors text-sm sm:text-base"
                 >
                   Pricing
-                </a>
+                </Link>
               </li>
               <li>
                 <a
