@@ -15,6 +15,8 @@ import ScanDetailsPage from "./pages/ScanDetailsPage";
 import AboutPage from "./pages/AboutPage";
 import AboutHomePage from "./pages/AboutHomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import PricingHomePage from "./pages/PricingHomePage";
+import PricingPage from "./pages/PricingPage";
 
 function App() {
   return (
@@ -26,6 +28,7 @@ function App() {
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/about-home" element={<AboutHomePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/pricing-home" element={<PricingHomePage />} />
 
       {/* Protected Routes */}
       <Route
@@ -82,6 +85,15 @@ function App() {
         element={
           <ProtectedRoute>
             <AboutPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/pricing"
+        element={
+          <ProtectedRoute>
+            <PricingPage />
           </ProtectedRoute>
         }
       />
