@@ -144,7 +144,7 @@ export function useNotifications() {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
         {
-          method: "PUT",
+          method: "PATCH", // Changed from PUT to PATCH
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -153,7 +153,10 @@ export function useNotifications() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to mark notification as read");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.error || "Failed to mark notification as read"
+        );
       }
 
       // Optimistically update UI
@@ -187,29 +190,25 @@ export function useNotifications() {
       setUnreadCount(0);
       previousCountRef.current = 0;
 
-      // Send requests in parallel
-      const results = await Promise.allSettled(
-        unreadNotifications.map((n) =>
-          fetch(
-            `https://papaiaapi.onrender.com/api/owner/notifications/${n.id}/read`,
-            {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          )
-        )
+      // Use the new read-all endpoint
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
+        {
+          method: "PATCH", // Changed from PUT to PATCH
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
 
-      // Check if any failed
-      const failed = results.filter((r) => r.status === "rejected");
-      if (failed.length > 0) {
-        console.warn(`${failed.length} notifications failed to mark as read`);
-        // Optionally refetch to sync state
-        fetchNotifications();
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to mark all as read");
       }
+
+      const result = await response.json();
+      console.log("Mark all as read result:", result.message);
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       showToast("Failed to mark all as read", "error");
