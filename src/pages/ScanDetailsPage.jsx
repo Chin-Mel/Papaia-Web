@@ -44,6 +44,8 @@ export default function ScanDetailsPage() {
         setLoading(true);
         setError(null);
 
+        console.log("🔍 Fetching scan details for scanId:", scanId);
+
         // First, get all identification history to find the farmId for this scan
         const historyRes = await fetch(
           "https://papaiaapi.onrender.com/api/owner/identification-history",
@@ -58,16 +60,27 @@ export default function ScanDetailsPage() {
         if (!historyRes.ok) throw new Error("Failed to fetch scan history");
         const allScans = await historyRes.json();
 
+        console.log("📊 All scans:", allScans);
+
         // Find the specific scan to get farmId
         const specificScan = Array.isArray(allScans)
           ? allScans.find((scan) => scan.id === scanId)
           : null;
 
+        console.log("🎯 Specific scan found:", specificScan);
+
         if (!specificScan || !specificScan.farmId) {
+          console.error("❌ Scan not found or missing farmId");
           setError("Scan not found or missing farm information");
           setLoading(false);
           return;
         }
+
+        console.log("🏠 Farm ID:", specificScan.farmId);
+        console.log(
+          "📍 Calling API:",
+          `predictions-history/${specificScan.farmId}/${scanId}`
+        );
 
         // Now fetch the detailed prediction using the new API
         const detailsRes = await fetch(
@@ -80,17 +93,23 @@ export default function ScanDetailsPage() {
           }
         );
 
+        console.log("📡 Details response status:", detailsRes.status);
+
         if (!detailsRes.ok) {
+          const errorText = await detailsRes.text();
+          console.error("❌ API Error:", errorText);
+
           if (detailsRes.status === 404) {
             throw new Error("Prediction details not found");
           }
           if (detailsRes.status === 403) {
             throw new Error("Access denied. You do not own this farm.");
           }
-          throw new Error("Failed to fetch prediction details");
+          throw new Error(`Failed to fetch prediction details: ${errorText}`);
         }
 
         const detailsData = await detailsRes.json();
+        console.log("✅ Details data received:", detailsData);
 
         // The API returns an array with one item
         const detailedScan =
@@ -98,7 +117,10 @@ export default function ScanDetailsPage() {
             ? detailsData[0]
             : null;
 
+        console.log("📝 Detailed scan:", detailedScan);
+
         if (!detailedScan) {
+          console.error("❌ No detailed scan in response");
           setError("Prediction details not available");
           setLoading(false);
           return;
@@ -154,7 +176,7 @@ export default function ScanDetailsPage() {
           }
         }
       } catch (err) {
-        console.error("Error fetching scan details:", err);
+        console.error("💥 Error fetching scan details:", err);
         setError(err.message || "Failed to load scan details");
       } finally {
         setLoading(false);
