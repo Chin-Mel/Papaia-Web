@@ -27,8 +27,6 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const previousCountRef = useRef(0);
-  const isFirstLoadRef = useRef(true);
 
   const fetchNotifications = async () => {
     try {
@@ -92,46 +90,23 @@ export function useNotifications() {
       setError(null);
 
       const unread = notificationsArray.filter((n) => n.read === false).length;
-
-      // Show toast only if:
-      // 1. Not first load
-      // 2. There are NEW unread notifications
-      // 3. Page is visible
-      if (
-        !isFirstLoadRef.current &&
-        unread > previousCountRef.current &&
-        !document.hidden
-      ) {
-        const newCount = unread - previousCountRef.current;
-        const message =
-          newCount === 1
-            ? "New notification received!"
-            : `${newCount} new notifications received!`;
-        showToast(message);
-      }
-
-      previousCountRef.current = unread;
       setUnreadCount(unread);
-      isFirstLoadRef.current = false;
+
+      console.log(
+        `Fetched ${notificationsArray.length} notifications, ${unread} unread`
+      );
     } catch (error) {
       console.error("Error fetching notifications:", error);
       setError(error.message);
-      // Don't show error toast on every poll - only log it
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Initial fetch
+    // Only fetch once on mount
     fetchNotifications();
-
-    // Poll every 30 seconds for new notifications
-    const interval = setInterval(fetchNotifications, 30000);
-
-    // Cleanup interval on unmount
-    return () => clearInterval(interval);
-  }, []); // Empty dependency array - only run once on mount
+  }, []); // No polling - only fetch on mount
 
   const markAsRead = async (notificationId) => {
     try {
@@ -141,10 +116,18 @@ export function useNotifications() {
         return;
       }
 
+      console.log(`Marking notification ${notificationId} as read...`);
+
+      // Optimistically update UI FIRST
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
         {
-          method: "PATCH", // Changed from PUT to PATCH
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -154,17 +137,21 @@ export function useNotifications() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error("Mark as read failed:", response.status, errorData);
+
+        // Revert optimistic update on failure
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n))
+        );
+        setUnreadCount((prev) => prev + 1);
+
         throw new Error(
           errorData.error || "Failed to mark notification as read"
         );
       }
 
-      // Optimistically update UI
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-      previousCountRef.current = Math.max(0, previousCountRef.current - 1);
+      const result = await response.json();
+      console.log("Mark as read success:", result.message);
     } catch (error) {
       console.error("Error marking notification as read:", error);
       showToast("Failed to mark as read", "error");
@@ -185,16 +172,19 @@ export function useNotifications() {
         return; // Nothing to mark
       }
 
+      console.log(
+        `Marking all ${unreadNotifications.length} notifications as read...`
+      );
+
       // Optimistically update UI first
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
-      previousCountRef.current = 0;
 
       // Use the new read-all endpoint
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
         {
-          method: "PATCH", // Changed from PUT to PATCH
+          method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -204,16 +194,19 @@ export function useNotifications() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error("Mark all as read failed:", response.status, errorData);
+
+        // Revert optimistic update on failure by refetching
+        await fetchNotifications();
+
         throw new Error(errorData.error || "Failed to mark all as read");
       }
 
       const result = await response.json();
-      console.log("Mark all as read result:", result.message);
+      console.log("Mark all as read success:", result.message);
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       showToast("Failed to mark all as read", "error");
-      // Revert optimistic update by refetching
-      fetchNotifications();
     }
   };
 
@@ -224,6 +217,6 @@ export function useNotifications() {
     error,
     markAsRead,
     markAllAsRead,
-    refresh: fetchNotifications,
+    refresh: fetchNotifications, // Can be called manually when needed
   };
 }
