@@ -1,5 +1,5 @@
 // hooks/useNotifications.js
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 // Toast notification function
 export function showToast(message, type = "success") {
@@ -21,6 +21,9 @@ export function showToast(message, type = "success") {
     setTimeout(() => toast.remove(), 300);
   }, 4000);
 }
+
+// In-memory cache for read notifications (persists during session)
+const readNotificationsCache = new Set();
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
@@ -86,14 +89,23 @@ export function useNotifications() {
       // Ensure data is an array
       const notificationsArray = Array.isArray(data) ? data : [];
 
-      setNotifications(notificationsArray);
+      // Apply client-side read status from cache
+      // This ensures notifications stay marked as read even if backend fails
+      const notificationsWithCache = notificationsArray.map((n) => ({
+        ...n,
+        read: n.read || readNotificationsCache.has(n.id),
+      }));
+
+      setNotifications(notificationsWithCache);
       setError(null);
 
-      const unread = notificationsArray.filter((n) => n.read === false).length;
+      const unread = notificationsWithCache.filter(
+        (n) => n.read === false
+      ).length;
       setUnreadCount(unread);
 
       console.log(
-        `Fetched ${notificationsArray.length} notifications, ${unread} unread`
+        `Fetched ${notificationsWithCache.length} notifications, ${unread} unread (cache has ${readNotificationsCache.size} read IDs)`
       );
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -118,7 +130,10 @@ export function useNotifications() {
 
       console.log(`Marking notification ${notificationId} as read...`);
 
-      // Optimistically update UI FIRST
+      // Add to cache immediately
+      readNotificationsCache.add(notificationId);
+
+      // Optimistically update UI
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
       );
@@ -139,11 +154,11 @@ export function useNotifications() {
         const errorData = await response.json().catch(() => ({}));
         console.error("Mark as read failed:", response.status, errorData);
 
-        // Revert optimistic update on failure
-        setNotifications((prev) =>
-          prev.map((n) => (n.id === notificationId ? { ...n, read: false } : n))
+        // Don't revert - keep in cache even if backend fails
+        // This way it stays read on the client side
+        console.warn(
+          `Backend failed to mark ${notificationId} as read, but keeping client-side state`
         );
-        setUnreadCount((prev) => prev + 1);
 
         throw new Error(
           errorData.error || "Failed to mark notification as read"
@@ -154,7 +169,7 @@ export function useNotifications() {
       console.log("Mark as read success:", result.message);
     } catch (error) {
       console.error("Error marking notification as read:", error);
-      showToast("Failed to mark as read", "error");
+      // Don't show error toast - notification is still marked as read client-side
     }
   };
 
@@ -176,7 +191,10 @@ export function useNotifications() {
         `Marking all ${unreadNotifications.length} notifications as read...`
       );
 
-      // Optimistically update UI first
+      // Add all to cache immediately
+      unreadNotifications.forEach((n) => readNotificationsCache.add(n.id));
+
+      // Optimistically update UI
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       setUnreadCount(0);
 
@@ -196,8 +214,10 @@ export function useNotifications() {
         const errorData = await response.json().catch(() => ({}));
         console.error("Mark all as read failed:", response.status, errorData);
 
-        // Revert optimistic update on failure by refetching
-        await fetchNotifications();
+        // Don't revert - keep in cache even if backend fails
+        console.warn(
+          "Backend failed to mark all as read, but keeping client-side state"
+        );
 
         throw new Error(errorData.error || "Failed to mark all as read");
       }
@@ -206,7 +226,7 @@ export function useNotifications() {
       console.log("Mark all as read success:", result.message);
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
-      showToast("Failed to mark all as read", "error");
+      // Don't show error toast - notifications are still marked as read client-side
     }
   };
 
