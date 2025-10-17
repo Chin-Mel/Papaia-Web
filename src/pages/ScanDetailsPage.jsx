@@ -64,7 +64,7 @@ export default function ScanDetailsPage() {
           : null;
 
         if (!specificScan || !specificScan.farmId) {
-          setError("Scan not found");
+          setError("Scan not found or missing farm information");
           setLoading(false);
           return;
         }
@@ -82,7 +82,10 @@ export default function ScanDetailsPage() {
 
         if (!detailsRes.ok) {
           if (detailsRes.status === 404) {
-            throw new Error("Prediction not found");
+            throw new Error("Prediction details not found");
+          }
+          if (detailsRes.status === 403) {
+            throw new Error("Access denied. You do not own this farm.");
           }
           throw new Error("Failed to fetch prediction details");
         }
@@ -96,7 +99,7 @@ export default function ScanDetailsPage() {
             : null;
 
         if (!detailedScan) {
-          setError("Prediction details not found");
+          setError("Prediction details not available");
           setLoading(false);
           return;
         }
@@ -198,7 +201,18 @@ export default function ScanDetailsPage() {
 
   const formatDateTime = (timestamp) => {
     try {
-      const date = new Date(timestamp);
+      // Handle the format "10/12/2025 03:15 PM" from the API
+      let date;
+      if (typeof timestamp === "string" && timestamp.includes("/")) {
+        date = new Date(timestamp);
+      } else {
+        date = new Date(timestamp);
+      }
+
+      if (isNaN(date.getTime())) {
+        return { date: "Unknown Date", time: "Unknown Time" };
+      }
+
       return {
         date: date.toLocaleDateString("en-US", {
           year: "numeric",
@@ -275,6 +289,16 @@ export default function ScanDetailsPage() {
     ];
   };
 
+  const parseSuggestions = (suggestions) => {
+    if (!suggestions) return [];
+
+    // Split by newlines and clean up
+    return suggestions
+      .split("\n")
+      .map((line) => line.replace(/^\*\s*/, "").trim())
+      .filter((line) => line.length > 0);
+  };
+
   const handleExportReport = () => {
     const input = reportRef.current;
     if (!input) return;
@@ -338,8 +362,16 @@ export default function ScanDetailsPage() {
       <div className="min-h-screen bg-gray-50">
         <HeaderMain />
         <main className="px-[39px] mt-16 py-8">
-          <div className="flex justify-center items-center h-64">
-            <div className="text-red-500">{error || "Scan not found"}</div>
+          <div className="flex flex-col justify-center items-center h-64 space-y-4">
+            <div className="text-red-500 text-lg font-semibold">
+              {error || "Scan not found"}
+            </div>
+            <button
+              onClick={() => navigate("/scan-history-log")}
+              className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+            >
+              Back to Scan History
+            </button>
           </div>
         </main>
         <FooterMain />
@@ -350,8 +382,12 @@ export default function ScanDetailsPage() {
   const statusInfo = getStatusInfo(scanDetails.prediction);
   const dateTime = formatDateTime(scanDetails.timestamp);
   const treatmentSuggestions = getTreatmentSuggestions(scanDetails.prediction);
-  // Confidence is already a percentage (0-100) from the new API
-  const confidencePercentage = Math.round(scanDetails.confidence || 0);
+  const apiSuggestions = parseSuggestions(scanDetails.suggestions);
+  // Confidence is already a percentage (0-100) from the API, ensure it's between 0-100
+  const confidencePercentage = Math.min(
+    100,
+    Math.max(0, Math.round(scanDetails.confidence || 0))
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -487,7 +523,7 @@ export default function ScanDetailsPage() {
                             : "bg-yellow-500"
                         }`}
                         style={{
-                          width: `${Math.min(100, confidencePercentage)}%`,
+                          width: `${confidencePercentage}%`,
                         }}
                       ></div>
                     </div>
@@ -552,35 +588,75 @@ export default function ScanDetailsPage() {
               </div>
 
               <div className="space-y-4">
-                <div
-                  className={`rounded-[8px] p-4 w-[922px] ${
-                    statusInfo.status === "healthy"
-                      ? "bg-[#F0FDF4]"
-                      : statusInfo.status === "disease-detected"
-                      ? "bg-[#FEF2F2]"
-                      : "bg-[#FFFBEB]"
-                  }`}
-                >
-                  <h4 className="font-semibold text-[#1F2937] font-poppins text-[16px] mb-3">
-                    {statusInfo.status === "healthy"
-                      ? "Maintenance Recommendations"
-                      : "Immediate Action Required"}
-                  </h4>
-                  <ul className="space-y-2">
-                    {treatmentSuggestions.map((suggestion, index) => (
-                      <li key={index} className="flex items-start space-x-2">
-                        <img
-                          src={CheckCircleIcon}
-                          alt="Check"
-                          className="w-3 h-3 mt-1.5 flex-shrink-0"
-                        />
-                        <span className="text-[14px] text-[#374151] font-poppins">
-                          {suggestion}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {/* Show API suggestions first if available */}
+                {apiSuggestions.length > 0 && (
+                  <div
+                    className={`rounded-[8px] p-4 w-[922px] ${
+                      statusInfo.status === "healthy"
+                        ? "bg-[#F0FDF4]"
+                        : statusInfo.status === "disease-detected"
+                        ? "bg-[#FEF2F2]"
+                        : "bg-[#FFFBEB]"
+                    }`}
+                  >
+                    <h4 className="font-semibold text-[#1F2937] font-poppins text-[16px] mb-3">
+                      {statusInfo.status === "healthy"
+                        ? "Maintenance Recommendations"
+                        : "Immediate Action Required"}
+                    </h4>
+                    <ul className="space-y-2">
+                      {apiSuggestions.map((suggestion, index) => (
+                        <li key={index} className="flex items-start space-x-2">
+                          <img
+                            src={CheckCircleIcon}
+                            alt="Check"
+                            className="w-3 h-3 mt-1.5 flex-shrink-0"
+                          />
+                          <span className="text-[14px] text-[#374151] font-poppins">
+                            {suggestion}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Show default suggestions if no API suggestions or as additional info */}
+                {apiSuggestions.length === 0 &&
+                  treatmentSuggestions.length > 0 && (
+                    <div
+                      className={`rounded-[8px] p-4 w-[922px] ${
+                        statusInfo.status === "healthy"
+                          ? "bg-[#F0FDF4]"
+                          : statusInfo.status === "disease-detected"
+                          ? "bg-[#FEF2F2]"
+                          : "bg-[#FFFBEB]"
+                      }`}
+                    >
+                      <h4 className="font-semibold text-[#1F2937] font-poppins text-[16px] mb-3">
+                        {statusInfo.status === "healthy"
+                          ? "Maintenance Recommendations"
+                          : "Immediate Action Required"}
+                      </h4>
+                      <ul className="space-y-2">
+                        {treatmentSuggestions.map((suggestion, index) => (
+                          <li
+                            key={index}
+                            className="flex items-start space-x-2"
+                          >
+                            <img
+                              src={CheckCircleIcon}
+                              alt="Check"
+                              className="w-3 h-3 mt-1.5 flex-shrink-0"
+                            />
+                            <span className="text-[14px] text-[#374151] font-poppins">
+                              {suggestion}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                 <div
                   className={`rounded-[8px] p-4 w-[922px] ${
@@ -606,40 +682,6 @@ export default function ScanDetailsPage() {
                     </span>
                   </div>
                 </div>
-
-                {/* Show API suggestions if available */}
-                {scanDetails.suggestions && (
-                  <div className="bg-[#F8FAFC] rounded-[8px] p-4 w-[922px]">
-                    <h4 className="font-semibold text-[#1F2937] font-poppins text-[16px] mb-3">
-                      Additional Recommendations from Analysis
-                    </h4>
-                    <div className="text-[14px] text-[#374151] font-poppins">
-                      <ul className="space-y-2">
-                        {scanDetails.suggestions
-                          .split("\n")
-                          .filter((line) => line.trim())
-                          .map((line, index) => {
-                            // Remove leading asterisks and trim
-                            const cleanLine = line.replace(/^\*\s*/, "").trim();
-                            if (!cleanLine) return null;
-                            return (
-                              <li
-                                key={index}
-                                className="flex items-start space-x-2"
-                              >
-                                <img
-                                  src={CheckCircleIcon}
-                                  alt="Check"
-                                  className="w-3 h-3 mt-1.5 flex-shrink-0"
-                                />
-                                <span>{cleanLine}</span>
-                              </li>
-                            );
-                          })}
-                      </ul>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
