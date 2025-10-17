@@ -44,7 +44,7 @@ export default function ScanDetailsPage() {
         setLoading(true);
         setError(null);
 
-        // First, get all identification history to find the specific scan
+        // First, get all identification history to find the farmId for this scan
         const historyRes = await fetch(
           "https://papaiaapi.onrender.com/api/owner/identification-history",
           {
@@ -58,18 +58,50 @@ export default function ScanDetailsPage() {
         if (!historyRes.ok) throw new Error("Failed to fetch scan history");
         const allScans = await historyRes.json();
 
-        // Find the specific scan
+        // Find the specific scan to get farmId
         const specificScan = Array.isArray(allScans)
           ? allScans.find((scan) => scan.id === scanId)
           : null;
 
-        if (!specificScan) {
+        if (!specificScan || !specificScan.farmId) {
           setError("Scan not found");
           setLoading(false);
           return;
         }
 
-        setScanDetails(specificScan);
+        // Now fetch the detailed prediction using the new API
+        const detailsRes = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/predictions-history/${specificScan.farmId}/${scanId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!detailsRes.ok) {
+          if (detailsRes.status === 404) {
+            throw new Error("Prediction not found");
+          }
+          throw new Error("Failed to fetch prediction details");
+        }
+
+        const detailsData = await detailsRes.json();
+
+        // The API returns an array with one item
+        const detailedScan =
+          Array.isArray(detailsData) && detailsData.length > 0
+            ? detailsData[0]
+            : null;
+
+        if (!detailedScan) {
+          setError("Prediction details not found");
+          setLoading(false);
+          return;
+        }
+
+        setScanDetails(detailedScan);
 
         // Fetch farm details
         const farmsRes = await fetch(
@@ -86,17 +118,17 @@ export default function ScanDetailsPage() {
           const farmsData = await farmsRes.json();
           if (farmsData.status === "success") {
             const farm = farmsData.farms.find(
-              (f) => f.id === specificScan.farmId
+              (f) => f.id === detailedScan.farmId
             );
             setFarmDetails(farm);
           }
         }
 
         // Fetch farmer details if we have idNumber
-        if (specificScan.idNumber && specificScan.farmId) {
+        if (detailedScan.idNumber && detailedScan.farmId) {
           try {
             const farmersRes = await fetch(
-              `https://papaiaapi.onrender.com/api/owner/farmers/${specificScan.farmId}`,
+              `https://papaiaapi.onrender.com/api/owner/farmers/${detailedScan.farmId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -109,7 +141,7 @@ export default function ScanDetailsPage() {
               const farmersData = await farmersRes.json();
               if (farmersData.status === "success") {
                 const farmer = farmersData.farmers.find(
-                  (f) => f.idNumber === specificScan.idNumber
+                  (f) => f.idNumber === detailedScan.idNumber
                 );
                 setFarmerDetails(farmer);
               }
@@ -120,7 +152,7 @@ export default function ScanDetailsPage() {
         }
       } catch (err) {
         console.error("Error fetching scan details:", err);
-        setError("Failed to load scan details");
+        setError(err.message || "Failed to load scan details");
       } finally {
         setLoading(false);
       }
@@ -318,7 +350,8 @@ export default function ScanDetailsPage() {
   const statusInfo = getStatusInfo(scanDetails.prediction);
   const dateTime = formatDateTime(scanDetails.timestamp);
   const treatmentSuggestions = getTreatmentSuggestions(scanDetails.prediction);
-  const confidencePercentage = Math.round((scanDetails.confidence || 0) * 100);
+  // Confidence is already a percentage (0-100) from the new API
+  const confidencePercentage = Math.round(scanDetails.confidence || 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -574,14 +607,36 @@ export default function ScanDetailsPage() {
                   </div>
                 </div>
 
-                {/* Show custom suggestions if available from API */}
+                {/* Show API suggestions if available */}
                 {scanDetails.suggestions && (
                   <div className="bg-[#F8FAFC] rounded-[8px] p-4 w-[922px]">
                     <h4 className="font-semibold text-[#1F2937] font-poppins text-[16px] mb-3">
-                      Additional Recommendations
+                      Additional Recommendations from Analysis
                     </h4>
-                    <div className="text-[14px] text-[#374151] font-poppins whitespace-pre-line">
-                      {scanDetails.suggestions}
+                    <div className="text-[14px] text-[#374151] font-poppins">
+                      <ul className="space-y-2">
+                        {scanDetails.suggestions
+                          .split("\n")
+                          .filter((line) => line.trim())
+                          .map((line, index) => {
+                            // Remove leading asterisks and trim
+                            const cleanLine = line.replace(/^\*\s*/, "").trim();
+                            if (!cleanLine) return null;
+                            return (
+                              <li
+                                key={index}
+                                className="flex items-start space-x-2"
+                              >
+                                <img
+                                  src={CheckCircleIcon}
+                                  alt="Check"
+                                  className="w-3 h-3 mt-1.5 flex-shrink-0"
+                                />
+                                <span>{cleanLine}</span>
+                              </li>
+                            );
+                          })}
+                      </ul>
                     </div>
                   </div>
                 )}
