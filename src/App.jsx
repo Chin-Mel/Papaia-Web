@@ -72,7 +72,7 @@ function App() {
         }
       />
       <Route
-        path="/scan-details/:id"
+        path="//scan-history-details/:scanId"
         element={
           <ProtectedRoute>
             <ScanDetailsPage />
