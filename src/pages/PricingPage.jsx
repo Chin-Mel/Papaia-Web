@@ -150,6 +150,19 @@ export default function PricingPage() {
                 )}
 
                 <div className="p-5 lg:p-8">
+                  {/* User Type Badge */}
+                  <div className="mb-3">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        plan.userType === "For Farm Managers"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {plan.userType}
+                    </span>
+                  </div>
+
                   {/* Plan Name */}
                   <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
                     {plan.name}
