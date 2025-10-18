@@ -107,9 +107,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
             <h4 className="font-bold text-gray-800 text-lg truncate">
               {getDisplayName()}
             </h4>
-            <p className="text-gray-600 text-sm truncate">
-              {userData?.email || "No email"}
-            </p>
+            <p className="text-gray-600 text-sm truncate">Farm Manager Plan</p>
           </div>
         </div>
       </div>
