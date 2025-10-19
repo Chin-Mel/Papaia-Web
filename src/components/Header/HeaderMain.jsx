@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Bell } from "lucide-react";
 import { secureLogout, getLoggedInUser } from "../../utils/security";
-import { useNotifications } from "../../hooks/useNotifications";
+import { useNotifications } from "../hooks/useNotifications";
 
 import papaiaLogo from "../../assets/papaia-logo.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
