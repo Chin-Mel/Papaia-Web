@@ -114,13 +114,7 @@ export function useNotifications() {
         return;
       }
 
-      // Optimistic update
-      setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+      console.log(`Marking notification ${notificationId} as read...`);
 
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
@@ -135,10 +129,6 @@ export function useNotifications() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-
-        // Revert optimistic update on error
-        await fetchNotifications();
-
         throw new Error(
           errorData.error || "Failed to mark notification as read"
         );
@@ -146,6 +136,16 @@ export function useNotifications() {
 
       const result = await response.json();
       console.log("Mark as read success:", result.message);
+
+      // Update local state after successful API call
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+
+      showToast("Marked as read", "success");
     } catch (error) {
       console.error("Error marking notification as read:", error);
       showToast("Failed to mark as read", "error");

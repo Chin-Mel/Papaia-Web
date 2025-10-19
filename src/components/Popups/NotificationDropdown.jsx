@@ -1,5 +1,5 @@
 // components/Popups/NotificationDropdown.js
-import { Bell, AlertTriangle, X, Check } from "lucide-react";
+import { Bell, AlertTriangle, X } from "lucide-react";
 
 export default function NotificationDropdown({
   isOpen,
@@ -50,9 +50,16 @@ export default function NotificationDropdown({
     }
   };
 
-  const handleNotificationClick = (notification) => {
+  const handleCheckboxChange = (notification, e) => {
+    e.stopPropagation();
     if (!notification.read) {
       markAsRead(notification.id);
+    }
+  };
+
+  const handleMarkAllCheckbox = (e) => {
+    if (e.target.checked && unreadCount > 0) {
+      markAllAsRead();
     }
   };
 
@@ -81,15 +88,25 @@ export default function NotificationDropdown({
           </button>
         </div>
 
-        {unreadCount > 0 && (
+        {/* Mark All as Read Checkbox */}
+        {notifications.length > 0 && (
           <div className="p-3 border-b border-gray-200 flex-shrink-0">
-            <button
-              onClick={markAllAsRead}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center gap-1"
-            >
-              <Check className="w-4 h-4" />
-              Mark all as read
-            </button>
+            <label className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors">
+              <input
+                type="checkbox"
+                checked={unreadCount === 0}
+                onChange={handleMarkAllCheckbox}
+                disabled={unreadCount === 0}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <span
+                className={`text-sm font-medium ${
+                  unreadCount === 0 ? "text-gray-400" : "text-blue-600"
+                }`}
+              >
+                Mark all as read
+              </span>
+            </label>
           </div>
         )}
 
@@ -115,20 +132,29 @@ export default function NotificationDropdown({
                 return (
                   <div
                     key={notification.id}
-                    onClick={() => handleNotificationClick(notification)}
                     className={`${styles.container} ${
                       !notification.read ? "opacity-100" : "opacity-60"
-                    } rounded-lg p-3 cursor-pointer hover:shadow-md transition-all relative`}
+                    } rounded-lg p-3 transition-all relative`}
                   >
-                    {!notification.read && (
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    )}
-
                     <div className="flex items-start gap-3">
+                      {/* Checkbox */}
+                      <input
+                        type="checkbox"
+                        checked={notification.read}
+                        onChange={(e) => handleCheckboxChange(notification, e)}
+                        disabled={notification.read}
+                        className="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 flex-shrink-0"
+                        title={
+                          notification.read ? "Already read" : "Mark as read"
+                        }
+                      />
+
+                      {/* Icon */}
                       <div className={`${styles.icon} mt-0.5 flex-shrink-0`}>
                         <AlertTriangle className="w-4 h-4" />
                       </div>
 
+                      {/* Content */}
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-gray-800 text-sm">
                           {notification.title}
