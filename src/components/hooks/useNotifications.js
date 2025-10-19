@@ -4,25 +4,24 @@ import { useState, useEffect } from "react";
 // Toast notification function
 export function showToast(message, type = "success") {
   const toast = document.createElement("div");
-
   const bgColor = type === "error" ? "bg-red-600" : "bg-green-600";
 
-  toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-in flex items-center gap-2`;
+  toast.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2`;
+  toast.style.animation = "slideIn 0.3s ease-out";
 
   toast.innerHTML = `
-    <span>${type === "error" ? "⚠️" : "🔔"}</span>
+    <span>${type === "error" ? "⚠️" : "✓"}</span>
     <span>${message}</span>
   `;
 
   document.body.appendChild(toast);
 
   setTimeout(() => {
-    toast.style.animation = "slide-out 0.3s ease-out forwards";
+    toast.style.animation = "slideOut 0.3s ease-out";
     setTimeout(() => toast.remove(), 300);
-  }, 4000);
+  }, 3000);
 }
 
-// Main hook - MAKE SURE THIS IS EXPORTED
 export function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -44,8 +43,6 @@ export function useNotifications() {
         return;
       }
 
-      console.log("Fetching notifications...");
-
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/notifications",
         {
@@ -57,44 +54,34 @@ export function useNotifications() {
         }
       );
 
-      console.log("Notifications API response status:", response.status);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
 
         if (response.status === 404) {
-          console.log("Notifications API not yet available (404)");
           setNotifications([]);
           setUnreadCount(0);
-          setError("Notifications feature is currently unavailable");
+          setLoading(false);
           return;
         }
 
         if (response.status === 401) {
-          console.error("Unauthorized - token may be invalid or expired");
           setError("Unauthorized - please log in again");
           setNotifications([]);
           setUnreadCount(0);
+          setLoading(false);
           return;
         }
 
-        console.error("Notifications API error:", response.status, errorData);
-        setError(errorData.error || `API Error: ${response.status}`);
-        setNotifications([]);
-        setUnreadCount(0);
-        return;
+        throw new Error(errorData.error || `API Error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Notifications response:", data);
-
-      // Ensure data is an array
       const notificationsArray = Array.isArray(data) ? data : [];
 
       setNotifications(notificationsArray);
       setError(null);
 
-      const unread = notificationsArray.filter((n) => n.read === false).length;
+      const unread = notificationsArray.filter((n) => !n.read).length;
       setUnreadCount(unread);
 
       console.log(
@@ -112,6 +99,11 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications();
+
+    // Poll for new notifications every 30 seconds
+    const interval = setInterval(fetchNotifications, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const markAsRead = async (notificationId) => {
@@ -122,7 +114,13 @@ export function useNotifications() {
         return;
       }
 
-      console.log(`Marking notification ${notificationId} as read...`);
+      // Optimistic update
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
 
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
@@ -137,7 +135,10 @@ export function useNotifications() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Mark as read failed:", response.status, errorData);
+
+        // Revert optimistic update on error
+        await fetchNotifications();
+
         throw new Error(
           errorData.error || "Failed to mark notification as read"
         );
@@ -145,20 +146,6 @@ export function useNotifications() {
 
       const result = await response.json();
       console.log("Mark as read success:", result.message);
-
-      // Update local state immediately for better UX
-      setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === notificationId ? { ...notif, read: true } : notif
-        )
-      );
-
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-
-      showToast("Notification marked as read", "success");
-
-      // Refetch notifications to get updated state from backend
-      await fetchNotifications();
     } catch (error) {
       console.error("Error marking notification as read:", error);
       showToast("Failed to mark as read", "error");
@@ -176,13 +163,14 @@ export function useNotifications() {
       const unreadNotifications = notifications.filter((n) => !n.read);
 
       if (unreadNotifications.length === 0) {
-        showToast("All notifications are already read", "success");
         return;
       }
 
-      console.log(
-        `Marking all ${unreadNotifications.length} notifications as read...`
+      // Optimistic update
+      setNotifications((prev) =>
+        prev.map((notif) => ({ ...notif, read: true }))
       );
+      setUnreadCount(0);
 
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
@@ -197,24 +185,16 @@ export function useNotifications() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Mark all as read failed:", response.status, errorData);
+
+        // Revert optimistic update on error
+        await fetchNotifications();
+
         throw new Error(errorData.error || "Failed to mark all as read");
       }
 
       const result = await response.json();
       console.log("Mark all as read success:", result.message);
-
-      // Update local state immediately for better UX
-      setNotifications((prev) =>
-        prev.map((notif) => ({ ...notif, read: true }))
-      );
-
-      setUnreadCount(0);
-
       showToast("All notifications marked as read", "success");
-
-      // Refetch notifications to get updated state from backend
-      await fetchNotifications();
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       showToast("Failed to mark all as read", "error");
@@ -232,5 +212,4 @@ export function useNotifications() {
   };
 }
 
-// Default export (if needed for compatibility)
 export default useNotifications;

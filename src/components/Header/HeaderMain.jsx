@@ -86,18 +86,33 @@ export default function HeaderMain() {
   const handleNotificationClick = () => {
     setIsNotifOpen(!isNotifOpen);
     setIsProfileOpen(false);
-
-    // Optional: Auto mark all as read when opening
-    if (!isNotifOpen && unreadCount > 0) {
-      setTimeout(() => markAllAsRead(), 500);
-    }
   };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const target = event.target;
+      if (
+        !target.closest(".notification-container") &&
+        !target.closest(".profile-container")
+      ) {
+        setIsNotifOpen(false);
+        setIsProfileOpen(false);
+      }
+    };
+
+    if (isNotifOpen || isProfileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isNotifOpen, isProfileOpen]);
 
   return (
     <>
       {/* Toast Animation Styles */}
       <style>{`
-        @keyframes slide-in {
+        @keyframes slideIn {
           from {
             transform: translateX(100%);
             opacity: 0;
@@ -107,7 +122,7 @@ export default function HeaderMain() {
             opacity: 1;
           }
         }
-        @keyframes slide-out {
+        @keyframes slideOut {
           from {
             transform: translateX(0);
             opacity: 1;
@@ -116,9 +131,6 @@ export default function HeaderMain() {
             transform: translateX(100%);
             opacity: 0;
           }
-        }
-        .animate-slide-in {
-          animation: slide-in 0.3s ease-out;
         }
       `}</style>
 
@@ -159,8 +171,8 @@ export default function HeaderMain() {
                 : "Loading..."}
             </span>
 
-            {/* Notification Bell with Red Dot */}
-            <div className="relative">
+            {/* Notification Bell with Badge */}
+            <div className="relative notification-container">
               <button
                 className={`relative cursor-pointer p-2 rounded-full transition-colors
                   ${
@@ -173,11 +185,10 @@ export default function HeaderMain() {
               >
                 <Bell className="w-5 h-5" />
 
-                {/* Red dot indicator - only shows when there are unread notifications */}
+                {/* Badge with unread count */}
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                    {unreadCount > 99 ? "99+" : unreadCount}
                   </span>
                 )}
               </button>
@@ -194,7 +205,7 @@ export default function HeaderMain() {
             </div>
 
             {/* Desktop Profile */}
-            <div className="hidden lg:flex items-center gap-2 relative">
+            <div className="hidden lg:flex items-center gap-2 relative profile-container">
               <button
                 className={`flex items-center gap-2 rounded-md px-2 py-1 transition-colors
                   ${
