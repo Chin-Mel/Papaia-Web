@@ -60,12 +60,9 @@ export default function NotificationDropdown({
 
   return (
     <>
-      {/* Backdrop */}
       <div className="fixed inset-0 z-40" onClick={onClose} />
 
-      {/* Dropdown */}
-      <div className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50 max-h-[80vh] flex flex-col">
-        {/* Header */}
+      <div className="absolute top-full right-0 mt-2 w-80 sm:w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-[80vh] flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
           <div className="flex items-center gap-3">
             <Bell className="w-5 h-5 text-gray-600" />
@@ -84,19 +81,18 @@ export default function NotificationDropdown({
           </button>
         </div>
 
-        {/* Mark All as Read Button */}
         {unreadCount > 0 && (
           <div className="p-3 border-b border-gray-200 flex-shrink-0">
             <button
               onClick={markAllAsRead}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center gap-1"
             >
+              <Check className="w-4 h-4" />
               Mark all as read
             </button>
           </div>
         )}
 
-        {/* Notification List */}
         <div className="overflow-y-auto flex-1">
           {loading ? (
             <div className="p-8 text-center">
@@ -124,18 +120,15 @@ export default function NotificationDropdown({
                       !notification.read ? "opacity-100" : "opacity-60"
                     } rounded-lg p-3 cursor-pointer hover:shadow-md transition-all relative`}
                   >
-                    {/* Unread indicator dot */}
                     {!notification.read && (
-                      <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <div className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                     )}
 
                     <div className="flex items-start gap-3">
-                      {/* Icon */}
                       <div className={`${styles.icon} mt-0.5 flex-shrink-0`}>
                         <AlertTriangle className="w-4 h-4" />
                       </div>
 
-                      {/* Content */}
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-gray-800 text-sm">
                           {notification.title}
