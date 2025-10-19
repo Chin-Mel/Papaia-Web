@@ -169,21 +169,22 @@ export default function DashboardPage() {
           },
           signal: controller.signal,
         }
-      );
+      ).catch(() => null); // Suppress network errors in console
 
       clearTimeout(timeoutId);
 
-      if (response.ok) {
+      if (response && response.ok) {
         const data = await response.json();
-        // Return health percentage, default to 0 if not found
-        return data.healthPercentage !== undefined ? data.healthPercentage : 0;
+        // API returns healthPercentage as string with % (e.g., "75.00%")
+        // Return as-is since it already includes the % symbol
+        return data.healthPercentage || "0.00%";
       }
 
-      // If response is not ok, return 0
-      return 0;
+      // If response is not ok or null, return default
+      return "0.00%";
     } catch (error) {
-      // Return 0 for any error (network, timeout, etc.)
-      return 0;
+      // Return default for any error (network, timeout, etc.)
+      return "0.00%";
     }
   };
 
@@ -334,9 +335,9 @@ export default function DashboardPage() {
   // Format health display - show "N/A" if health is 0
   const formatHealthDisplay = (health) => {
     if (health === 0) {
-      return "0.00";
+      return "N/A";
     }
-    return `${health}`;
+    return `${health}%`;
   };
 
   return (
