@@ -1,5 +1,5 @@
 // components/Popups/NotificationDropdown.js
-import { Bell, AlertTriangle, X } from "lucide-react";
+import { Bell, AlertTriangle, X, Check } from "lucide-react";
 
 export default function NotificationDropdown({
   isOpen,
