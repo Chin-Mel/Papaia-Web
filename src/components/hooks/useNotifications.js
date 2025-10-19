@@ -23,7 +23,7 @@ function showToast(message, type = "success") {
 }
 
 // Custom hook for notifications
-function useNotifications() {
+export default function useNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
