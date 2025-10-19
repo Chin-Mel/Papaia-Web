@@ -123,8 +123,6 @@ export default function SignUpPage() {
   // Simplified registerUser function
   const registerUser = async (userData) => {
     try {
-      console.log("Sending registration data:", userData);
-
       const response = await fetch("https://papaiaapi.onrender.com/api/user", {
         method: "POST",
         headers: {
@@ -137,7 +135,6 @@ export default function SignUpPage() {
       try {
         data = await response.json();
       } catch (jsonError) {
-        console.error("Failed to parse JSON response:", jsonError);
         throw new Error("Invalid response from server");
       }
 
@@ -149,7 +146,6 @@ export default function SignUpPage() {
 
       return data;
     } catch (error) {
-      console.error("Registration error:", error);
       if (error.message.includes("fetch")) {
         throw new Error("Network error. Please check your connection.");
       }
@@ -211,13 +207,10 @@ export default function SignUpPage() {
         if (dateParts.length === 3) {
           const [year, month, day] = dateParts;
           formattedBirthDate = `${month}-${day}-${year}`;
-          console.log("Original date:", dob);
-          console.log("Formatted birth date:", formattedBirthDate);
         } else {
           throw new Error("Invalid date format");
         }
       } catch (dateError) {
-        console.error("Date formatting error:", dateError);
         setError("Invalid date format. Please select a valid date.");
         setIsLoading(false);
         return;
@@ -245,10 +238,8 @@ export default function SignUpPage() {
     };
 
     try {
-      console.log("Attempting registration with data:", userData);
       const result = await registerUser(userData);
 
-      console.log("Registration successful:", result);
       setError("");
 
       const successMessage =
@@ -258,8 +249,6 @@ export default function SignUpPage() {
 
       window.location.href = "/sign-in";
     } catch (error) {
-      console.error("Registration failed:", error);
-
       if (
         error.message.includes("Email already exists") ||
         error.message.includes("Username already exists")

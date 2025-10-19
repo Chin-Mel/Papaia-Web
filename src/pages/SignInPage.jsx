@@ -63,7 +63,6 @@ export default function SignInPage() {
       }
 
       const loginData = await loginResponse.json();
-      console.log("Login successful:", loginData);
 
       // ✅ Check only the one field your API actually returns
       if (loginData.user?.emailVerified === false) {
@@ -73,8 +72,6 @@ export default function SignInPage() {
         setLoading(false);
         return;
       }
-
-      console.log("Verification check passed");
 
       // ✅ Check if user has farmer role (block farmers from accessing owner dashboard)
       if (
