@@ -334,9 +334,9 @@ export default function DashboardPage() {
   // Format health display - show "N/A" if health is 0
   const formatHealthDisplay = (health) => {
     if (health === 0) {
-      return "N/A";
+      return "0.00";
     }
-    return `${health}%`;
+    return `${health}`;
   };
 
   return (
