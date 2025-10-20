@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import FooterMain from "../components/Footer/FooterMain";
+import HeaderMain from "../components/Header/HeaderMain";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 export default function ScanDetailsPage() {
   const { scanId } = useParams();
@@ -32,19 +36,31 @@ export default function ScanDetailsPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch all scans to find the specific one
-        const historyRes = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/identification-history",
-          {
+        // Fetch all data in parallel for better performance
+        const [historyRes, farmsRes] = await Promise.all([
+          fetch(
+            "https://papaiaapi.onrender.com/api/owner/identification-history",
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          ),
+          fetch("https://papaiaapi.onrender.com/api/owner/farms", {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }
-        );
+          }),
+        ]);
 
         if (!historyRes.ok) throw new Error("Failed to fetch scan history");
-        const allScans = await historyRes.json();
+
+        const [allScans, farmsData] = await Promise.all([
+          historyRes.json(),
+          farmsRes.json(),
+        ]);
 
         // Find the specific scan
         const specificScan = Array.isArray(allScans)
@@ -63,7 +79,15 @@ export default function ScanDetailsPage() {
           return;
         }
 
-        // Try to get detailed prediction data
+        // Set farm details
+        if (farmsData.status === "success") {
+          const farm = farmsData.farms.find(
+            (f) => f.id === specificScan.farmId
+          );
+          setFarmDetails(farm);
+        }
+
+        // Try to get detailed prediction data (non-blocking)
         const predictionId = specificScan.predictionId || specificScan.id;
         let detailedScanData = null;
 
@@ -103,28 +127,7 @@ export default function ScanDetailsPage() {
 
         setScanDetails(finalScanData);
 
-        // Fetch farm details using the farmId from specificScan
-        const farmsRes = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/farms",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (farmsRes.ok) {
-          const farmsData = await farmsRes.json();
-          if (farmsData.status === "success") {
-            const farm = farmsData.farms.find(
-              (f) => f.id === specificScan.farmId
-            );
-            setFarmDetails(farm);
-          }
-        }
-
-        // Fetch farmer details if available
+        // Fetch farmer details if available (non-blocking)
         if (specificScan.idNumber && specificScan.farmId) {
           try {
             const farmersRes = await fetch(
@@ -167,8 +170,10 @@ export default function ScanDetailsPage() {
         status: "healthy",
         label: "Healthy",
         color: "text-green-600",
-        bgColor: "bg-green-100",
+        bgColor: "bg-green-50",
+        borderColor: "border-green-200",
         icon: "🟢",
+        badgeBg: "bg-green-100",
       };
 
     const predLower = prediction.toLowerCase();
@@ -177,43 +182,53 @@ export default function ScanDetailsPage() {
         status: "healthy",
         label: "Healthy",
         color: "text-green-600",
-        bgColor: "bg-green-100",
+        bgColor: "bg-green-50",
+        borderColor: "border-green-200",
         icon: "🟢",
+        badgeBg: "bg-green-100",
       };
     }
     if (predLower.includes("ring spot") || predLower.includes("virus")) {
       return {
         status: "disease-detected",
-        label: "Ring Spot Virus Detected",
-        color: "text-orange-600",
-        bgColor: "bg-orange-100",
-        icon: "🟠",
+        label: "Disease Detected",
+        color: "text-red-600",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
+        icon: "🔴",
+        badgeBg: "bg-red-100",
       };
     }
     if (predLower.includes("anthracnose")) {
       return {
         status: "disease-detected",
-        label: "Anthracnose Detected",
+        label: "Disease Detected",
         color: "text-red-600",
-        bgColor: "bg-red-100",
+        bgColor: "bg-red-50",
+        borderColor: "border-red-200",
         icon: "🔴",
+        badgeBg: "bg-red-100",
       };
     }
     if (predLower.includes("powdery mildew")) {
       return {
         status: "disease-detected",
-        label: "Powdery Mildew Detected",
+        label: "Disease Detected",
         color: "text-blue-600",
-        bgColor: "bg-blue-100",
+        bgColor: "bg-blue-50",
+        borderColor: "border-blue-200",
         icon: "🔵",
+        badgeBg: "bg-blue-100",
       };
     }
     return {
       status: "needs-attention",
       label: "Needs Attention",
       color: "text-yellow-600",
-      bgColor: "bg-yellow-100",
+      bgColor: "bg-yellow-50",
+      borderColor: "border-yellow-200",
       icon: "⚠️",
+      badgeBg: "bg-yellow-100",
     };
   };
 
@@ -305,31 +320,51 @@ export default function ScanDetailsPage() {
       .filter((line) => line.length > 0);
   };
 
+  const handleExport = () => {
+    if (!reportRef.current) return;
+    html2canvas(reportRef.current, { scale: 2 }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "pt", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`scan-report-${scanId}.pdf`);
+    });
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <div className="text-gray-500">Loading scan details...</div>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <div className="text-gray-500">Loading scan details...</div>
+          </div>
         </div>
+        <FooterMain />
       </div>
     );
   }
 
   if (error || !scanDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <div className="text-red-500 text-lg font-semibold">
-            {error || "Scan not found"}
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center space-y-4">
+            <div className="text-red-500 text-lg font-semibold">
+              {error || "Scan not found"}
+            </div>
+            <button
+              onClick={() => navigate("/scan-history-log")}
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Back to Scan History
+            </button>
           </div>
-          <button
-            onClick={() => navigate("/scan-history-log")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-          >
-            Back to Scan History
-          </button>
         </div>
+        <FooterMain />
       </div>
     );
   }
@@ -344,185 +379,308 @@ export default function ScanDetailsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Header */}
-        <div className="mb-6">
-          <button
-            onClick={() => navigate("/scan-history-log")}
-            className="text-orange-500 hover:text-orange-600 mb-4 flex items-center gap-2"
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Breadcrumb */}
+          <div className="mb-6">
+            <button
+              onClick={() => navigate("/scan-history-log")}
+              className="text-sm text-gray-600 hover:text-orange-500 flex items-center gap-1 mb-4"
+            >
+              <span>Scan History</span>
+              <span>/</span>
+              <span className="font-medium text-gray-900">Scan Results</span>
+            </button>
+          </div>
+
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Scan Results
+              </h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Detailed analysis of your crop health assessment
+              </p>
+            </div>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleExport}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Export Report
+              </button>
+              <button
+                onClick={() => navigate("/scan-history-log")}
+                className="flex-1 sm:flex-none px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 text-sm font-medium transition-colors"
+              >
+                Show Results
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={reportRef}
+            className="grid grid-cols-1 lg:grid-cols-3 gap-6"
           >
-            ← Back to Scan History
-          </button>
-          <h1 className="text-3xl font-bold text-gray-900">Scan Details</h1>
-          <p className="text-gray-600 mt-2">
-            Detailed analysis and treatment recommendations
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content - 2 columns */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Image and Basic Info */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-              <img
-                src={
-                  scanDetails.imageUrl ||
-                  "https://via.placeholder.com/800x400?text=No+Image"
-                }
-                alt="Scan"
-                className="w-full h-64 sm:h-96 object-cover"
-                onError={(e) => {
-                  e.target.src =
-                    "https://via.placeholder.com/800x400?text=No+Image";
-                }}
-              />
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl">{statusInfo.icon}</span>
+            {/* Left Column - Image and Status */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Scanned Image */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Scanned Image
+                  </h2>
+                </div>
+                <div className="p-4">
+                  <img
+                    src={
+                      scanDetails.imageUrl ||
+                      "https://via.placeholder.com/400x300?text=No+Image"
+                    }
+                    alt="Scan"
+                    className="w-full h-48 sm:h-64 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/400x300?text=No+Image";
+                    }}
+                  />
+                  <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div>
-                      <div
-                        className={`text-xl font-semibold ${statusInfo.color}`}
-                      >
-                        {scanDetails.prediction}
+                      <div className="font-medium text-gray-900">
+                        Scan Date:
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Confidence: {confidencePercentage}%
+                      <div>{dateTime.date}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-900">
+                        Scan Time:
                       </div>
+                      <div>{dateTime.time}</div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Scan Status */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Scan Status
+                  </h2>
+                </div>
+                <div className="p-4">
+                  {/* Status Badge */}
                   <div
-                    className={`px-4 py-2 rounded-full ${statusInfo.bgColor} ${statusInfo.color} font-medium`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg ${statusInfo.badgeBg} border ${statusInfo.borderColor} mb-4`}
                   >
-                    {statusInfo.label}
+                    <span className="text-xl">{statusInfo.icon}</span>
+                    <span className={`font-semibold ${statusInfo.color}`}>
+                      {statusInfo.label}
+                    </span>
                   </div>
-                </div>
 
-                {/* Progress bar */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>Confidence Level</span>
-                    <span>{confidencePercentage}%</span>
+                  {/* Disease Info */}
+                  <div className="mb-4">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Disease Identified:
+                    </div>
+                    <div className={`text-lg font-bold ${statusInfo.color}`}>
+                      {scanDetails.prediction}
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-orange-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${confidencePercentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            {/* Treatment Suggestions */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                💊 Treatment Suggestions
-              </h2>
-              <ul className="space-y-3">
-                {(apiSuggestions.length > 0
-                  ? apiSuggestions
-                  : treatmentSuggestions
-                ).map((suggestion, idx) => (
-                  <li key={idx} className="flex items-start gap-3">
-                    <span className="text-orange-500 font-bold mt-1">•</span>
-                    <span className="text-gray-700">{suggestion}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Sidebar - 1 column */}
-          <div className="space-y-6">
-            {/* Scan Information */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Scan Information
-              </h3>
-              <div className="space-y-3">
-                <div>
-                  <div className="text-sm text-gray-500">Date</div>
-                  <div className="text-gray-900 font-medium">
-                    {dateTime.date}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500">Time</div>
-                  <div className="text-gray-900 font-medium">
-                    {dateTime.time}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500">Scan ID</div>
-                  <div className="text-gray-900 font-mono text-sm">
-                    {scanId}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Farm Information */}
-            {farmDetails && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Farm Information
-                </h3>
-                <div className="space-y-3">
+                  {/* Confidence Level */}
                   <div>
-                    <div className="text-sm text-gray-500">Farm Name</div>
-                    <div className="text-gray-900 font-medium">
-                      {farmDetails.farmName}
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600">Confidence Level</span>
+                      <span className="font-semibold text-gray-900">
+                        {confidencePercentage}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-orange-500 h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${confidencePercentage}%` }}
+                      ></div>
                     </div>
                   </div>
-                  {farmDetails.location && (
-                    <div>
-                      <div className="text-sm text-gray-500">Location</div>
-                      <div className="text-gray-900">
-                        {farmDetails.location}
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
-            )}
 
-            {/* Farmer Information */}
-            {(farmerDetails || scanDetails.idNumber) && (
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Farmer Information
-                </h3>
-                <div className="space-y-3">
-                  {farmerDetails?.name && (
-                    <div>
-                      <div className="text-sm text-gray-500">Name</div>
-                      <div className="text-gray-900 font-medium">
-                        {farmerDetails.name}
+              {/* Farm Information */}
+              {farmDetails && (
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="p-4 border-b border-gray-200">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Farm Information
+                    </h2>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <svg
+                          className="w-5 h-5 text-gray-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                          />
+                        </svg>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-xs text-gray-500">Farm Name</div>
+                        <div className="font-medium text-gray-900">
+                          {farmDetails.farmName}
+                        </div>
                       </div>
                     </div>
-                  )}
-                  <div>
-                    <div className="text-sm text-gray-500">Farmer ID</div>
-                    <div className="text-gray-900 font-mono text-sm">
-                      {farmerDetails?.idNumber || scanDetails.idNumber}
-                    </div>
+                    {farmerDetails && (
+                      <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
+                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                          <svg
+                            className="w-5 h-5 text-gray-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-xs text-gray-500">Farmer</div>
+                          <div className="font-medium text-gray-900">
+                            {farmerDetails.name || scanDetails.idNumber}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {farmerDetails?.contactNumber && (
-                    <div>
-                      <div className="text-sm text-gray-500">Contact</div>
-                      <div className="text-gray-900">
-                        {farmerDetails.contactNumber}
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Treatment */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-full">
+                <div className="p-4 border-b border-gray-200 bg-green-50">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-green-600"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Suggested Treatment
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-4 sm:p-6">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      Immediate Action Required:
+                    </h3>
+                    <p className="text-sm text-gray-700 mb-4">
+                      {apiSuggestions.length > 0
+                        ? apiSuggestions[0]
+                        : treatmentSuggestions[0]}
+                    </p>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {(apiSuggestions.length > 0
+                      ? apiSuggestions.slice(1)
+                      : treatmentSuggestions.slice(1)
+                    ).map((suggestion, idx) => (
+                      <li key={idx} className="flex items-start gap-3 text-sm">
+                        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 flex items-center justify-center mt-0.5">
+                          <svg
+                            className="w-4 h-4 text-green-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-gray-700 flex-1">
+                          {suggestion}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {statusInfo.status === "disease-detected" && (
+                    <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                      <div className="flex gap-2">
+                        <svg
+                          className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-yellow-800">
+                            Treatment should begin within 24 hours
+                          </p>
+                          <p className="text-xs text-yellow-700 mt-1">
+                            Early intervention is crucial for preventing further
+                            spread
+                          </p>
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <FooterMain />
     </div>
   );
 }
