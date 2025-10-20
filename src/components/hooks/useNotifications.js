@@ -141,6 +141,7 @@ export function useNotifications() {
         `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`
       );
 
+      // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
         `https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`,
         {
@@ -165,7 +166,7 @@ export function useNotifications() {
       const result = await response.json();
       console.log("[DEBUG] Mark as read API response:", result);
 
-      // Update local state immediately for better UX
+      // FIXED: Only update state AFTER successful API call
       setNotifications((prev) =>
         prev.map((notif) =>
           notif.id === notificationId ? { ...notif, read: true } : notif
@@ -174,20 +175,17 @@ export function useNotifications() {
       setUnreadCount((prev) => Math.max(0, prev - 1));
 
       console.log(
-        `[DEBUG] Local state updated for notification ${notificationId}`
+        `[DEBUG] Successfully marked notification ${notificationId} as read`
       );
       showToast("Marked as read", "success");
 
-      // Refetch after 1 second to verify backend persistence
-      setTimeout(async () => {
-        console.log(
-          "[DEBUG] Refetching to verify backend persisted the change..."
-        );
-        await fetchNotifications();
-      }, 1000);
+      // REMOVED: The problematic refetch that was overwriting changes
+      // The next polling cycle will handle syncing with backend
     } catch (error) {
       console.error("[DEBUG] Error in markAsRead:", error);
       showToast("Failed to mark as read", "error");
+      // Refetch on error to ensure state consistency
+      await fetchNotifications();
     }
   };
 
@@ -213,6 +211,7 @@ export function useNotifications() {
         `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/read-all`
       );
 
+      // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
         "https://papaiaapi.onrender.com/owner/notifications/read-all",
         {
@@ -235,27 +234,22 @@ export function useNotifications() {
       const result = await response.json();
       console.log("[DEBUG] Mark all as read API response:", result);
 
-      // Update local state immediately
+      // FIXED: Only update state AFTER successful API call
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
       );
       setUnreadCount(0);
 
-      console.log(
-        "[DEBUG] Local state updated - all notifications marked as read"
-      );
+      console.log("[DEBUG] Successfully marked all notifications as read");
       showToast("All notifications marked as read", "success");
 
-      // Refetch after 1 second to verify backend persistence
-      setTimeout(async () => {
-        console.log(
-          "[DEBUG] Refetching to verify backend persisted the changes..."
-        );
-        await fetchNotifications();
-      }, 1000);
+      // REMOVED: The problematic refetch that was overwriting changes
+      // The next polling cycle will handle syncing with backend
     } catch (error) {
       console.error("[DEBUG] Error in markAllAsRead:", error);
       showToast("Failed to mark all as read", "error");
+      // Refetch on error to ensure state consistency
+      await fetchNotifications();
     }
   };
 
