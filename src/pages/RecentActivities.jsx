@@ -87,7 +87,11 @@ export default function RecentActivities({ limit = 5 }) {
                   act.details?.farmerName ||
                   act.details?.farmerId ||
                   "Unknown Farmer"
-                }"`,
+                }"${
+                  act.details?.farmName
+                    ? ` from farm "${act.details.farmName}"`
+                    : ""
+                }`,
               };
               break;
             case "DEACTIVATE_FARM":
@@ -122,7 +126,11 @@ export default function RecentActivities({ limit = 5 }) {
                   act.details?.farmerName ||
                   act.details?.idNumber ||
                   "Unknown Farmer"
-                }"`,
+                }"${
+                  act.details?.farmName
+                    ? ` to farm "${act.details.farmName}"`
+                    : ""
+                }`,
               };
               break;
             case "UPDATE_FARM":
@@ -134,6 +142,55 @@ export default function RecentActivities({ limit = 5 }) {
                 description: `Updated farm "${
                   act.details?.farmName || "Unknown Farm"
                 }"`,
+              };
+              break;
+            case "UPDATE_PROFILE":
+            case "UPDATE_USER":
+              style = {
+                icon: "✏️",
+                iconBg: "bg-purple-100",
+                bgColor: "bg-purple-50",
+                title: "Profile Updated",
+                description:
+                  act.details?.description || "Updated profile information",
+              };
+              break;
+            case "DEACTIVATE_ACCOUNT":
+              style = {
+                icon: "⏸️",
+                iconBg: "bg-gray-100",
+                bgColor: "bg-gray-50",
+                title: "Account Deactivated",
+                description: "Account has been temporarily deactivated",
+              };
+              break;
+            case "REACTIVATE_ACCOUNT":
+              style = {
+                icon: "▶️",
+                iconBg: "bg-green-100",
+                bgColor: "bg-green-50",
+                title: "Account Reactivated",
+                description: "Account has been reactivated",
+              };
+              break;
+            case "DELETE_FARM":
+              style = {
+                icon: "🗑️",
+                iconBg: "bg-red-100",
+                bgColor: "bg-red-50",
+                title: "Farm Deleted",
+                description: `Deleted farm "${
+                  act.details?.farmName || "Unknown Farm"
+                }"`,
+              };
+              break;
+            case "CHANGE_PASSWORD":
+              style = {
+                icon: "🔐",
+                iconBg: "bg-yellow-100",
+                bgColor: "bg-yellow-50",
+                title: "Password Changed",
+                description: "Account password was updated",
               };
               break;
             default:
