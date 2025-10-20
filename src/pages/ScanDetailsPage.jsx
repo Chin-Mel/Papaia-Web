@@ -476,45 +476,51 @@ export default function ScanDetailsPage() {
               <div className="lg:col-span-2 space-y-6">
                 {/* Scan Status */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
+                  <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-900">
                       Scan Status
                     </h2>
-                  </div>
-                  <div className="p-4">
-                    {/* Status Badge */}
                     <div
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg ${statusInfo.badgeBg} border ${statusInfo.borderColor} mb-4`}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${statusInfo.badgeBg} border ${statusInfo.borderColor}`}
                     >
-                      <span className="text-xl">{statusInfo.icon}</span>
-                      <span className={`font-semibold ${statusInfo.color}`}>
+                      <span className="text-sm">{statusInfo.icon}</span>
+                      <span
+                        className={`font-semibold text-sm ${statusInfo.color}`}
+                      >
                         {statusInfo.label}
                       </span>
                     </div>
-
-                    {/* Disease Info */}
-                    <div className="mb-4">
-                      <div className="text-sm text-gray-600 mb-1">
-                        Disease Identified:
-                      </div>
-                      <div className={`text-lg font-bold ${statusInfo.color}`}>
-                        {scanDetails.prediction}
-                      </div>
-                    </div>
-
-                    {/* Confidence Level */}
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Confidence Level</span>
-                        <span className="font-semibold text-gray-900">
-                          {confidencePercentage}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Disease Info */}
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">
+                          Disease Identified
+                        </div>
                         <div
-                          className="bg-orange-500 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${confidencePercentage}%` }}
-                        ></div>
+                          className={`text-xl font-bold ${statusInfo.color}`}
+                        >
+                          {scanDetails.prediction}
+                        </div>
+                      </div>
+
+                      {/* Confidence Level */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-gray-600">
+                            Confidence Level
+                          </span>
+                          <span className="font-semibold text-gray-900">
+                            {confidencePercentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <div
+                            className="bg-red-500 h-2.5 rounded-full transition-all duration-500"
+                            style={{ width: `${confidencePercentage}%` }}
+                          ></div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -528,55 +534,47 @@ export default function ScanDetailsPage() {
                         Farm Information
                       </h2>
                     </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                          <svg
-                            className="w-5 h-5 text-gray-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                            />
-                          </svg>
-                        </div>
-                        <div className="flex-1">
-                          <div className="text-xs text-gray-500">Farm Name</div>
-                          <div className="font-medium text-gray-900">
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Farmer Info */}
+                        {farmerDetails && (
+                          <div className="flex items-start gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <svg
+                                className="w-6 h-6 text-gray-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                />
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">
+                                {farmerDetails.name || scanDetails.idNumber}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Farmer
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Farm Name */}
+                        <div>
+                          <div className="text-sm text-gray-600 mb-1">
+                            Farm Name
+                          </div>
+                          <div className="font-semibold text-gray-900">
                             {farmDetails.farmName}
                           </div>
                         </div>
                       </div>
-                      {farmerDetails && (
-                        <div className="flex items-start gap-3 pt-3 border-t border-gray-100">
-                          <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                            <svg
-                              className="w-5 h-5 text-gray-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex-1">
-                            <div className="text-xs text-gray-500">Farmer</div>
-                            <div className="font-medium text-gray-900">
-                              {farmerDetails.name || scanDetails.idNumber}
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )}
