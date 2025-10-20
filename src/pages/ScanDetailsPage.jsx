@@ -1,16 +1,9 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-
-// Note: These imports won't work in this demo environment
-// import jsPDF from "jspdf";
-// import html2canvas from "html2canvas";
-// import FooterMain from "../components/Footer/FooterMain";
-// import HeaderMain from "../components/Header/HeaderMain";
+import { useParams, useNavigate } from "react-router-dom";
 
 export default function ScanDetailsPage() {
   const { scanId } = useParams();
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
@@ -21,6 +14,8 @@ export default function ScanDetailsPage() {
   const reportRef = useRef(null);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
     if (!token) {
       navigate("/sign-in", { replace: true });
       return;
@@ -37,9 +32,7 @@ export default function ScanDetailsPage() {
         setLoading(true);
         setError(null);
 
-        console.log("🔍 Fetching scan details for scanId:", scanId);
-
-        // First, get all identification history to find the farmId for this scan
+        // Fetch all scans to find the specific one
         const historyRes = await fetch(
           "https://papaiaapi.onrender.com/api/owner/identification-history",
           {
@@ -53,107 +46,64 @@ export default function ScanDetailsPage() {
         if (!historyRes.ok) throw new Error("Failed to fetch scan history");
         const allScans = await historyRes.json();
 
-        console.log("📊 All scans:", allScans);
-
-        // Find the specific scan to get farmId
+        // Find the specific scan
         const specificScan = Array.isArray(allScans)
           ? allScans.find((scan) => scan.id === scanId)
           : null;
 
-        console.log("🎯 Specific scan found:", specificScan);
-
         if (!specificScan) {
-          console.error("❌ Scan not found");
           setError("Scan not found");
           setLoading(false);
           return;
         }
 
-        // Check if we have the necessary IDs
         if (!specificScan.farmId) {
-          console.error("❌ Missing farmId");
           setError("Missing farm information");
           setLoading(false);
           return;
         }
 
-        // IMPORTANT FIX: The identification history might have a different ID structure
-        // Try to get the actual prediction ID from the scan data
+        // Try to get detailed prediction data
         const predictionId = specificScan.predictionId || specificScan.id;
+        let detailedScanData = null;
 
-        console.log("🏠 Farm ID:", specificScan.farmId);
-        console.log("🆔 Using Prediction ID:", predictionId);
-        console.log(
-          "📍 Calling API:",
-          `predictions-history/${specificScan.farmId}/${predictionId}`
-        );
+        try {
+          const detailsRes = await fetch(
+            `https://papaiaapi.onrender.com/api/owner/predictions-history/${specificScan.farmId}/${predictionId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
-        // Now fetch the detailed prediction using the new API
-        const detailsRes = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/predictions-history/${specificScan.farmId}/${predictionId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
+          if (detailsRes.ok) {
+            const detailsData = await detailsRes.json();
+            detailedScanData =
+              Array.isArray(detailsData) && detailsData.length > 0
+                ? detailsData[0]
+                : null;
           }
-        );
-
-        console.log("📡 Details response status:", detailsRes.status);
-
-        if (!detailsRes.ok) {
-          const errorText = await detailsRes.text();
-          console.error("❌ API Error:", errorText);
-
-          if (detailsRes.status === 404) {
-            // If prediction not found with this ID, use the scan data we already have
-            console.log("⚠️ Falling back to scan data from history");
-            setScanDetails({
-              ...specificScan,
-              prediction: specificScan.prediction || "Unknown",
-              confidence: specificScan.confidence || 0,
-              imageUrl: specificScan.imageUrl || "",
-              timestamp: specificScan.timestamp || new Date().toISOString(),
-              suggestions: specificScan.suggestions || "",
-              farmId: specificScan.farmId,
-              idNumber: specificScan.idNumber || "Unknown",
-            });
-          } else if (detailsRes.status === 403) {
-            throw new Error("Access denied. You do not own this farm.");
-          } else {
-            throw new Error(`Failed to fetch prediction details: ${errorText}`);
-          }
-        } else {
-          const detailsData = await detailsRes.json();
-          console.log("✅ Details data received:", detailsData);
-
-          // The API returns an array with one item
-          const detailedScan =
-            Array.isArray(detailsData) && detailsData.length > 0
-              ? detailsData[0]
-              : null;
-
-          console.log("📝 Detailed scan:", detailedScan);
-
-          if (!detailedScan) {
-            console.error("❌ No detailed scan in response");
-            // Fall back to basic scan data
-            setScanDetails({
-              ...specificScan,
-              prediction: specificScan.prediction || "Unknown",
-              confidence: specificScan.confidence || 0,
-              imageUrl: specificScan.imageUrl || "",
-              timestamp: specificScan.timestamp || new Date().toISOString(),
-              suggestions: specificScan.suggestions || "",
-              farmId: specificScan.farmId,
-              idNumber: specificScan.idNumber || "Unknown",
-            });
-          } else {
-            setScanDetails(detailedScan);
-          }
+        } catch (detailsError) {
+          console.warn("Could not fetch detailed prediction:", detailsError);
         }
 
-        // Fetch farm details
+        // Use detailed data if available, otherwise use basic scan data
+        const finalScanData = detailedScanData || {
+          ...specificScan,
+          prediction: specificScan.prediction || "Unknown",
+          confidence: specificScan.confidence || 0,
+          imageUrl: specificScan.imageUrl || "",
+          timestamp: specificScan.timestamp || new Date().toISOString(),
+          suggestions: specificScan.suggestions || "",
+          farmId: specificScan.farmId,
+          idNumber: specificScan.idNumber || "Unknown",
+        };
+
+        setScanDetails(finalScanData);
+
+        // Fetch farm details using the farmId from specificScan
         const farmsRes = await fetch(
           "https://papaiaapi.onrender.com/api/owner/farms",
           {
@@ -168,20 +118,17 @@ export default function ScanDetailsPage() {
           const farmsData = await farmsRes.json();
           if (farmsData.status === "success") {
             const farm = farmsData.farms.find(
-              (f) => f.id === (scanDetails?.farmId || specificScan.farmId)
+              (f) => f.id === specificScan.farmId
             );
             setFarmDetails(farm);
           }
         }
 
-        // Fetch farmer details if we have idNumber
-        const currentIdNumber = scanDetails?.idNumber || specificScan.idNumber;
-        const currentFarmId = scanDetails?.farmId || specificScan.farmId;
-
-        if (currentIdNumber && currentFarmId) {
+        // Fetch farmer details if available
+        if (specificScan.idNumber && specificScan.farmId) {
           try {
             const farmersRes = await fetch(
-              `https://papaiaapi.onrender.com/api/owner/farmers/${currentFarmId}`,
+              `https://papaiaapi.onrender.com/api/owner/farmers/${specificScan.farmId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
@@ -194,7 +141,7 @@ export default function ScanDetailsPage() {
               const farmersData = await farmersRes.json();
               if (farmersData.status === "success") {
                 const farmer = farmersData.farmers.find(
-                  (f) => f.idNumber === currentIdNumber
+                  (f) => f.idNumber === specificScan.idNumber
                 );
                 setFarmerDetails(farmer);
               }
@@ -204,7 +151,7 @@ export default function ScanDetailsPage() {
           }
         }
       } catch (err) {
-        console.error("💥 Error fetching scan details:", err);
+        console.error("Error fetching scan details:", err);
         setError(err.message || "Failed to load scan details");
       } finally {
         setLoading(false);
@@ -212,9 +159,8 @@ export default function ScanDetailsPage() {
     };
 
     fetchScanDetails();
-  }, [scanId, token, navigate]);
+  }, [scanId, navigate]);
 
-  // Helper functions remain the same...
   const getStatusInfo = (prediction) => {
     if (!prediction)
       return {
@@ -222,6 +168,7 @@ export default function ScanDetailsPage() {
         label: "Healthy",
         color: "text-green-600",
         bgColor: "bg-green-100",
+        icon: "🟢",
       };
 
     const predLower = prediction.toLowerCase();
@@ -231,14 +178,34 @@ export default function ScanDetailsPage() {
         label: "Healthy",
         color: "text-green-600",
         bgColor: "bg-green-100",
+        icon: "🟢",
       };
     }
-    if (predLower.includes("virus") || predLower.includes("disease")) {
+    if (predLower.includes("ring spot") || predLower.includes("virus")) {
       return {
         status: "disease-detected",
-        label: "Disease Detected",
+        label: "Ring Spot Virus Detected",
+        color: "text-orange-600",
+        bgColor: "bg-orange-100",
+        icon: "🟠",
+      };
+    }
+    if (predLower.includes("anthracnose")) {
+      return {
+        status: "disease-detected",
+        label: "Anthracnose Detected",
         color: "text-red-600",
         bgColor: "bg-red-100",
+        icon: "🔴",
+      };
+    }
+    if (predLower.includes("powdery mildew")) {
+      return {
+        status: "disease-detected",
+        label: "Powdery Mildew Detected",
+        color: "text-blue-600",
+        bgColor: "bg-blue-100",
+        icon: "🔵",
       };
     }
     return {
@@ -246,18 +213,13 @@ export default function ScanDetailsPage() {
       label: "Needs Attention",
       color: "text-yellow-600",
       bgColor: "bg-yellow-100",
+      icon: "⚠️",
     };
   };
 
   const formatDateTime = (timestamp) => {
     try {
-      let date;
-      if (typeof timestamp === "string" && timestamp.includes("/")) {
-        date = new Date(timestamp);
-      } else {
-        date = new Date(timestamp);
-      }
-
+      const date = new Date(timestamp);
       if (isNaN(date.getTime())) {
         return { date: "Unknown Date", time: "Unknown Time" };
       }
@@ -337,7 +299,6 @@ export default function ScanDetailsPage() {
 
   const parseSuggestions = (suggestions) => {
     if (!suggestions) return [];
-
     return suggestions
       .split("\n")
       .map((line) => line.replace(/^\*\s*/, "").trim())
@@ -346,8 +307,9 @@ export default function ScanDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="flex justify-center items-center h-64">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
           <div className="text-gray-500">Loading scan details...</div>
         </div>
       </div>
@@ -356,14 +318,14 @@ export default function ScanDetailsPage() {
 
   if (error || !scanDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="flex flex-col justify-center items-center h-64 space-y-4">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
           <div className="text-red-500 text-lg font-semibold">
             {error || "Scan not found"}
           </div>
           <button
             onClick={() => navigate("/scan-history-log")}
-            className="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
           >
             Back to Scan History
           </button>
@@ -382,42 +344,183 @@ export default function ScanDetailsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Scan Results</h1>
-
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Scan Status</h2>
-          <div
-            className={`inline-block px-4 py-2 rounded-full ${statusInfo.bgColor} ${statusInfo.color}`}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Header */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate("/scan-history-log")}
+            className="text-orange-500 hover:text-orange-600 mb-4 flex items-center gap-2"
           >
-            {statusInfo.label}
-          </div>
-          <div className="mt-4">
-            <p className="text-gray-600">
-              Disease:{" "}
-              <span className="font-semibold">{scanDetails.prediction}</span>
-            </p>
-            <p className="text-gray-600">
-              Confidence:{" "}
-              <span className="font-semibold">{confidencePercentage}%</span>
-            </p>
-          </div>
+            ← Back to Scan History
+          </button>
+          <h1 className="text-3xl font-bold text-gray-900">Scan Details</h1>
+          <p className="text-gray-600 mt-2">
+            Detailed analysis and treatment recommendations
+          </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Treatment Suggestions</h2>
-          <ul className="space-y-2">
-            {(apiSuggestions.length > 0
-              ? apiSuggestions
-              : treatmentSuggestions
-            ).map((suggestion, idx) => (
-              <li key={idx} className="flex items-start">
-                <span className="mr-2">•</span>
-                <span>{suggestion}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - 2 columns */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Image and Basic Info */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <img
+                src={
+                  scanDetails.imageUrl ||
+                  "https://via.placeholder.com/800x400?text=No+Image"
+                }
+                alt="Scan"
+                className="w-full h-64 sm:h-96 object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://via.placeholder.com/800x400?text=No+Image";
+                }}
+              />
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{statusInfo.icon}</span>
+                    <div>
+                      <div
+                        className={`text-xl font-semibold ${statusInfo.color}`}
+                      >
+                        {scanDetails.prediction}
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Confidence: {confidencePercentage}%
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className={`px-4 py-2 rounded-full ${statusInfo.bgColor} ${statusInfo.color} font-medium`}
+                  >
+                    {statusInfo.label}
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Confidence Level</span>
+                    <span>{confidencePercentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-orange-500 h-2 rounded-full transition-all duration-500"
+                      style={{ width: `${confidencePercentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Treatment Suggestions */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                💊 Treatment Suggestions
+              </h2>
+              <ul className="space-y-3">
+                {(apiSuggestions.length > 0
+                  ? apiSuggestions
+                  : treatmentSuggestions
+                ).map((suggestion, idx) => (
+                  <li key={idx} className="flex items-start gap-3">
+                    <span className="text-orange-500 font-bold mt-1">•</span>
+                    <span className="text-gray-700">{suggestion}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Sidebar - 1 column */}
+          <div className="space-y-6">
+            {/* Scan Information */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Scan Information
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm text-gray-500">Date</div>
+                  <div className="text-gray-900 font-medium">
+                    {dateTime.date}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Time</div>
+                  <div className="text-gray-900 font-medium">
+                    {dateTime.time}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Scan ID</div>
+                  <div className="text-gray-900 font-mono text-sm">
+                    {scanId}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Farm Information */}
+            {farmDetails && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Farm Information
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <div className="text-sm text-gray-500">Farm Name</div>
+                    <div className="text-gray-900 font-medium">
+                      {farmDetails.farmName}
+                    </div>
+                  </div>
+                  {farmDetails.location && (
+                    <div>
+                      <div className="text-sm text-gray-500">Location</div>
+                      <div className="text-gray-900">
+                        {farmDetails.location}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Farmer Information */}
+            {(farmerDetails || scanDetails.idNumber) && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  Farmer Information
+                </h3>
+                <div className="space-y-3">
+                  {farmerDetails?.name && (
+                    <div>
+                      <div className="text-sm text-gray-500">Name</div>
+                      <div className="text-gray-900 font-medium">
+                        {farmerDetails.name}
+                      </div>
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-sm text-gray-500">Farmer ID</div>
+                    <div className="text-gray-900 font-mono text-sm">
+                      {farmerDetails?.idNumber || scanDetails.idNumber}
+                    </div>
+                  </div>
+                  {farmerDetails?.contactNumber && (
+                    <div>
+                      <div className="text-sm text-gray-500">Contact</div>
+                      <div className="text-gray-900">
+                        {farmerDetails.contactNumber}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
