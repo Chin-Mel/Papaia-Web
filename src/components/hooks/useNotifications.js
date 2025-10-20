@@ -44,11 +44,11 @@ export function useNotifications() {
       }
 
       console.log(
-        "[DEBUG] Fetching notifications from: https://papaiaapi.onrender.com/api/notifications"
+        "[DEBUG] Fetching notifications from: https://papaiaapi.onrender.com/api/owner/notifications"
       );
 
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/notifications",
+        "https://papaiaapi.onrender.com/api/owner/notifications",
         {
           method: "GET",
           headers: {
@@ -138,12 +138,12 @@ export function useNotifications() {
 
       console.log(`[DEBUG] Marking notification ${notificationId} as read...`);
       console.log(
-        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`
+        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`
       );
 
       // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
-        `https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`,
+        `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
         {
           method: "PATCH",
           headers: {
@@ -208,12 +208,12 @@ export function useNotifications() {
         `[DEBUG] Marking all ${unreadNotifications.length} notifications as read...`
       );
       console.log(
-        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/read-all`
+        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/api/owner/notifications/read-all`
       );
 
       // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
-        "https://papaiaapi.onrender.com/owner/notifications/read-all",
+        "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
         {
           method: "PATCH",
           headers: {
