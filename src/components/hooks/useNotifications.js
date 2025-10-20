@@ -43,12 +43,13 @@ export function useNotifications() {
         return;
       }
 
+      // FIXED: Correct endpoint according to API docs
       console.log(
-        "[DEBUG] Fetching notifications from: https://papaiaapi.onrender.com/api/owner/notifications"
+        "[DEBUG] Fetching notifications from: https://papaiaapi.onrender.com/api/notifications"
       );
 
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/notifications",
+        "https://papaiaapi.onrender.com/api/notifications",
         {
           method: "GET",
           headers: {
@@ -136,14 +137,14 @@ export function useNotifications() {
         return;
       }
 
+      // FIXED: Correct endpoint according to API docs (no /api prefix)
       console.log(`[DEBUG] Marking notification ${notificationId} as read...`);
       console.log(
-        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`
+        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`
       );
 
-      // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`,
+        `https://papaiaapi.onrender.com/owner/notifications/${notificationId}/read`,
         {
           method: "PATCH",
           headers: {
@@ -166,7 +167,7 @@ export function useNotifications() {
       const result = await response.json();
       console.log("[DEBUG] Mark as read API response:", result);
 
-      // FIXED: Only update state AFTER successful API call
+      // Update local state immediately for better UX
       setNotifications((prev) =>
         prev.map((notif) =>
           notif.id === notificationId ? { ...notif, read: true } : notif
@@ -178,9 +179,6 @@ export function useNotifications() {
         `[DEBUG] Successfully marked notification ${notificationId} as read`
       );
       showToast("Marked as read", "success");
-
-      // REMOVED: The problematic refetch that was overwriting changes
-      // The next polling cycle will handle syncing with backend
     } catch (error) {
       console.error("[DEBUG] Error in markAsRead:", error);
       showToast("Failed to mark as read", "error");
@@ -204,16 +202,16 @@ export function useNotifications() {
         return;
       }
 
+      // FIXED: Correct endpoint according to API docs (no /api prefix)
       console.log(
         `[DEBUG] Marking all ${unreadNotifications.length} notifications as read...`
       );
       console.log(
-        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/api/owner/notifications/read-all`
+        `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/owner/notifications/read-all`
       );
 
-      // CRITICAL FIX: Make the API call and WAIT for it to complete before updating state
       const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
+        "https://papaiaapi.onrender.com/owner/notifications/read-all",
         {
           method: "PATCH",
           headers: {
@@ -234,7 +232,7 @@ export function useNotifications() {
       const result = await response.json();
       console.log("[DEBUG] Mark all as read API response:", result);
 
-      // FIXED: Only update state AFTER successful API call
+      // Update local state immediately
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
       );
@@ -242,9 +240,6 @@ export function useNotifications() {
 
       console.log("[DEBUG] Successfully marked all notifications as read");
       showToast("All notifications marked as read", "success");
-
-      // REMOVED: The problematic refetch that was overwriting changes
-      // The next polling cycle will handle syncing with backend
     } catch (error) {
       console.error("[DEBUG] Error in markAllAsRead:", error);
       showToast("Failed to mark all as read", "error");
