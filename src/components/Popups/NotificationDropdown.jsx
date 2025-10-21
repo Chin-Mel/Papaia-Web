@@ -87,7 +87,6 @@ export default function NotificationDropdown({
               onClick={markAllAsRead}
               className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors flex items-center gap-1"
             >
-              <Check className="w-4 h-4" />
               Mark all as read
             </button>
           </div>

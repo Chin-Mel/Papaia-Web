@@ -91,8 +91,8 @@ export function useNotifications() {
       // FIXED: Normalize the read status - check both 'read' and 'isRead' fields
       const normalizedNotifications = notificationsArray.map((notif) => ({
         ...notif,
-        // A notification is read if EITHER read===true OR isRead===true
-        read: notif.read === true || notif.isRead === true,
+        // A notification is read if EITHER read or isRead is truthy (not just === true)
+        read: !!(notif.read || notif.isRead),
       }));
 
       console.log(
