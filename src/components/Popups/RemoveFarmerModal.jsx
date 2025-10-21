@@ -85,12 +85,11 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
               <h2 className="text-lg font-semibold leading-tight">
                 {getFullName(farmer)}
               </h2>
-              <p className="text-sm opacity-80">🌱 Farm Management System</p>
+              <span className="ml-auto px-2 py-1 text-xs bg-white text-green-600 rounded-full font-medium">
+                {farmer?.status?.charAt(0).toUpperCase() +
+                  farmer?.status?.slice(1) || "Active"}
+              </span>
             </div>
-            <span className="ml-auto px-2 py-1 text-xs bg-white text-green-600 rounded-full font-medium">
-              {farmer?.status?.charAt(0).toUpperCase() +
-                farmer?.status?.slice(1) || "Active"}
-            </span>
           </div>
           <button
             onClick={onClose}
