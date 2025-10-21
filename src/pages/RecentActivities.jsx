@@ -54,7 +54,6 @@ export default function RecentActivities({ limit = 5 }) {
       const data = await res.json();
       console.log("Activities response:", data);
 
-      // Handle the updated API response format
       if (data.status === "success" && Array.isArray(data.activities)) {
         const mapped = data.activities.slice(0, limit).map((act) => {
           let style = {
@@ -65,7 +64,22 @@ export default function RecentActivities({ limit = 5 }) {
             description: act.action,
           };
 
-          // Map action types to display styles
+          // Helper function to get farm name
+          const getFarmName = () => {
+            return (
+              act.details?.farmName || act.details?.farmId || "Unknown Farm"
+            );
+          };
+
+          // Helper function to get farmer name
+          const getFarmerName = () => {
+            if (act.details?.farmerName) return act.details.farmerName;
+            if (act.details?.idNumber) return act.details.idNumber;
+            if (act.details?.farmerId) return act.details.farmerId;
+            return "Unknown Farmer";
+          };
+
+          // Map action types to display styles with actual names
           switch (act.action) {
             case "ADD_FARM":
               style = {
@@ -73,22 +87,20 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Farm Added",
-                description: `Added farm "${
-                  act.details?.farmName || "Unknown Farm"
-                }"`,
+                description: `Added farm "${getFarmName()}"`,
               };
               break;
             case "REMOVE_FARMER":
+              const farmerName = getFarmerName();
+              const farmNameForRemove = act.details?.farmName;
               style = {
                 icon: "👤",
                 iconBg: "bg-red-100",
                 bgColor: "bg-red-50",
                 title: "Farmer Removed",
-                description: `Removed farmer "${
-                  act.details?.farmerName || "Unknown Farmer"
-                }"${
-                  act.details?.farmName ? ` from "${act.details.farmName}"` : ""
-                }`,
+                description: farmNameForRemove
+                  ? `Removed farmer "${farmerName}" from "${farmNameForRemove}"`
+                  : `Removed farmer "${farmerName}"`,
               };
               break;
             case "DEACTIVATE_FARM":
@@ -97,9 +109,7 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-orange-100",
                 bgColor: "bg-orange-50",
                 title: "Farm Deactivated",
-                description: `Deactivated farm "${
-                  act.details?.farmName || "Unknown Farm"
-                }"`,
+                description: `Deactivated farm "${getFarmName()}"`,
               };
               break;
             case "ACTIVATE_FARM":
@@ -108,22 +118,20 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
                 title: "Farm Activated",
-                description: `Activated farm "${
-                  act.details?.farmName || "Unknown Farm"
-                }"`,
+                description: `Activated farm "${getFarmName()}"`,
               };
               break;
             case "ADD_FARMER":
+              const addedFarmerName = getFarmerName();
+              const farmNameForAdd = act.details?.farmName;
               style = {
                 icon: "👨‍🌾",
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Farmer Added",
-                description: `Added farmer "${
-                  act.details?.farmerName || "Unknown Farmer"
-                }"${
-                  act.details?.farmName ? ` to "${act.details.farmName}"` : ""
-                }`,
+                description: farmNameForAdd
+                  ? `Added farmer "${addedFarmerName}" to "${farmNameForAdd}"`
+                  : `Added farmer "${addedFarmerName}"`,
               };
               break;
             case "UPDATE_FARM":
@@ -132,9 +140,7 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
                 title: "Farm Updated",
-                description: `Updated farm "${
-                  act.details?.farmName || "Unknown Farm"
-                }"`,
+                description: `Updated farm "${getFarmName()}"`,
               };
               break;
             case "UPDATE_PROFILE":
@@ -172,9 +178,7 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-red-100",
                 bgColor: "bg-red-50",
                 title: "Farm Deleted",
-                description: `Deleted farm "${
-                  act.details?.farmName || "Unknown Farm"
-                }"`,
+                description: `Deleted farm "${getFarmName()}"`,
               };
               break;
             case "CHANGE_PASSWORD":
@@ -195,9 +199,8 @@ export default function RecentActivities({ limit = 5 }) {
             try {
               if (!timeString) return "Unknown time";
 
-              // Parse MM/DD/YYYY hh:mm AM/PM format
               const parts = timeString.split(/\s+/);
-              if (parts.length < 3) return timeString; // Invalid format
+              if (parts.length < 3) return timeString;
 
               const [datePart, timePart, period] = parts;
               const [month, day, year] = datePart.split("/");
@@ -216,7 +219,7 @@ export default function RecentActivities({ limit = 5 }) {
               );
 
               if (isNaN(parsedDate.getTime())) {
-                return timeString; // Return original if parsing fails
+                return timeString;
               }
 
               const now = new Date();
@@ -257,7 +260,6 @@ export default function RecentActivities({ limit = 5 }) {
         console.log("Mapped activities:", mapped);
         setActivities(mapped);
       } else {
-        // Handle case where no activities exist yet
         console.log("No activities data in response");
         setActivities([]);
       }
