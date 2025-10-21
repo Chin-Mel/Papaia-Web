@@ -132,22 +132,22 @@ export default function RecentActivities({ limit = 5 }) {
               break;
             case "DEACTIVATE_FARM":
               style = {
-                icon: "🚫",
+                icon: "🔄",
                 iconBg: "bg-orange-100",
                 bgColor: "bg-orange-50",
                 title: "Farm Deactivated",
-                mainText: getFarmName(),
-                subText: "inactive farm",
+                mainText: `Deactivated farm "${getFarmName()}"`,
+                subText: "",
               };
               break;
             case "ACTIVATE_FARM":
               style = {
-                icon: "✅",
-                iconBg: "bg-blue-100",
-                bgColor: "bg-blue-50",
+                icon: "🔄",
+                iconBg: "bg-green-100",
+                bgColor: "bg-green-50",
                 title: "Farm Activated",
-                mainText: getFarmName(),
-                subText: "active farm",
+                mainText: `Activated farm "${getFarmName()}"`,
+                subText: "",
               };
               break;
             case "ADD_FARMER":
