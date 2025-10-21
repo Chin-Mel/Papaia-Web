@@ -52,34 +52,61 @@ export default function RecentActivities({ limit = 5 }) {
       }
 
       const data = await res.json();
-      console.log("Activities response:", data);
+      console.log("Full activities response:", JSON.stringify(data, null, 2));
 
       if (data.status === "success" && Array.isArray(data.activities)) {
         const mapped = data.activities.slice(0, limit).map((act) => {
+          console.log("Processing activity:", JSON.stringify(act, null, 2));
+
+          // Helper function to get farm name
+          const getFarmName = () => {
+            const name =
+              act.details?.farmName || act.details?.farmId || "Unknown Farm";
+            console.log("Farm name extracted:", name);
+            return name;
+          };
+
+          // Helper function to get farmer name - prioritize actual name over ID
+          const getFarmerName = () => {
+            // First try to get full name from farmer details
+            if (act.details?.farmerName) {
+              console.log("Using farmerName:", act.details.farmerName);
+              return act.details.farmerName;
+            }
+
+            // If we have first and last name, construct full name
+            if (act.details?.firstname && act.details?.lastname) {
+              const middleInitial = act.details.middlename
+                ? ` ${act.details.middlename.charAt(0)}.`
+                : "";
+              const fullName = `${act.details.firstname}${middleInitial} ${act.details.lastname}`;
+              console.log("Constructed farmer name:", fullName);
+              return fullName;
+            }
+
+            // Last resort: use ID number
+            if (act.details?.idNumber) {
+              console.log("Using idNumber:", act.details.idNumber);
+              return act.details.idNumber;
+            }
+            if (act.details?.farmerId) {
+              console.log("Using farmerId:", act.details.farmerId);
+              return act.details.farmerId;
+            }
+            console.log("No farmer identifier found");
+            return "Unknown Farmer";
+          };
+
           let style = {
             icon: "ℹ️",
             iconBg: "bg-gray-100",
             bgColor: "bg-gray-50",
             title: "Activity",
-            description: act.action,
+            mainText: act.action,
+            subText: "",
           };
 
-          // Helper function to get farm name
-          const getFarmName = () => {
-            return (
-              act.details?.farmName || act.details?.farmId || "Unknown Farm"
-            );
-          };
-
-          // Helper function to get farmer name
-          const getFarmerName = () => {
-            if (act.details?.farmerName) return act.details.farmerName;
-            if (act.details?.idNumber) return act.details.idNumber;
-            if (act.details?.farmerId) return act.details.farmerId;
-            return "Unknown Farmer";
-          };
-
-          // Map action types to display styles with actual names
+          // Map action types to display styles
           switch (act.action) {
             case "ADD_FARM":
               style = {
@@ -87,7 +114,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Farm Added",
-                description: `Added farm "${getFarmName()}"`,
+                mainText: getFarmName(),
+                subText: "",
               };
               break;
             case "REMOVE_FARMER":
@@ -98,9 +126,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-red-100",
                 bgColor: "bg-red-50",
                 title: "Farmer Removed",
-                description: farmNameForRemove
-                  ? `Removed farmer "${farmerName}" from "${farmNameForRemove}"`
-                  : `Removed farmer "${farmerName}"`,
+                mainText: `Removed farmer "${farmerName}"`,
+                subText: farmNameForRemove ? `from ${farmNameForRemove}` : "",
               };
               break;
             case "DEACTIVATE_FARM":
@@ -109,8 +136,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-orange-100",
                 bgColor: "bg-orange-50",
                 title: "Farm Deactivated",
-                description: getFarmName(),
-                subtitle: "Deactivated farm",
+                mainText: getFarmName(),
+                subText: "inactive farm",
               };
               break;
             case "ACTIVATE_FARM":
@@ -119,8 +146,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
                 title: "Farm Activated",
-                description: getFarmName(),
-                subtitle: "Activated farm",
+                mainText: getFarmName(),
+                subText: "active farm",
               };
               break;
             case "ADD_FARMER":
@@ -131,9 +158,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Farmer Added",
-                description: farmNameForAdd
-                  ? `Added farmer "${addedFarmerName}" to "${farmNameForAdd}"`
-                  : `Added farmer "${addedFarmerName}"`,
+                mainText: `Added farmer "${addedFarmerName}"`,
+                subText: farmNameForAdd ? `to ${farmNameForAdd}` : "",
               };
               break;
             case "UPDATE_FARM":
@@ -142,7 +168,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
                 title: "Farm Updated",
-                description: `Updated farm "${getFarmName()}"`,
+                mainText: `Updated farm "${getFarmName()}"`,
+                subText: "",
               };
               break;
             case "UPDATE_PROFILE":
@@ -152,8 +179,9 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-purple-100",
                 bgColor: "bg-purple-50",
                 title: "Profile Updated",
-                description:
+                mainText:
                   act.details?.description || "Updated profile information",
+                subText: "",
               };
               break;
             case "DEACTIVATE_ACCOUNT":
@@ -162,7 +190,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-gray-100",
                 bgColor: "bg-gray-50",
                 title: "Account Deactivated",
-                description: "Account has been temporarily deactivated",
+                mainText: "Account has been temporarily deactivated",
+                subText: "",
               };
               break;
             case "REACTIVATE_ACCOUNT":
@@ -171,7 +200,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-green-100",
                 bgColor: "bg-green-50",
                 title: "Account Reactivated",
-                description: "Account has been reactivated",
+                mainText: "Account has been reactivated",
+                subText: "",
               };
               break;
             case "DELETE_FARM":
@@ -180,7 +210,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-red-100",
                 bgColor: "bg-red-50",
                 title: "Farm Deleted",
-                description: `Deleted farm "${getFarmName()}"`,
+                mainText: `Deleted farm "${getFarmName()}"`,
+                subText: "",
               };
               break;
             case "CHANGE_PASSWORD":
@@ -189,11 +220,12 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-yellow-100",
                 bgColor: "bg-yellow-50",
                 title: "Password Changed",
-                description: "Account password was updated",
+                mainText: "Account password was updated",
+                subText: "",
               };
               break;
             default:
-              style.description = act.action.replace(/_/g, " ").toLowerCase();
+              style.mainText = act.action.replace(/_/g, " ").toLowerCase();
           }
 
           // Format the time from MM/DD/YYYY hh:mm AM/PM format
@@ -259,7 +291,7 @@ export default function RecentActivities({ limit = 5 }) {
           };
         });
 
-        console.log("Mapped activities:", mapped);
+        console.log("Final mapped activities:", mapped);
         setActivities(mapped);
       } else {
         console.log("No activities data in response");
@@ -284,7 +316,8 @@ export default function RecentActivities({ limit = 5 }) {
       iconBg: "bg-purple-100",
       bgColor: "bg-purple-50",
       title: "System Ready",
-      description: "No activities yet. Start by adding a farm!",
+      mainText: "No activities yet. Start by adding a farm!",
+      subText: "",
       time: "Now",
       id: "fallback-1",
     },
@@ -343,8 +376,13 @@ export default function RecentActivities({ limit = 5 }) {
                     {act.title}
                   </p>
                   <p className="text-xs text-gray-600 mt-1 break-words">
-                    {act.description}
+                    {act.mainText}
                   </p>
+                  {act.subText && (
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {act.subText}
+                    </p>
+                  )}
                   <span className="text-[10px] sm:text-xs text-gray-500 mt-1 block">
                     {act.time}
                   </span>
