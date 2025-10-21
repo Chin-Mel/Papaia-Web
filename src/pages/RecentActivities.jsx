@@ -130,7 +130,7 @@ export default function RecentActivities({ limit = 5 }) {
                 subText: farmNameForRemove ? `from ${farmNameForRemove}` : "",
               };
               break;
-            case "DEACTIVATE_FARM":
+            case "INACTIVE_FARM":
               style = {
                 icon: "🔄",
                 iconBg: "bg-orange-100",
@@ -140,7 +140,7 @@ export default function RecentActivities({ limit = 5 }) {
                 subText: "",
               };
               break;
-            case "ACTIVATE_FARM":
+            case "ACTIVE_FARM":
               style = {
                 icon: "🔄",
                 iconBg: "bg-green-100",

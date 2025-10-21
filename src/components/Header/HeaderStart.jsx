@@ -55,14 +55,8 @@ export default function HeaderStart() {
   const handleNavClick = () => setIsMenuOpen(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50">
-      <div
-        className="w-full h-14 sm:h-16 backdrop-blur-lg"
-        style={{
-          background: "rgba(255, 255, 255, 0.16)",
-          border: "1px solid rgba(255, 255, 255, 0.01)",
-        }}
-      >
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
+      <div className="w-full h-14 sm:h-16">
         <div className="w-full px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">

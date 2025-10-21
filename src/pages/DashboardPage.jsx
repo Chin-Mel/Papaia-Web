@@ -177,14 +177,14 @@ export default function DashboardPage() {
         const data = await response.json();
         // API returns healthPercentage as string with % (e.g., "75.00%")
         // Return as-is since it already includes the % symbol
-        return data.healthPercentage || "0.00%";
+        return data.healthPercentage || "0.00";
       }
 
       // If response is not ok or null, return default
-      return "0.00%";
+      return "0.00";
     } catch (error) {
       // Return default for any error (network, timeout, etc.)
-      return "0.00%";
+      return "0.00";
     }
   };
 
@@ -337,7 +337,7 @@ export default function DashboardPage() {
     if (health === 0) {
       return "N/A";
     }
-    return `${health}%`;
+    return `${health}`;
   };
 
   return (
