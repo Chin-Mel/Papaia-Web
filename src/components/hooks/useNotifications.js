@@ -43,7 +43,6 @@ export function useNotifications() {
         return;
       }
 
-      // FIXED: Correct endpoint according to API docs
       console.log(
         "[DEBUG] Fetching notifications from: https://papaiaapi.onrender.com/api/owner/notifications"
       );
@@ -88,23 +87,36 @@ export function useNotifications() {
       const notificationsArray = Array.isArray(data) ? data : [];
 
       console.log("[DEBUG] Fetched notifications:", notificationsArray);
+
+      // FIXED: Normalize the read status - check both 'read' and 'isRead' fields
+      const normalizedNotifications = notificationsArray.map((notif) => ({
+        ...notif,
+        // A notification is read if EITHER read===true OR isRead===true
+        read: notif.read === true || notif.isRead === true,
+      }));
+
       console.log(
-        "[DEBUG] Notification read states:",
-        notificationsArray.map((n) => ({
+        "[DEBUG] Normalized notification read states:",
+        normalizedNotifications.map((n) => ({
           id: n.id,
-          read: n.read,
+          originalRead: data.find((x) => x.id === n.id)?.read,
+          originalIsRead: data.find((x) => x.id === n.id)?.isRead,
+          normalizedRead: n.read,
           title: n.title,
         }))
       );
 
-      setNotifications(notificationsArray);
+      setNotifications(normalizedNotifications);
       setError(null);
 
-      const unread = notificationsArray.filter((n) => n.read === false).length;
+      // Count unread notifications (where read === false)
+      const unread = normalizedNotifications.filter(
+        (n) => n.read === false
+      ).length;
       setUnreadCount(unread);
 
       console.log(
-        `[DEBUG] Total: ${notificationsArray.length} notifications, ${unread} unread`
+        `[DEBUG] Total: ${normalizedNotifications.length} notifications, ${unread} unread`
       );
     } catch (error) {
       console.error("[DEBUG] Error fetching notifications:", error);
@@ -120,11 +132,11 @@ export function useNotifications() {
     // Initial fetch
     fetchNotifications();
 
-    // Poll for new notifications every 10 seconds (real-time simulation)
+    // Poll for new notifications every 30 seconds (reduced from 10s to reduce load)
     const interval = setInterval(() => {
       console.log("[DEBUG] Polling for new notifications...");
       fetchNotifications();
-    }, 10000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
@@ -137,7 +149,6 @@ export function useNotifications() {
         return;
       }
 
-      // FIXED: Correct endpoint according to API docs (no /api prefix)
       console.log(`[DEBUG] Marking notification ${notificationId} as read...`);
       console.log(
         `[DEBUG] Using endpoint: https://papaiaapi.onrender.com/api/owner/notifications/${notificationId}/read`
@@ -179,6 +190,9 @@ export function useNotifications() {
         `[DEBUG] Successfully marked notification ${notificationId} as read`
       );
       showToast("Marked as read", "success");
+
+      // Refetch after a short delay to confirm server state
+      setTimeout(() => fetchNotifications(), 1000);
     } catch (error) {
       console.error("[DEBUG] Error in markAsRead:", error);
       showToast("Failed to mark as read", "error");
@@ -199,10 +213,10 @@ export function useNotifications() {
 
       if (unreadNotifications.length === 0) {
         console.log("[DEBUG] No unread notifications to mark");
+        showToast("All notifications are already read", "success");
         return;
       }
 
-      // FIXED: Correct endpoint according to API docs (no /api prefix)
       console.log(
         `[DEBUG] Marking all ${unreadNotifications.length} notifications as read...`
       );
@@ -240,6 +254,9 @@ export function useNotifications() {
 
       console.log("[DEBUG] Successfully marked all notifications as read");
       showToast("All notifications marked as read", "success");
+
+      // Refetch after a short delay to confirm server state
+      setTimeout(() => fetchNotifications(), 1000);
     } catch (error) {
       console.error("[DEBUG] Error in markAllAsRead:", error);
       showToast("Failed to mark all as read", "error");
