@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom"; // Removed BrowserRouter
 import ProtectedRoute from "./ProtectedRoute";
 import { Navigate } from "react-router-dom";
 
+import ScrollToTop from "./components/ScrollToTop";
 import LandingPage from "./pages/LandingPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
@@ -22,6 +23,7 @@ function App() {
   return (
     //<AuthProvider>
     <Routes>
+      <ScrollToTop />
       {/* Public Routes */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
