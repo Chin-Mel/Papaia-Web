@@ -109,7 +109,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-orange-100",
                 bgColor: "bg-orange-50",
                 title: "Farm Deactivated",
-                description: `Deactivated farm "${getFarmName()}"`,
+                description: getFarmName(),
+                subtitle: "Deactivated farm",
               };
               break;
             case "ACTIVATE_FARM":
@@ -118,7 +119,8 @@ export default function RecentActivities({ limit = 5 }) {
                 iconBg: "bg-blue-100",
                 bgColor: "bg-blue-50",
                 title: "Farm Activated",
-                description: `Activated farm "${getFarmName()}"`,
+                description: getFarmName(),
+                subtitle: "Activated farm",
               };
               break;
             case "ADD_FARMER":
