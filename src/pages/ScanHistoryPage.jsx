@@ -1,53 +1,64 @@
-import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useNavigate } from "react-router-dom";
 
 import FooterMain from "../components/Footer/FooterMain";
 import HeaderMain from "../components/Header/HeaderMain";
 
-// --- PNG ICON IMPORTS ---
+// PNG ICON IMPORTS
 import DownloadIcon from "../assets/download-icon.png";
 import EyeIcon from "../assets/eye-icon.png";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
 
-// Disease colors and icons mapping
-const diseaseColors = {
-  Healthy: "#00FF00",
-  "Ring Spot Virus": "#FF8C00",
-  Anthracnose: "#FF0000",
-  "Powdery Mildew": "#0066FF",
+// Constants
+const RESULTS_PER_PAGE = 5;
+
+const DISEASE_CONFIG = {
+  Healthy: { color: "#00FF00", icon: "🟢" },
+  "Ring Spot Virus": { color: "#FF8C00", icon: "🟠" },
+  Anthracnose: { color: "#FF0000", icon: "🔴" },
+  "Powdery Mildew": { color: "#0066FF", icon: "🔵" },
 };
 
-const diseaseIcons = {
-  Healthy: "🟢",
-  "Ring Spot Virus": "🟠",
-  Anthracnose: "🔴",
-  "Powdery Mildew": "🔵",
+const STATUS_CONFIG = {
+  healthy: {
+    label: "Healthy",
+    className: "bg-green-100 text-green-700 border-green-200",
+    color: "text-[#22C55E] hover:text-green-600",
+  },
+  "disease-detected": {
+    label: "Disease Detected",
+    className: "bg-red-100 text-red-700 border-red-200",
+    color: "text-[#EF4444] hover:text-red-600",
+  },
+  "needs-attention": {
+    label: "Needs Attention",
+    className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    color: "text-[#F59E0B] hover:text-yellow-600",
+  },
 };
 
-// Helper function to get status from prediction
-function getStatusFromPrediction(prediction) {
+// Optimized helper function
+const getStatus = (prediction) => {
   if (!prediction) return "healthy";
-  const predLower = prediction.toLowerCase();
-  if (predLower === "healthy") return "healthy";
-  if (predLower.includes("virus") || predLower.includes("disease"))
-    return "disease-detected";
+  const p = prediction.toLowerCase();
+  if (p === "healthy") return "healthy";
+  if (p.includes("virus") || p.includes("disease")) return "disease-detected";
   return "needs-attention";
-}
+};
 
-// Dropdown Component
-function FilterDropdown({ label, value, onChange, options }) {
+// Memoized Dropdown Component
+const FilterDropdown = ({ label, value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     };
@@ -63,7 +74,7 @@ function FilterDropdown({ label, value, onChange, options }) {
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-100 bg-white transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer"
+          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-100 bg-white transition-all"
         >
           <span className="truncate">{value}</span>
           <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
@@ -77,7 +88,7 @@ function FilterDropdown({ label, value, onChange, options }) {
                   onChange(option);
                   setIsOpen(false);
                 }}
-                className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm whitespace-nowrap"
+                className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm"
               >
                 {option}
               </li>
@@ -87,70 +98,48 @@ function FilterDropdown({ label, value, onChange, options }) {
       </div>
     </div>
   );
-}
+};
 
-// Status Badge Component
-function StatusBadge({ status, prediction }) {
-  const actualStatus = status || getStatusFromPrediction(prediction);
-  const predictionKey = prediction || "Healthy";
-  const icon = diseaseIcons[predictionKey] || diseaseIcons["Healthy"];
-
-  const statusConfig = {
-    healthy: {
-      label: "Healthy",
-      className: "bg-green-100 text-green-700 border-green-200",
-    },
-    "disease-detected": {
-      label: "Disease Detected",
-      className: "bg-red-100 text-red-700 border-red-200",
-    },
-    "needs-attention": {
-      label: "Needs Attention",
-      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    },
-  };
-
-  const config = statusConfig[actualStatus] || statusConfig.healthy;
+// Optimized Status Badge
+const StatusBadge = ({ status, prediction }) => {
+  const actualStatus = status || getStatus(prediction);
+  const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
+  const icon = DISEASE_CONFIG[prediction]?.icon || DISEASE_CONFIG.Healthy.icon;
 
   return (
     <div
-      className={`${config.className} flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full border text-xs sm:text-sm font-medium whitespace-nowrap`}
+      className={`${config.className} flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full border text-xs sm:text-sm font-medium`}
     >
-      <span style={{ fontSize: "12px" }}>{icon}</span>
+      <span className="text-xs">{icon}</span>
       <span className="hidden sm:inline">{config.label}</span>
       <span className="sm:hidden">{config.label.split(" ")[0]}</span>
     </div>
   );
-}
+};
 
-// View Details Button Component
-function ViewDetailsButton({ status, prediction, scanId }) {
-  const actualStatus = status || getStatusFromPrediction(prediction);
-
-  const colorMap = {
-    healthy: "text-[#22C55E] hover:text-green-600",
-    "disease-detected": "text-[#EF4444] hover:text-red-600",
-    "needs-attention": "text-[#F59E0B] hover:text-yellow-600",
-  };
+// Optimized View Button
+const ViewDetailsButton = ({ status, prediction, scanId }) => {
+  const actualStatus = status || getStatus(prediction);
+  const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
 
   return (
     <Link
       to={`/scan-history-details/${scanId}`}
-      className={`flex items-center gap-1 sm:gap-2 ${colorMap[actualStatus]} p-0 h-auto text-xs sm:text-sm font-medium transition-colors`}
+      className={`flex items-center gap-1 sm:gap-2 ${config.color} p-0 h-auto text-xs sm:text-sm font-medium transition-colors`}
     >
-      <img src={EyeIcon} alt="View Details" className="h-3 w-3 sm:h-4 sm:w-4" />
+      <img src={EyeIcon} alt="View" className="h-3 w-3 sm:h-4 sm:w-4" />
       <span className="hidden sm:inline">View Details</span>
       <span className="sm:hidden">View</span>
     </Link>
   );
-}
+};
 
 export default function ScanHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [scanData, setScanData] = useState([]);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalScans, setTotalScans] = useState(0);
+  const [allScans, setAllScans] = useState([]);
   const [filters, setFilters] = useState({
     dateRange: "All Time",
     status: "All Status",
@@ -160,18 +149,14 @@ export default function ScanHistoryPage() {
 
   const reportRef = useRef(null);
   const navigate = useNavigate();
-  const resultsPerPage = 5;
-  const totalPages = Math.ceil(totalScans / resultsPerPage);
   const token = localStorage.getItem("token");
 
   // Auth check
   useEffect(() => {
-    if (!token) {
-      navigate("/sign-in", { replace: true });
-    }
+    if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
-  // Fetch farms
+  // Fetch farms once
   useEffect(() => {
     if (!token) return;
 
@@ -186,13 +171,11 @@ export default function ScanHistoryPage() {
             },
           }
         );
-        if (!res.ok) throw new Error("Failed to fetch farms");
-        const data = await res.json();
-        if (data.status === "success") {
-          setFarms(data.farms || []);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === "success") setFarms(data.farms || []);
         }
       } catch (err) {
-        console.error("Farm fetch error:", err);
         setFarms([]);
       }
     };
@@ -200,79 +183,7 @@ export default function ScanHistoryPage() {
     fetchFarms();
   }, [token]);
 
-  // Helper function to parse timestamp
-  const parseTimestamp = (timestamp) => {
-    try {
-      if (typeof timestamp === "string" && timestamp.includes("/")) {
-        return new Date(timestamp).toISOString();
-      }
-      return timestamp;
-    } catch (error) {
-      return new Date().toISOString();
-    }
-  };
-
-  // Helper function to apply filters
-  const applyFilters = (scans, currentFilters) => {
-    return scans.filter((scan) => {
-      // Date range filter
-      if (currentFilters.dateRange !== "All Time") {
-        const scanDate = new Date(scan.createdAt);
-        const now = new Date();
-        const today = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate()
-        );
-
-        switch (currentFilters.dateRange) {
-          case "Today":
-            if (scanDate < today) return false;
-            break;
-          case "Last 7 days":
-            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-            if (scanDate < weekAgo) return false;
-            break;
-          case "Last 30 days":
-            const monthAgo = new Date(
-              today.getTime() - 30 * 24 * 60 * 60 * 1000
-            );
-            if (scanDate < monthAgo) return false;
-            break;
-        }
-      }
-
-      // Status filter
-      if (currentFilters.status !== "All Status") {
-        const scanStatus = getStatusFromPrediction(scan.prediction);
-        const filterMap = {
-          Healthy: "healthy",
-          "Disease Detected": "disease-detected",
-          "Needs Attention": "needs-attention",
-        };
-        if (scanStatus !== filterMap[currentFilters.status]) return false;
-      }
-
-      // Farm filter
-      if (
-        currentFilters.farmId !== "all" &&
-        scan.farmId !== currentFilters.farmId
-      ) {
-        return false;
-      }
-
-      // Farmer name filter
-      if (currentFilters.farmerName && scan.idNumber) {
-        const farmerQuery = currentFilters.farmerName.toLowerCase();
-        const farmerId = scan.idNumber.toLowerCase();
-        if (!farmerId.includes(farmerQuery)) return false;
-      }
-
-      return true;
-    });
-  };
-
-  // Fetch scan history
+  // Fetch scans once
   useEffect(() => {
     if (!token || farms.length === 0) return;
 
@@ -289,118 +200,149 @@ export default function ScanHistoryPage() {
           }
         );
 
-        if (!res.ok) throw new Error("Failed to fetch scan history");
-        const scansArray = await res.json();
+        if (res.ok) {
+          const scansArray = await res.json();
 
-        if (Array.isArray(scansArray)) {
-          // Create farm mapping
-          const farmsMap = {};
-          farms.forEach((farm) => {
-            farmsMap[farm.id] = farm;
-          });
+          if (Array.isArray(scansArray)) {
+            // Create farm lookup map
+            const farmMap = Object.fromEntries(
+              farms.map((f) => [f.id, f.farmName])
+            );
 
-          // Process scans
-          let processedScans = scansArray.map((scan) => {
-            const farmInfo = farmsMap[scan.farmId] || {};
-            return {
-              ...scan,
-              farmName: farmInfo.farmName || "Unknown Farm",
-              createdAt: parseTimestamp(scan.timestamp),
-              status: getStatusFromPrediction(scan.prediction),
-              description: scan.prediction || "Unknown",
-              idNumber: scan.idNumber || "Unknown Farmer",
-            };
-          });
+            // Process all scans at once
+            const processed = scansArray
+              .map((scan) => ({
+                ...scan,
+                farmName: farmMap[scan.farmId] || "Unknown Farm",
+                createdAt: scan.timestamp?.includes("/")
+                  ? new Date(scan.timestamp).toISOString()
+                  : scan.timestamp,
+                status: getStatus(scan.prediction),
+                description: scan.prediction || "Unknown",
+                idNumber: scan.idNumber || "Unknown Farmer",
+              }))
+              .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-          // Apply filters
-          processedScans = applyFilters(processedScans, filters);
-
-          // Sort by date (newest first)
-          processedScans.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-          );
-
-          // Apply pagination
-          const startIndex = (currentPage - 1) * resultsPerPage;
-          const endIndex = startIndex + resultsPerPage;
-          const paginatedScans = processedScans.slice(startIndex, endIndex);
-
-          setScanData(paginatedScans);
-          setTotalScans(processedScans.length);
-        } else {
-          setScanData([]);
-          setTotalScans(0);
+            setAllScans(processed);
+          }
         }
       } catch (err) {
-        console.error("Scan fetch error:", err);
-        setScanData([]);
-        setTotalScans(0);
+        setAllScans([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchScans();
-  }, [currentPage, filters, token, farms]);
+  }, [token, farms]);
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => ({ ...prev, [filterType]: value }));
+  // Memoized filter logic
+  const filteredScans = useMemo(() => {
+    let filtered = allScans;
+
+    // Date filter
+    if (filters.dateRange !== "All Time") {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+      const cutoff =
+        filters.dateRange === "Today"
+          ? today
+          : filters.dateRange === "Last 7 days"
+          ? new Date(today - 7 * 86400000)
+          : new Date(today - 30 * 86400000);
+
+      filtered = filtered.filter((s) => new Date(s.createdAt) >= cutoff);
+    }
+
+    // Status filter
+    if (filters.status !== "All Status") {
+      const statusMap = {
+        Healthy: "healthy",
+        "Disease Detected": "disease-detected",
+        "Needs Attention": "needs-attention",
+      };
+      const targetStatus = statusMap[filters.status];
+      filtered = filtered.filter((s) => s.status === targetStatus);
+    }
+
+    // Farm filter
+    if (filters.farmId !== "all") {
+      filtered = filtered.filter((s) => s.farmId === filters.farmId);
+    }
+
+    // Farmer filter
+    if (filters.farmerName) {
+      const query = filters.farmerName.toLowerCase();
+      filtered = filtered.filter((s) =>
+        s.idNumber?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [allScans, filters]);
+
+  // Paginated data
+  const paginatedScans = useMemo(() => {
+    const start = (currentPage - 1) * RESULTS_PER_PAGE;
+    return filteredScans.slice(start, start + RESULTS_PER_PAGE);
+  }, [filteredScans, currentPage]);
+
+  const totalPages = Math.ceil(filteredScans.length / RESULTS_PER_PAGE);
+
+  // Optimized filter handler
+  const handleFilterChange = useCallback((type, value) => {
+    setFilters((prev) => ({ ...prev, [type]: value }));
     setCurrentPage(1);
-  };
+  }, []);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+  // Memoized date formatters
+  const formatDate = useCallback((dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
+  }, []);
 
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("en-US", {
+  const formatTime = useCallback((dateString) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     });
-  };
+  }, []);
 
-  const handleExport = () => {
+  const handleExport = useCallback(() => {
     if (!reportRef.current) return;
     html2canvas(reportRef.current, { scale: 2 }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "pt", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(
+        canvas.toDataURL("image/png"),
+        "PNG",
+        0,
+        0,
+        pdfWidth,
+        pdfHeight
+      );
       pdf.save("scan-history-report.pdf");
     });
-  };
+  }, []);
 
-  const renderPageButton = (page) => {
-    const isActive = page === currentPage;
-    return (
-      <button
-        key={page}
-        onClick={() => setCurrentPage(page)}
-        className={`min-w-[30px] h-[30px] px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-          isActive
-            ? "bg-orange-500 text-white border-orange-500 hover:bg-orange-600"
-            : "border border-gray-300 text-black hover:bg-gray-50"
-        }`}
-      >
-        {page}
-      </button>
-    );
-  };
-
-  // Calculate pagination display values
   const startResult = Math.min(
-    (currentPage - 1) * resultsPerPage + 1,
-    totalScans
+    (currentPage - 1) * RESULTS_PER_PAGE + 1,
+    filteredScans.length
   );
-  const endResult = Math.min(currentPage * resultsPerPage, totalScans);
+  const endResult = Math.min(
+    currentPage * RESULTS_PER_PAGE,
+    filteredScans.length
+  );
+
+  useEffect(() => {
+    setScanData(paginatedScans);
+  }, [paginatedScans]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -432,14 +374,14 @@ export default function ScanHistoryPage() {
               <FilterDropdown
                 label="Date Range"
                 value={filters.dateRange}
-                onChange={(value) => handleFilterChange("dateRange", value)}
+                onChange={(v) => handleFilterChange("dateRange", v)}
                 options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
               />
 
               <FilterDropdown
                 label="Status"
                 value={filters.status}
-                onChange={(value) => handleFilterChange("status", value)}
+                onChange={(v) => handleFilterChange("status", v)}
                 options={[
                   "All Status",
                   "Healthy",
@@ -471,11 +413,11 @@ export default function ScanHistoryPage() {
                     : farms.find((f) => f.id === filters.farmId)?.farmName ||
                       "All Farms"
                 }
-                onChange={(value) => {
-                  const farm = farms.find((f) => f.farmName === value);
+                onChange={(v) => {
+                  const farm = farms.find((f) => f.farmName === v);
                   handleFilterChange("farmId", farm?.id || "all");
                 }}
-                options={["All Farms", ...farms.map((farm) => farm.farmName)]}
+                options={["All Farms", ...farms.map((f) => f.farmName)]}
               />
             </div>
           </div>
@@ -487,16 +429,13 @@ export default function ScanHistoryPage() {
           >
             <div className="divide-y divide-gray-200">
               {loading ? (
-                <div className="text-center py-8 sm:py-12">
-                  <div className="text-gray-500 text-sm sm:text-base">
-                    Loading scans...
-                  </div>
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-600 mx-auto mb-2"></div>
+                  <div className="text-gray-500 text-sm">Loading scans...</div>
                 </div>
               ) : scanData.length === 0 ? (
-                <div className="text-center py-8 sm:py-12">
-                  <div className="text-gray-500 text-sm sm:text-base">
-                    No scans found
-                  </div>
+                <div className="text-center py-12">
+                  <div className="text-gray-500 text-sm">No scans found</div>
                 </div>
               ) : (
                 scanData.map((record) => (
@@ -505,7 +444,6 @@ export default function ScanHistoryPage() {
                     className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
                   >
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                      {/* Image */}
                       <img
                         src={
                           record.imageUrl ||
@@ -513,13 +451,13 @@ export default function ScanHistoryPage() {
                         }
                         alt={record.farmName}
                         className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
+                        loading="lazy"
                         onError={(e) => {
                           e.target.src =
                             "https://via.placeholder.com/80x80?text=No+Image";
                         }}
                       />
 
-                      {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
                           <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
@@ -531,7 +469,6 @@ export default function ScanHistoryPage() {
                           />
                         </div>
 
-                        {/* Info Grid */}
                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
                           <div className="flex items-center gap-1">
                             <img
@@ -544,7 +481,7 @@ export default function ScanHistoryPage() {
                           <div className="flex items-center gap-1">
                             <img
                               src={CalendarIcon}
-                              alt="Calendar"
+                              alt="Date"
                               className="h-3 w-3"
                             />
                             <span>{formatDate(record.createdAt)}</span>
@@ -567,19 +504,18 @@ export default function ScanHistoryPage() {
                           )}
                         </div>
 
-                        {/* Disease Info */}
                         {record.description && (
                           <div className="flex items-center gap-2 mb-3">
-                            <span style={{ fontSize: "14px" }}>
-                              {diseaseIcons[record.prediction] ||
-                                diseaseIcons["Healthy"]}
+                            <span className="text-sm">
+                              {DISEASE_CONFIG[record.prediction]?.icon ||
+                                DISEASE_CONFIG.Healthy.icon}
                             </span>
                             <p
                               className="text-xs sm:text-sm font-medium"
                               style={{
                                 color:
-                                  diseaseColors[record.prediction] ||
-                                  diseaseColors["Healthy"],
+                                  DISEASE_CONFIG[record.prediction]?.color ||
+                                  DISEASE_CONFIG.Healthy.color,
                               }}
                             >
                               {record.description}
@@ -587,7 +523,6 @@ export default function ScanHistoryPage() {
                           </div>
                         )}
 
-                        {/* View Details Button */}
                         <ViewDetailsButton
                           status={record.status}
                           prediction={record.prediction}
@@ -601,23 +536,35 @@ export default function ScanHistoryPage() {
             </div>
 
             {/* Pagination */}
-            {totalScans > resultsPerPage && (
+            {filteredScans.length > RESULTS_PER_PAGE && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 border-t border-gray-200">
                 <div className="text-xs sm:text-sm text-gray-700">
-                  Showing {startResult} to {endResult} of{" "}
-                  {totalScans.toLocaleString()} results
+                  Showing {startResult} to {endResult} of {filteredScans.length}{" "}
+                  results
                 </div>
-                <div className="flex items-center gap-2 overflow-x-auto">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Previous
                   </button>
                   <div className="flex items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      renderPageButton
+                      (page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`min-w-[30px] h-[30px] px-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                            page === currentPage
+                              ? "bg-orange-500 text-white border-orange-500"
+                              : "border border-gray-300 text-black hover:bg-gray-50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      )
                     )}
                   </div>
                   <button
@@ -625,7 +572,7 @@ export default function ScanHistoryPage() {
                       setCurrentPage(Math.min(totalPages, currentPage + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    className="h-[30px] px-2 sm:px-3 border border-gray-300 rounded-md text-xs sm:text-sm font-medium text-black hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Next
                   </button>
