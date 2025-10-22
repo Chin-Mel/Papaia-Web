@@ -719,11 +719,32 @@ const activityCache = {
   },
 };
 
+// Event emitter for activity updates
+const activityEmitter = {
+  listeners: new Set(),
+
+  subscribe(callback) {
+    this.listeners.add(callback);
+    return () => this.listeners.delete(callback);
+  },
+
+  emit() {
+    this.listeners.forEach((callback) => callback());
+  },
+};
+
+// Global function to trigger activity refresh
+window.refreshActivities = () => {
+  activityCache.clear();
+  activityEmitter.emit();
+};
+
 export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fetchedRef = useRef(false);
+  const mountedRef = useRef(true);
 
   // Format timestamp to relative time
   const formatTime = useCallback((timeString) => {
@@ -873,9 +894,45 @@ export default function RecentActivities({ limit = 5 }) {
     );
   }, []);
 
+  // Get fallback activity when no data
+  const getFallbackActivity = useCallback(
+    () => [
+      {
+        icon: "ℹ️",
+        bg: "bg-purple-50",
+        iconBg: "bg-purple-100",
+        title: "System Ready",
+        text: "No activities yet. Start by adding a farm!",
+        subText: "",
+        time: "Now",
+        id: "fallback",
+      },
+    ],
+    []
+  );
+
+  // Get error activity
+  const getErrorActivity = useCallback(
+    () => [
+      {
+        icon: "⚠️",
+        bg: "bg-yellow-50",
+        iconBg: "bg-yellow-100",
+        title: "Error",
+        text: "Failed to load activities",
+        subText: "",
+        time: "Now",
+        id: "error",
+      },
+    ],
+    []
+  );
+
   // Fetch activities from API
   const fetchActivities = useCallback(
     async (forceRefresh = false) => {
+      if (!mountedRef.current) return;
+
       try {
         // Check cache first
         if (!forceRefresh) {
@@ -886,19 +943,27 @@ export default function RecentActivities({ limit = 5 }) {
               time: formatTime(act.createdAt),
               id: act.id,
             }));
-            setActivities(processed.length ? processed : getFallbackActivity());
-            setLoading(false);
+            if (mountedRef.current) {
+              setActivities(
+                processed.length ? processed : getFallbackActivity()
+              );
+              setLoading(false);
+            }
             return;
           }
         }
 
-        setLoading(true);
-        setError(null);
+        if (mountedRef.current) {
+          setLoading(true);
+          setError(null);
+        }
 
         const token = localStorage.getItem("token");
         if (!token) {
-          setActivities(getFallbackActivity());
-          setLoading(false);
+          if (mountedRef.current) {
+            setActivities(getFallbackActivity());
+            setLoading(false);
+          }
           return;
         }
 
@@ -915,8 +980,10 @@ export default function RecentActivities({ limit = 5 }) {
 
         if (!res.ok) {
           if (res.status === 404) {
-            setActivities(getFallbackActivity());
-            setLoading(false);
+            if (mountedRef.current) {
+              setActivities(getFallbackActivity());
+              setLoading(false);
+            }
             return;
           }
           throw new Error(`API Error: ${res.status}`);
@@ -933,55 +1000,52 @@ export default function RecentActivities({ limit = 5 }) {
             id: act.id,
           }));
 
-          setActivities(processed.length ? processed : getFallbackActivity());
+          if (mountedRef.current) {
+            setActivities(processed.length ? processed : getFallbackActivity());
+          }
         } else {
-          setActivities(getFallbackActivity());
+          if (mountedRef.current) {
+            setActivities(getFallbackActivity());
+          }
         }
       } catch (err) {
         console.error("Failed to fetch activities:", err);
-        setError(err.message);
-        setActivities(getErrorActivity());
+        if (mountedRef.current) {
+          setError(err.message);
+          setActivities(getErrorActivity());
+        }
       } finally {
-        setLoading(false);
+        if (mountedRef.current) {
+          setLoading(false);
+        }
       }
     },
-    [limit, formatTime, getActivityStyle]
+    [limit, formatTime, getActivityStyle, getFallbackActivity, getErrorActivity]
   );
 
-  // Get fallback activity when no data
-  const getFallbackActivity = () => [
-    {
-      icon: "ℹ️",
-      bg: "bg-purple-50",
-      iconBg: "bg-purple-100",
-      title: "System Ready",
-      text: "No activities yet. Start by adding a farm!",
-      subText: "",
-      time: "Now",
-      id: "fallback",
-    },
-  ];
-
-  // Get error activity
-  const getErrorActivity = () => [
-    {
-      icon: "⚠️",
-      bg: "bg-yellow-50",
-      iconBg: "bg-yellow-100",
-      title: "Error",
-      text: "Failed to load activities",
-      subText: "",
-      time: "Now",
-      id: "error",
-    },
-  ];
-
+  // Initial fetch
   useEffect(() => {
     if (!fetchedRef.current) {
       fetchedRef.current = true;
       fetchActivities(false);
     }
   }, [fetchActivities]);
+
+  // Subscribe to activity updates
+  useEffect(() => {
+    const unsubscribe = activityEmitter.subscribe(() => {
+      fetchActivities(true);
+    });
+
+    return unsubscribe;
+  }, [fetchActivities]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   // Loading state
   if (loading && activities.length === 0) {
