@@ -904,11 +904,6 @@ export default function RecentScans({ farmId }) {
                   <p className="text-xs text-gray-500">
                     By: {getFarmerName(scan.idNumber)}
                   </p>
-                  {scan.id && (
-                    <p className="text-xs text-gray-400 mt-1">
-                      Scan: #{scan.id.slice(-8)}
-                    </p>
-                  )}
                 </div>
               </div>
             ))}

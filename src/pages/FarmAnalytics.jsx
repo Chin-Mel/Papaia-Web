@@ -1380,7 +1380,50 @@ export default function FarmAnalytics({
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
 
-  const dateRangeOptions = ["All Time", "Today", "Last 7 days", "Last 30 days"];
+  // Dynamic date range options based on timeFilter
+  const dateRangeOptions = useMemo(() => {
+    switch (timeFilter) {
+      case "Daily":
+        return [
+          "All Time",
+          "Today",
+          "Last 7 days",
+          "Last 14 days",
+          "Last 30 days",
+        ];
+      case "Weekly":
+        return [
+          "All Time",
+          "Last 4 weeks",
+          "Last 8 weeks",
+          "Last 12 weeks",
+          "Last 6 months",
+        ];
+      case "Monthly":
+        return [
+          "All Time",
+          "Last 3 months",
+          "Last 6 months",
+          "Last 12 months",
+          "This year",
+        ];
+      case "Yearly":
+        return [
+          "All Time",
+          "Last 3 years",
+          "Last 5 years",
+          "Last 7 years",
+          "Last 10 years",
+        ];
+      default:
+        return ["All Time"];
+    }
+  }, [timeFilter]);
+
+  // Reset date range when timeFilter changes
+  useEffect(() => {
+    setDateRange("All Time");
+  }, [timeFilter]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -1444,6 +1487,110 @@ export default function FarmAnalytics({
     return () => controller.abort();
   }, [farmId, timeFilter]);
 
+  // Helper function to filter data based on date range
+  const filterDataByDateRange = useCallback((data, range, filter) => {
+    if (range === "All Time") return data;
+
+    const now = new Date();
+    let cutoffDate = new Date();
+
+    switch (filter) {
+      case "Daily":
+        if (range === "Today") {
+          cutoffDate.setHours(0, 0, 0, 0);
+        } else if (range === "Last 7 days") {
+          cutoffDate.setDate(now.getDate() - 7);
+        } else if (range === "Last 14 days") {
+          cutoffDate.setDate(now.getDate() - 14);
+        } else if (range === "Last 30 days") {
+          cutoffDate.setDate(now.getDate() - 30);
+        }
+        break;
+
+      case "Weekly":
+        if (range === "Last 4 weeks") {
+          cutoffDate.setDate(now.getDate() - 28);
+        } else if (range === "Last 8 weeks") {
+          cutoffDate.setDate(now.getDate() - 56);
+        } else if (range === "Last 12 weeks") {
+          cutoffDate.setDate(now.getDate() - 84);
+        } else if (range === "Last 6 months") {
+          cutoffDate.setMonth(now.getMonth() - 6);
+        }
+        break;
+
+      case "Monthly":
+        if (range === "Last 3 months") {
+          cutoffDate.setMonth(now.getMonth() - 3);
+        } else if (range === "Last 6 months") {
+          cutoffDate.setMonth(now.getMonth() - 6);
+        } else if (range === "Last 12 months") {
+          cutoffDate.setMonth(now.getMonth() - 12);
+        } else if (range === "This year") {
+          cutoffDate = new Date(now.getFullYear(), 0, 1);
+        }
+        break;
+
+      case "Yearly":
+        if (range === "Last 3 years") {
+          cutoffDate.setFullYear(now.getFullYear() - 3);
+        } else if (range === "Last 5 years") {
+          cutoffDate.setFullYear(now.getFullYear() - 5);
+        } else if (range === "Last 7 years") {
+          cutoffDate.setFullYear(now.getFullYear() - 7);
+        } else if (range === "Last 10 years") {
+          cutoffDate.setFullYear(now.getFullYear() - 10);
+        }
+        break;
+    }
+
+    return data.filter((item) => {
+      const itemDate = parsePeriodDate(item.period, filter);
+      return itemDate >= cutoffDate;
+    });
+  }, []);
+
+  // Helper to parse period string to Date
+  const parsePeriodDate = (period, filter) => {
+    const now = new Date();
+
+    switch (filter) {
+      case "Daily": {
+        // Format: "Oct 15" or "Nov 2"
+        const [month, day] = period.split(" ");
+        const monthIndex = new Date(
+          `${month} 1, ${now.getFullYear()}`
+        ).getMonth();
+        return new Date(now.getFullYear(), monthIndex, parseInt(day));
+      }
+
+      case "Weekly": {
+        // Format: "Oct 15 - Oct 21"
+        const startDate = period.split(" - ")[0];
+        const [month, day] = startDate.split(" ");
+        const monthIndex = new Date(
+          `${month} 1, ${now.getFullYear()}`
+        ).getMonth();
+        return new Date(now.getFullYear(), monthIndex, parseInt(day));
+      }
+
+      case "Monthly": {
+        // Format: "Jan 2025"
+        const [month, year] = period.split(" ");
+        const monthIndex = new Date(`${month} 1, 2000`).getMonth();
+        return new Date(parseInt(year), monthIndex, 1);
+      }
+
+      case "Yearly": {
+        // Format: "2024"
+        return new Date(parseInt(period), 0, 1);
+      }
+
+      default:
+        return new Date();
+    }
+  };
+
   // Memoize default data generation
   const generateDefaultData = useCallback(() => {
     const now = new Date();
@@ -1451,7 +1598,7 @@ export default function FarmAnalytics({
 
     switch (timeFilter) {
       case "Daily":
-        for (let i = 10; i >= 0; i--) {
+        for (let i = 30; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - i);
           data.push({
@@ -1470,7 +1617,7 @@ export default function FarmAnalytics({
         break;
 
       case "Weekly":
-        for (let i = 8; i >= 0; i--) {
+        for (let i = 12; i >= 0; i--) {
           const startDate = new Date(now);
           const dayOfWeek = startDate.getDay();
           const startOfWeek = new Date(startDate);
@@ -1526,8 +1673,8 @@ export default function FarmAnalytics({
 
       case "Yearly":
         const currentYear = now.getFullYear();
-        const startYear = currentYear - 6;
-        for (let year = startYear; year <= startYear + 6; year++) {
+        const startYear = currentYear - 10;
+        for (let year = startYear; year <= currentYear; year++) {
           data.push({
             period: year.toString(),
             totalPredictions: 0,
@@ -1544,7 +1691,7 @@ export default function FarmAnalytics({
     return data;
   }, [timeFilter]);
 
-  // Memoize processed chart data
+  // Memoize processed chart data with date range filtering
   const chartData = useMemo(() => {
     let defaultData = generateDefaultData();
 
@@ -1582,8 +1729,15 @@ export default function FarmAnalytics({
       }
     }
 
-    return defaultData;
-  }, [analyticsData, timeFilter, generateDefaultData]);
+    // Apply date range filter
+    return filterDataByDateRange(defaultData, dateRange, timeFilter);
+  }, [
+    analyticsData,
+    timeFilter,
+    generateDefaultData,
+    dateRange,
+    filterDataByDateRange,
+  ]);
 
   // Memoize disease types
   const diseaseTypes = useMemo(() => {
@@ -1680,43 +1834,6 @@ export default function FarmAnalytics({
 
   const FIXED_HEIGHT = "580px";
 
-  if (loading) {
-    return (
-      <div
-        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex justify-center items-center h-full">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-          <h2 className="text-base sm:text-lg font-bold text-gray-800">
-            Farm Analytics ({timeFilter})
-          </h2>
-        </div>
-        <div className="flex items-center justify-center h-full text-red-500 text-sm">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-2 bg-red-100 rounded-full flex items-center justify-center">
-              ⚠️
-            </div>
-            <p className="font-medium">Error loading analytics</p>
-            <p className="text-xs mt-1 text-gray-500">{error}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div
       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
@@ -1775,74 +1892,92 @@ export default function FarmAnalytics({
         </div>
       </div>
 
-      <div className="flex-1 w-full mb-4">
-        <div style={{ width: "100%", height: "100%" }}>
-          <ResponsiveContainer>
-            <LineChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis
-                dataKey="period"
-                tick={{ fontSize: 11 }}
-                angle={-45}
-                textAnchor="end"
-                height={60}
-              />
-              <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                verticalAlign="top"
-                align="right"
-                iconType="rect"
-                iconSize={8}
-                wrapperStyle={{
-                  fontSize: "10px",
-                  paddingBottom: "10px",
-                  lineHeight: "14px",
-                }}
-              />
-              {diseaseTypes.map((disease, index) => (
-                <Line
-                  key={disease}
-                  type="monotone"
-                  dataKey={disease}
-                  stroke={getDiseaseColor(disease, index)}
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  name={disease}
-                  connectNulls={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
+      {loading ? (
+        <div className="flex justify-center items-center flex-1">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
-      </div>
+      ) : error ? (
+        <div className="flex items-center justify-center flex-1 text-red-500 text-sm">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-2 bg-red-100 rounded-full flex items-center justify-center">
+              ⚠️
+            </div>
+            <p className="font-medium">Error loading analytics</p>
+            <p className="text-xs mt-1 text-gray-500">{error}</p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="flex-1 w-full mb-4">
+            <div style={{ width: "100%", height: "100%" }}>
+              <ResponsiveContainer>
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis
+                    dataKey="period"
+                    tick={{ fontSize: 11 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={60}
+                  />
+                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend
+                    verticalAlign="top"
+                    align="right"
+                    iconType="rect"
+                    iconSize={8}
+                    wrapperStyle={{
+                      fontSize: "10px",
+                      paddingBottom: "10px",
+                      lineHeight: "14px",
+                    }}
+                  />
+                  {diseaseTypes.map((disease, index) => (
+                    <Line
+                      key={disease}
+                      type="monotone"
+                      dataKey={disease}
+                      stroke={getDiseaseColor(disease, index)}
+                      strokeWidth={2}
+                      dot={{ r: 4 }}
+                      name={disease}
+                      connectNulls={false}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
 
-      <div
-        className="grid grid-cols-3 gap-2 sm:gap-4"
-        style={{ minHeight: "60px" }}
-      >
-        <div className="text-center">
-          <p className="text-green-600 font-semibold text-base sm:text-xl">
-            {summaryStats.totalScans}
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
-        </div>
-        <div className="text-center">
-          <p className="text-blue-600 font-semibold text-base sm:text-xl">
-            {summaryStats.healthScore}%
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-        </div>
-        <div className="text-center">
-          <p className="text-orange-600 font-semibold text-base sm:text-xl">
-            {summaryStats.diseaseScore}%
-          </p>
-          <p className="text-xs sm:text-base text-gray-600">Diseases</p>
-        </div>
-      </div>
+          <div
+            className="grid grid-cols-3 gap-2 sm:gap-4"
+            style={{ minHeight: "60px" }}
+          >
+            <div className="text-center">
+              <p className="text-green-600 font-semibold text-base sm:text-xl">
+                {summaryStats.totalScans}
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
+            </div>
+            <div className="text-center">
+              <p className="text-blue-600 font-semibold text-base sm:text-xl">
+                {summaryStats.healthScore}%
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+            </div>
+            <div className="text-center">
+              <p className="text-orange-600 font-semibold text-base sm:text-xl">
+                {summaryStats.diseaseScore}%
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
