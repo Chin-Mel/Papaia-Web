@@ -693,7 +693,7 @@
 //   );
 // }
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // Cache for activities with sessionStorage persistence
 const activitiesCache = {
@@ -701,10 +701,8 @@ const activitiesCache = {
   timestamp: null,
 
   set(value, ttl = 300000) {
-    // 5 minutes default
     this.data = value;
     this.timestamp = Date.now() + ttl;
-
     try {
       sessionStorage.setItem(
         "activities_cache",
@@ -713,18 +711,13 @@ const activitiesCache = {
           expires: this.timestamp,
         })
       );
-    } catch (e) {
-      // Ignore storage errors
-    }
+    } catch (e) {}
   },
 
   get() {
-    // Check memory first
     if (this.data && Date.now() < this.timestamp) {
       return this.data;
     }
-
-    // Check sessionStorage
     try {
       const stored = sessionStorage.getItem("activities_cache");
       if (stored) {
@@ -735,10 +728,7 @@ const activitiesCache = {
           return value;
         }
       }
-    } catch (e) {
-      // Ignore storage errors
-    }
-
+    } catch (e) {}
     return null;
   },
 
@@ -757,124 +747,122 @@ export default function RecentActivities({ limit = 5 }) {
   const [error, setError] = useState(null);
   const hasFetched = useRef(false);
 
-  const fetchActivities = async (forceRefresh = false) => {
-    try {
-      // Use cached data if available and not forcing refresh
-      if (!forceRefresh) {
-        const cached = activitiesCache.get();
-        if (cached) {
-          setActivities(cached.slice(0, limit));
-          setLoading(false);
-          return;
+  const fetchActivities = useCallback(
+    async (forceRefresh = false) => {
+      try {
+        if (!forceRefresh) {
+          const cached = activitiesCache.get();
+          if (cached) {
+            setActivities(cached.slice(0, limit));
+            setLoading(false);
+            return;
+          }
         }
-      }
 
-      setLoading(true);
-      setError(null);
+        setLoading(true);
+        setError(null);
 
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Authentication required");
-        setActivities([]);
-        setLoading(false);
-        return;
-      }
-
-      const res = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/activities",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) {
-        if (res.status === 404) {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Authentication required");
           setActivities([]);
           setLoading(false);
           return;
         }
-        throw new Error(`API Error: ${res.status}`);
-      }
 
-      const data = await res.json();
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/activities",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      if (data.status === "success" && Array.isArray(data.activities)) {
-        // Cache the full activities list
-        activitiesCache.set(data.activities);
-        setActivities(data.activities.slice(0, limit));
-      } else {
+        if (!res.ok) {
+          if (res.status === 404) {
+            setActivities([]);
+            setLoading(false);
+            return;
+          }
+          throw new Error(`API Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.status === "success" && Array.isArray(data.activities)) {
+          activitiesCache.set(data.activities);
+          setActivities(data.activities.slice(0, limit));
+        } else {
+          setActivities([]);
+        }
+      } catch (err) {
+        setError(err.message);
         setActivities([]);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.message);
-      setActivities([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [limit]
+  );
 
   useEffect(() => {
-    // Only fetch once on mount, use cache on subsequent renders
     if (!hasFetched.current) {
       hasFetched.current = true;
       fetchActivities(false);
     }
-  }, [limit]);
+  }, [fetchActivities]);
 
-  // Memoized time formatter for better performance
-  const formatTime = useMemo(() => {
-    return (timeString) => {
-      if (!timeString) return "Unknown time";
+  // Memoized time formatter
+  const formatTime = useCallback((timeString) => {
+    if (!timeString) return "Unknown time";
 
-      try {
-        const parts = timeString.split(/\s+/);
-        if (parts.length < 3) return timeString;
+    try {
+      const parts = timeString.split(/\s+/);
+      if (parts.length < 3) return timeString;
 
-        const [datePart, timePart, period] = parts;
-        const [month, day, year] = datePart.split("/");
-        const [hours, minutes] = timePart.split(":");
+      const [datePart, timePart, period] = parts;
+      const [month, day, year] = datePart.split("/");
+      const [hours, minutes] = timePart.split(":");
 
-        let hour24 = parseInt(hours);
-        if (period === "PM" && hour24 !== 12) hour24 += 12;
-        if (period === "AM" && hour24 === 12) hour24 = 0;
+      let hour24 = parseInt(hours);
+      if (period === "PM" && hour24 !== 12) hour24 += 12;
+      if (period === "AM" && hour24 === 12) hour24 = 0;
 
-        const date = new Date(
-          parseInt(year),
-          parseInt(month) - 1,
-          parseInt(day),
-          hour24,
-          parseInt(minutes)
-        );
+      const date = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        hour24,
+        parseInt(minutes)
+      );
 
-        if (isNaN(date.getTime())) return timeString;
+      if (isNaN(date.getTime())) return timeString;
 
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMins = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
 
-        if (diffMins < 1) return "Just now";
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+      if (diffMins < 1) return "Just now";
+      if (diffMins < 60) return `${diffMins}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
 
-        return date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        });
-      } catch {
-        return timeString;
-      }
-    };
+      return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return timeString;
+    }
   }, []);
 
   // Memoized activity style mapper
-  const getActivityStyle = (action, details) => {
+  const getActivityStyle = useCallback((action, details) => {
     const farmName = details?.farmName || "Unknown Farm";
     const farmerName =
       details?.farmerName || details?.idNumber || "Unknown Farmer";
@@ -984,7 +972,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "",
       }
     );
-  };
+  }, []);
 
   // Memoized processed activities
   const processedActivities = useMemo(() => {
@@ -1008,7 +996,7 @@ export default function RecentActivities({ limit = 5 }) {
       time: formatTime(act.createdAt),
       id: act.id || act.createdAt,
     }));
-  }, [activities, formatTime]);
+  }, [activities, formatTime, getActivityStyle]);
 
   if (loading && !activities.length) {
     return (
