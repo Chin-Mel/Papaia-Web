@@ -696,35 +696,40 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // Cache for activities with sessionStorage persistence
-const activitiesCache = {
-  data: null,
-  timestamp: null,
+import { useState, useEffect, useCallback, useRef } from "react";
 
-  set(value, ttl = 300000) {
+// Activity cache with sessionStorage persistence
+const activityCache = {
+  data: null,
+  timestamp: 0,
+  ttl: 300000, // 5 minutes
+
+  set(value) {
     this.data = value;
-    this.timestamp = Date.now() + ttl;
+    this.timestamp = Date.now();
     try {
       sessionStorage.setItem(
         "activities_cache",
         JSON.stringify({
           value,
-          expires: this.timestamp,
+          expires: Date.now() + this.ttl,
         })
       );
     } catch (e) {}
   },
 
   get() {
-    if (this.data && Date.now() < this.timestamp) {
+    if (this.data && Date.now() - this.timestamp < this.ttl) {
       return this.data;
     }
+
     try {
       const stored = sessionStorage.getItem("activities_cache");
       if (stored) {
         const { value, expires } = JSON.parse(stored);
         if (Date.now() < expires) {
           this.data = value;
-          this.timestamp = expires;
+          this.timestamp = Date.now();
           return value;
         }
       }
@@ -734,91 +739,22 @@ const activitiesCache = {
 
   clear() {
     this.data = null;
-    this.timestamp = null;
+    this.timestamp = 0;
     try {
       sessionStorage.removeItem("activities_cache");
     } catch (e) {}
   },
 };
 
-export default function RecentActivities({ limit = 5 }) {
+function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const hasFetched = useRef(false);
+  const fetchedRef = useRef(false);
 
-  const fetchActivities = useCallback(
-    async (forceRefresh = false) => {
-      try {
-        if (!forceRefresh) {
-          const cached = activitiesCache.get();
-          if (cached) {
-            setActivities(cached.slice(0, limit));
-            setLoading(false);
-            return;
-          }
-        }
-
-        setLoading(true);
-        setError(null);
-
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Authentication required");
-          setActivities([]);
-          setLoading(false);
-          return;
-        }
-
-        const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/activities",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!res.ok) {
-          if (res.status === 404) {
-            setActivities([]);
-            setLoading(false);
-            return;
-          }
-          throw new Error(`API Error: ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        if (data.status === "success" && Array.isArray(data.activities)) {
-          activitiesCache.set(data.activities);
-          setActivities(data.activities.slice(0, limit));
-        } else {
-          setActivities([]);
-        }
-      } catch (err) {
-        setError(err.message);
-        setActivities([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [limit]
-  );
-
-  useEffect(() => {
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchActivities(false);
-    }
-  }, [fetchActivities]);
-
-  // Memoized time formatter
+  // Format timestamp to relative time
   const formatTime = useCallback((timeString) => {
-    if (!timeString) return "Unknown time";
-
+    if (!timeString) return "Now";
     try {
       const parts = timeString.split(/\s+/);
       if (parts.length < 3) return timeString;
@@ -841,27 +777,17 @@ export default function RecentActivities({ limit = 5 }) {
 
       if (isNaN(date.getTime())) return timeString;
 
-      const now = new Date();
-      const diffMs = now - date;
-      const diffMins = Math.floor(diffMs / 60000);
-      const diffHours = Math.floor(diffMs / 3600000);
-      const diffDays = Math.floor(diffMs / 86400000);
-
+      const diffMins = Math.floor((Date.now() - date) / 60000);
       if (diffMins < 1) return "Just now";
       if (diffMins < 60) return `${diffMins}m ago`;
-      if (diffHours < 24) return `${diffHours}h ago`;
-      if (diffDays < 7) return `${diffDays}d ago`;
-
-      return date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
+      if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+      return `${Math.floor(diffMins / 1440)}d ago`;
     } catch {
       return timeString;
     }
   }, []);
 
-  // Memoized activity style mapper
+  // Get activity display style based on action type
   const getActivityStyle = useCallback((action, details) => {
     const farmName = details?.farmName || "Unknown Farm";
     const farmerName =
@@ -870,94 +796,94 @@ export default function RecentActivities({ limit = 5 }) {
     const styles = {
       ADD_FARM: {
         icon: "🌱",
+        bg: "bg-green-50",
         iconBg: "bg-green-100",
-        bgColor: "bg-green-50",
         title: "Farm Added",
-        mainText: farmName,
+        text: farmName,
         subText: "",
       },
       DELETE_FARM: {
         icon: "🗑️",
+        bg: "bg-red-50",
         iconBg: "bg-red-100",
-        bgColor: "bg-red-50",
         title: "Farm Deleted",
-        mainText: farmName,
+        text: farmName,
         subText: "",
       },
       UPDATE_FARM: {
         icon: "🔄",
+        bg: "bg-blue-50",
         iconBg: "bg-blue-100",
-        bgColor: "bg-blue-50",
         title: "Farm Updated",
-        mainText: farmName,
+        text: farmName,
         subText: "",
       },
       ACTIVE_FARM: {
         icon: "✅",
+        bg: "bg-green-50",
         iconBg: "bg-green-100",
-        bgColor: "bg-green-50",
         title: "Farm Activated",
-        mainText: farmName,
+        text: farmName,
         subText: details?.previousStatus
           ? `from ${details.previousStatus}`
           : "",
       },
       INACTIVE_FARM: {
         icon: "⏸️",
+        bg: "bg-orange-50",
         iconBg: "bg-orange-100",
-        bgColor: "bg-orange-50",
         title: "Farm Deactivated",
-        mainText: farmName,
+        text: farmName,
         subText: details?.previousStatus
           ? `from ${details.previousStatus}`
           : "",
       },
       ADD_FARMER: {
         icon: "👨‍🌾",
+        bg: "bg-green-50",
         iconBg: "bg-green-100",
-        bgColor: "bg-green-50",
         title: "Farmer Added",
-        mainText: farmerName,
+        text: farmerName,
         subText: farmName ? `to ${farmName}` : "",
       },
       REMOVE_FARMER: {
         icon: "👤",
+        bg: "bg-red-50",
         iconBg: "bg-red-100",
-        bgColor: "bg-red-50",
         title: "Farmer Removed",
-        mainText: farmerName,
+        text: farmerName,
         subText: farmName ? `from ${farmName}` : "",
       },
       UPDATE_PROFILE: {
         icon: "✏️",
+        bg: "bg-purple-50",
         iconBg: "bg-purple-100",
-        bgColor: "bg-purple-50",
         title: "Profile Updated",
-        mainText: details?.description || "Profile information updated",
+        text: details?.description || "Profile information updated",
         subText: "",
       },
       CHANGE_PASSWORD: {
         icon: "🔐",
+        bg: "bg-yellow-50",
         iconBg: "bg-yellow-100",
-        bgColor: "bg-yellow-50",
         title: "Password Changed",
-        mainText: "Account security updated",
+        text: "Account security updated",
         subText: "",
       },
       DEACTIVATE_ACCOUNT: {
         icon: "⏸️",
+        bg: "bg-gray-50",
         iconBg: "bg-gray-100",
-        bgColor: "bg-gray-50",
         title: "Account Deactivated",
-        mainText: "Account temporarily deactivated",
+        text: "Account temporarily deactivated",
         subText: "",
       },
       REACTIVATE_ACCOUNT: {
         icon: "▶️",
+        bg: "bg-green-50",
         iconBg: "bg-green-100",
-        bgColor: "bg-green-50",
         title: "Account Reactivated",
-        mainText: "Account is now active",
+        text: "Account is now active",
         subText: "",
       },
     };
@@ -965,52 +891,140 @@ export default function RecentActivities({ limit = 5 }) {
     return (
       styles[action] || {
         icon: "ℹ️",
+        bg: "bg-gray-50",
         iconBg: "bg-gray-100",
-        bgColor: "bg-gray-50",
         title: "Activity",
-        mainText: action.replace(/_/g, " ").toLowerCase(),
+        text: action.replace(/_/g, " ").toLowerCase(),
         subText: "",
       }
     );
   }, []);
 
-  // Memoized processed activities
-  const processedActivities = useMemo(() => {
-    if (activities.length === 0) {
-      return [
-        {
-          icon: "ℹ️",
-          iconBg: "bg-purple-100",
-          bgColor: "bg-purple-50",
-          title: "System Ready",
-          mainText: "No activities yet. Start by adding a farm!",
-          subText: "",
-          time: "Now",
-          id: "fallback",
-        },
-      ];
+  // Fetch activities from API
+  const fetchActivities = useCallback(
+    async (forceRefresh = false) => {
+      try {
+        // Check cache first
+        if (!forceRefresh) {
+          const cached = activityCache.get();
+          if (cached) {
+            const processed = cached.slice(0, limit).map((act) => ({
+              ...getActivityStyle(act.action, act.details),
+              time: formatTime(act.createdAt),
+              id: act.id,
+            }));
+            setActivities(processed.length ? processed : getFallbackActivity());
+            setLoading(false);
+            return;
+          }
+        }
+
+        setLoading(true);
+        setError(null);
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setActivities(getFallbackActivity());
+          setLoading(false);
+          return;
+        }
+
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/activities",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            setActivities(getFallbackActivity());
+            setLoading(false);
+            return;
+          }
+          throw new Error(`API Error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.status === "success" && Array.isArray(data.activities)) {
+          activityCache.set(data.activities);
+
+          const processed = data.activities.slice(0, limit).map((act) => ({
+            ...getActivityStyle(act.action, act.details),
+            time: formatTime(act.createdAt),
+            id: act.id,
+          }));
+
+          setActivities(processed.length ? processed : getFallbackActivity());
+        } else {
+          setActivities(getFallbackActivity());
+        }
+      } catch (err) {
+        console.error("Failed to fetch activities:", err);
+        setError(err.message);
+        setActivities(getErrorActivity());
+      } finally {
+        setLoading(false);
+      }
+    },
+    [limit, formatTime, getActivityStyle]
+  );
+
+  // Get fallback activity when no data
+  const getFallbackActivity = () => [
+    {
+      icon: "ℹ️",
+      bg: "bg-purple-50",
+      iconBg: "bg-purple-100",
+      title: "System Ready",
+      text: "No activities yet. Start by adding a farm!",
+      subText: "",
+      time: "Now",
+      id: "fallback",
+    },
+  ];
+
+  // Get error activity
+  const getErrorActivity = () => [
+    {
+      icon: "⚠️",
+      bg: "bg-yellow-50",
+      iconBg: "bg-yellow-100",
+      title: "Error",
+      text: "Failed to load activities",
+      subText: "",
+      time: "Now",
+      id: "error",
+    },
+  ];
+
+  useEffect(() => {
+    if (!fetchedRef.current) {
+      fetchedRef.current = true;
+      fetchActivities(false);
     }
+  }, [fetchActivities]);
 
-    return activities.map((act) => ({
-      ...getActivityStyle(act.action, act.details),
-      time: formatTime(act.createdAt),
-      id: act.id || act.createdAt,
-    }));
-  }, [activities, formatTime, getActivityStyle]);
-
-  if (loading && !activities.length) {
+  // Loading state
+  if (loading && activities.length === 0) {
     return (
       <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 w-full">
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
           Recent Activities
         </h2>
-        <div className="flex justify-center items-center py-8">
+        <div className="flex justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-600"></div>
         </div>
       </div>
     );
   }
 
+  // Main render
   return (
     <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 w-full">
       <div className="flex justify-between items-center mb-3 sm:mb-4">
@@ -1039,10 +1053,10 @@ export default function RecentActivities({ limit = 5 }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {processedActivities.map((act) => (
+          {activities.map((act) => (
             <div
               key={act.id}
-              className={`${act.bgColor} rounded-xl p-4 border border-gray-100 transition-shadow hover:shadow-md`}
+              className={`${act.bg} rounded-xl p-4 border border-gray-100 transition-shadow hover:shadow-md`}
             >
               <div className="flex items-start gap-3">
                 <div
@@ -1055,7 +1069,7 @@ export default function RecentActivities({ limit = 5 }) {
                     {act.title}
                   </p>
                   <p className="text-xs text-gray-600 mt-1 break-words">
-                    {act.mainText}
+                    {act.text}
                   </p>
                   {act.subText && (
                     <p className="text-xs text-gray-500 mt-0.5">
