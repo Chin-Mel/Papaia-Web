@@ -1376,7 +1376,7 @@ export default function FarmAnalytics({
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState("All Time");
+  const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
 
@@ -1385,44 +1385,60 @@ export default function FarmAnalytics({
     switch (timeFilter) {
       case "Daily":
         return [
-          "All Time",
-          "Today",
           "Last 7 days",
+          "Last 11 days",
           "Last 14 days",
           "Last 30 days",
+          "Last 60 days",
+          "Last 90 days",
         ];
       case "Weekly":
         return [
-          "All Time",
           "Last 4 weeks",
-          "Last 8 weeks",
+          "Last 9 weeks",
           "Last 12 weeks",
-          "Last 6 months",
+          "Last 26 weeks",
+          "Last 52 weeks",
         ];
       case "Monthly":
         return [
-          "All Time",
           "Last 3 months",
           "Last 6 months",
           "Last 12 months",
-          "This year",
+          "Last 24 months",
+          "Last 36 months",
         ];
       case "Yearly":
         return [
-          "All Time",
           "Last 3 years",
           "Last 5 years",
           "Last 7 years",
           "Last 10 years",
+          "Last 15 years",
         ];
       default:
-        return ["All Time"];
+        return ["Last 11 days"];
     }
   }, [timeFilter]);
 
-  // Reset date range when timeFilter changes
+  // Reset date range when timeFilter changes to appropriate default
   useEffect(() => {
-    setDateRange("All Time");
+    switch (timeFilter) {
+      case "Daily":
+        setDateRange("Last 11 days");
+        break;
+      case "Weekly":
+        setDateRange("Last 9 weeks");
+        break;
+      case "Monthly":
+        setDateRange("Last 12 months");
+        break;
+      case "Yearly":
+        setDateRange("Last 7 years");
+        break;
+      default:
+        setDateRange("Last 11 days");
+    }
   }, [timeFilter]);
 
   // Close dropdown when clicking outside
@@ -1487,118 +1503,56 @@ export default function FarmAnalytics({
     return () => controller.abort();
   }, [farmId, timeFilter]);
 
-  // Helper function to filter data based on date range
-  const filterDataByDateRange = useCallback((data, range, filter) => {
-    if (range === "All Time") return data;
-
-    const now = new Date();
-    let cutoffDate = new Date();
-
+  // Helper function to get number of periods to show based on date range
+  const getPeriodsToShow = useCallback((range, filter) => {
     switch (filter) {
       case "Daily":
-        if (range === "Today") {
-          cutoffDate.setHours(0, 0, 0, 0);
-        } else if (range === "Last 7 days") {
-          cutoffDate.setDate(now.getDate() - 7);
-        } else if (range === "Last 14 days") {
-          cutoffDate.setDate(now.getDate() - 14);
-        } else if (range === "Last 30 days") {
-          cutoffDate.setDate(now.getDate() - 30);
-        }
-        break;
+        if (range === "Last 7 days") return 7;
+        if (range === "Last 11 days") return 11;
+        if (range === "Last 14 days") return 14;
+        if (range === "Last 30 days") return 30;
+        if (range === "Last 60 days") return 60;
+        if (range === "Last 90 days") return 90;
+        return 11;
 
       case "Weekly":
-        if (range === "Last 4 weeks") {
-          cutoffDate.setDate(now.getDate() - 28);
-        } else if (range === "Last 8 weeks") {
-          cutoffDate.setDate(now.getDate() - 56);
-        } else if (range === "Last 12 weeks") {
-          cutoffDate.setDate(now.getDate() - 84);
-        } else if (range === "Last 6 months") {
-          cutoffDate.setMonth(now.getMonth() - 6);
-        }
-        break;
+        if (range === "Last 4 weeks") return 4;
+        if (range === "Last 9 weeks") return 9;
+        if (range === "Last 12 weeks") return 12;
+        if (range === "Last 26 weeks") return 26;
+        if (range === "Last 52 weeks") return 52;
+        return 9;
 
       case "Monthly":
-        if (range === "Last 3 months") {
-          cutoffDate.setMonth(now.getMonth() - 3);
-        } else if (range === "Last 6 months") {
-          cutoffDate.setMonth(now.getMonth() - 6);
-        } else if (range === "Last 12 months") {
-          cutoffDate.setMonth(now.getMonth() - 12);
-        } else if (range === "This year") {
-          cutoffDate = new Date(now.getFullYear(), 0, 1);
-        }
-        break;
+        if (range === "Last 3 months") return 3;
+        if (range === "Last 6 months") return 6;
+        if (range === "Last 12 months") return 12;
+        if (range === "Last 24 months") return 24;
+        if (range === "Last 36 months") return 36;
+        return 12;
 
       case "Yearly":
-        if (range === "Last 3 years") {
-          cutoffDate.setFullYear(now.getFullYear() - 3);
-        } else if (range === "Last 5 years") {
-          cutoffDate.setFullYear(now.getFullYear() - 5);
-        } else if (range === "Last 7 years") {
-          cutoffDate.setFullYear(now.getFullYear() - 7);
-        } else if (range === "Last 10 years") {
-          cutoffDate.setFullYear(now.getFullYear() - 10);
-        }
-        break;
-    }
-
-    return data.filter((item) => {
-      const itemDate = parsePeriodDate(item.period, filter);
-      return itemDate >= cutoffDate;
-    });
-  }, []);
-
-  // Helper to parse period string to Date
-  const parsePeriodDate = (period, filter) => {
-    const now = new Date();
-
-    switch (filter) {
-      case "Daily": {
-        // Format: "Oct 15" or "Nov 2"
-        const [month, day] = period.split(" ");
-        const monthIndex = new Date(
-          `${month} 1, ${now.getFullYear()}`
-        ).getMonth();
-        return new Date(now.getFullYear(), monthIndex, parseInt(day));
-      }
-
-      case "Weekly": {
-        // Format: "Oct 15 - Oct 21"
-        const startDate = period.split(" - ")[0];
-        const [month, day] = startDate.split(" ");
-        const monthIndex = new Date(
-          `${month} 1, ${now.getFullYear()}`
-        ).getMonth();
-        return new Date(now.getFullYear(), monthIndex, parseInt(day));
-      }
-
-      case "Monthly": {
-        // Format: "Jan 2025"
-        const [month, year] = period.split(" ");
-        const monthIndex = new Date(`${month} 1, 2000`).getMonth();
-        return new Date(parseInt(year), monthIndex, 1);
-      }
-
-      case "Yearly": {
-        // Format: "2024"
-        return new Date(parseInt(period), 0, 1);
-      }
+        if (range === "Last 3 years") return 3;
+        if (range === "Last 5 years") return 5;
+        if (range === "Last 7 years") return 7;
+        if (range === "Last 10 years") return 10;
+        if (range === "Last 15 years") return 15;
+        return 7;
 
       default:
-        return new Date();
+        return 11;
     }
-  };
+  }, []);
 
-  // Memoize default data generation
+  // Memoize default data generation - now based on date range
   const generateDefaultData = useCallback(() => {
     const now = new Date();
     let data = [];
+    const periodsToShow = getPeriodsToShow(dateRange, timeFilter);
 
     switch (timeFilter) {
       case "Daily":
-        for (let i = 30; i >= 0; i--) {
+        for (let i = periodsToShow - 1; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - i);
           data.push({
@@ -1617,7 +1571,7 @@ export default function FarmAnalytics({
         break;
 
       case "Weekly":
-        for (let i = 12; i >= 0; i--) {
+        for (let i = periodsToShow - 1; i >= 0; i--) {
           const startDate = new Date(now);
           const dayOfWeek = startDate.getDay();
           const startOfWeek = new Date(startDate);
@@ -1644,23 +1598,16 @@ export default function FarmAnalytics({
         break;
 
       case "Monthly":
-        const months = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-        ];
-        months.forEach((month) => {
+        for (let i = periodsToShow - 1; i >= 0; i--) {
+          const date = new Date(now);
+          date.setMonth(date.getMonth() - i);
+          const monthName = date.toLocaleDateString("en-US", {
+            month: "short",
+          });
+          const year = date.getFullYear();
+
           data.push({
-            period: `${month} ${now.getFullYear()}`,
+            period: `${monthName} ${year}`,
             totalPredictions: 0,
             Healthy: 0,
             "Ring Spot Virus": 0,
@@ -1668,13 +1615,13 @@ export default function FarmAnalytics({
             "Powdery Mildew": 0,
             predictions: {},
           });
-        });
+        }
         break;
 
       case "Yearly":
         const currentYear = now.getFullYear();
-        const startYear = currentYear - 10;
-        for (let year = startYear; year <= currentYear; year++) {
+        for (let i = periodsToShow - 1; i >= 0; i--) {
+          const year = currentYear - i;
           data.push({
             period: year.toString(),
             totalPredictions: 0,
@@ -1689,9 +1636,9 @@ export default function FarmAnalytics({
     }
 
     return data;
-  }, [timeFilter]);
+  }, [timeFilter, dateRange, getPeriodsToShow]);
 
-  // Memoize processed chart data with date range filtering
+  // Memoize processed chart data
   const chartData = useMemo(() => {
     let defaultData = generateDefaultData();
 
@@ -1729,15 +1676,8 @@ export default function FarmAnalytics({
       }
     }
 
-    // Apply date range filter
-    return filterDataByDateRange(defaultData, dateRange, timeFilter);
-  }, [
-    analyticsData,
-    timeFilter,
-    generateDefaultData,
-    dateRange,
-    filterDataByDateRange,
-  ]);
+    return defaultData;
+  }, [analyticsData, timeFilter, generateDefaultData]);
 
   // Memoize disease types
   const diseaseTypes = useMemo(() => {
@@ -1867,7 +1807,7 @@ export default function FarmAnalytics({
           <div className="relative min-w-[150px]" ref={dateRangeRef}>
             <button
               onClick={() => setIsDateRangeOpen(!isDateRangeOpen)}
-              className="w-full px-3 sm:px-4 py-1.5 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-100 bg-white transition-all"
+              className="w-full px-3 sm:px-4 py-1.5 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-50 bg-white transition-all"
             >
               <span className="truncate">{dateRange}</span>
               <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
@@ -1881,7 +1821,11 @@ export default function FarmAnalytics({
                       setDateRange(option);
                       setIsDateRangeOpen(false);
                     }}
-                    className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm"
+                    className={`px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-50 hover:text-green-700 text-xs sm:text-sm transition-colors ${
+                      dateRange === option
+                        ? "bg-green-50 text-green-700 font-medium"
+                        : ""
+                    }`}
                   >
                     {option}
                   </li>
