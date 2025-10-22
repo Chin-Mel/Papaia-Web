@@ -2186,9 +2186,7 @@
 
 //new
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
-import PropTypes from "prop-types";
 
 // Dashboard data cache
 const dashboardCache = {
