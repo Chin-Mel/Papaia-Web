@@ -162,14 +162,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       console.log("✏️ Image changed");
     }
 
-    // Check if at least one field has been changed
-    if (!hasChanges) {
-      console.warn("⚠️ No changes detected");
-      setErrors({
-        general: "Please make at least one change before saving",
-      });
-      return;
-    }
+    // REMOVED: No changes validation - allow saving even without changes
 
     console.log("📤 Sending changes to server...");
     setIsLoading(true);
