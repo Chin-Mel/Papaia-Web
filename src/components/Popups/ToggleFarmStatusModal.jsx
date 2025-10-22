@@ -49,6 +49,11 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
           window.clearFarmCache();
         }
 
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         // Call the callback to update parent component
         if (onStatusToggled) {
           onStatusToggled(data.newStatus);

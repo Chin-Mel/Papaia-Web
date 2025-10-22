@@ -60,6 +60,11 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
       );
 
       if (response.ok) {
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         alert("Account deleted successfully. You will be logged out.");
 
         // Clear localStorage and redirect to login

@@ -40,6 +40,11 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
       );
 
       if (response.ok) {
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         alert(
           "Account deactivated successfully. You can reactivate it by logging in again."
         );

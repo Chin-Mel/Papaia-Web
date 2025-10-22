@@ -123,6 +123,11 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
 
       onFarmerAdded(farmerData, refreshedFarmers);
 
+      // Refresh activities immediately
+      if (window.refreshActivities) {
+        window.refreshActivities();
+      }
+
       // Reset form and close modal
       setFarmerId("");
       onClose();

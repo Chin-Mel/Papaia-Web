@@ -238,6 +238,11 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       if (data.status === "success") {
         console.log("🎉 Farm updated successfully!");
 
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         // Call the update callback
         if (onFarmUpdated) {
           onFarmUpdated();

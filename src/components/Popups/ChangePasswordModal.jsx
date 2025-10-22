@@ -75,6 +75,11 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
       );
 
       if (response.ok) {
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         alert(
           "Password updated successfully! Please log in again with your new password."
         );

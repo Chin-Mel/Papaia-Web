@@ -326,6 +326,12 @@ export default function DashboardPage() {
         cache.clear("owner_farms");
         cache.clear("farm_count");
         await Promise.all([fetchFarms(), fetchDashboardStats()]);
+
+        // Refresh activities immediately
+        if (window.refreshActivities) {
+          window.refreshActivities();
+        }
+
         setShowAddFarmModal(false);
       }
     } catch (err) {
