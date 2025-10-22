@@ -110,7 +110,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     console.log("✅ Farm ID:", farmData.id);
 
     // Build form data with only changed fields
-    const formDataToSend = new FormData();
+    const updatedData = {};
     let hasChanges = false;
 
     // Get trimmed values
@@ -139,25 +139,26 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
     // Check and add changed fields - ALLOW EMPTY VALUES
     if (trimmedFarmName !== originalFarmName) {
-      formDataToSend.append("farmName", trimmedFarmName);
+      updatedData.farmName = trimmedFarmName;
       hasChanges = true;
       console.log("✏️ Farm name changed");
     }
 
     if (trimmedLocation !== originalLocation) {
-      formDataToSend.append("location", trimmedLocation);
+      updatedData.location = trimmedLocation;
       hasChanges = true;
       console.log("✏️ Location changed");
     }
 
     if (trimmedDescription !== originalDescription) {
-      formDataToSend.append("description", trimmedDescription);
+      updatedData.description = trimmedDescription;
       hasChanges = true;
       console.log("✏️ Description changed");
     }
 
-    if (selectedImage) {
-      formDataToSend.append("farmImage", selectedImage);
+    // Handle image separately since it needs FormData
+    const hasImageChange = !!selectedImage;
+    if (hasImageChange) {
       hasChanges = true;
       console.log("✏️ Image changed");
     }
@@ -165,10 +166,21 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     // Check if at least one field has been changed
     if (!hasChanges) {
       console.warn("⚠️ No changes detected");
-
-      // Close modal without error since nothing changed
       handleClose();
       return;
+    }
+
+    // Build FormData for the request
+    const formDataToSend = new FormData();
+
+    // Add all changed fields to FormData
+    Object.keys(updatedData).forEach((key) => {
+      formDataToSend.append(key, updatedData[key]);
+    });
+
+    // Add image if changed
+    if (selectedImage) {
+      formDataToSend.append("farmImage", selectedImage);
     }
 
     console.log("📤 Sending changes to server...");
