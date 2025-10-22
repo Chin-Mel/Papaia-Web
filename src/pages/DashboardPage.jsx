@@ -2185,26 +2185,18 @@
 // }
 
 //new
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Plus, Leaf, MapPin } from "lucide-react";
+import RecentActivities from "./RecentActivities";
 
 // Dashboard data cache
 const dashboardCache = {
-  farms: { data: null, timestamp: 0, ttl: 300000 }, // 5 min
-  stats: { data: null, timestamp: 0, ttl: 60000 }, // 1 min
+  farms: { data: null, timestamp: 0, ttl: 300000 },
+  stats: { data: null, timestamp: 0, ttl: 60000 },
 
   set(key, value) {
     this[key].data = value;
     this[key].timestamp = Date.now();
-    try {
-      sessionStorage.setItem(
-        `cache_${key}`,
-        JSON.stringify({
-          value,
-          expires: Date.now() + this[key].ttl,
-        })
-      );
-    } catch (e) {}
   },
 
   get(key) {
@@ -2212,18 +2204,6 @@ const dashboardCache = {
     if (item.data && Date.now() - item.timestamp < item.ttl) {
       return item.data;
     }
-
-    try {
-      const stored = sessionStorage.getItem(`cache_${key}`);
-      if (stored) {
-        const { value, expires } = JSON.parse(stored);
-        if (Date.now() < expires) {
-          item.data = value;
-          item.timestamp = Date.now();
-          return value;
-        }
-      }
-    } catch (e) {}
     return null;
   },
 };

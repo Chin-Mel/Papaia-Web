@@ -697,14 +697,6 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // Cache for activities with sessionStorage persistence
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Leaf, MapPin } from "lucide-react";
-import { formatDistanceToNow, parse } from "date-fns";
-import { enUS } from "date-fns/locale";
-import { ChevronRight } from "lucide-react";
-import { AlertCircle } from "lucide-react";
-import { RefreshCcw } from "lucide-react";
-import { Info } from "lucide-react";
 
 // Activity cache with sessionStorage persistence
 const activityCache = {
@@ -715,46 +707,22 @@ const activityCache = {
   set(value) {
     this.data = value;
     this.timestamp = Date.now();
-    try {
-      sessionStorage.setItem(
-        "activities_cache",
-        JSON.stringify({
-          value,
-          expires: Date.now() + this.ttl,
-        })
-      );
-    } catch (e) {}
   },
 
   get() {
     if (this.data && Date.now() - this.timestamp < this.ttl) {
       return this.data;
     }
-
-    try {
-      const stored = sessionStorage.getItem("activities_cache");
-      if (stored) {
-        const { value, expires } = JSON.parse(stored);
-        if (Date.now() < expires) {
-          this.data = value;
-          this.timestamp = Date.now();
-          return value;
-        }
-      }
-    } catch (e) {}
     return null;
   },
 
   clear() {
     this.data = null;
     this.timestamp = 0;
-    try {
-      sessionStorage.removeItem("activities_cache");
-    } catch (e) {}
   },
 };
 
-function RecentActivities({ limit = 5 }) {
+export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
