@@ -602,17 +602,24 @@ export default function FarmDashboardPage() {
         <div className="space-y-6">
           {/* Top Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <button
                   onClick={goBack}
-                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer flex items-center gap-2 text-gray-600 hover:text-gray-800 mt-7 text-sm sm:text-base"
+                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base"
                 >
                   <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
                   {farmData.farmName}
                 </h1>
+                <button
+                  onClick={() => setIsEditFarmModalOpen(true)}
+                  className="transition-all duration-150 active:scale-95 cursor-pointer text-orange-500 hover:text-orange-600 p-1"
+                  title="Edit farm details"
+                >
+                  <Edit3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                </button>
                 <span
                   className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full ${
                     isActive
@@ -623,7 +630,7 @@ export default function FarmDashboardPage() {
                   {isActive ? "Active" : "Inactive"}
                 </span>
               </div>
-              <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 -mt-3 text-sm sm:text-base">
+              <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 text-sm sm:text-base">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                 {farmData.location || "No location specified"}
               </p>
@@ -649,6 +656,13 @@ export default function FarmDashboardPage() {
                 {isActive ? "Deactivate" : "Activate"}
               </button>
             </div>
+          </div>
+
+          {/* Farm Description - Now at the top without background */}
+          <div className="mb-4">
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+              {farmData.description || "No description available"}
+            </p>
           </div>
 
           {/* Analytics + Recent Scans */}
@@ -679,25 +693,6 @@ export default function FarmDashboardPage() {
             <div className="lg:col-span-1">
               <RecentScans farmId={farmId} />
             </div>
-          </div>
-
-          {/* Farm Description */}
-          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-base sm:text-lg font-bold text-gray-800">
-                Farm Description
-              </h2>
-              <button
-                onClick={() => setIsEditFarmModalOpen(true)}
-                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-500 hover:text-white flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-              >
-                <Edit3 className="w-4 h-4" />
-                Edit Description
-              </button>
-            </div>
-            <p className="text-sm text-gray-600">
-              {farmData.description || "No description available"}
-            </p>
           </div>
 
           {/* Farm Team */}
