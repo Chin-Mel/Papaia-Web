@@ -683,24 +683,57 @@
 //   );
 // }
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Leaf } from "lucide-react";
+
+// Simple cache for faster subsequent loads
+const scanCache = {
+  data: {},
+  set(key, value, ttl = 30000) {
+    this.data[key] = { value, expires: Date.now() + ttl };
+  },
+  get(key) {
+    const item = this.data[key];
+    if (!item || Date.now() > item.expires) {
+      delete this.data[key];
+      return null;
+    }
+    return item.value;
+  },
+};
 
 export default function RecentScans({ farmId }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [farmers, setFarmers] = useState([]);
+  const abortControllerRef = useRef(null);
 
-  // Fetch both farmers and scans in parallel
   useEffect(() => {
     if (!farmId) return;
 
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     const fetchData = async () => {
-      setLoading(true);
+      const cacheKey = `scans-${farmId}`;
+      const cached = scanCache.get(cacheKey);
+
+      // Show cached data immediately
+      if (cached) {
+        setFarmers(cached.farmers);
+        setRecentScans(cached.scans);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+
       try {
-        // Fetch farmers and scans in parallel
+        // Fetch both in parallel
         const [farmersResponse, scansResponse] = await Promise.all([
           fetch(`https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`, {
             headers: {
@@ -731,7 +764,7 @@ export default function RecentScans({ farmId }) {
           // Get farmer ID numbers
           const farmerIdNumbers = farmersList.map((f) => f.idNumber);
 
-          // Filter and sort scans
+          // Filter and sort scans - now showing 5 instead of 4
           const filteredScans = (scansData || [])
             .filter((scan) => farmerIdNumbers.includes(scan.idNumber))
             .sort((a, b) => {
@@ -751,14 +784,23 @@ export default function RecentScans({ farmId }) {
               };
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             })
-            .slice(0, 4);
+            .slice(0, 5); // Changed from 4 to 5
 
           setRecentScans(filteredScans);
+
+          // Cache the results
+          scanCache.set(cacheKey, {
+            farmers: farmersList,
+            scans: filteredScans,
+          });
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          setRecentScans([]);
-          setFarmers([]);
+          console.error("Error fetching scans:", error);
+          if (!cached) {
+            setRecentScans([]);
+            setFarmers([]);
+          }
         }
       } finally {
         setLoading(false);
@@ -767,7 +809,11 @@ export default function RecentScans({ farmId }) {
 
     fetchData();
 
-    return () => controller.abort();
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [farmId]);
 
   // Memoize helper functions
@@ -826,9 +872,10 @@ export default function RecentScans({ farmId }) {
     }
   }, []);
 
-  const FIXED_HEIGHT = "590px";
+  // Updated to match FarmAnalytics height
+  const FIXED_HEIGHT = "580px";
 
-  if (loading) {
+  if (loading && !recentScans.length) {
     return (
       <div
         className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
@@ -865,40 +912,39 @@ export default function RecentScans({ farmId }) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
-          <div className="space-y-4" style={{ minHeight: "400px" }}>
+          <div className="space-y-3 flex-1">
             {recentScans.map((scan, index) => (
               <div
                 key={`${scan.id || scan.timestamp}-${index}`}
                 className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                style={{ minHeight: "80px" }}
               >
                 <div className="relative flex-shrink-0">
                   <img
                     src={scan.imageUrl}
                     alt="Scan"
-                    className="w-16 h-16 rounded-lg object-cover border border-gray-200"
+                    className="w-14 h-14 rounded-lg object-cover border border-gray-200"
                     onError={handleImageError}
                   />
                   <div
-                    className="w-16 h-16 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                    className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
                     style={{ display: "none" }}
                   >
                     No Image
                   </div>
-                  <div className="absolute -top-1 -right-1 text-lg">
+                  <div className="absolute -top-1 -right-1 text-base">
                     {getDiseaseIcon(scan.prediction)}
                   </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`font-semibold text-sm mb-1 ${getStatusColor(
+                    className={`font-semibold text-sm mb-0.5 ${getStatusColor(
                       scan.prediction
                     )}`}
                   >
                     {scan.prediction}
                   </p>
-                  <p className="text-xs text-gray-600 mb-1">
+                  <p className="text-xs text-gray-600 mb-0.5">
                     {formatDateTime(scan.timestamp)}
                   </p>
                   <p className="text-xs text-gray-500">
@@ -907,22 +953,9 @@ export default function RecentScans({ farmId }) {
                 </div>
               </div>
             ))}
-
-            {Array.from({ length: Math.max(0, 4 - recentScans.length) }).map(
-              (_, index) => (
-                <div
-                  key={`placeholder-${index}`}
-                  style={{ minHeight: "80px" }}
-                  className="opacity-0"
-                />
-              )
-            )}
           </div>
 
-          <div
-            className="mt-4 pt-3 border-t border-gray-200 text-center"
-            style={{ minHeight: "40px" }}
-          >
+          <div className="mt-3 pt-3 border-t border-gray-200 text-center">
             <p className="text-xs text-gray-500">
               {recentScans.length > 0
                 ? `Showing ${recentScans.length} most recent scans`
