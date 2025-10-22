@@ -289,24 +289,12 @@ export default function FarmDashboardPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Farm Analytics - 2/3 width */}
             <div className="lg:col-span-2">
-              <div className="mb-4">
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                  {timeFilters.map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setTimeFilter(filter)}
-                      className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
-                        timeFilter === filter
-                          ? "bg-green-700 text-white"
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <FarmAnalytics farmId={farmId} timeFilter={timeFilter} />
+              <FarmAnalytics
+                farmId={farmId}
+                timeFilter={timeFilter}
+                onTimeFilterChange={setTimeFilter}
+                timeFilters={timeFilters}
+              />
             </div>
 
             {/* Recent Scans - 1/3 width */}

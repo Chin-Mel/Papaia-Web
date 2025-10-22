@@ -1369,7 +1369,7 @@ import { ChevronDown } from "lucide-react";
 
 export default function FarmAnalytics({
   farmId,
-  timeFilter,
+  timeFilter = "Daily",
   onTimeFilterChange,
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
 }) {
