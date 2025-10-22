@@ -1371,7 +1371,7 @@ export default function FarmAnalytics({
   farmId,
   timeFilter,
   onTimeFilterChange,
-  timeFilters,
+  timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
