@@ -1,709 +1,709 @@
 //new with faster data fetching
-import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Leaf, MapPin } from "lucide-react";
-import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
-import AddFarmModal from "../components/Popups/AddFarmModal";
-import RecentActivities from "../pages/RecentActivities";
-import ScansCount from "../assets/scans.png";
-import FarmersCount from "../assets/farmers.png";
-import FarmsCount from "../assets/farms.png";
+// import { useState, useEffect } from "react";
+// import { Link } from "react-router-dom";
+// import { Plus, Leaf, MapPin } from "lucide-react";
+// import HeaderMain from "../components/Header/HeaderMain";
+// import Footer from "../components/Footer/FooterMain";
+// import AddFarmModal from "../components/Popups/AddFarmModal";
+// import RecentActivities from "../pages/RecentActivities";
+// import ScansCount from "../assets/scans.png";
+// import FarmersCount from "../assets/farmers.png";
+// import FarmsCount from "../assets/farms.png";
 
-// ============ IN-MEMORY CACHE ============
-const cache = {
-  data: {},
-  timestamps: {},
+// // ============ IN-MEMORY CACHE ============
+// const cache = {
+//   data: {},
+//   timestamps: {},
 
-  set(key, value, ttl = 180000) {
-    // 3 minutes default
-    this.data[key] = value;
-    this.timestamps[key] = Date.now() + ttl;
-  },
+//   set(key, value, ttl = 180000) {
+//     // 3 minutes default
+//     this.data[key] = value;
+//     this.timestamps[key] = Date.now() + ttl;
+//   },
 
-  get(key) {
-    if (this.data[key] && Date.now() < this.timestamps[key]) {
-      return this.data[key];
-    }
-    delete this.data[key];
-    delete this.timestamps[key];
-    return null;
-  },
+//   get(key) {
+//     if (this.data[key] && Date.now() < this.timestamps[key]) {
+//       return this.data[key];
+//     }
+//     delete this.data[key];
+//     delete this.timestamps[key];
+//     return null;
+//   },
 
-  clear(key) {
-    if (key) {
-      delete this.data[key];
-      delete this.timestamps[key];
-    } else {
-      this.data = {};
-      this.timestamps = {};
-    }
-  },
-};
+//   clear(key) {
+//     if (key) {
+//       delete this.data[key];
+//       delete this.timestamps[key];
+//     } else {
+//       this.data = {};
+//       this.timestamps = {};
+//     }
+//   },
+// };
 
-// ============ CACHED FETCH FUNCTION ============
-const cachedFetch = async (
-  url,
-  options = {},
-  cacheKey = null,
-  ttl = 180000
-) => {
-  const key = cacheKey || url;
+// // ============ CACHED FETCH FUNCTION ============
+// const cachedFetch = async (
+//   url,
+//   options = {},
+//   cacheKey = null,
+//   ttl = 180000
+// ) => {
+//   const key = cacheKey || url;
 
-  // Return cached data if available
-  const cached = cache.get(key);
-  if (cached) return cached;
+//   // Return cached data if available
+//   const cached = cache.get(key);
+//   if (cached) return cached;
 
-  // Fetch new data
-  const token = localStorage.getItem("token");
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
+//   // Fetch new data
+//   const token = localStorage.getItem("token");
+//   const response = await fetch(url, {
+//     ...options,
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       ...options.headers,
+//     },
+//   });
 
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+//   if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-  const data = await response.json();
-  cache.set(key, data, ttl);
+//   const data = await response.json();
+//   cache.set(key, data, ttl);
 
-  return data;
-};
+//   return data;
+// };
 
-export default function DashboardPage() {
-  const [showAddFarmModal, setShowAddFarmModal] = useState(false);
-  const [farms, setFarms] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [dashboardStats, setDashboardStats] = useState({
-    totalFarmers: 0,
-    totalFarms: 0,
-    todayScans: 0,
-    yesterdayScans: 0,
-    farmersChange: 0,
-    farmsChange: 0,
-    scansChange: 0,
-    farmersTrend: "no change",
-    farmsTrend: "no change",
-    scansTrend: "no change",
-  });
+// export default function DashboardPage() {
+//   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+//   const [farms, setFarms] = useState([]);
+//   const [loading, setLoading] = useState(false);
+//   const [dashboardStats, setDashboardStats] = useState({
+//     totalFarmers: 0,
+//     totalFarms: 0,
+//     todayScans: 0,
+//     yesterdayScans: 0,
+//     farmersChange: 0,
+//     farmsChange: 0,
+//     scansChange: 0,
+//     farmersTrend: "no change",
+//     farmsTrend: "no change",
+//     scansTrend: "no change",
+//   });
 
-  // Preload images
-  useEffect(() => {
-    const images = [ScansCount, FarmersCount, FarmsCount];
-    images.forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
+//   // Preload images
+//   useEffect(() => {
+//     const images = [ScansCount, FarmersCount, FarmsCount];
+//     images.forEach((src) => {
+//       const img = new Image();
+//       img.src = src;
+//     });
+//   }, []);
 
-  const isToday = (timestampStr) => {
-    const today = new Date();
-    const todayStr = today.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
-    return timestampStr.includes(todayStr);
-  };
+//   const isToday = (timestampStr) => {
+//     const today = new Date();
+//     const todayStr = today.toLocaleDateString("en-US", {
+//       month: "2-digit",
+//       day: "2-digit",
+//       year: "numeric",
+//     });
+//     return timestampStr.includes(todayStr);
+//   };
 
-  const isYesterday = (timestampStr) => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
-    return timestampStr.includes(yesterdayStr);
-  };
+//   const isYesterday = (timestampStr) => {
+//     const yesterday = new Date();
+//     yesterday.setDate(yesterday.getDate() - 1);
+//     const yesterdayStr = yesterday.toLocaleDateString("en-US", {
+//       month: "2-digit",
+//       day: "2-digit",
+//       year: "numeric",
+//     });
+//     return timestampStr.includes(yesterdayStr);
+//   };
 
-  // ============ OPTIMIZED FETCH WITH CACHING ============
-  const fetchDashboardStats = async () => {
-    try {
-      const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+//   // ============ OPTIMIZED FETCH WITH CACHING ============
+//   const fetchDashboardStats = async () => {
+//     try {
+//       const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
-      // Parallel fetching with cache
-      const [
-        farmCountData,
-        farmerCountData,
-        identificationData,
-        farmersComparisonData,
-        farmsComparisonData,
-      ] = await Promise.all([
-        cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000),
-        cachedFetch(`${API_BASE}/count-farmers`, {}, "farmer_count", 60000),
-        cachedFetch(
-          `${API_BASE}/identification-history`,
-          {},
-          "id_history",
-          120000
-        ),
-        cachedFetch(
-          `${API_BASE}/farmers-comparison`,
-          {},
-          "farmers_comp",
-          60000
-        ),
-        cachedFetch(`${API_BASE}/farms-comparison`, {}, "farms_comp", 60000),
-      ]).catch(() => [{}, {}, [], {}, {}]);
+//       // Parallel fetching with cache
+//       const [
+//         farmCountData,
+//         farmerCountData,
+//         identificationData,
+//         farmersComparisonData,
+//         farmsComparisonData,
+//       ] = await Promise.all([
+//         cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000),
+//         cachedFetch(`${API_BASE}/count-farmers`, {}, "farmer_count", 60000),
+//         cachedFetch(
+//           `${API_BASE}/identification-history`,
+//           {},
+//           "id_history",
+//           120000
+//         ),
+//         cachedFetch(
+//           `${API_BASE}/farmers-comparison`,
+//           {},
+//           "farmers_comp",
+//           60000
+//         ),
+//         cachedFetch(`${API_BASE}/farms-comparison`, {}, "farms_comp", 60000),
+//       ]).catch(() => [{}, {}, [], {}, {}]);
 
-      const todayScansCount = Array.isArray(identificationData)
-        ? identificationData.filter((pred) => isToday(pred.timestamp)).length
-        : 0;
+//       const todayScansCount = Array.isArray(identificationData)
+//         ? identificationData.filter((pred) => isToday(pred.timestamp)).length
+//         : 0;
 
-      const yesterdayScansCount = Array.isArray(identificationData)
-        ? identificationData.filter((pred) => isYesterday(pred.timestamp))
-            .length
-        : 0;
+//       const yesterdayScansCount = Array.isArray(identificationData)
+//         ? identificationData.filter((pred) => isYesterday(pred.timestamp))
+//             .length
+//         : 0;
 
-      let scansChangePercent = 0;
-      let scansTrendType = "no change";
+//       let scansChangePercent = 0;
+//       let scansTrendType = "no change";
 
-      if (yesterdayScansCount > 0) {
-        scansChangePercent = (
-          ((todayScansCount - yesterdayScansCount) / yesterdayScansCount) *
-          100
-        ).toFixed(2);
-        if (todayScansCount > yesterdayScansCount) {
-          scansTrendType = "increase";
-        } else if (todayScansCount < yesterdayScansCount) {
-          scansTrendType = "decrease";
-        }
-      } else if (todayScansCount > 0) {
-        scansChangePercent = 100;
-        scansTrendType = "increase";
-      }
+//       if (yesterdayScansCount > 0) {
+//         scansChangePercent = (
+//           ((todayScansCount - yesterdayScansCount) / yesterdayScansCount) *
+//           100
+//         ).toFixed(2);
+//         if (todayScansCount > yesterdayScansCount) {
+//           scansTrendType = "increase";
+//         } else if (todayScansCount < yesterdayScansCount) {
+//           scansTrendType = "decrease";
+//         }
+//       } else if (todayScansCount > 0) {
+//         scansChangePercent = 100;
+//         scansTrendType = "increase";
+//       }
 
-      setDashboardStats({
-        totalFarmers: farmerCountData.totalFarmers || 0,
-        totalFarms: farmCountData.farmCount || 0,
-        todayScans: todayScansCount,
-        yesterdayScans: yesterdayScansCount,
-        farmersChange: farmersComparisonData.percentageChange || 0,
-        farmsChange: farmsComparisonData.percentageChange || 0,
-        scansChange: parseFloat(scansChangePercent) || 0,
-        farmersTrend: farmersComparisonData.trend || "no change",
-        farmsTrend: farmsComparisonData.trend || "no change",
-        scansTrend: scansTrendType,
-      });
-    } catch (err) {
-      // Silent error handling
-    }
-  };
+//       setDashboardStats({
+//         totalFarmers: farmerCountData.totalFarmers || 0,
+//         totalFarms: farmCountData.farmCount || 0,
+//         todayScans: todayScansCount,
+//         yesterdayScans: yesterdayScansCount,
+//         farmersChange: farmersComparisonData.percentageChange || 0,
+//         farmsChange: farmsComparisonData.percentageChange || 0,
+//         scansChange: parseFloat(scansChangePercent) || 0,
+//         farmersTrend: farmersComparisonData.trend || "no change",
+//         farmsTrend: farmsComparisonData.trend || "no change",
+//         scansTrend: scansTrendType,
+//       });
+//     } catch (err) {
+//       // Silent error handling
+//     }
+//   };
 
-  const fetchFarmHealth = async (farmId) => {
-    try {
-      const data = await cachedFetch(
-        `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-        {},
-        `farm_health_${farmId}`,
-        120000
-      ).catch(() => ({ healthPercentage: "0.00" }));
+//   const fetchFarmHealth = async (farmId) => {
+//     try {
+//       const data = await cachedFetch(
+//         `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+//         {},
+//         `farm_health_${farmId}`,
+//         120000
+//       ).catch(() => ({ healthPercentage: "0.00" }));
 
-      return data.healthPercentage || "0.00";
-    } catch {
-      return "0.00";
-    }
-  };
+//       return data.healthPercentage || "0.00";
+//     } catch {
+//       return "0.00";
+//     }
+//   };
 
-  const fetchFarms = async () => {
-    try {
-      setLoading(true);
+//   const fetchFarms = async () => {
+//     try {
+//       setLoading(true);
 
-      const data = await cachedFetch(
-        "https://papaiaapi.onrender.com/api/owner/farms",
-        {},
-        "owner_farms",
-        180000
-      );
+//       const data = await cachedFetch(
+//         "https://papaiaapi.onrender.com/api/owner/farms",
+//         {},
+//         "owner_farms",
+//         180000
+//       );
 
-      if (data.status === "success" && data.farms) {
-        // Fetch health in parallel for all farms
-        const mappedFarmsWithHealth = await Promise.all(
-          data.farms.map(async (f) => {
-            let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
-            if (f.farmImage && f.farmImage.startsWith("http")) {
-              farmImage = f.farmImage;
-              // Preload farm image
-              const img = new Image();
-              img.src = farmImage;
-            }
+//       if (data.status === "success" && data.farms) {
+//         // Fetch health in parallel for all farms
+//         const mappedFarmsWithHealth = await Promise.all(
+//           data.farms.map(async (f) => {
+//             let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+//             if (f.farmImage && f.farmImage.startsWith("http")) {
+//               farmImage = f.farmImage;
+//               // Preload farm image
+//               const img = new Image();
+//               img.src = farmImage;
+//             }
 
-            const health = await fetchFarmHealth(f.id);
+//             const health = await fetchFarmHealth(f.id);
 
-            return {
-              id: f.id,
-              name: f.farmName,
-              desc: f.description || `Farm located in ${f.location}`,
-              location: f.location,
-              health: health,
-              status: f.status === "active" ? "Active" : "Inactive",
-              img: farmImage,
-            };
-          })
-        );
+//             return {
+//               id: f.id,
+//               name: f.farmName,
+//               desc: f.description || `Farm located in ${f.location}`,
+//               location: f.location,
+//               health: health,
+//               status: f.status === "active" ? "Active" : "Inactive",
+//               img: farmImage,
+//             };
+//           })
+//         );
 
-        const sortedFarms = mappedFarmsWithHealth.sort((a, b) => {
-          if (a.status === "Active" && b.status === "Inactive") return -1;
-          if (a.status === "Inactive" && b.status === "Active") return 1;
-          return 0;
-        });
+//         const sortedFarms = mappedFarmsWithHealth.sort((a, b) => {
+//           if (a.status === "Active" && b.status === "Inactive") return -1;
+//           if (a.status === "Inactive" && b.status === "Active") return 1;
+//           return 0;
+//         });
 
-        setFarms(sortedFarms);
-      } else {
-        setFarms([]);
-      }
-    } catch (err) {
-      setFarms([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+//         setFarms(sortedFarms);
+//       } else {
+//         setFarms([]);
+//       }
+//     } catch (err) {
+//       setFarms([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  // Initial load
-  useEffect(() => {
-    fetchFarms();
-    fetchDashboardStats();
-  }, []);
+//   // Initial load
+//   useEffect(() => {
+//     fetchFarms();
+//     fetchDashboardStats();
+//   }, []);
 
-  const handleAddFarm = async (farmData) => {
-    try {
-      setLoading(true);
+//   const handleAddFarm = async (farmData) => {
+//     try {
+//       setLoading(true);
 
-      const formData = new FormData();
-      formData.append("farmName", farmData.name);
-      formData.append("location", farmData.location);
-      formData.append(
-        "description",
-        farmData.description || "No description provided"
-      );
+//       const formData = new FormData();
+//       formData.append("farmName", farmData.name);
+//       formData.append("location", farmData.location);
+//       formData.append(
+//         "description",
+//         farmData.description || "No description provided"
+//       );
 
-      if (farmData.farmImage) {
-        formData.append("farmImage", farmData.farmImage);
-      }
+//       if (farmData.farmImage) {
+//         formData.append("farmImage", farmData.farmImage);
+//       }
 
-      const token = localStorage.getItem("token");
-      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+//       const token = localStorage.getItem("token");
+//       const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+//         method: "POST",
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: formData,
+//       });
 
-      const data = await res.json();
+//       const data = await res.json();
 
-      if (data.status === "success") {
-        // Clear caches
-        cache.clear("owner_farms");
-        cache.clear("farm_count");
+//       if (data.status === "success") {
+//         // Clear caches
+//         cache.clear("owner_farms");
+//         cache.clear("farm_count");
 
-        // Refresh data
-        await Promise.all([fetchFarms(), fetchDashboardStats()]);
-        setShowAddFarmModal(false);
-      }
-    } catch (err) {
-      // Silent error handling
-    } finally {
-      setLoading(false);
-    }
-  };
+//         // Refresh data
+//         await Promise.all([fetchFarms(), fetchDashboardStats()]);
+//         setShowAddFarmModal(false);
+//       }
+//     } catch (err) {
+//       // Silent error handling
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
 
-  const handleCloseModal = () => setShowAddFarmModal(false);
+//   const handleCloseModal = () => setShowAddFarmModal(false);
 
-  const getTrendColor = (trend) => {
-    switch (trend) {
-      case "increase":
-        return "text-green-600";
-      case "decrease":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
-    }
-  };
+//   const getTrendColor = (trend) => {
+//     switch (trend) {
+//       case "increase":
+//         return "text-green-600";
+//       case "decrease":
+//         return "text-red-600";
+//       default:
+//         return "text-gray-600";
+//     }
+//   };
 
-  const getTrendPrefix = (trend) => {
-    if (trend === "increase") return "+";
-    if (trend === "decrease") return "-";
-    return "";
-  };
+//   const getTrendPrefix = (trend) => {
+//     if (trend === "increase") return "+";
+//     if (trend === "decrease") return "-";
+//     return "";
+//   };
 
-  const getHealthColor = (healthPercentage) => {
-    if (healthPercentage >= 80) return "text-green-600";
-    else if (healthPercentage >= 60) return "text-yellow-600";
-    else if (healthPercentage >= 40) return "text-orange-600";
-    else if (healthPercentage >= 20) return "text-red-600";
-    else return "text-gray-600";
-  };
+//   const getHealthColor = (healthPercentage) => {
+//     if (healthPercentage >= 80) return "text-green-600";
+//     else if (healthPercentage >= 60) return "text-yellow-600";
+//     else if (healthPercentage >= 40) return "text-orange-600";
+//     else if (healthPercentage >= 20) return "text-red-600";
+//     else return "text-gray-600";
+//   };
 
-  const formatHealthDisplay = (health) => {
-    if (health === 0 || health === "0.00") return "N/A";
-    return `${health}`;
-  };
+//   const formatHealthDisplay = (health) => {
+//     if (health === 0 || health === "0.00") return "N/A";
+//     return `${health}`;
+//   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <HeaderMain />
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col">
+//       <HeaderMain />
 
-      <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-        <div className="w-full max-w-8xl mx-auto">
-          {/* Mobile Layout */}
-          <div className="block lg:hidden">
-            <div className="mb-6">
-              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-                Dashboard Overview
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
-                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                  <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      All Farmers
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
-                      {dashboardStats.totalFarmers.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                        dashboardStats.farmersTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmersTrend)}
-                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
-                      last month
-                    </span>
-                  </div>
-                  <img
-                    src={FarmersCount}
-                    alt="Farmers"
-                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                    loading="eager"
-                  />
-                </div>
+//       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+//         <div className="w-full max-w-8xl mx-auto">
+//           {/* Mobile Layout */}
+//           <div className="block lg:hidden">
+//             <div className="mb-6">
+//               <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+//                 Dashboard Overview
+//               </h2>
+//               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+//                 <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+//                   <div>
+//                     <p className="text-sm sm:text-base text-gray-600 mb-2">
+//                       All Farmers
+//                     </p>
+//                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+//                       {dashboardStats.totalFarmers.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-xs sm:text-sm font-medium ${getTrendColor(
+//                         dashboardStats.farmersTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.farmersTrend)}
+//                       {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+//                       last month
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={FarmersCount}
+//                     alt="Farmers"
+//                     className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
 
-                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                  <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      All Farms
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
-                      {dashboardStats.totalFarms.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                        dashboardStats.farmsTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmsTrend)}
-                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
-                      last month
-                    </span>
-                  </div>
-                  <img
-                    src={FarmsCount}
-                    alt="Farms"
-                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                    loading="eager"
-                  />
-                </div>
+//                 <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+//                   <div>
+//                     <p className="text-sm sm:text-base text-gray-600 mb-2">
+//                       All Farms
+//                     </p>
+//                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+//                       {dashboardStats.totalFarms.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-xs sm:text-sm font-medium ${getTrendColor(
+//                         dashboardStats.farmsTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.farmsTrend)}
+//                       {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
+//                       last month
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={FarmsCount}
+//                     alt="Farms"
+//                     className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
 
-                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md sm:col-span-2">
-                  <div>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      Today's Scans
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
-                      {dashboardStats.todayScans.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
-                        dashboardStats.scansTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.scansTrend)}
-                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
-                      yesterday
-                    </span>
-                  </div>
-                  <img
-                    src={ScansCount}
-                    alt="Scans"
-                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
-                    loading="eager"
-                  />
-                </div>
-              </div>
-            </div>
+//                 <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md sm:col-span-2">
+//                   <div>
+//                     <p className="text-sm sm:text-base text-gray-600 mb-2">
+//                       Today's Scans
+//                     </p>
+//                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+//                       {dashboardStats.todayScans.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-xs sm:text-sm font-medium ${getTrendColor(
+//                         dashboardStats.scansTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.scansTrend)}
+//                       {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+//                       yesterday
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={ScansCount}
+//                     alt="Scans"
+//                     className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
+//               </div>
+//             </div>
 
-            <div className="mb-6">
-              <RecentActivities limit={5} />
-            </div>
+//             <div className="mb-6">
+//               <RecentActivities limit={5} />
+//             </div>
 
-            <div>
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
-                <h2 className="text-base sm:text-lg font-bold text-gray-800">
-                  My Farms
-                </h2>
-                <button
-                  onClick={() => setShowAddFarmModal(true)}
-                  disabled={loading}
-                  className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
-                >
-                  <Plus size={16} />
-                  {loading ? "Loading..." : "Add Farm"}
-                </button>
-              </div>
+//             <div>
+//               <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+//                 <h2 className="text-base sm:text-lg font-bold text-gray-800">
+//                   My Farms
+//                 </h2>
+//                 <button
+//                   onClick={() => setShowAddFarmModal(true)}
+//                   disabled={loading}
+//                   className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
+//                 >
+//                   <Plus size={16} />
+//                   {loading ? "Loading..." : "Add Farm"}
+//                 </button>
+//               </div>
 
-              {loading ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="text-gray-500">Loading farms...</div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {farms.length === 0 ? (
-                    <div className="col-span-1 sm:col-span-2 text-center py-12 text-gray-500">
-                      No farms added yet. Click "Add Farm" to get started!
-                    </div>
-                  ) : (
-                    farms.map((farm) => (
-                      <Link
-                        key={farm.id}
-                        to={`/farm-dashboard/${farm.id}`}
-                        className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
-                          farm.status === "Active" ? "bg-white" : "bg-gray-300"
-                        }`}
-                      >
-                        <div className="relative">
-                          <img
-                            src={farm.img}
-                            alt={farm.name}
-                            className={`w-full h-32 sm:h-40 object-cover ${
-                              farm.status === "Inactive" ? "opacity-50" : ""
-                            }`}
-                            loading="eager"
-                          />
-                          <span
-                            className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
-                              farm.status === "Active"
-                                ? "bg-green-500 text-white"
-                                : "bg-red-500 text-white"
-                            }`}
-                          >
-                            {farm.status}
-                          </span>
-                        </div>
-                        <div className="p-3 sm:p-4">
-                          <h3 className="font-bold text-xs sm:text-base text-gray-800 mb-1">
-                            {farm.name}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
-                            {farm.desc}
-                          </p>
-                          <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
-                              <MapPin size={12} /> {farm.location}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Leaf size={12} className="text-green-500" />
-                              <span
-                                className={`text-[10px] sm:text-xs font-medium ${getHealthColor(
-                                  farm.health
-                                )}`}
-                              >
-                                {formatHealthDisplay(farm.health)} Health
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+//               {loading ? (
+//                 <div className="flex justify-center items-center py-12">
+//                   <div className="text-gray-500">Loading farms...</div>
+//                 </div>
+//               ) : (
+//                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+//                   {farms.length === 0 ? (
+//                     <div className="col-span-1 sm:col-span-2 text-center py-12 text-gray-500">
+//                       No farms added yet. Click "Add Farm" to get started!
+//                     </div>
+//                   ) : (
+//                     farms.map((farm) => (
+//                       <Link
+//                         key={farm.id}
+//                         to={`/farm-dashboard/${farm.id}`}
+//                         className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
+//                           farm.status === "Active" ? "bg-white" : "bg-gray-300"
+//                         }`}
+//                       >
+//                         <div className="relative">
+//                           <img
+//                             src={farm.img}
+//                             alt={farm.name}
+//                             className={`w-full h-32 sm:h-40 object-cover ${
+//                               farm.status === "Inactive" ? "opacity-50" : ""
+//                             }`}
+//                             loading="eager"
+//                           />
+//                           <span
+//                             className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
+//                               farm.status === "Active"
+//                                 ? "bg-green-500 text-white"
+//                                 : "bg-red-500 text-white"
+//                             }`}
+//                           >
+//                             {farm.status}
+//                           </span>
+//                         </div>
+//                         <div className="p-3 sm:p-4">
+//                           <h3 className="font-bold text-xs sm:text-base text-gray-800 mb-1">
+//                             {farm.name}
+//                           </h3>
+//                           <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
+//                             {farm.desc}
+//                           </p>
+//                           <div className="flex flex-col gap-1">
+//                             <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
+//                               <MapPin size={12} /> {farm.location}
+//                             </div>
+//                             <div className="flex items-center gap-1">
+//                               <Leaf size={12} className="text-green-500" />
+//                               <span
+//                                 className={`text-[10px] sm:text-xs font-medium ${getHealthColor(
+//                                   farm.health
+//                                 )}`}
+//                               >
+//                                 {formatHealthDisplay(farm.health)} Health
+//                               </span>
+//                             </div>
+//                           </div>
+//                         </div>
+//                       </Link>
+//                     ))
+//                   )}
+//                 </div>
+//               )}
+//             </div>
+//           </div>
 
-          {/* Desktop Layout - Same structure but with desktop classes */}
-          <div className="hidden lg:flex gap-6">
-            <div className="w-[330px] flex-shrink-0">
-              <RecentActivities limit={5} />
-            </div>
+//           {/* Desktop Layout - Same structure but with desktop classes */}
+//           <div className="hidden lg:flex gap-6">
+//             <div className="w-[330px] flex-shrink-0">
+//               <RecentActivities limit={5} />
+//             </div>
 
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-gray-800 mb-4">
-                Dashboard Overview
-              </h2>
-              <div className="grid grid-cols-3 gap-5 mb-8">
-                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                  <div>
-                    <p className="text-base text-gray-600 mb-2">All Farmers</p>
-                    <h3 className="text-3xl font-bold text-gray-800">
-                      {dashboardStats.totalFarmers.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-sm font-medium ${getTrendColor(
-                        dashboardStats.farmersTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmersTrend)}
-                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
-                      last month
-                    </span>
-                  </div>
-                  <img
-                    src={FarmersCount}
-                    alt="Farmers"
-                    className="w-14 h-14 object-contain"
-                    loading="eager"
-                  />
-                </div>
+//             <div className="flex-1">
+//               <h2 className="text-lg font-bold text-gray-800 mb-4">
+//                 Dashboard Overview
+//               </h2>
+//               <div className="grid grid-cols-3 gap-5 mb-8">
+//                 <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+//                   <div>
+//                     <p className="text-base text-gray-600 mb-2">All Farmers</p>
+//                     <h3 className="text-3xl font-bold text-gray-800">
+//                       {dashboardStats.totalFarmers.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-sm font-medium ${getTrendColor(
+//                         dashboardStats.farmersTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.farmersTrend)}
+//                       {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+//                       last month
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={FarmersCount}
+//                     alt="Farmers"
+//                     className="w-14 h-14 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
 
-                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                  <div>
-                    <p className="text-base text-gray-600 mb-2">All Farms</p>
-                    <h3 className="text-3xl font-bold text-gray-800">
-                      {dashboardStats.totalFarms.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-sm font-medium ${getTrendColor(
-                        dashboardStats.farmsTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmsTrend)}
-                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
-                      last month
-                    </span>
-                  </div>
-                  <img
-                    src={FarmsCount}
-                    alt="Farms"
-                    className="w-14 h-14 object-contain"
-                    loading="eager"
-                  />
-                </div>
+//                 <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+//                   <div>
+//                     <p className="text-base text-gray-600 mb-2">All Farms</p>
+//                     <h3 className="text-3xl font-bold text-gray-800">
+//                       {dashboardStats.totalFarms.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-sm font-medium ${getTrendColor(
+//                         dashboardStats.farmsTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.farmsTrend)}
+//                       {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
+//                       last month
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={FarmsCount}
+//                     alt="Farms"
+//                     className="w-14 h-14 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
 
-                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
-                  <div>
-                    <p className="text-base text-gray-600 mb-2">
-                      Today's Scans
-                    </p>
-                    <h3 className="text-3xl font-bold text-gray-800">
-                      {dashboardStats.todayScans.toLocaleString()}
-                    </h3>
-                    <span
-                      className={`text-sm font-medium ${getTrendColor(
-                        dashboardStats.scansTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.scansTrend)}
-                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
-                      yesterday
-                    </span>
-                  </div>
-                  <img
-                    src={ScansCount}
-                    alt="Scans"
-                    className="w-14 h-14 object-contain"
-                    loading="eager"
-                  />
-                </div>
-              </div>
+//                 <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+//                   <div>
+//                     <p className="text-base text-gray-600 mb-2">
+//                       Today's Scans
+//                     </p>
+//                     <h3 className="text-3xl font-bold text-gray-800">
+//                       {dashboardStats.todayScans.toLocaleString()}
+//                     </h3>
+//                     <span
+//                       className={`text-sm font-medium ${getTrendColor(
+//                         dashboardStats.scansTrend
+//                       )}`}
+//                     >
+//                       {getTrendPrefix(dashboardStats.scansTrend)}
+//                       {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+//                       yesterday
+//                     </span>
+//                   </div>
+//                   <img
+//                     src={ScansCount}
+//                     alt="Scans"
+//                     className="w-14 h-14 object-contain"
+//                     loading="eager"
+//                   />
+//                 </div>
+//               </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
-                  <button
-                    onClick={() => setShowAddFarmModal(true)}
-                    disabled={loading}
-                    className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
-                  >
-                    <Plus size={16} />
-                    {loading ? "Loading..." : "Add Farm"}
-                  </button>
-                </div>
+//               <div>
+//                 <div className="flex justify-between items-center mb-4">
+//                   <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
+//                   <button
+//                     onClick={() => setShowAddFarmModal(true)}
+//                     disabled={loading}
+//                     className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
+//                   >
+//                     <Plus size={16} />
+//                     {loading ? "Loading..." : "Add Farm"}
+//                   </button>
+//                 </div>
 
-                {loading ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="text-gray-500">Loading farms...</div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-4">
-                    {farms.length === 0 ? (
-                      <div className="col-span-3 text-center py-12 text-gray-500">
-                        No farms added yet. Click "Add Farm" to get started!
-                      </div>
-                    ) : (
-                      farms.map((farm) => (
-                        <Link
-                          key={farm.id}
-                          to={`/farm-dashboard/${farm.id}`}
-                          className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
-                            farm.status === "Active"
-                              ? "bg-white"
-                              : "bg-gray-300"
-                          }`}
-                        >
-                          <div className="relative">
-                            <img
-                              src={farm.img}
-                              alt={farm.name}
-                              className={`w-full h-48 object-cover ${
-                                farm.status === "Inactive" ? "opacity-50" : ""
-                              }`}
-                              loading="eager"
-                            />
-                            <span
-                              className={`absolute top-3 right-3 px-2.5 py-1.5 text-xs rounded-full font-medium ${
-                                farm.status === "Active"
-                                  ? "bg-green-500 text-white"
-                                  : "bg-red-500 text-white"
-                              }`}
-                            >
-                              {farm.status}
-                            </span>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-bold text-lg text-gray-800 mb-1">
-                              {farm.name}
-                            </h3>
-                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                              {farm.desc}
-                            </p>
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-center gap-1 text-xs text-gray-500">
-                                <MapPin size={12} /> {farm.location}
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Leaf size={12} className="text-green-500" />
-                                <span
-                                  className={`text-xs font-medium ${getHealthColor(
-                                    farm.health
-                                  )}`}
-                                >
-                                  {formatHealthDisplay(farm.health)} Health
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
+//                 {loading ? (
+//                   <div className="flex justify-center items-center py-12">
+//                     <div className="text-gray-500">Loading farms...</div>
+//                   </div>
+//                 ) : (
+//                   <div className="grid grid-cols-3 gap-4">
+//                     {farms.length === 0 ? (
+//                       <div className="col-span-3 text-center py-12 text-gray-500">
+//                         No farms added yet. Click "Add Farm" to get started!
+//                       </div>
+//                     ) : (
+//                       farms.map((farm) => (
+//                         <Link
+//                           key={farm.id}
+//                           to={`/farm-dashboard/${farm.id}`}
+//                           className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
+//                             farm.status === "Active"
+//                               ? "bg-white"
+//                               : "bg-gray-300"
+//                           }`}
+//                         >
+//                           <div className="relative">
+//                             <img
+//                               src={farm.img}
+//                               alt={farm.name}
+//                               className={`w-full h-48 object-cover ${
+//                                 farm.status === "Inactive" ? "opacity-50" : ""
+//                               }`}
+//                               loading="eager"
+//                             />
+//                             <span
+//                               className={`absolute top-3 right-3 px-2.5 py-1.5 text-xs rounded-full font-medium ${
+//                                 farm.status === "Active"
+//                                   ? "bg-green-500 text-white"
+//                                   : "bg-red-500 text-white"
+//                               }`}
+//                             >
+//                               {farm.status}
+//                             </span>
+//                           </div>
+//                           <div className="p-4">
+//                             <h3 className="font-bold text-lg text-gray-800 mb-1">
+//                               {farm.name}
+//                             </h3>
+//                             <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+//                               {farm.desc}
+//                             </p>
+//                             <div className="flex flex-col gap-1">
+//                               <div className="flex items-center gap-1 text-xs text-gray-500">
+//                                 <MapPin size={12} /> {farm.location}
+//                               </div>
+//                               <div className="flex items-center gap-1">
+//                                 <Leaf size={12} className="text-green-500" />
+//                                 <span
+//                                   className={`text-xs font-medium ${getHealthColor(
+//                                     farm.health
+//                                   )}`}
+//                                 >
+//                                   {formatHealthDisplay(farm.health)} Health
+//                                 </span>
+//                               </div>
+//                             </div>
+//                           </div>
+//                         </Link>
+//                       ))
+//                     )}
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </main>
 
-      {showAddFarmModal && (
-        <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
-      )}
-      <Footer />
-    </div>
-  );
-}
+//       {showAddFarmModal && (
+//         <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
+//       )}
+//       <Footer />
+//     </div>
+//   );
+// }
 
 //new
 // import { useState, useEffect } from "react";
@@ -2183,3 +2183,796 @@ export default function DashboardPage() {
 //     </div>
 //   );
 // }
+
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Leaf, MapPin } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/FooterMain";
+import AddFarmModal from "../components/Popups/AddFarmModal";
+import RecentActivities from "../pages/RecentActivities";
+import ScansCount from "../assets/scans.png";
+import FarmersCount from "../assets/farmers.png";
+import FarmsCount from "../assets/farms.png";
+
+// ============ ENHANCED IN-MEMORY CACHE WITH PERSISTENCE ============
+const cache = {
+  data: {},
+  timestamps: {},
+
+  set(key, value, ttl = 300000) {
+    // 5 minutes default
+    this.data[key] = value;
+    this.timestamps[key] = Date.now() + ttl;
+
+    // Persist to sessionStorage for navigation persistence
+    try {
+      sessionStorage.setItem(
+        `cache_${key}`,
+        JSON.stringify({ value, expires: this.timestamps[key] })
+      );
+    } catch (e) {
+      // Ignore storage errors
+    }
+  },
+
+  get(key) {
+    // Check memory first
+    if (this.data[key] && Date.now() < this.timestamps[key]) {
+      return this.data[key];
+    }
+
+    // Check sessionStorage if not in memory
+    try {
+      const stored = sessionStorage.getItem(`cache_${key}`);
+      if (stored) {
+        const { value, expires } = JSON.parse(stored);
+        if (Date.now() < expires) {
+          this.data[key] = value;
+          this.timestamps[key] = expires;
+          return value;
+        }
+      }
+    } catch (e) {
+      // Ignore storage errors
+    }
+
+    // Clear expired
+    delete this.data[key];
+    delete this.timestamps[key];
+    return null;
+  },
+
+  clear(key) {
+    if (key) {
+      delete this.data[key];
+      delete this.timestamps[key];
+      try {
+        sessionStorage.removeItem(`cache_${key}`);
+      } catch (e) {}
+    } else {
+      this.data = {};
+      this.timestamps = {};
+      try {
+        Object.keys(sessionStorage).forEach((k) => {
+          if (k.startsWith("cache_")) sessionStorage.removeItem(k);
+        });
+      } catch (e) {}
+    }
+  },
+};
+
+// ============ CACHED FETCH FUNCTION ============
+const cachedFetch = async (
+  url,
+  options = {},
+  cacheKey = null,
+  ttl = 300000
+) => {
+  const key = cacheKey || url;
+  const cached = cache.get(key);
+  if (cached) return cached;
+
+  const token = localStorage.getItem("token");
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+  const data = await response.json();
+  cache.set(key, data, ttl);
+
+  return data;
+};
+
+export default function DashboardPage() {
+  const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+  const [farms, setFarms] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [dashboardStats, setDashboardStats] = useState({
+    totalFarmers: 0,
+    totalFarms: 0,
+    todayScans: 0,
+    yesterdayScans: 0,
+    farmersChange: 0,
+    farmsChange: 0,
+    scansChange: 0,
+    farmersTrend: "no change",
+    farmsTrend: "no change",
+    scansTrend: "no change",
+  });
+
+  const isToday = (timestampStr) => {
+    const today = new Date();
+    const todayStr = today.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+    return timestampStr.includes(todayStr);
+  };
+
+  const isYesterday = (timestampStr) => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toLocaleDateString("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
+    });
+    return timestampStr.includes(yesterdayStr);
+  };
+
+  // ============ OPTIMIZED FETCH WITH CACHING ============
+  const fetchDashboardStats = async () => {
+    try {
+      const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+
+      const [
+        farmCountData,
+        farmerCountData,
+        identificationData,
+        farmersComparisonData,
+        farmsComparisonData,
+      ] = await Promise.all([
+        cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 300000),
+        cachedFetch(`${API_BASE}/count-farmers`, {}, "farmer_count", 300000),
+        cachedFetch(
+          `${API_BASE}/identification-history`,
+          {},
+          "id_history",
+          300000
+        ),
+        cachedFetch(
+          `${API_BASE}/farmers-comparison`,
+          {},
+          "farmers_comp",
+          300000
+        ),
+        cachedFetch(`${API_BASE}/farms-comparison`, {}, "farms_comp", 300000),
+      ]).catch(() => [{}, {}, [], {}, {}]);
+
+      const todayScansCount = Array.isArray(identificationData)
+        ? identificationData.filter((pred) => isToday(pred.timestamp)).length
+        : 0;
+
+      const yesterdayScansCount = Array.isArray(identificationData)
+        ? identificationData.filter((pred) => isYesterday(pred.timestamp))
+            .length
+        : 0;
+
+      let scansChangePercent = 0;
+      let scansTrendType = "no change";
+
+      if (yesterdayScansCount > 0) {
+        scansChangePercent = (
+          ((todayScansCount - yesterdayScansCount) / yesterdayScansCount) *
+          100
+        ).toFixed(2);
+        if (todayScansCount > yesterdayScansCount) {
+          scansTrendType = "increase";
+        } else if (todayScansCount < yesterdayScansCount) {
+          scansTrendType = "decrease";
+        }
+      } else if (todayScansCount > 0) {
+        scansChangePercent = 100;
+        scansTrendType = "increase";
+      }
+
+      setDashboardStats({
+        totalFarmers: farmerCountData.totalFarmers || 0,
+        totalFarms: farmCountData.farmCount || 0,
+        todayScans: todayScansCount,
+        yesterdayScans: yesterdayScansCount,
+        farmersChange: farmersComparisonData.percentageChange || 0,
+        farmsChange: farmsComparisonData.percentageChange || 0,
+        scansChange: parseFloat(scansChangePercent) || 0,
+        farmersTrend: farmersComparisonData.trend || "no change",
+        farmsTrend: farmsComparisonData.trend || "no change",
+        scansTrend: scansTrendType,
+      });
+    } catch (err) {
+      // Silent error handling
+    }
+  };
+
+  const fetchFarmHealth = async (farmId) => {
+    try {
+      const data = await cachedFetch(
+        `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+        {},
+        `farm_health_${farmId}`,
+        300000
+      ).catch(() => ({ healthPercentage: "0.00" }));
+
+      return data.healthPercentage || "0.00";
+    } catch {
+      return "0.00";
+    }
+  };
+
+  const fetchFarms = async (forceRefresh = false) => {
+    try {
+      // Check if we have cached farms and this isn't a forced refresh
+      if (!forceRefresh) {
+        const cachedFarms = cache.get("owner_farms");
+        if (cachedFarms?.status === "success" && cachedFarms?.farms) {
+          // Use cached data immediately
+          const mappedFarms = await Promise.all(
+            cachedFarms.farms.map(async (f) => {
+              let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+              if (f.farmImage && f.farmImage.startsWith("http")) {
+                farmImage = f.farmImage;
+              }
+
+              const health = await fetchFarmHealth(f.id);
+
+              return {
+                id: f.id,
+                name: f.farmName,
+                desc: f.description || `Farm located in ${f.location}`,
+                location: f.location,
+                health: health,
+                status: f.status === "active" ? "Active" : "Inactive",
+                img: farmImage,
+              };
+            })
+          );
+
+          const sortedFarms = mappedFarms.sort((a, b) => {
+            if (a.status === "Active" && b.status === "Inactive") return -1;
+            if (a.status === "Inactive" && b.status === "Active") return 1;
+            return 0;
+          });
+
+          setFarms(sortedFarms);
+          setInitialLoad(false);
+          return; // Don't fetch if we have cache
+        }
+      }
+
+      setLoading(true);
+
+      const data = await cachedFetch(
+        "https://papaiaapi.onrender.com/api/owner/farms",
+        {},
+        "owner_farms",
+        300000
+      );
+
+      if (data.status === "success" && data.farms) {
+        const mappedFarmsWithHealth = await Promise.all(
+          data.farms.map(async (f) => {
+            let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+            if (f.farmImage && f.farmImage.startsWith("http")) {
+              farmImage = f.farmImage;
+            }
+
+            const health = await fetchFarmHealth(f.id);
+
+            return {
+              id: f.id,
+              name: f.farmName,
+              desc: f.description || `Farm located in ${f.location}`,
+              location: f.location,
+              health: health,
+              status: f.status === "active" ? "Active" : "Inactive",
+              img: farmImage,
+            };
+          })
+        );
+
+        const sortedFarms = mappedFarmsWithHealth.sort((a, b) => {
+          if (a.status === "Active" && b.status === "Inactive") return -1;
+          if (a.status === "Inactive" && b.status === "Active") return 1;
+          return 0;
+        });
+
+        setFarms(sortedFarms);
+      } else {
+        setFarms([]);
+      }
+    } catch (err) {
+      setFarms([]);
+    } finally {
+      setLoading(false);
+      setInitialLoad(false);
+    }
+  };
+
+  // Initial load only once
+  useEffect(() => {
+    fetchFarms(false); // Don't force refresh on mount
+
+    // Only fetch stats if not cached
+    const cachedStats = cache.get("farm_count");
+    if (!cachedStats) {
+      fetchDashboardStats();
+    }
+  }, []);
+
+  const handleAddFarm = async (farmData) => {
+    try {
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("farmName", farmData.name);
+      formData.append("location", farmData.location);
+      formData.append(
+        "description",
+        farmData.description || "No description provided"
+      );
+
+      if (farmData.farmImage) {
+        formData.append("farmImage", farmData.farmImage);
+      }
+
+      const token = localStorage.getItem("token");
+      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (data.status === "success") {
+        // Clear relevant caches
+        cache.clear("owner_farms");
+        cache.clear("farm_count");
+
+        // Refresh data
+        await Promise.all([fetchFarms(true), fetchDashboardStats()]);
+        setShowAddFarmModal(false);
+      }
+    } catch (err) {
+      // Silent error handling
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to update farm status locally without refetching
+  const updateFarmStatus = (farmId, newStatus) => {
+    setFarms((prevFarms) => {
+      const updated = prevFarms.map((farm) =>
+        farm.id === farmId ? { ...farm, status: newStatus } : farm
+      );
+
+      // Re-sort after status change
+      return updated.sort((a, b) => {
+        if (a.status === "Active" && b.status === "Inactive") return -1;
+        if (a.status === "Inactive" && b.status === "Active") return 1;
+        return 0;
+      });
+    });
+
+    // Invalidate cache so next visit gets fresh data
+    cache.clear("owner_farms");
+  };
+
+  const handleCloseModal = () => setShowAddFarmModal(false);
+
+  const getTrendColor = (trend) => {
+    switch (trend) {
+      case "increase":
+        return "text-green-600";
+      case "decrease":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getTrendPrefix = (trend) => {
+    if (trend === "increase") return "+";
+    if (trend === "decrease") return "-";
+    return "";
+  };
+
+  const getHealthColor = (healthPercentage) => {
+    const health = parseFloat(healthPercentage);
+    if (health >= 80) return "text-green-600";
+    else if (health >= 60) return "text-yellow-600";
+    else if (health >= 40) return "text-orange-600";
+    else if (health >= 20) return "text-red-600";
+    else return "text-gray-600";
+  };
+
+  const formatHealthDisplay = (health) => {
+    // Always show the percentage value, never show "N/A"
+    if (!health || health === "0" || health === "0.00") return "0.00%";
+    // Remove % if it exists, then add it back
+    const cleanHealth = String(health).replace("%", "");
+    return `${cleanHealth}%`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+
+      <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="w-full max-w-8xl mx-auto">
+          {/* Mobile Layout */}
+          <div className="block lg:hidden">
+            <div className="mb-6">
+              <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+                Dashboard Overview
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      All Farmers
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.totalFarmers.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmersTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.farmersTrend)}
+                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmersCount}
+                    alt="Farmers"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                    loading="eager"
+                  />
+                </div>
+
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      All Farms
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.totalFarms.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmsTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.farmsTrend)}
+                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmsCount}
+                    alt="Farms"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                    loading="eager"
+                  />
+                </div>
+
+                <div className="p-4 sm:p-5 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md sm:col-span-2">
+                  <div>
+                    <p className="text-sm sm:text-base text-gray-600 mb-2">
+                      Today's Scans
+                    </p>
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {dashboardStats.todayScans.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${getTrendColor(
+                        dashboardStats.scansTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.scansTrend)}
+                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+                      yesterday
+                    </span>
+                  </div>
+                  <img
+                    src={ScansCount}
+                    alt="Scans"
+                    className="w-10 h-10 sm:w-12 sm:h-12 object-contain"
+                    loading="eager"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <RecentActivities limit={5} />
+            </div>
+
+            <div>
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">
+                  My Farms
+                </h2>
+                <button
+                  onClick={() => setShowAddFarmModal(true)}
+                  disabled={loading}
+                  className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  <Plus size={16} />
+                  {loading ? "Loading..." : "Add Farm"}
+                </button>
+              </div>
+
+              {initialLoad && loading ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="text-gray-500">Loading farms...</div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {farms.length === 0 ? (
+                    <div className="col-span-1 sm:col-span-2 text-center py-12 text-gray-500">
+                      No farms added yet. Click "Add Farm" to get started!
+                    </div>
+                  ) : (
+                    farms.map((farm) => (
+                      <Link
+                        key={farm.id}
+                        to={`/farm-dashboard/${farm.id}`}
+                        className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
+                          farm.status === "Active" ? "bg-white" : "bg-gray-300"
+                        }`}
+                      >
+                        <div className="relative">
+                          <img
+                            src={farm.img}
+                            alt={farm.name}
+                            className={`w-full h-32 sm:h-40 object-cover ${
+                              farm.status === "Inactive" ? "opacity-50" : ""
+                            }`}
+                            loading="eager"
+                          />
+                          <span
+                            className={`absolute top-3 right-3 px-2.5 py-1.5 text-[10px] sm:text-xs rounded-full font-medium ${
+                              farm.status === "Active"
+                                ? "bg-green-500 text-white"
+                                : "bg-red-500 text-white"
+                            }`}
+                          >
+                            {farm.status}
+                          </span>
+                        </div>
+                        <div className="p-3 sm:p-4">
+                          <h3 className="font-bold text-xs sm:text-base text-gray-800 mb-1">
+                            {farm.name}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-2">
+                            {farm.desc}
+                          </p>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-1 text-[10px] sm:text-xs text-gray-500">
+                              <MapPin size={12} /> {farm.location}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Leaf size={12} className="text-green-500" />
+                              <span
+                                className={`text-[10px] sm:text-xs font-medium ${getHealthColor(
+                                  farm.health
+                                )}`}
+                              >
+                                {formatHealthDisplay(farm.health)} Health
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden lg:flex gap-6">
+            <div className="w-[330px] flex-shrink-0">
+              <RecentActivities limit={5} />
+            </div>
+
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-gray-800 mb-4">
+                Dashboard Overview
+              </h2>
+              <div className="grid grid-cols-3 gap-5 mb-8">
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-base text-gray-600 mb-2">All Farmers</p>
+                    <h3 className="text-3xl font-bold text-gray-800">
+                      {dashboardStats.totalFarmers.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmersTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.farmersTrend)}
+                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmersCount}
+                    alt="Farmers"
+                    className="w-14 h-14 object-contain"
+                    loading="eager"
+                  />
+                </div>
+
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-base text-gray-600 mb-2">All Farms</p>
+                    <h3 className="text-3xl font-bold text-gray-800">
+                      {dashboardStats.totalFarms.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-sm font-medium ${getTrendColor(
+                        dashboardStats.farmsTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.farmsTrend)}
+                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
+                      last month
+                    </span>
+                  </div>
+                  <img
+                    src={FarmsCount}
+                    alt="Farms"
+                    className="w-14 h-14 object-contain"
+                    loading="eager"
+                  />
+                </div>
+
+                <div className="p-6 bg-white border border-gray-200 rounded-xl flex justify-between items-center shadow-md">
+                  <div>
+                    <p className="text-base text-gray-600 mb-2">
+                      Today's Scans
+                    </p>
+                    <h3 className="text-3xl font-bold text-gray-800">
+                      {dashboardStats.todayScans.toLocaleString()}
+                    </h3>
+                    <span
+                      className={`text-sm font-medium ${getTrendColor(
+                        dashboardStats.scansTrend
+                      )}`}
+                    >
+                      {getTrendPrefix(dashboardStats.scansTrend)}
+                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
+                      yesterday
+                    </span>
+                  </div>
+                  <img
+                    src={ScansCount}
+                    alt="Scans"
+                    className="w-14 h-14 object-contain"
+                    loading="eager"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-bold text-gray-800">My Farms</h2>
+                  <button
+                    onClick={() => setShowAddFarmModal(true)}
+                    disabled={loading}
+                    className="bg-gradient-to-r bg-[#FF8C42] hover:bg-[#F97316] text-white px-4 py-2 rounded-xl flex items-center gap-2 text-base transition-all duration-150 active:scale-95 cursor-pointer disabled:opacity-50"
+                  >
+                    <Plus size={16} />
+                    {loading ? "Loading..." : "Add Farm"}
+                  </button>
+                </div>
+
+                {initialLoad && loading ? (
+                  <div className="flex justify-center items-center py-12">
+                    <div className="text-gray-500">Loading farms...</div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-4">
+                    {farms.length === 0 ? (
+                      <div className="col-span-3 text-center py-12 text-gray-500">
+                        No farms added yet. Click "Add Farm" to get started!
+                      </div>
+                    ) : (
+                      farms.map((farm) => (
+                        <Link
+                          key={farm.id}
+                          to={`/farm-dashboard/${farm.id}`}
+                          className={`border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-150 active:scale-95 cursor-pointer ${
+                            farm.status === "Active"
+                              ? "bg-white"
+                              : "bg-gray-300"
+                          }`}
+                        >
+                          <div className="relative">
+                            <img
+                              src={farm.img}
+                              alt={farm.name}
+                              className={`w-full h-48 object-cover ${
+                                farm.status === "Inactive" ? "opacity-50" : ""
+                              }`}
+                              loading="eager"
+                            />
+                            <span
+                              className={`absolute top-3 right-3 px-2.5 py-1.5 text-xs rounded-full font-medium ${
+                                farm.status === "Active"
+                                  ? "bg-green-500 text-white"
+                                  : "bg-red-500 text-white"
+                              }`}
+                            >
+                              {farm.status}
+                            </span>
+                          </div>
+                          <div className="p-4">
+                            <h3 className="font-bold text-lg text-gray-800 mb-1">
+                              {farm.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                              {farm.desc}
+                            </p>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1 text-xs text-gray-500">
+                                <MapPin size={12} /> {farm.location}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Leaf size={12} className="text-green-500" />
+                                <span
+                                  className={`text-xs font-medium ${getHealthColor(
+                                    farm.health
+                                  )}`}
+                                >
+                                  {formatHealthDisplay(farm.health)} Health
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {showAddFarmModal && (
+        <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
+      )}
+      <Footer />
+    </div>
+  );
+}
