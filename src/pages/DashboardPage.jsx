@@ -369,7 +369,7 @@ export default function DashboardPage() {
   };
 
   const formatHealthDisplay = (health) => {
-    if (health === 0 || health === "0.00") return "0.00";
+    if (health === 0 || health === "0.00") return "0.00%";
     return `${health}`;
   };
 
