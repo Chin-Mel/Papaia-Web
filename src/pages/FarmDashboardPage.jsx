@@ -22,6 +22,7 @@ import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 import FarmAnalytics from "./FarmAnalytics";
 import RecentScans from "./RecentScans";
 import FarmTeams from "./FarmTeams";
+import FarmAnalyticsSummary from "./FarmAnalyticsSummary";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
@@ -302,6 +303,9 @@ export default function FarmDashboardPage() {
               <RecentScans farmId={farmId} />
             </div>
           </div>
+
+          {/* Farm Analytics Summary - Above Farm Team */}
+          <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
 
           {/* Farm Team */}
           <FarmTeams
