@@ -2185,6 +2185,8 @@
 // }
 
 //new
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
 
 // Dashboard data cache

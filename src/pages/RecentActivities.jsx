@@ -697,6 +697,14 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
 // Cache for activities with sessionStorage persistence
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Leaf, MapPin } from "lucide-react";
+import { formatDistanceToNow, parse } from "date-fns";
+import { enUS } from "date-fns/locale";
+import { ChevronRight } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { RefreshCcw } from "lucide-react";
+import { Info } from "lucide-react";
 
 // Activity cache with sessionStorage persistence
 const activityCache = {
