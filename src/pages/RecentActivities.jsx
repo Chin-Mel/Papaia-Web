@@ -695,10 +695,9 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
-// Cache for activities with sessionStorage persistence
 import { useState, useEffect, useCallback, useRef } from "react";
 
-// Activity cache with sessionStorage persistence
+// Activity cache with in-memory storage
 const activityCache = {
   data: null,
   timestamp: 0,
