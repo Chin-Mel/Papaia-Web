@@ -14,7 +14,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef(null);
 
-  // 👇 Close when clicking outside
+  // Close when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -44,7 +44,12 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        // Call the callback to refresh farm data in parent component
+        // Clear cache to force refresh in Dashboard
+        if (window.clearFarmCache) {
+          window.clearFarmCache();
+        }
+
+        // Call the callback to update parent component
         if (onStatusToggled) {
           onStatusToggled(data.newStatus);
         }

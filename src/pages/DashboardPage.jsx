@@ -1,6 +1,6 @@
 //old with faster data fetching
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
@@ -40,6 +40,12 @@ const cache = {
   },
 };
 
+// Expose cache clearing function to window for cross-component access
+window.clearFarmCache = () => {
+  cache.clear("owner_farms");
+  cache.clear("farm_count");
+};
+
 // ============ CACHED FETCH FUNCTION ============
 const cachedFetch = async (
   url,
@@ -68,6 +74,7 @@ const cachedFetch = async (
 };
 
 export default function DashboardPage() {
+  const location = useLocation();
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -93,6 +100,20 @@ export default function DashboardPage() {
       img.src = src;
     });
   }, []);
+
+  // Listen for navigation state to refresh farms
+  useEffect(() => {
+    if (location.state?.refreshFarms) {
+      // Clear cache and refresh
+      cache.clear("owner_farms");
+      cache.clear("farm_count");
+      fetchFarms();
+      fetchDashboardStats();
+
+      // Clear the state to prevent refresh on subsequent renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const isToday = (timestampStr) => {
     const today = new Date();
