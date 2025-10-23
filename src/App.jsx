@@ -17,6 +17,7 @@ import AboutHomePage from "./pages/AboutHomePage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import PricingHomePage from "./pages/PricingHomePage";
 import PricingPage from "./pages/PricingPage";
+import NotificationPage from "./pages/NotificationPage";
 
 function App() {
   return (
@@ -94,6 +95,15 @@ function App() {
         element={
           <ProtectedRoute>
             <PricingPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationPage />
           </ProtectedRoute>
         }
       />

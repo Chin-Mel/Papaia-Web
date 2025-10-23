@@ -82,10 +82,15 @@ export default function HeaderMain() {
     navigate("/profile");
   };
 
-  // Handle notification click
+  // Handle notification click - Different behavior for mobile/desktop
   const handleNotificationClick = () => {
-    setIsNotifOpen(!isNotifOpen);
-    setIsProfileOpen(false);
+    // Check if mobile/tablet (screen width < 1024px)
+    if (window.innerWidth < 1024) {
+      navigate("/notifications");
+    } else {
+      setIsNotifOpen(!isNotifOpen);
+      setIsProfileOpen(false);
+    }
   };
 
   // Close dropdowns when clicking outside
@@ -193,15 +198,18 @@ export default function HeaderMain() {
                 )}
               </button>
 
-              <NotificationDropdown
-                isOpen={isNotifOpen}
-                onClose={() => setIsNotifOpen(false)}
-                notifications={notifications}
-                unreadCount={unreadCount}
-                loading={loading}
-                markAsRead={markAsRead}
-                markAllAsRead={markAllAsRead}
-              />
+              {/* Show dropdown only on desktop */}
+              <div className="hidden lg:block">
+                <NotificationDropdown
+                  isOpen={isNotifOpen}
+                  onClose={() => setIsNotifOpen(false)}
+                  notifications={notifications}
+                  unreadCount={unreadCount}
+                  loading={loading}
+                  markAsRead={markAsRead}
+                  markAllAsRead={markAllAsRead}
+                />
+              </div>
             </div>
 
             {/* Desktop Profile */}

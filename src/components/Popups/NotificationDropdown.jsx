@@ -1,5 +1,5 @@
-// components/Popups/NotificationDropdown.js
-import { Bell, AlertTriangle, X, Check } from "lucide-react";
+import { Bell, AlertTriangle, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function NotificationDropdown({
   isOpen,
@@ -58,6 +58,9 @@ export default function NotificationDropdown({
 
   if (!isOpen) return null;
 
+  // Show only recent 5 notifications
+  const recentNotifications = notifications.slice(0, 5);
+
   return (
     <>
       <div className="fixed inset-0 z-40" onClick={onClose} />
@@ -100,14 +103,14 @@ export default function NotificationDropdown({
                 Loading notifications...
               </p>
             </div>
-          ) : notifications.length === 0 ? (
+          ) : recentNotifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 text-sm">No notifications yet</p>
             </div>
           ) : (
             <div className="p-4 space-y-3">
-              {notifications.map((notification) => {
+              {recentNotifications.map((notification) => {
                 const color = getNotificationColor(notification.disease);
                 const styles = getNotificationStyles(color);
 
@@ -151,6 +154,15 @@ export default function NotificationDropdown({
             </div>
           )}
         </div>
+
+        {/* View All Link */}
+        <Link
+          to="/notifications"
+          onClick={onClose}
+          className="p-4 border-t border-gray-200 text-center text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors flex-shrink-0"
+        >
+          View All Notifications
+        </Link>
       </div>
     </>
   );

@@ -10,33 +10,6 @@ import {
 
 const NotificationContext = createContext(null);
 
-// Notification sound
-const playNotificationSound = () => {
-  try {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.value = 800;
-    oscillator.type = "sine";
-
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.5
-    );
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  } catch (error) {
-    console.log("[DEBUG] Could not play notification sound:", error);
-  }
-};
-
 // Toast notification function
 export function showToast(message, type = "success") {
   const toast = document.createElement("div");
@@ -134,12 +107,7 @@ export function NotificationProvider({ children }) {
         // Count unread notifications
         const unread = normalizedNotifications.filter((n) => !n.read).length;
 
-        // Play sound if unread count increased (new notification arrived)
-        if (unread > previousCountRef.current && previousCountRef.current > 0) {
-          playNotificationSound();
-          console.log("[DEBUG] New notification detected, playing sound");
-        }
-
+        // Update count reference for tracking
         previousCountRef.current = unread;
         setUnreadCount(unread);
 
@@ -257,6 +225,7 @@ export function NotificationProvider({ children }) {
         prev.map((notif) => ({ ...notif, read: true }))
       );
       setUnreadCount(0);
+      previousCountRef.current = 0;
 
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/notifications/read-all",
