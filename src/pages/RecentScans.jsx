@@ -830,13 +830,19 @@ export default function RecentScans({ farmId }) {
   const formatDateTime = useCallback((timestamp) => {
     try {
       if (!timestamp) return "";
-      const [datePart, timePart, period] = timestamp.split(/\s+/);
-      if (!datePart || !timePart || !period) return timestamp;
+
+      const parts = timestamp.trim().split(/\s+/);
+      if (parts.length !== 3) return timestamp;
+
+      const datePart = parts[0];
+      const timePart = parts[1];
+      const period = parts[2];
 
       const [month, day, year] = datePart.split("/");
-      const [hours, minutes] = timePart.split(":");
+      if (!month || !day || !year) return timestamp;
 
-      if (!month || !day || !year || !hours || !minutes) return timestamp;
+      const [hours, minutes] = timePart.split(":");
+      if (!hours || !minutes) return timestamp;
 
       const shortYear = year.slice(-2);
       return `${month.padStart(2, "0")}/${day.padStart(
@@ -846,7 +852,8 @@ export default function RecentScans({ farmId }) {
         2,
         "0"
       )} ${period}`;
-    } catch {
+    } catch (error) {
+      console.error("Error formatting timestamp:", error, timestamp);
       return timestamp;
     }
   }, []);

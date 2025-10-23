@@ -959,17 +959,23 @@ export default function ScanHistoryPage() {
     setCurrentPage(1);
   }, []);
 
-  // Updated date and time formatters to match RecentScans
+  // Helper to format full date/time
   const formatDateTime = useCallback((timestamp) => {
     try {
       if (!timestamp) return "";
-      const [datePart, timePart, period] = timestamp.split(/\s+/);
-      if (!datePart || !timePart || !period) return timestamp;
+
+      const parts = timestamp.trim().split(/\s+/);
+      if (parts.length !== 3) return timestamp;
+
+      const datePart = parts[0];
+      const timePart = parts[1];
+      const period = parts[2];
 
       const [month, day, year] = datePart.split("/");
-      const [hours, minutes] = timePart.split(":");
+      if (!month || !day || !year) return timestamp;
 
-      if (!month || !day || !year || !hours || !minutes) return timestamp;
+      const [hours, minutes] = timePart.split(":");
+      if (!hours || !minutes) return timestamp;
 
       const shortYear = year.slice(-2);
       return `${month.padStart(2, "0")}/${day.padStart(
@@ -979,10 +985,30 @@ export default function ScanHistoryPage() {
         2,
         "0"
       )} ${period}`;
-    } catch {
+    } catch (error) {
+      console.error("Error formatting timestamp:", error, timestamp);
       return timestamp;
     }
   }, []);
+
+  // Helper to extract just the date
+  const formatDate = useCallback(
+    (timestamp) => {
+      const formatted = formatDateTime(timestamp);
+      return formatted.split(" ")[0];
+    },
+    [formatDateTime]
+  );
+
+  // Helper to extract just the time
+  const formatTime = useCallback(
+    (timestamp) => {
+      const formatted = formatDateTime(timestamp);
+      const parts = formatted.split(" ");
+      return `${parts[1]} ${parts[2]}`;
+    },
+    [formatDateTime]
+  );
 
   const handleExport = useCallback(() => {
     if (!reportRef.current) return;
@@ -1173,15 +1199,7 @@ export default function ScanHistoryPage() {
                               alt="Date"
                               className="h-3 w-3"
                             />
-                            <span>
-                              {(() => {
-                                const fullDateTime = formatDateTime(
-                                  record.timestamp
-                                );
-                                const parts = fullDateTime.split(" ");
-                                return parts[0]; // Date only
-                              })()}
-                            </span>
+                            <span>{formatDate(record.timestamp)}</span>
                           </div>
                           <div className="flex items-center gap-1 text-gray-600">
                             <img
@@ -1189,15 +1207,7 @@ export default function ScanHistoryPage() {
                               alt="Time"
                               className="h-3 w-3"
                             />
-                            <span>
-                              {(() => {
-                                const fullDateTime = formatDateTime(
-                                  record.timestamp
-                                );
-                                const parts = fullDateTime.split(" ");
-                                return `${parts[1]} ${parts[2]}`; // Time and AM/PM
-                              })()}
-                            </span>
+                            <span>{formatTime(record.timestamp)}</span>
                           </div>
                           <ViewDetailsButton
                             status={record.status}
