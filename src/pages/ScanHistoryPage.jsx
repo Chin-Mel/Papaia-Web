@@ -586,7 +586,6 @@
 //     </div>
 //   );
 // }
-
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
@@ -607,10 +606,10 @@ import ClockIcon from "../assets/sh-clock-icon.png";
 const RESULTS_PER_PAGE = 5;
 
 const DISEASE_CONFIG = {
-  Healthy: { color: "#22C55E" },
-  "Ring Spot Virus": { color: "#EA580C" },
-  Anthracnose: { color: "#DC2626" },
-  "Powdery Mildew": { color: "#2563EB" },
+  Healthy: { color: "#22C55E", bgColor: "#22C55E" },
+  "Ring Spot Virus": { color: "#EA580C", bgColor: "#EA580C" },
+  Anthracnose: { color: "#DC2626", bgColor: "#DC2626" },
+  "Powdery Mildew": { color: "#2563EB", bgColor: "#2563EB" },
 };
 
 const STATUS_CONFIG = {
@@ -828,15 +827,30 @@ export default function ScanHistoryPage() {
               return {
                 ...scan,
                 farmName: farmMap[scan.farmId] || "Unknown Farm",
-                createdAt: scan.timestamp?.includes("/")
-                  ? new Date(scan.timestamp).toISOString()
-                  : scan.timestamp,
+                // Keep original timestamp format, don't convert to ISO
                 status,
                 description: scan.prediction || "Unknown",
                 idNumber: scan.idNumber || "Unknown Farmer",
               };
             })
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            .sort((a, b) => {
+              // Parse timestamps for sorting
+              const parseTimestamp = (timestamp) => {
+                if (!timestamp) return new Date(0);
+                try {
+                  const [datePart, timePart, period] = timestamp.split(/\s+/);
+                  const [month, day, year] = datePart.split("/");
+                  const [hours, minutes] = timePart.split(":");
+                  let hour24 = parseInt(hours);
+                  if (period === "PM" && hour24 !== 12) hour24 += 12;
+                  if (period === "AM" && hour24 === 12) hour24 = 0;
+                  return new Date(year, month - 1, day, hour24, minutes);
+                } catch {
+                  return new Date(timestamp);
+                }
+              };
+              return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
+            });
 
           setFarms(farmsList);
           setAllScans(processed);
@@ -884,7 +898,23 @@ export default function ScanHistoryPage() {
           ? new Date(today - 7 * 86400000)
           : new Date(today - 30 * 86400000);
 
-      filtered = filtered.filter((s) => new Date(s.createdAt) >= cutoff);
+      filtered = filtered.filter((s) => {
+        // Parse timestamp for date filtering
+        try {
+          const timestamp = s.timestamp;
+          if (!timestamp) return false;
+          const [datePart, timePart, period] = timestamp.split(/\s+/);
+          const [month, day, year] = datePart.split("/");
+          const [hours, minutes] = timePart.split(":");
+          let hour24 = parseInt(hours);
+          if (period === "PM" && hour24 !== 12) hour24 += 12;
+          if (period === "AM" && hour24 === 12) hour24 = 0;
+          const scanDate = new Date(year, month - 1, day, hour24, minutes);
+          return scanDate >= cutoff;
+        } catch {
+          return false;
+        }
+      });
     }
 
     // Status filter - updated to only use healthy or disease-detected
@@ -986,8 +1016,8 @@ export default function ScanHistoryPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
-      <main className="flex-1 px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 px-3 sm:px-6 lg:px-12 xl:px-16 py-4 sm:py-6 lg:py-8">
+        <div className="max-w-[1800px] mx-auto">
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
@@ -1103,9 +1133,18 @@ export default function ScanHistoryPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm mb-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
                           {record.description && (
                             <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full flex-shrink-0"
+                                style={{
+                                  backgroundColor:
+                                    DISEASE_CONFIG[record.prediction]
+                                      ?.bgColor ||
+                                    DISEASE_CONFIG.Healthy.bgColor,
+                                }}
+                              />
                               <p
                                 className="font-medium truncate"
                                 style={{
@@ -1133,9 +1172,29 @@ export default function ScanHistoryPage() {
                               className="h-3 w-3"
                             />
                             <span>
-                              {formatDateTime(
-                                record.timestamp || record.createdAt
-                              )}
+                              {(() => {
+                                const fullDateTime = formatDateTime(
+                                  record.timestamp
+                                );
+                                const parts = fullDateTime.split(" ");
+                                return parts[0]; // Date only
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <img
+                              src={ClockIcon}
+                              alt="Time"
+                              className="h-3 w-3"
+                            />
+                            <span>
+                              {(() => {
+                                const fullDateTime = formatDateTime(
+                                  record.timestamp
+                                );
+                                const parts = fullDateTime.split(" ");
+                                return `${parts[1]} ${parts[2]}`; // Time and AM/PM
+                              })()}
                             </span>
                           </div>
                           <ViewDetailsButton
