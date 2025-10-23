@@ -6,6 +6,22 @@ import HeaderMain from "../components/Header/HeaderMain";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+// Simple cache for faster subsequent loads
+const detailsCache = {
+  data: {},
+  set(key, value, ttl = 60000) {
+    this.data[key] = { value, expires: Date.now() + ttl };
+  },
+  get(key) {
+    const item = this.data[key];
+    if (!item || Date.now() > item.expires) {
+      delete this.data[key];
+      return null;
+    }
+    return item.value;
+  },
+};
+
 export default function ScanDetailsPage() {
   const { scanId } = useParams();
   const navigate = useNavigate();
@@ -17,6 +33,7 @@ export default function ScanDetailsPage() {
   const [error, setError] = useState(null);
 
   const reportRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -32,10 +49,30 @@ export default function ScanDetailsPage() {
       return;
     }
 
+    // Cancel previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     const fetchScanDetails = async () => {
       try {
         setLoading(true);
         setError(null);
+
+        // Check cache first
+        const cacheKey = `scan-${scanId}`;
+        const cached = detailsCache.get(cacheKey);
+
+        if (cached) {
+          setScanDetails(cached.scan);
+          setFarmDetails(cached.farm);
+          setFarmerDetails(cached.farmer);
+          setLoading(false);
+          return;
+        }
 
         // Fetch all data in parallel for better performance
         const [historyRes, farmsRes] = await Promise.all([
@@ -46,6 +83,7 @@ export default function ScanDetailsPage() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
+              signal: controller.signal,
             }
           ),
           fetch("https://papaiaapi.onrender.com/api/owner/farms", {
@@ -53,6 +91,7 @@ export default function ScanDetailsPage() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
+            signal: controller.signal,
           }),
         ]);
 
@@ -74,50 +113,11 @@ export default function ScanDetailsPage() {
           return;
         }
 
-        if (!specificScan.farmId) {
-          setError("Missing farm information");
-          setLoading(false);
-          return;
-        }
-
-        // Set farm details
-        if (farmsData.status === "success") {
-          const farm = farmsData.farms.find(
-            (f) => f.id === specificScan.farmId
-          );
-          setFarmDetails(farm);
-        }
-
-        // Try to get detailed prediction data (non-blocking)
-        const predictionId = specificScan.predictionId || specificScan.id;
-        let detailedScanData = null;
-
-        try {
-          const detailsRes = await fetch(
-            `https://papaiaapi.onrender.com/api/owner/predictions-history/${specificScan.farmId}/${predictionId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
-
-          if (detailsRes.ok) {
-            const detailsData = await detailsRes.json();
-            detailedScanData =
-              Array.isArray(detailsData) && detailsData.length > 0
-                ? detailsData[0]
-                : null;
-          }
-        } catch (detailsError) {
-          console.warn("Could not fetch detailed prediction:", detailsError);
-        }
-
-        // Use detailed data if available, otherwise use basic scan data
-        const finalScanData = detailedScanData || {
+        // Normalize scan data (handle both 'result' and 'prediction' fields)
+        const normalizedScan = {
           ...specificScan,
-          prediction: specificScan.prediction || "Unknown",
+          prediction:
+            specificScan.result || specificScan.prediction || "Unknown",
           confidence: specificScan.confidence || 0,
           imageUrl: specificScan.imageUrl || "",
           timestamp: specificScan.timestamp || new Date().toISOString(),
@@ -126,43 +126,69 @@ export default function ScanDetailsPage() {
           idNumber: specificScan.idNumber || "Unknown",
         };
 
-        setScanDetails(finalScanData);
+        setScanDetails(normalizedScan);
 
-        // Fetch farmer details if available (non-blocking)
-        if (specificScan.idNumber && specificScan.farmId) {
+        // Set farm details if available
+        let farm = null;
+        if (farmsData.status === "success" && normalizedScan.farmId) {
+          farm = farmsData.farms.find((f) => f.id === normalizedScan.farmId);
+          setFarmDetails(farm);
+        }
+
+        // Fetch farmer details in parallel (non-blocking)
+        let farmer = null;
+        if (normalizedScan.idNumber && normalizedScan.farmId) {
           try {
             const farmersRes = await fetch(
-              `https://papaiaapi.onrender.com/api/owner/farmers/${specificScan.farmId}`,
+              `https://papaiaapi.onrender.com/api/owner/farmers/${normalizedScan.farmId}`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`,
                   "Content-Type": "application/json",
                 },
+                signal: controller.signal,
               }
             );
 
             if (farmersRes.ok) {
               const farmersData = await farmersRes.json();
               if (farmersData.status === "success") {
-                const farmer = farmersData.farmers.find(
-                  (f) => f.idNumber === specificScan.idNumber
+                farmer = farmersData.farmers.find(
+                  (f) => f.idNumber === normalizedScan.idNumber
                 );
                 setFarmerDetails(farmer);
               }
             }
           } catch (farmerError) {
-            console.warn("Could not fetch farmer details:", farmerError);
+            if (farmerError.name !== "AbortError") {
+              console.warn("Could not fetch farmer details:", farmerError);
+            }
           }
         }
+
+        // Cache the results
+        detailsCache.set(cacheKey, {
+          scan: normalizedScan,
+          farm,
+          farmer,
+        });
       } catch (err) {
-        console.error("Error fetching scan details:", err);
-        setError(err.message || "Failed to load scan details");
+        if (err.name !== "AbortError") {
+          console.error("Error fetching scan details:", err);
+          setError(err.message || "Failed to load scan details");
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchScanDetails();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [scanId, navigate]);
 
   const getStatusInfo = (prediction) => {
@@ -173,7 +199,6 @@ export default function ScanDetailsPage() {
         color: "text-green-600",
         bgColor: "bg-green-50",
         borderColor: "border-green-200",
-        icon: "🟢",
         badgeBg: "bg-green-100",
       };
 
@@ -185,56 +210,54 @@ export default function ScanDetailsPage() {
         color: "text-green-600",
         bgColor: "bg-green-50",
         borderColor: "border-green-200",
-        icon: "🟢",
         badgeBg: "bg-green-100",
       };
     }
-    if (predLower.includes("ring spot") || predLower.includes("virus")) {
-      return {
-        status: "disease-detected",
-        label: "Disease Detected",
-        color: "text-red-600",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
-        icon: "🔴",
-        badgeBg: "bg-red-100",
-      };
-    }
-    if (predLower.includes("anthracnose")) {
-      return {
-        status: "disease-detected",
-        label: "Disease Detected",
-        color: "text-red-600",
-        bgColor: "bg-red-50",
-        borderColor: "border-red-200",
-        icon: "🔴",
-        badgeBg: "bg-red-100",
-      };
-    }
-    if (predLower.includes("powdery mildew")) {
-      return {
-        status: "disease-detected",
-        label: "Disease Detected",
-        color: "text-blue-600",
-        bgColor: "bg-blue-50",
-        borderColor: "border-blue-200",
-        icon: "🔵",
-        badgeBg: "bg-blue-100",
-      };
-    }
+    // All diseases are "Disease Detected"
     return {
-      status: "needs-attention",
-      label: "Needs Attention",
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
-      borderColor: "border-yellow-200",
-      icon: "⚠️",
-      badgeBg: "bg-yellow-100",
+      status: "disease-detected",
+      label: "Disease Detected",
+      color: "text-red-600",
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      badgeBg: "bg-red-100",
     };
   };
 
   const formatDateTime = (timestamp) => {
     try {
+      if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
+
+      // Handle MM/DD/YYYY HH:MM AM/PM format
+      const [datePart, timePart, period] = timestamp.split(/\s+/);
+      if (datePart && timePart && period) {
+        const [month, day, year] = datePart.split("/");
+        const [hours, minutes] = timePart.split(":");
+
+        const monthNames = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        const monthName = monthNames[parseInt(month) - 1] || month;
+
+        return {
+          date: `${monthName} ${day}, ${year}`,
+          time: `${hours}:${minutes} ${period}`,
+        };
+      }
+
+      // Fallback to Date parsing
       const date = new Date(timestamp);
       if (isNaN(date.getTime())) {
         return { date: "Unknown Date", time: "Unknown Time" };
@@ -383,8 +406,8 @@ export default function ScanDetailsPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 px-4 sm:px-6 lg:px-12 xl:px-16 py-6 lg:py-8">
+        <div className="max-w-[1800px] mx-auto">
           {/* Breadcrumb */}
           <div className="mb-6">
             <button
@@ -483,7 +506,6 @@ export default function ScanDetailsPage() {
                     <div
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${statusInfo.badgeBg} border ${statusInfo.borderColor}`}
                     >
-                      <span className="text-sm">{statusInfo.icon}</span>
                       <span
                         className={`font-semibold text-sm ${statusInfo.color}`}
                       >
@@ -537,7 +559,7 @@ export default function ScanDetailsPage() {
                     <div className="p-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Farmer Info */}
-                        {farmerDetails && (
+                        {(farmerDetails || scanDetails.idNumber) && (
                           <div className="flex items-start gap-3">
                             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                               <svg
@@ -556,7 +578,9 @@ export default function ScanDetailsPage() {
                             </div>
                             <div className="flex-1">
                               <div className="font-semibold text-gray-900">
-                                {farmerDetails.name || scanDetails.idNumber}
+                                {farmerDetails?.fullName ||
+                                  farmerDetails?.name ||
+                                  scanDetails.idNumber}
                               </div>
                               <div className="text-sm text-gray-600">
                                 Farmer
