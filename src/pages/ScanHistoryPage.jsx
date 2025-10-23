@@ -1103,8 +1103,22 @@ export default function ScanHistoryPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 mb-2">
-                          <div className="flex items-center gap-1">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm mb-2">
+                          {record.description && (
+                            <div className="flex items-center gap-2">
+                              <p
+                                className="font-medium truncate"
+                                style={{
+                                  color:
+                                    DISEASE_CONFIG[record.prediction]?.color ||
+                                    DISEASE_CONFIG.Healthy.color,
+                                }}
+                              >
+                                {record.description}
+                              </p>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-1 text-gray-600">
                             <img
                               src={UserIcon}
                               alt="User"
@@ -1112,7 +1126,7 @@ export default function ScanHistoryPage() {
                             />
                             <span className="truncate">{record.idNumber}</span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1 text-gray-600">
                             <img
                               src={CalendarIcon}
                               alt="Date"
@@ -1130,21 +1144,6 @@ export default function ScanHistoryPage() {
                             scanId={record.id}
                           />
                         </div>
-
-                        {record.description && (
-                          <div className="flex items-center gap-2 mb-3">
-                            <p
-                              className="text-xs sm:text-sm font-medium"
-                              style={{
-                                color:
-                                  DISEASE_CONFIG[record.prediction]?.color ||
-                                  DISEASE_CONFIG.Healthy.color,
-                              }}
-                            >
-                              {record.description}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
