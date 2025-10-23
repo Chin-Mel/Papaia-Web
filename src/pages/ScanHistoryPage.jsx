@@ -823,13 +823,15 @@ export default function ScanHistoryPage() {
           // Process all scans at once with optimized operations
           const processed = scansArray
             .map((scan) => {
-              const status = getStatus(scan.prediction);
+              // Use 'result' field for scan history API, fallback to 'prediction'
+              const predictionValue = scan.result || scan.prediction;
+              const status = getStatus(predictionValue);
               return {
                 ...scan,
+                prediction: predictionValue, // Normalize to 'prediction'
                 farmName: farmMap[scan.farmId] || "Unknown Farm",
-                // Keep original timestamp format, don't convert to ISO
                 status,
-                description: scan.prediction || "Unknown",
+                description: predictionValue || "Unknown",
                 idNumber: scan.idNumber || "Unknown Farmer",
               };
             })
