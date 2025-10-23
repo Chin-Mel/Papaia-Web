@@ -1702,8 +1702,8 @@ export default function FarmAnalytics({
   const diseaseColors = {
     Healthy: "#22c55e",
     "Ring Spot Virus": "#ef4444",
-    Anthracnose: "#f97316",
-    "Powdery Mildew": "#0046FF",
+    Anthracnose: "#0046FF",
+    "Powdery Mildew": "#f97316",
   };
 
   const getDiseaseColor = useCallback((disease, index) => {

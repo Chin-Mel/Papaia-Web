@@ -816,19 +816,15 @@ export default function RecentScans({ farmId }) {
     };
   }, [farmId]);
 
-  // Memoize helper functions
-  const getDiseaseIcon = useCallback((prediction) => {
-    const diseaseIcons = {
-      Healthy: "🟢",
-      "Ring Spot Virus": "🟠",
-      Anthracnose: "🔴",
-      "Powdery Mildew": "🔵",
-    };
-    return diseaseIcons[prediction] || "📊";
-  }, []);
-
+  // Updated color mapping for diseases
   const getStatusColor = useCallback((prediction) => {
-    return prediction === "Healthy" ? "text-green-600" : "text-red-600";
+    const colorMap = {
+      Healthy: "text-green-600",
+      "Ring Spot Virus": "text-orange-600",
+      Anthracnose: "text-red-600",
+      "Powdery Mildew": "text-blue-600",
+    };
+    return colorMap[prediction] || "text-gray-600";
   }, []);
 
   const formatDateTime = useCallback((timestamp) => {
@@ -930,9 +926,6 @@ export default function RecentScans({ farmId }) {
                     style={{ display: "none" }}
                   >
                     No Image
-                  </div>
-                  <div className="absolute -top-1 -right-1 text-base">
-                    {getDiseaseIcon(scan.prediction)}
                   </div>
                 </div>
 
