@@ -181,6 +181,10 @@
 //     </div>
 //   );
 // }
+import { useState } from "react";
+import { FaLock } from "react-icons/fa";
+import EyeIcon from "../../assets/eye-icon.png";
+import EyeOffIcon from "../../assets/eye-off-icon.png";
 
 export default function NewPasswordModal({ userId, onPasswordSaved }) {
   const [newPassword, setNewPassword] = useState("");
