@@ -948,7 +948,7 @@ export default function RecentScans({ farmId }) {
                     {formatDateTime(scan.timestamp)}
                   </p>
                   <p className="text-xs text-gray-500">
-                    By: {getFarmerName(scan.idNumber)}
+                    {getFarmerName(scan.idNumber)}
                   </p>
                 </div>
               </div>

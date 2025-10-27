@@ -1384,38 +1384,13 @@ export default function FarmAnalytics({
   const dateRangeOptions = useMemo(() => {
     switch (timeFilter) {
       case "Daily":
-        return [
-          "Last 7 days",
-          "Last 11 days",
-          "Last 14 days",
-          "Last 30 days",
-          "Last 60 days",
-          "Last 90 days",
-        ];
+        return ["Last 7 days", "Last 11 days", "Last 14 days"];
       case "Weekly":
-        return [
-          "Last 4 weeks",
-          "Last 9 weeks",
-          "Last 12 weeks",
-          "Last 26 weeks",
-          "Last 52 weeks",
-        ];
+        return ["Last 4 weeks", "Last 9 weeks", "Last 12 weeks"];
       case "Monthly":
-        return [
-          "Last 3 months",
-          "Last 6 months",
-          "Last 12 months",
-          "Last 24 months",
-          "Last 36 months",
-        ];
+        return ["Last 3 months", "Last 6 months", "Last 12 months"];
       case "Yearly":
-        return [
-          "Last 3 years",
-          "Last 5 years",
-          "Last 7 years",
-          "Last 10 years",
-          "Last 15 years",
-        ];
+        return ["Last 3 years", "Last 5 years", "Last 7 years"];
       default:
         return ["Last 11 days"];
     }
@@ -1701,9 +1676,9 @@ export default function FarmAnalytics({
 
   const diseaseColors = {
     Healthy: "#22c55e",
-    "Ring Spot Virus": "#ef4444",
-    Anthracnose: "#0046FF",
-    "Powdery Mildew": "#f97316",
+    "Ring Spot Virus": "#f97316",
+    Anthracnose: "#ef4444",
+    "Powdery Mildew": "#0046FF",
   };
 
   const getDiseaseColor = useCallback((disease, index) => {
@@ -1866,8 +1841,30 @@ export default function FarmAnalytics({
                     angle={-45}
                     textAnchor="end"
                     height={60}
+                    label={{
+                      value:
+                        timeFilter === "Daily"
+                          ? "Days"
+                          : timeFilter === "Weekly"
+                          ? "Weeks"
+                          : timeFilter === "Monthly"
+                          ? "Months"
+                          : "Years",
+                      position: "insideBottom",
+                      offset: -50,
+                      style: { fontSize: 12, fontWeight: 600 },
+                    }}
                   />
-                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
+                  <YAxis
+                    tick={{ fontSize: 11 }}
+                    allowDecimals={false}
+                    label={{
+                      value: "Number of Scans",
+                      angle: -90,
+                      position: "insideLeft",
+                      style: { fontSize: 12, fontWeight: 600 },
+                    }}
+                  />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend
                     verticalAlign="top"
