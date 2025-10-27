@@ -859,14 +859,45 @@ function EditProfilePage() {
   // Handle profile picture upload
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files[0];
-    const { token } = getUserFromStorage();
+    const { token, userId } = getUserFromStorage();
 
-    if (!file || !token) return;
+    if (!file) {
+      console.log("No file selected");
+      return;
+    }
+
+    if (!token) {
+      alert("Authentication error. Please log in again.");
+      return;
+    }
+
+    // Log file details
+    console.log("File details:", {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      sizeInMB: (file.size / (1024 * 1024)).toFixed(2) + "MB",
+    });
+
+    // Check file size (10MB = 10485760 bytes)
+    if (file.size > 10485760) {
+      alert("File size exceeds 10MB limit");
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file");
+      return;
+    }
 
     setUploading(true);
 
     const formData = new FormData();
     formData.append("profilePicture", file);
+
+    console.log("Uploading for user:", userId);
+    console.log("Token:", token?.substring(0, 20) + "...");
 
     try {
       const res = await fetch(
@@ -878,11 +909,29 @@ function EditProfilePage() {
         }
       );
 
+      console.log("Response status:", res.status);
+      console.log(
+        "Response headers:",
+        Object.fromEntries(res.headers.entries())
+      );
+
       if (!res.ok) {
-        throw new Error("Failed to update profile picture");
+        const errorText = await res.text();
+        console.error("Error response:", errorText);
+
+        let errorMessage = "Failed to update profile picture";
+        try {
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const updatedData = await res.json();
+      console.log("Success response:", updatedData);
 
       // Update userData with new profile picture, preserving existing data
       const updatedUserData = {
@@ -900,9 +949,13 @@ function EditProfilePage() {
       alert("Profile picture updated successfully!");
     } catch (err) {
       console.error("Error uploading profile picture:", err);
-      alert("Error uploading profile picture. Please try again.");
+      alert(`Error: ${err.message}`);
     } finally {
       setUploading(false);
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
