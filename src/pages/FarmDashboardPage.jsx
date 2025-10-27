@@ -1,3 +1,375 @@
+// import React, { useState, useEffect } from "react";
+// import { useParams, useNavigate } from "react-router-dom";
+// import {
+//   FileText,
+//   MapPin,
+//   Edit3,
+//   ArrowLeft,
+//   ToggleLeft,
+//   ToggleRight,
+// } from "lucide-react";
+// import HeaderMain from "../components/Header/HeaderMain";
+// import Footer from "../components/Footer/FooterMain";
+// import AddFarmerModal from "../components/Popups/AddFarmerModal";
+// import FarmerDetailModal from "../components/Popups/FarmerDetailModal";
+// import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";
+// import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModal";
+// import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
+// import EditFarmModal from "../components/Popups/EditFarmModal";
+// import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
+
+// // Import our separate components
+// import FarmAnalytics from "./FarmAnalytics";
+// import RecentScans from "./RecentScans";
+// import FarmTeams from "./FarmTeams";
+// import FarmAnalyticsSummary from "./FarmAnalyticsSummary";
+
+// export default function FarmDashboardPage() {
+//   const { id: farmId } = useParams();
+//   const navigate = useNavigate();
+
+//   // Farm data state
+//   const [farmData, setFarmData] = useState(null);
+//   const [loading, setLoading] = useState(true);
+
+//   // Time filter for analytics
+//   const [timeFilter, setTimeFilter] = useState("Daily");
+
+//   // Modal states
+//   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
+//   const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
+//     useState(false);
+//   const [isFarmerRemovedSuccessModalOpen, setIsFarmerRemovedSuccessModalOpen] =
+//     useState(false);
+//   const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
+//   const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
+//   const [isToggleFarmStatusModalOpen, setIsToggleFarmStatusModalOpen] =
+//     useState(false);
+//   const [isEditFarmModalOpen, setIsEditFarmModalOpen] = useState(false);
+
+//   // Selected farmer states
+//   const [selectedFarmer, setSelectedFarmer] = useState(null);
+//   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
+
+//   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
+
+//   // Fetch farm data
+//   const fetchFarmData = async () => {
+//     if (!farmId) return;
+//     setLoading(true);
+//     try {
+//       const response = await fetch(
+//         "https://papaiaapi.onrender.com/api/owner/farms",
+//         {
+//           headers: {
+//             Authorization: `Bearer ${localStorage.getItem("token")}`,
+//           },
+//         }
+//       );
+//       const data = await response.json();
+//       const farm = data.farms?.find((f) => f.id === farmId);
+//       setFarmData(farm || null);
+//     } catch (error) {
+//       console.error("Failed to fetch farm data:", error);
+//       setFarmData(null);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchFarmData();
+//   }, [farmId]);
+
+//   // Handlers
+//   const handleAddFarmer = () => setIsAddFarmerModalOpen(true);
+
+//   const handleFarmerAdded = async (farmerData) => {
+//     try {
+//       setIsAddFarmerModalOpen(false);
+//       setNewlyAddedFarmer(farmerData);
+//       setIsFarmerAddedSuccessModalOpen(true);
+
+//       // Refresh activities immediately
+//       if (window.refreshActivities) {
+//         window.refreshActivities();
+//       }
+//     } catch (error) {
+//       console.error("Error handling farmer addition:", error);
+//     }
+//   };
+
+//   const handleViewFarmer = async (farmerId) => {
+//     try {
+//       const response = await fetch(
+//         `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+//         {
+//           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+//         }
+//       );
+//       const data = await response.json();
+//       if (data.status === "success") {
+//         setSelectedFarmer(data.farmer);
+//         setIsFarmerDetailModalOpen(true);
+//       }
+//     } catch (error) {
+//       console.error("Error fetching farmer details:", error);
+//     }
+//   };
+
+//   const handleRemoveFarmerFromDetail = () => {
+//     setIsFarmerDetailModalOpen(false);
+//     setIsRemoveFarmerModalOpen(true);
+//   };
+
+//   const handleConfirmRemoveFarmer = async () => {
+//     try {
+//       const response = await fetch(
+//         `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
+//         {
+//           method: "DELETE",
+//           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+//         }
+//       );
+//       if (!response.ok) throw new Error("Failed to remove farmer");
+
+//       setIsRemoveFarmerModalOpen(false);
+//       setIsFarmerRemovedSuccessModalOpen(true);
+
+//       // Refresh activities immediately
+//       if (window.refreshActivities) {
+//         window.refreshActivities();
+//       }
+//     } catch (error) {
+//       console.error("Error removing farmer:", error);
+//       alert(error.message);
+//     }
+//   };
+
+//   const handleBackToDetailModal = () => {
+//     setIsRemoveFarmerModalOpen(false);
+//     setIsFarmerDetailModalOpen(true);
+//   };
+
+//   const handleSuccessModalClose = () => {
+//     setIsFarmerAddedSuccessModalOpen(false);
+//     setIsFarmerRemovedSuccessModalOpen(false);
+//     setSelectedFarmer(null);
+//     setNewlyAddedFarmer(null);
+//   };
+
+//   const handleCloseEditFarmModal = () => setIsEditFarmModalOpen(false);
+
+//   const handleFarmUpdated = () => {
+//     fetchFarmData(); // Refresh farm data after successful update
+
+//     // Refresh activities immediately
+//     if (window.refreshActivities) {
+//       window.refreshActivities();
+//     }
+//   };
+
+//   const handleStatusToggled = (newStatus) => {
+//     // Update local farm data
+//     setFarmData((prev) => ({ ...prev, status: newStatus }));
+
+//     // Navigate to dashboard with refresh flag
+//     navigate("/dashboard", { state: { refreshFarms: true } });
+//   };
+
+//   const goBack = () =>
+//     navigate("/dashboard", { state: { refreshFarms: false } });
+
+//   if (loading) {
+//     return (
+//       <div className="min-h-screen bg-gray-50 flex flex-col">
+//         <HeaderMain />
+//         <main className="flex-1 flex items-center justify-center">
+//           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+//         </main>
+//         <Footer />
+//       </div>
+//     );
+//   }
+
+//   if (!farmData) {
+//     return (
+//       <div className="min-h-screen bg-gray-50 flex flex-col">
+//         <HeaderMain />
+//         <main className="flex-1 flex items-center justify-center">
+//           <div className="text-center">
+//             <h1 className="text-xl font-bold text-gray-800 mb-2">
+//               Farm Not Found
+//             </h1>
+//             <p className="text-gray-600 mb-4">
+//               The requested farm could not be found.
+//             </p>
+//             <button
+//               onClick={goBack}
+//               className="px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800"
+//             >
+//               Go Back
+//             </button>
+//           </div>
+//         </main>
+//         <Footer />
+//       </div>
+//     );
+//   }
+
+//   const isActive = farmData.status === "active";
+
+//   return (
+//     <div className="min-h-screen bg-gray-50 flex flex-col">
+//       <HeaderMain />
+
+//       <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+//         <div className="space-y-6">
+//           {/* Top Header Section */}
+//           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+//             <div className="flex-1">
+//               <div className="flex items-center gap-2 sm:gap-3 mb-2">
+//                 <button
+//                   onClick={goBack}
+//                   className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base"
+//                 >
+//                   <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+//                 </button>
+//                 <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+//                   {farmData.farmName}
+//                 </h1>
+//                 <span
+//                   className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full ${
+//                     isActive
+//                       ? "bg-green-100 text-green-700"
+//                       : "bg-red-100 text-red-700"
+//                   }`}
+//                 >
+//                   {isActive ? "Active" : "Inactive"}
+//                 </span>
+//               </div>
+//               <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 text-sm sm:text-base">
+//                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+//                 {farmData.location || "No location specified"}
+//               </p>
+//             </div>
+//             <div className="flex gap-2 sm:gap-3">
+//               <button
+//                 onClick={() => setIsEditFarmModalOpen(true)}
+//                 className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-[#CA8A04] text-white rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-yellow-700"
+//               >
+//                 <Edit3 className="w-4 h-4" />
+//                 Edit Farm
+//               </button>
+//               <button
+//                 onClick={() => setIsToggleFarmStatusModalOpen(true)}
+//                 className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+//                   isActive
+//                     ? "border-red-500 text-red-500 hover:bg-red-600 hover:text-white"
+//                     : "border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+//                 }`}
+//               >
+//                 {isActive ? (
+//                   <ToggleLeft className="w-4 h-4" />
+//                 ) : (
+//                   <ToggleRight className="w-4 h-4" />
+//                 )}
+//                 {isActive ? "Deactivate" : "Activate"}
+//               </button>
+//             </div>
+//           </div>
+
+//           {/* Farm Description - Now at the top without background */}
+//           <div className="mb-4">
+//             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+//               {farmData.description || "No description available"}
+//             </p>
+//           </div>
+
+//           {/* Analytics + Recent Scans */}
+//           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+//             {/* Farm Analytics - 2/3 width */}
+//             <div className="lg:col-span-2">
+//               <FarmAnalytics
+//                 farmId={farmId}
+//                 timeFilter={timeFilter}
+//                 onTimeFilterChange={setTimeFilter}
+//                 timeFilters={timeFilters}
+//               />
+//             </div>
+
+//             {/* Recent Scans - 1/3 width */}
+//             <div className="lg:col-span-1">
+//               <RecentScans farmId={farmId} />
+//             </div>
+//           </div>
+
+//           {/* Farm Analytics Summary - Above Farm Team */}
+//           <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
+
+//           {/* Farm Team */}
+//           <FarmTeams
+//             farmId={farmId}
+//             onAddFarmer={handleAddFarmer}
+//             onViewFarmer={handleViewFarmer}
+//           />
+//         </div>
+//       </main>
+
+//       <Footer />
+
+//       {/* Modals */}
+//       <AddFarmerModal
+//         isOpen={isAddFarmerModalOpen}
+//         onClose={() => setIsAddFarmerModalOpen(false)}
+//         onFarmerAdded={handleFarmerAdded}
+//         farmId={farmId}
+//       />
+
+//       <EditFarmModal
+//         isOpen={isEditFarmModalOpen}
+//         onClose={handleCloseEditFarmModal}
+//         farmData={farmData}
+//         onFarmUpdated={handleFarmUpdated}
+//       />
+
+//       <FarmerDetailModal
+//         isOpen={isFarmerDetailModalOpen}
+//         onClose={() => setIsFarmerDetailModalOpen(false)}
+//         onRemoveFarmer={handleRemoveFarmerFromDetail}
+//         farmer={selectedFarmer}
+//       />
+
+//       <RemoveFarmerModal
+//         isOpen={isRemoveFarmerModalOpen}
+//         onClose={handleBackToDetailModal}
+//         onConfirmRemove={handleConfirmRemoveFarmer}
+//         farmer={selectedFarmer}
+//       />
+
+//       <FarmerAddedSuccessModal
+//         isOpen={isFarmerAddedSuccessModalOpen}
+//         onClose={handleSuccessModalClose}
+//         farmer={newlyAddedFarmer}
+//       />
+
+//       <FarmerRemovedSuccessModal
+//         isOpen={isFarmerRemovedSuccessModalOpen}
+//         onClose={handleSuccessModalClose}
+//         farmer={selectedFarmer}
+//       />
+
+//       <ToggleFarmStatusModal
+//         isOpen={isToggleFarmStatusModalOpen}
+//         onClose={() => setIsToggleFarmStatusModalOpen(false)}
+//         farmData={farmData}
+//         onStatusToggled={handleStatusToggled}
+//       />
+//     </div>
+//   );
+// }
+
+//new
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -7,6 +379,7 @@ import {
   ArrowLeft,
   ToggleLeft,
   ToggleRight,
+  Lock,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/FooterMain";
@@ -81,10 +454,17 @@ export default function FarmDashboardPage() {
     fetchFarmData();
   }, [farmId]);
 
-  // Handlers
-  const handleAddFarmer = () => setIsAddFarmerModalOpen(true);
+  // Check if farm is active
+  const isActive = farmData?.status === "active";
+
+  // Handlers - with inactive farm checks
+  const handleAddFarmer = () => {
+    if (!isActive) return;
+    setIsAddFarmerModalOpen(true);
+  };
 
   const handleFarmerAdded = async (farmerData) => {
+    if (!isActive) return;
     try {
       setIsAddFarmerModalOpen(false);
       setNewlyAddedFarmer(farmerData);
@@ -100,6 +480,7 @@ export default function FarmDashboardPage() {
   };
 
   const handleViewFarmer = async (farmerId) => {
+    if (!isActive) return;
     try {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
@@ -118,11 +499,13 @@ export default function FarmDashboardPage() {
   };
 
   const handleRemoveFarmerFromDetail = () => {
+    if (!isActive) return;
     setIsFarmerDetailModalOpen(false);
     setIsRemoveFarmerModalOpen(true);
   };
 
   const handleConfirmRemoveFarmer = async () => {
+    if (!isActive) return;
     try {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
@@ -217,8 +600,6 @@ export default function FarmDashboardPage() {
     );
   }
 
-  const isActive = farmData.status === "active";
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
@@ -255,8 +636,12 @@ export default function FarmDashboardPage() {
             </div>
             <div className="flex gap-2 sm:gap-3">
               <button
-                onClick={() => setIsEditFarmModalOpen(true)}
-                className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 bg-[#CA8A04] text-white rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-yellow-700"
+                onClick={() => isActive && setIsEditFarmModalOpen(true)}
+                disabled={!isActive}
+                className={`transition-all duration-150 active:scale-95 active:shadow-inner px-2 sm:px-4 py-1.5 sm:py-2 bg-[#CA8A04] text-white rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-yellow-700 ${
+                  !isActive ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+                title={!isActive ? "Farm must be active to edit" : ""}
               >
                 <Edit3 className="w-4 h-4" />
                 Edit Farm
@@ -279,86 +664,160 @@ export default function FarmDashboardPage() {
             </div>
           </div>
 
-          {/* Farm Description - Now at the top without background */}
+          {/* Inactive Farm Warning Banner */}
+          {!isActive && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
+              <div className="flex items-start gap-3">
+                <Lock className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-red-800 font-semibold text-sm sm:text-base">
+                    Farm is Inactive
+                  </h3>
+                  <p className="text-red-700 text-xs sm:text-sm mt-1">
+                    This farm is currently inactive. All data is view-only and
+                    no actions can be performed. Click the "Activate" button
+                    above to enable full functionality.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Farm Description */}
           <div className="mb-4">
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               {farmData.description || "No description available"}
             </p>
           </div>
 
-          {/* Analytics + Recent Scans */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Analytics + Recent Scans - Disabled overlay when inactive */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 relative">
+            {!isActive && (
+              <div className="absolute inset-0 bg-gray-200 bg-opacity-60 backdrop-blur-sm z-10 rounded-lg flex items-center justify-center">
+                <div className="text-center bg-white p-6 rounded-lg shadow-lg border-2 border-red-300">
+                  <Lock className="w-12 h-12 text-red-500 mx-auto mb-3" />
+                  <p className="text-gray-800 font-semibold text-lg mb-2">
+                    Farm Analytics Unavailable
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Activate the farm to view analytics and recent scans
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Farm Analytics - 2/3 width */}
-            <div className="lg:col-span-2">
+            <div
+              className={`lg:col-span-2 ${
+                !isActive ? "pointer-events-none" : ""
+              }`}
+            >
               <FarmAnalytics
                 farmId={farmId}
                 timeFilter={timeFilter}
-                onTimeFilterChange={setTimeFilter}
+                onTimeFilterChange={isActive ? setTimeFilter : () => {}}
                 timeFilters={timeFilters}
               />
             </div>
 
             {/* Recent Scans - 1/3 width */}
-            <div className="lg:col-span-1">
+            <div
+              className={`lg:col-span-1 ${
+                !isActive ? "pointer-events-none" : ""
+              }`}
+            >
               <RecentScans farmId={farmId} />
             </div>
           </div>
 
-          {/* Farm Analytics Summary - Above Farm Team */}
-          <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
+          {/* Farm Analytics Summary - Disabled when inactive */}
+          <div
+            className={`relative ${
+              !isActive ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            {!isActive && (
+              <div className="absolute inset-0 bg-gray-200 bg-opacity-40 backdrop-blur-[2px] z-10 rounded-lg"></div>
+            )}
+            <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
+          </div>
 
-          {/* Farm Team */}
-          <FarmTeams
-            farmId={farmId}
-            onAddFarmer={handleAddFarmer}
-            onViewFarmer={handleViewFarmer}
-          />
+          {/* Farm Team - Disabled when inactive */}
+          <div
+            className={`relative ${
+              !isActive ? "pointer-events-none opacity-60" : ""
+            }`}
+          >
+            {!isActive && (
+              <div className="absolute inset-0 bg-gray-200 bg-opacity-40 backdrop-blur-[2px] z-10 rounded-lg flex items-center justify-center">
+                <div className="text-center bg-white p-4 rounded-lg shadow-md">
+                  <Lock className="w-10 h-10 text-red-500 mx-auto mb-2" />
+                  <p className="text-gray-800 font-semibold mb-1">
+                    Team Management Locked
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Activate farm to manage farmers
+                  </p>
+                </div>
+              </div>
+            )}
+            <FarmTeams
+              farmId={farmId}
+              onAddFarmer={isActive ? handleAddFarmer : () => {}}
+              onViewFarmer={isActive ? handleViewFarmer : () => {}}
+            />
+          </div>
         </div>
       </main>
 
       <Footer />
 
-      {/* Modals */}
-      <AddFarmerModal
-        isOpen={isAddFarmerModalOpen}
-        onClose={() => setIsAddFarmerModalOpen(false)}
-        onFarmerAdded={handleFarmerAdded}
-        farmId={farmId}
-      />
+      {/* Modals - Only work when farm is active */}
+      {isActive && (
+        <>
+          <AddFarmerModal
+            isOpen={isAddFarmerModalOpen}
+            onClose={() => setIsAddFarmerModalOpen(false)}
+            onFarmerAdded={handleFarmerAdded}
+            farmId={farmId}
+          />
 
-      <EditFarmModal
-        isOpen={isEditFarmModalOpen}
-        onClose={handleCloseEditFarmModal}
-        farmData={farmData}
-        onFarmUpdated={handleFarmUpdated}
-      />
+          <EditFarmModal
+            isOpen={isEditFarmModalOpen}
+            onClose={handleCloseEditFarmModal}
+            farmData={farmData}
+            onFarmUpdated={handleFarmUpdated}
+          />
 
-      <FarmerDetailModal
-        isOpen={isFarmerDetailModalOpen}
-        onClose={() => setIsFarmerDetailModalOpen(false)}
-        onRemoveFarmer={handleRemoveFarmerFromDetail}
-        farmer={selectedFarmer}
-      />
+          <FarmerDetailModal
+            isOpen={isFarmerDetailModalOpen}
+            onClose={() => setIsFarmerDetailModalOpen(false)}
+            onRemoveFarmer={handleRemoveFarmerFromDetail}
+            farmer={selectedFarmer}
+          />
 
-      <RemoveFarmerModal
-        isOpen={isRemoveFarmerModalOpen}
-        onClose={handleBackToDetailModal}
-        onConfirmRemove={handleConfirmRemoveFarmer}
-        farmer={selectedFarmer}
-      />
+          <RemoveFarmerModal
+            isOpen={isRemoveFarmerModalOpen}
+            onClose={handleBackToDetailModal}
+            onConfirmRemove={handleConfirmRemoveFarmer}
+            farmer={selectedFarmer}
+          />
 
-      <FarmerAddedSuccessModal
-        isOpen={isFarmerAddedSuccessModalOpen}
-        onClose={handleSuccessModalClose}
-        farmer={newlyAddedFarmer}
-      />
+          <FarmerAddedSuccessModal
+            isOpen={isFarmerAddedSuccessModalOpen}
+            onClose={handleSuccessModalClose}
+            farmer={newlyAddedFarmer}
+          />
 
-      <FarmerRemovedSuccessModal
-        isOpen={isFarmerRemovedSuccessModalOpen}
-        onClose={handleSuccessModalClose}
-        farmer={selectedFarmer}
-      />
+          <FarmerRemovedSuccessModal
+            isOpen={isFarmerRemovedSuccessModalOpen}
+            onClose={handleSuccessModalClose}
+            farmer={selectedFarmer}
+          />
+        </>
+      )}
 
+      {/* Toggle Status Modal - Always available */}
       <ToggleFarmStatusModal
         isOpen={isToggleFarmStatusModalOpen}
         onClose={() => setIsToggleFarmStatusModalOpen(false)}
