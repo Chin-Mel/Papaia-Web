@@ -276,7 +276,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, Check } from "lucide-react";
 import { useNotifications } from "../NotificationContext";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footermain from "../components/Footer/Footer";
+import Footer from "../components/Footer/Footer";
 
 export default function NotificationPage() {
   const navigate = useNavigate();
@@ -392,7 +392,7 @@ export default function NotificationPage() {
       <HeaderMain />
 
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-6">
           {/* Header */}
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -538,7 +538,7 @@ export default function NotificationPage() {
           </div>
         </div>
       </div>
-      <Footermain />
+      <Footer />
     </>
   );
 }
