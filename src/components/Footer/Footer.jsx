@@ -1,7 +1,7 @@
 // Finished fixing footer main
 import papaiaLogo from "../../assets/papaia-logo.png";
 
-export default function FooterMain() {
+export default function Footer() {
   return (
     <footer className="bg-[#2D5016] text-white py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">

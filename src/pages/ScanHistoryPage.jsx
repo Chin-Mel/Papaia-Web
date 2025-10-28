@@ -592,7 +592,7 @@ import { ChevronDown } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-import FooterMain from "../components/Footer/FooterMain";
+import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 
 // PNG ICON IMPORTS

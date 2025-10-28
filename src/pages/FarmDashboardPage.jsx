@@ -382,7 +382,7 @@ import {
   Lock,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
+import Footer from "../components/Footer/Footer";
 import AddFarmerModal from "../components/Popups/AddFarmerModal";
 import FarmerDetailModal from "../components/Popups/FarmerDetailModal";
 import RemoveFarmerModal from "../components/Popups/RemoveFarmerModal";

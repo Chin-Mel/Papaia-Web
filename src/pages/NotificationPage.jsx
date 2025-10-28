@@ -276,7 +276,7 @@ import { useNavigate } from "react-router-dom";
 import { Bell, AlertTriangle, Check } from "lucide-react";
 import { useNotifications } from "../NotificationContext";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footermain from "../components/Footer/Footermain";
+import Footermain from "../components/Footer/Footer";
 
 export default function NotificationPage() {
   const navigate = useNavigate();

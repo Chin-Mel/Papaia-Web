@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
+import Footer from "../components/Footer/Footer";
 import AddFarmModal from "../components/Popups/AddFarmModal";
 import RecentActivities from "../pages/RecentActivities";
 import ScansCount from "../assets/scans.png";

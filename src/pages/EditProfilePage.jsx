@@ -718,7 +718,7 @@ import {
 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import HeaderMain from "../components/Header/HeaderMain";
-import FooterMain from "../components/Footer/FooterMain";
+import FooterMain from "../components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";

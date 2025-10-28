@@ -368,7 +368,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
+import Footer from "../components/Footer/Footer";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {

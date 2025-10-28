@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Check, X, ArrowLeft } from "lucide-react";
 import Header from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/FooterMain";
+import Footer from "../components/Footer/Footer";
 
 export default function PricingPage() {
   const [isAnnual, setIsAnnual] = useState(false);

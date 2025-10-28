@@ -1,7 +1,7 @@
 //new
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import FooterMain from "../components/Footer/FooterMain";
+import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";

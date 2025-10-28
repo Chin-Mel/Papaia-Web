@@ -1,6 +1,6 @@
 // Finished Fixing the About home page
 import HeaderMain from "../components/Header/HeaderMain";
-import FooterMain from "../components/Footer/FooterMain";
+import FooterMain from "../components/Footer/Footer";
 
 import EyeIcon from "../assets/eye-icon-about.png";
 import TargetIcon from "../assets/target-icon.png";
