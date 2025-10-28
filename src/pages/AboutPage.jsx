@@ -87,7 +87,7 @@ export default function AboutHomePage() {
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
-                App Overview
+                System Overview
               </h2>
               <p className="text-base sm:text-lg md:text-lg text-papaia-text-secondary leading-relaxed">
                 Papaia is an innovative mobile application that empowers farmers
