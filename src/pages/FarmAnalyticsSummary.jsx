@@ -1,12 +1,11 @@
 //new
 import React, { useState, useEffect, useRef } from "react";
-import { TrendingUp, AlertCircle, CheckCircle, Calendar } from "lucide-react";
+import { TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
 
 // Simple in-memory cache
 const cache = {
   data: {},
   set(key, value, ttl = 60000) {
-    // 60 second default TTL
     this.data[key] = {
       value,
       expires: Date.now() + ttl,
@@ -24,6 +23,19 @@ const cache = {
   clear() {
     this.data = {};
   },
+};
+
+// Function to clean text - remove emojis and asterisks
+const cleanText = (text) => {
+  if (!text) return "";
+  return text
+    .replace(
+      /[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu,
+      ""
+    ) // Remove emojis
+    .replace(/\*\*/g, "") // Remove bold markdown
+    .replace(/\*/g, "") // Remove asterisks
+    .trim();
 };
 
 export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
@@ -96,10 +108,9 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
 
         // Update summary immediately
         setSummaryData(summaryResult);
-        cache.set(summaryCacheKey, summaryResult, 30000); // Cache for 30 seconds
+        cache.set(summaryCacheKey, summaryResult, 30000);
 
-        // Fetch common diseases in background (lower priority)
-        // Only fetch if we don't have cached data or it's been a while
+        // Fetch common diseases in background
         if (
           !cachedDisease ||
           Date.now() - (cachedDisease._fetchedAt || 0) > 120000
@@ -113,19 +124,17 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
               if (diseaseResult && !abortController.signal.aborted) {
                 diseaseResult._fetchedAt = Date.now();
                 setCommonDiseaseData(diseaseResult);
-                cache.set(diseaseCacheKey, diseaseResult, 120000); // Cache for 2 minutes
+                cache.set(diseaseCacheKey, diseaseResult, 120000);
               }
             })
             .catch((err) => console.error("Error fetching disease data:", err));
         }
       } catch (error) {
         if (error.name === "AbortError") {
-          console.log("Fetch aborted");
           return;
         }
         console.error("Error fetching summary data:", error);
 
-        // Keep cached data on error if available
         if (!cachedSummary) {
           setSummaryData(null);
         }
@@ -139,7 +148,6 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
 
     fetchData();
 
-    // Cleanup function
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -167,16 +175,6 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
     );
   }
 
-  const getPeriodLabel = () => {
-    const labels = {
-      Daily: "11-Day",
-      Weekly: "9-Week",
-      Monthly: "12-Month",
-      Yearly: "7-Year",
-    };
-    return labels[timeFilter] || "Period";
-  };
-
   const hasDisease = commonDiseaseData && commonDiseaseData.count > 0;
 
   return (
@@ -184,31 +182,23 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <TrendingUp className="w-5 h-5 text-green-700" />
-        <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-          {getPeriodLabel()} Summary
-        </h2>
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800">Summary</h2>
       </div>
 
       {/* Summary Content */}
       <div className="space-y-4">
-        {/* AI-Generated Summary */}
+        {/* AI-Generated Summary - Clean paragraph */}
         {summaryData?.summary && (
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-100">
+          <div className="border-b border-gray-100 pb-4">
             <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-              {summaryData.summary}
+              {cleanText(summaryData.summary)}
             </p>
           </div>
         )}
 
-        {/* Most Common Disease Section */}
+        {/* Most Common Disease Section - Clean */}
         {commonDiseaseData && (
-          <div
-            className={`rounded-lg p-4 border ${
-              hasDisease
-                ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100"
-                : "bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100"
-            }`}
-          >
+          <div className="border-b border-gray-100 pb-4">
             <div className="flex items-start gap-3">
               <div className="mt-0.5">
                 {hasDisease ? (
@@ -226,14 +216,14 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
                   {hasDisease ? "Most Common Disease" : "Farm Health Status"}
                 </h3>
                 <p className="text-sm sm:text-base text-gray-700">
-                  {commonDiseaseData.message}
+                  {cleanText(commonDiseaseData.message)}
                 </p>
                 {hasDisease && (
                   <div className="mt-2 flex flex-wrap gap-2 text-xs sm:text-sm">
-                    <span className="px-2 py-1 bg-white rounded-md font-medium text-amber-800">
+                    <span className="px-2 py-1 bg-gray-50 rounded-md font-medium text-amber-800 border border-amber-100">
                       {commonDiseaseData.count} cases
                     </span>
-                    <span className="px-2 py-1 bg-white rounded-md font-medium text-amber-800">
+                    <span className="px-2 py-1 bg-gray-50 rounded-md font-medium text-amber-800 border border-amber-100">
                       {commonDiseaseData.percentage}
                     </span>
                   </div>
@@ -243,29 +233,20 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
           </div>
         )}
 
-        {/* Healthy Trend Badge */}
-        {summaryData?.healthyTrend && (
-          <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-            <Calendar className="w-4 h-4" />
-            <span>{summaryData.healthyTrend}</span>
-          </div>
-        )}
-
-        {/* Trends - Compact Display */}
+        {/* Trends - Clean paragraph format */}
         {summaryData?.trends && summaryData.trends.length > 0 && (
-          <div className="border-t border-gray-200 pt-4">
+          <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">
               Key Trends
             </h3>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {summaryData.trends.slice(0, 3).map((trend, index) => (
-                <div
+                <p
                   key={index}
-                  className="text-xs sm:text-sm text-gray-600 flex items-start gap-2"
+                  className="text-xs sm:text-sm text-gray-600 leading-relaxed"
                 >
-                  <span className="mt-0.5">•</span>
-                  <span className="flex-1">{trend}</span>
-                </div>
+                  {cleanText(trend)}
+                </p>
               ))}
             </div>
           </div>

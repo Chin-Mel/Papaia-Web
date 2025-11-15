@@ -784,7 +784,7 @@ export default function RecentScans({ farmId }) {
               };
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             })
-            .slice(0, 5); // Changed from 4 to 5
+            .slice(0, 5);
 
           setRecentScans(filteredScans);
 
@@ -816,15 +816,38 @@ export default function RecentScans({ farmId }) {
     };
   }, [farmId]);
 
-  // Updated color mapping for diseases
-  const getStatusColor = useCallback((prediction) => {
-    const colorMap = {
-      Healthy: "text-green-600",
-      "Ring Spot Virus": "text-orange-600",
-      Anthracnose: "text-red-600",
-      "Powdery Mildew": "text-blue-600",
+  // Get card styling based on disease type
+  const getCardStyle = useCallback((prediction) => {
+    const styles = {
+      Healthy: {
+        bg: "bg-emerald-50/50",
+        border: "border-l-2 border-emerald-700",
+        textColor: "text-emerald-700",
+      },
+      "Ring Spot Virus": {
+        bg: "bg-orange-50/50",
+        border: "border-l-2 border-orange-600",
+        textColor: "text-orange-600",
+      },
+      Anthracnose: {
+        bg: "bg-rose-50/50",
+        border: "border-l-2 border-rose-600",
+        textColor: "text-rose-600",
+      },
+      "Powdery Mildew": {
+        bg: "bg-blue-50/50",
+        border: "border-l-2 border-blue-600",
+        textColor: "text-blue-600",
+      },
     };
-    return colorMap[prediction] || "text-gray-600";
+
+    return (
+      styles[prediction] || {
+        bg: "bg-slate-50/50",
+        border: "border-l-2 border-slate-600",
+        textColor: "text-slate-600",
+      }
+    );
   }, []);
 
   const formatDateTime = useCallback((timestamp) => {
@@ -916,43 +939,46 @@ export default function RecentScans({ farmId }) {
       ) : (
         <div className="flex-1 flex flex-col">
           <div className="space-y-3 flex-1">
-            {recentScans.map((scan, index) => (
-              <div
-                key={`${scan.id || scan.timestamp}-${index}`}
-                className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="relative flex-shrink-0">
-                  <img
-                    src={scan.imageUrl}
-                    alt="Scan"
-                    className="w-14 h-14 rounded-lg object-cover border border-gray-200"
-                    onError={handleImageError}
-                  />
-                  <div
-                    className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                    style={{ display: "none" }}
-                  >
-                    No Image
+            {recentScans.map((scan, index) => {
+              const cardStyle = getCardStyle(scan.prediction);
+              return (
+                <div
+                  key={`${scan.id || scan.timestamp}-${index}`}
+                  className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={scan.imageUrl}
+                        alt="Scan"
+                        className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                        onError={handleImageError}
+                      />
+                      <div
+                        className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                        style={{ display: "none" }}
+                      >
+                        No Image
+                      </div>
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
+                      >
+                        {scan.prediction}
+                      </p>
+                      <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
+                        {formatDateTime(scan.timestamp)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {getFarmerName(scan.idNumber)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`font-semibold text-sm mb-0.5 ${getStatusColor(
-                      scan.prediction
-                    )}`}
-                  >
-                    {scan.prediction}
-                  </p>
-                  <p className="text-xs text-gray-600 mb-0.5">
-                    {formatDateTime(scan.timestamp)}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {getFarmerName(scan.idNumber)}
-                  </p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="mt-3 pt-3 border-t border-gray-200 text-center">
