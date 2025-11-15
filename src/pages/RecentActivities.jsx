@@ -232,9 +232,10 @@ export default function RecentActivities({ limit = 5 }) {
     () => [
       {
         icon: Wheat,
-        iconBg: "from-violet-400 to-violet-500",
+        iconColor: "text-violet-600",
+        iconBg: "bg-violet-100",
         bg: "bg-violet-50/50",
-        border: "border-violet-200/50",
+        leftBorder: "border-l-violet-500",
         title: "Welcome aboard!",
         text: "Start by adding your first farm",
         subText: "Your journey begins here",
@@ -250,9 +251,10 @@ export default function RecentActivities({ limit = 5 }) {
     () => [
       {
         icon: Info,
-        iconBg: "from-amber-400 to-amber-500",
+        iconColor: "text-amber-600",
+        iconBg: "bg-amber-100",
         bg: "bg-amber-50/50",
-        border: "border-amber-200/50",
+        leftBorder: "border-l-amber-500",
         title: "Connection issue",
         text: "Unable to load activities",
         subText: "Tap retry to refresh",

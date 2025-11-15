@@ -6,9 +6,9 @@ import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/Footer";
 import AddFarmModal from "../components/Popups/AddFarmModal";
 import RecentActivities from "../pages/RecentActivities";
-import ScansCount from "../assets/scans.png";
-import FarmersCount from "../assets/farmers.png";
-import FarmsCount from "../assets/farms.png";
+import ScansCount from "../assets/ic_todays_scan.png";
+import FarmersCount from "../assets/ic_all_farmers.png";
+import FarmsCount from "../assets/ic_all_farms.png";
 
 // ============ IN-MEMORY CACHE ============
 const cache = {
@@ -378,6 +378,7 @@ export default function DashboardPage() {
                 Dashboard Overview
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+                {/* All Farmers */}
                 <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
                   <div>
                     <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
@@ -396,16 +397,17 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center">
                     <img
                       src={FarmersCount}
                       alt="Farmers"
-                      className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+                      className="w-8 h-8 object-contain"
                       loading="eager"
                     />
                   </div>
                 </div>
 
+                {/* All Farms */}
                 <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
                   <div>
                     <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
@@ -424,16 +426,17 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
                     <img
                       src={FarmsCount}
                       alt="Farms"
-                      className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+                      className="w-8 h-8 object-contain"
                       loading="eager"
                     />
                   </div>
                 </div>
 
+                {/* Today's Scans */}
                 <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 sm:col-span-2">
                   <div>
                     <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
@@ -452,11 +455,11 @@ export default function DashboardPage() {
                       yesterday
                     </span>
                   </div>
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[#DBEAFE] flex items-center justify-center">
                     <img
                       src={ScansCount}
                       alt="Scans"
-                      className="w-7 h-7 sm:w-8 sm:h-8 object-contain"
+                      className="w-8 h-8 object-contain"
                       loading="eager"
                     />
                   </div>
