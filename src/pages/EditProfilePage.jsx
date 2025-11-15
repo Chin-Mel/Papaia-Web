@@ -753,7 +753,6 @@ function EditProfilePage() {
       const day = String(date.getDate()).padStart(2, "0");
       return `${year}-${month}-${day}`;
     } catch (err) {
-      console.error("Error formatting date:", err);
       return "";
     }
   };
@@ -778,7 +777,6 @@ function EditProfilePage() {
 
       return { user, userId: user.id, token, error: null };
     } catch (err) {
-      console.error("Error getting user data:", err);
       return { user: null, token: null, error: "Invalid user data in storage" };
     }
   };
@@ -808,21 +806,17 @@ function EditProfilePage() {
       });
 
       const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
-      console.log("Fetching user from:", url);
 
       try {
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log("Response status:", res.status);
-
         // ONLY UPDATE IF SUCCESSFUL (like Profile Page does)
         if (res.ok) {
           const data = await res.json();
           // Handle both possible response formats
           const freshUser = data.user || data;
-          console.log("User data received:", freshUser);
 
           setUserData(freshUser);
           setFormValues({
@@ -862,7 +856,6 @@ function EditProfilePage() {
     const { token, userId } = getUserFromStorage();
 
     if (!file) {
-      console.log("No file selected");
       return;
     }
 
@@ -870,14 +863,6 @@ function EditProfilePage() {
       alert("Authentication error. Please log in again.");
       return;
     }
-
-    // Log file details
-    console.log("File details:", {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      sizeInMB: (file.size / (1024 * 1024)).toFixed(2) + "MB",
-    });
 
     // Check file size (10MB = 10485760 bytes)
     if (file.size > 10485760) {
@@ -896,9 +881,6 @@ function EditProfilePage() {
     const formData = new FormData();
     formData.append("profilePicture", file);
 
-    console.log("Uploading for user:", userId);
-    console.log("Token:", token?.substring(0, 20) + "...");
-
     try {
       const res = await fetch(
         "https://papaiaapi.onrender.com/api/profile-picture",
@@ -909,15 +891,8 @@ function EditProfilePage() {
         }
       );
 
-      console.log("Response status:", res.status);
-      console.log(
-        "Response headers:",
-        Object.fromEntries(res.headers.entries())
-      );
-
       if (!res.ok) {
         const errorText = await res.text();
-        console.error("Error response:", errorText);
 
         let errorMessage = "Failed to update profile picture";
         try {
@@ -931,7 +906,6 @@ function EditProfilePage() {
       }
 
       const updatedData = await res.json();
-      console.log("Success response:", updatedData);
 
       // Update userData with new profile picture, preserving existing data
       const updatedUserData = {
@@ -948,7 +922,6 @@ function EditProfilePage() {
 
       alert("Profile picture updated successfully!");
     } catch (err) {
-      console.error("Error uploading profile picture:", err);
       alert(`Error: ${err.message}`);
     } finally {
       setUploading(false);
@@ -1033,8 +1006,6 @@ function EditProfilePage() {
         return;
       }
 
-      console.log("Sending update data:", updatedData);
-
       const res = await fetch(
         `https://papaiaapi.onrender.com/api/user/${userId}`,
         {
@@ -1049,7 +1020,6 @@ function EditProfilePage() {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        console.error("Update failed:", errorData);
         throw new Error(
           errorData.error ||
             errorData.message ||
@@ -1058,7 +1028,6 @@ function EditProfilePage() {
       }
 
       const response = await res.json();
-      console.log("Update response:", response);
 
       // Merge updated data with existing data
       const mergedData = { ...userData, ...updatedData };
@@ -1085,7 +1054,6 @@ function EditProfilePage() {
       alert("Profile updated successfully!");
       navigate("/profile");
     } catch (err) {
-      console.error("Error updating profile:", err);
       alert(err.message || "Error updating profile. Please try again.");
     } finally {
       setLoading(false);

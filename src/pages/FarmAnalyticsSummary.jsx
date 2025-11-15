@@ -127,13 +127,12 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
                 cache.set(diseaseCacheKey, diseaseResult, 120000);
               }
             })
-            .catch((err) => console.error("Error fetching disease data:", err));
+            .catch((err) => {});
         }
       } catch (error) {
         if (error.name === "AbortError") {
           return;
         }
-        console.error("Error fetching summary data:", error);
 
         if (!cachedSummary) {
           setSummaryData(null);

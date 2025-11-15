@@ -866,7 +866,6 @@ export default function ScanHistoryPage() {
         }
       } catch (err) {
         if (err.name !== "AbortError") {
-          console.error("Error fetching data:", err);
           if (!cachedFarms) setFarms([]);
           if (!cachedScans) setAllScans([]);
         }
@@ -986,7 +985,6 @@ export default function ScanHistoryPage() {
         "0"
       )} ${period}`;
     } catch (error) {
-      console.error("Error formatting timestamp:", error, timestamp);
       return timestamp;
     }
   }, []);

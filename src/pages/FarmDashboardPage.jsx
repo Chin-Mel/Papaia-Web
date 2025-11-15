@@ -604,8 +604,8 @@ export default function FarmDashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-        <div className="space-y-6">
+      <main className="flex-1 px-2 sm:px-4 lg:px-8 py-6 sm:py-8 max-w-[1600px] mx-auto">
+        <div className="space-y-8">
           {/* Top Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex-1">
@@ -638,45 +638,53 @@ export default function FarmDashboardPage() {
               <button
                 onClick={() => isActive && setIsEditFarmModalOpen(true)}
                 disabled={!isActive}
-                className={`transition-all duration-150 active:scale-95 active:shadow-inner px-2 sm:px-4 py-1.5 sm:py-2 bg-[#CA8A04] text-white rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm hover:bg-yellow-700 ${
-                  !isActive ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                  !isActive
+                    ? "opacity-40 cursor-not-allowed"
+                    : "cursor-pointer hover:from-amber-600 hover:to-yellow-700"
                 }`}
                 title={!isActive ? "Farm must be active to edit" : ""}
               >
-                <Edit3 className="w-4 h-4" />
-                Edit Farm
+                <Edit3 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                <span className="hidden sm:inline">Edit Farm</span>
+                <span className="sm:hidden">Edit</span>
               </button>
               <button
                 onClick={() => setIsToggleFarmStatusModalOpen(true)}
-                className={`transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer px-2 sm:px-4 py-1.5 sm:py-2 border rounded-lg flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
+                className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
                   isActive
-                    ? "border-red-500 text-red-500 hover:bg-red-600 hover:text-white"
-                    : "border-green-500 text-green-500 hover:bg-green-600 hover:text-white"
+                    ? "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50"
+                    : "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
                 }`}
               >
                 {isActive ? (
-                  <ToggleLeft className="w-4 h-4" />
+                  <ToggleLeft className="w-4 h-4 transition-transform group-hover:scale-110" />
                 ) : (
-                  <ToggleRight className="w-4 h-4" />
+                  <ToggleRight className="w-4 h-4 transition-transform group-hover:scale-110" />
                 )}
-                {isActive ? "Deactivate" : "Activate"}
+                <span className="hidden sm:inline">
+                  {isActive ? "Deactivate" : "Activate"}
+                </span>
+                <span className="sm:hidden">{isActive ? "Off" : "On"}</span>
               </button>
             </div>
           </div>
 
           {/* Inactive Farm Warning Banner */}
           {!isActive && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg mb-4">
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-4 sm:p-5 rounded-xl mb-4 shadow-sm">
               <div className="flex items-start gap-3">
-                <Lock className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h3 className="text-red-800 font-semibold text-sm sm:text-base">
-                    Farm is Inactive
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <Lock className="w-5 h-5 text-red-600 flex-shrink-0" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-red-900 font-bold text-sm sm:text-base mb-1">
+                    Farm Currently Inactive
                   </h3>
-                  <p className="text-red-700 text-xs sm:text-sm mt-1">
-                    This farm is currently inactive. All data is view-only and
-                    no actions can be performed. Click the "Activate" button
-                    above to enable full functionality.
+                  <p className="text-red-800 text-xs sm:text-sm leading-relaxed">
+                    This farm is in view-only mode. All management features are
+                    temporarily disabled. Activate the farm above to restore
+                    full functionality and team management capabilities.
                   </p>
                 </div>
               </div>
@@ -697,12 +705,14 @@ export default function FarmDashboardPage() {
             }`}
           >
             {!isActive && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
-                <div className="bg-white/95 backdrop-blur-sm px-6 py-4 rounded-xl shadow-lg border-2 border-gray-300">
-                  <div className="flex items-center gap-3">
-                    <Lock className="w-6 h-6 text-gray-500" />
+              <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[1px]">
+                <div className="bg-white/98 backdrop-blur-md px-8 py-5 rounded-2xl shadow-2xl border border-gray-200">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gray-100 rounded-xl">
+                      <Lock className="w-6 h-6 text-gray-600" />
+                    </div>
                     <div>
-                      <p className="font-semibold text-gray-800">
+                      <p className="font-bold text-gray-900 text-base mb-0.5">
                         Farm Inactive
                       </p>
                       <p className="text-sm text-gray-600">

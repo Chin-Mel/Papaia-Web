@@ -118,7 +118,6 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
           setFarmers([]);
         }
       } catch (error) {
-        console.error("Error fetching farmers:", error);
         if (isMounted) {
           setFarmers([]);
         }

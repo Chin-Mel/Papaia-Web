@@ -174,7 +174,6 @@ export default function ScanDetailsPage() {
         });
       } catch (err) {
         if (err.name !== "AbortError") {
-          console.error("Error fetching scan details:", err);
           setError(err.message || "Failed to load scan details");
         }
       } finally {

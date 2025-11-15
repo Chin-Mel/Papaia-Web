@@ -50,7 +50,6 @@ export default function ForgotPasswordPage() {
       if (response.ok) setShowOtpModal(true);
       else setError(data.message || "Email not found or invalid.");
     } catch (err) {
-      console.error("Forgot password error:", err);
       setError("Failed to connect to server.");
     } finally {
       setIsLoading(false);

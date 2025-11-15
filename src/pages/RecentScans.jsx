@@ -796,7 +796,6 @@ export default function RecentScans({ farmId }) {
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Error fetching scans:", error);
           if (!cached) {
             setRecentScans([]);
             setFarmers([]);
@@ -876,7 +875,6 @@ export default function RecentScans({ farmId }) {
         "0"
       )} ${period}`;
     } catch (error) {
-      console.error("Error formatting timestamp:", error, timestamp);
       return timestamp;
     }
   }, []);
