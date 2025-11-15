@@ -285,24 +285,6 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
         </div>
       </div>
 
-      {/* Results Summary */}
-      <div className="flex justify-between items-center mb-4 text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-2">
-        <p>
-          Showing{" "}
-          <span className="font-semibold text-gray-800">
-            {currentFarmers.length > 0 ? startIndex + 1 : 0}-
-            {Math.min(endIndex, filteredFarmers.length)}
-          </span>{" "}
-          of{" "}
-          <span className="font-semibold text-gray-800">
-            {filteredFarmers.length}
-          </span>
-        </p>
-        {filteredFarmers.length !== farmers.length && (
-          <p className="text-xs">(Filtered from {farmers.length} total)</p>
-        )}
-      </div>
-
       {/* Table Header - Hidden on mobile */}
       <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 mb-3 text-gray-600 text-xs font-semibold uppercase tracking-wider bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 rounded-lg border border-gray-200">
         <div className="col-span-3 text-left">Farmer</div>

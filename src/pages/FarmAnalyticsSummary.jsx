@@ -1,6 +1,6 @@
 //new
 import React, { useState, useEffect, useRef } from "react";
-import { TrendingUp, AlertCircle, CheckCircle } from "lucide-react";
+import { ChartBarIncreasing, AlertCircle, CheckCircle } from "lucide-react";
 
 // Simple in-memory cache
 const cache = {
@@ -181,7 +181,7 @@ export default function FarmAnalyticsSummary({ farmId, timeFilter }) {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="w-5 h-5 text-green-700" />
+        <ChartBarIncreasing className="w-5 h-5 text-green-700" />
         <h2 className="text-lg sm:text-xl font-bold text-gray-800">Summary</h2>
       </div>
 
