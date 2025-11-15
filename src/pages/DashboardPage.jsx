@@ -509,7 +509,7 @@ export default function DashboardPage() {
                       <Link
                         key={farm.id}
                         to={`/farm-dashboard/${farm.id}`}
-                        className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 active:scale-[0.98] cursor-pointer ${
+                        className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
                           farm.status === "Active"
                             ? "bg-white/80 backdrop-blur-sm"
                             : "bg-slate-200/50"
@@ -703,7 +703,7 @@ export default function DashboardPage() {
                         <Link
                           key={farm.id}
                           to={`/farm-dashboard/${farm.id}`}
-                          className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 active:scale-[0.98] cursor-pointer ${
+                          className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
                             farm.status === "Active"
                               ? "bg-white/80 backdrop-blur-sm"
                               : "bg-slate-200/50"
