@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Info,
   Sprout,
+  ClockFading,
 } from "lucide-react";
 
 // Activity cache with in-memory storage
@@ -387,7 +388,7 @@ export default function RecentActivities({ limit = 5 }) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-slate-200/50 p-4 sm:p-6 w-full border border-slate-200/60">
         <div className="flex items-center gap-2 mb-4">
-          <div className="w-1.5 h-6 bg-gradient-to-b from-orange-500 to-orange-600 rounded-full"></div>
+          <Clock3 className="w-5 h-5 text-orange-600" />
           <h2 className="text-base sm:text-lg font-bold text-slate-800">
             Recent Activities
           </h2>
