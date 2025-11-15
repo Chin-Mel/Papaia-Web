@@ -426,7 +426,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center">
                     <img
                       src={FarmsCount}
                       alt="Farms"

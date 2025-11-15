@@ -1,18 +1,19 @@
 //new
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Sprout,
+  Plus,
   Trash2,
-  RefreshCw,
-  CheckCircle,
-  PauseCircle,
-  UserPlus,
-  UserMinus,
-  Edit,
+  Pencil,
+  CheckCheck,
+  Ban,
+  UserRoundPlus,
+  UserRoundMinus,
+  UserRoundPen,
   Lock,
-  PlayCircle,
+  ShieldMinus,
+  ShieldCheck,
   Info,
-  Wheat,
+  Sprout,
 } from "lucide-react";
 
 // Activity cache with in-memory storage
@@ -114,7 +115,7 @@ export default function RecentActivities({ limit = 5 }) {
 
     const styles = {
       ADD_FARM: {
-        icon: Sprout,
+        icon: Plus,
         iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
         border: "border-emerald-200/50",
@@ -132,7 +133,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "deleted from system",
       },
       UPDATE_FARM: {
-        icon: RefreshCw,
+        icon: Pencil,
         iconBg: "from-blue-400 to-blue-500",
         bg: "bg-blue-50/50",
         border: "border-blue-200/50",
@@ -141,7 +142,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "information modified",
       },
       ACTIVE_FARM: {
-        icon: CheckCircle,
+        icon: CheckCheck,
         iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
         border: "border-emerald-200/50",
@@ -150,7 +151,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "is now operational",
       },
       INACTIVE_FARM: {
-        icon: PauseCircle,
+        icon: Ban,
         iconBg: "from-amber-400 to-amber-500",
         bg: "bg-amber-50/50",
         border: "border-amber-200/50",
@@ -159,7 +160,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "temporarily paused",
       },
       ADD_FARMER: {
-        icon: UserPlus,
+        icon: UserRoundPlus,
         iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
         border: "border-emerald-200/50",
@@ -168,7 +169,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: farmName ? `joined ${farmName}` : "joined the platform",
       },
       REMOVE_FARMER: {
-        icon: UserMinus,
+        icon: UserRoundMinus,
         iconBg: "from-rose-400 to-rose-500",
         bg: "bg-rose-50/50",
         border: "border-rose-200/50",
@@ -177,7 +178,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: farmName ? `from ${farmName}` : "from system",
       },
       UPDATE_PROFILE: {
-        icon: Edit,
+        icon: UserRoundPen,
         iconBg: "from-violet-400 to-violet-500",
         bg: "bg-violet-50/50",
         border: "border-violet-200/50",
@@ -195,7 +196,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "account secured",
       },
       DEACTIVATE_ACCOUNT: {
-        icon: PauseCircle,
+        icon: ShieldMinus,
         iconBg: "from-slate-400 to-slate-500",
         bg: "bg-slate-50/50",
         border: "border-slate-200/50",
@@ -204,7 +205,7 @@ export default function RecentActivities({ limit = 5 }) {
         subText: "temporarily inactive",
       },
       REACTIVATE_ACCOUNT: {
-        icon: PlayCircle,
+        icon: ShieldCheck,
         iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
         border: "border-emerald-200/50",
@@ -231,7 +232,7 @@ export default function RecentActivities({ limit = 5 }) {
   const getFallbackActivity = useCallback(
     () => [
       {
-        icon: Wheat,
+        icon: Sprout,
         iconColor: "text-violet-600",
         iconBg: "bg-violet-100",
         bg: "bg-violet-50/50",
