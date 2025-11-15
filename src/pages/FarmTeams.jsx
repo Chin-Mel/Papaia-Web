@@ -163,8 +163,18 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
 
   // Filter farmers
   const filteredFarmers = farmers.filter((farmer) => {
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery.toLowerCase().trim();
 
+    // If search is empty, show all (only filter by status)
+    if (!searchLower) {
+      const farmerStatus = (farmer.status || "active").toLowerCase();
+      const matchesStatus =
+        statusFilter === "All Status" ||
+        farmerStatus === statusFilter.toLowerCase();
+      return matchesStatus;
+    }
+
+    // Get all name fields
     const firstName = (
       farmer.firstname ||
       farmer.firstName ||
@@ -176,13 +186,33 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
       ""
     ).toLowerCase();
     const lastName = (farmer.lastname || farmer.lastName || "").toLowerCase();
+    const suffix = (farmer.suffix || "").toLowerCase();
     const idNumber = (farmer.idNumber || "").toLowerCase();
 
+    // Get all address fields
+    const street = (farmer.street || "").toLowerCase();
+    const barangay = (farmer.barangay || "").toLowerCase();
+    const municipality = (farmer.municipality || "").toLowerCase();
+    const province = (farmer.province || "").toLowerCase();
+
+    // Create full name and full address for searching
+    const fullName = `${firstName} ${middleName} ${lastName} ${suffix}`.trim();
+    const fullAddress =
+      `${street} ${barangay} ${municipality} ${province}`.trim();
+
+    // Check if search matches any field
     const matchesSearch =
       firstName.includes(searchLower) ||
       middleName.includes(searchLower) ||
       lastName.includes(searchLower) ||
-      idNumber.includes(searchLower);
+      suffix.includes(searchLower) ||
+      fullName.includes(searchLower) ||
+      idNumber.includes(searchLower) ||
+      street.includes(searchLower) ||
+      barangay.includes(searchLower) ||
+      municipality.includes(searchLower) ||
+      province.includes(searchLower) ||
+      fullAddress.includes(searchLower);
 
     const farmerStatus = (farmer.status || "active").toLowerCase();
     const matchesStatus =
