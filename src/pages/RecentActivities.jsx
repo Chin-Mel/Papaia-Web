@@ -116,99 +116,99 @@ export default function RecentActivities({ limit = 5 }) {
     const styles = {
       ADD_FARM: {
         icon: Plus,
+        iconColor: "text-emerald-700",
         bg: "bg-emerald-50/50",
-        iconColor: "text-emerald-600",
-        border: "border-emerald-200/50",
+        leftBorder: "border-l-emerald-500",
         title: "New farm registered",
         text: farmName,
         subText: "was added to system",
       },
       DELETE_FARM: {
         icon: Trash2,
-        bg: "bg-rose-50/50",
         iconColor: "text-rose-600",
-        border: "border-rose-200/50",
+        bg: "bg-rose-50/50",
+        leftBorder: "border-rose-200/50",
         title: "Farm removed",
         text: farmName,
         subText: "deleted from system",
       },
       UPDATE_FARM: {
         icon: Pencil,
-        bg: "bg-blue-50/50",
         iconColor: "text-blue-600",
-        border: "border-blue-200/50",
+        bg: "bg-blue-50/50",
+        leftBorder: "border-blue-200/50",
         title: "Farm updated",
         text: farmName,
         subText: "information modified",
       },
       ACTIVE_FARM: {
         icon: CheckCheck,
-        bg: "bg-emerald-50/50",
         iconColor: "text-emerald-600",
-        border: "border-emerald-200/50",
+        bg: "bg-emerald-50/50",
+        leftBorder: "border-emerald-200/50",
         title: "Farm activated",
         text: farmName,
         subText: "is now operational",
       },
       INACTIVE_FARM: {
         icon: Ban,
-        bg: "bg-amber-50/50",
         iconColor: "text-amber-600",
-        border: "border-amber-200/50",
+        bg: "bg-amber-50/50",
+        leftBorder: "border-amber-200/50",
         title: "Farm deactivated",
         text: farmName,
         subText: "temporarily paused",
       },
       ADD_FARMER: {
         icon: UserRoundPlus,
-        bg: "bg-emerald-50/50",
         iconColor: "text-emerald-600",
-        border: "border-emerald-200/50",
+        bg: "bg-emerald-50/50",
+        leftBorder: "border-emerald-200/50",
         title: "New farmer onboarded",
         text: farmerName,
         subText: farmName ? `joined ${farmName}` : "joined the platform",
       },
       REMOVE_FARMER: {
         icon: UserRoundMinus,
-        bg: "bg-rose-50/50",
         iconColor: "text-rose-600",
-        border: "border-rose-200/50",
+        bg: "bg-rose-50/50",
+        leftBorder: "border-rose-200/50",
         title: "Farmer removed",
         text: farmerName,
         subText: farmName ? `from ${farmName}` : "from system",
       },
       UPDATE_PROFILE: {
         icon: UserRoundPen,
-        bg: "bg-violet-50/50",
         iconColor: "text-violet-600",
-        border: "border-violet-200/50",
+        bg: "bg-violet-50/50",
+        leftBorder: "border-violet-200/50",
         title: "Profile updated",
         text: details?.description || "Account information",
         subText: "successfully modified",
       },
       CHANGE_PASSWORD: {
         icon: Lock,
-        bg: "bg-amber-50/50",
         iconColor: "text-amber-600",
-        border: "border-amber-200/50",
+        bg: "bg-amber-50/50",
+        leftBorder: "border-amber-200/50",
         title: "Security updated",
         text: "Password changed",
         subText: "account secured",
       },
       DEACTIVATE_ACCOUNT: {
         icon: ShieldMinus,
-        bg: "bg-slate-50/50",
         iconColor: "text-slate-600",
-        border: "border-slate-200/50",
+        bg: "bg-slate-50/50",
+        leftBorder: "border-slate-200/50",
         title: "Account paused",
         text: "Account deactivated",
         subText: "temporarily inactive",
       },
       REACTIVATE_ACCOUNT: {
         icon: ShieldCheck,
-        bg: "bg-emerald-50/50",
         iconColor: "text-emerald-600",
-        border: "border-emerald-200/50",
+        bg: "bg-emerald-50/50",
+        leftBorder: "border-emerald-200/50",
         title: "Account restored",
         text: "Account reactivated",
         subText: "now operational",
@@ -218,9 +218,9 @@ export default function RecentActivities({ limit = 5 }) {
     return (
       styles[action] || {
         icon: Info,
-        bg: "bg-slate-50/50",
         iconColor: "text-slate-600",
-        border: "border-slate-200/50",
+        bg: "bg-slate-50/50",
+        leftBorder: "border-slate-200/50",
         title: "System activity",
         text: action.replace(/_/g, " ").toLowerCase(),
         subText: "recorded",
@@ -252,7 +252,6 @@ export default function RecentActivities({ limit = 5 }) {
       {
         icon: Info,
         iconColor: "text-amber-600",
-        iconBg: "bg-amber-100",
         bg: "bg-amber-50/50",
         leftBorder: "border-l-amber-500",
         title: "Connection issue",
@@ -444,18 +443,13 @@ export default function RecentActivities({ limit = 5 }) {
             const IconComponent = act.icon;
             return (
               <div
-                key={act.id}
-                className={`${act.bg} rounded-xl p-3.5 border ${act.border} backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:scale-[1.01]`}
+                className={`${act.bg} border-l-4 ${act.leftBorder} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer`}
               >
                 <div className="flex items-start gap-3">
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${act.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}
-                  >
-                    <IconComponent
-                      className="w-5 h-5 text-white"
-                      strokeWidth={2.5}
-                    />
-                  </div>
+                  <IconComponent
+                    className={`w-5 h-5 ${act.iconColor} flex-shrink-0`}
+                    strokeWidth={2.5}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-slate-800 mb-0.5">
                       {act.title}

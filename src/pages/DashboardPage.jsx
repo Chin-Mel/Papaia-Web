@@ -397,7 +397,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
                     <img
                       src={FarmersCount}
                       alt="Farmers"
@@ -600,7 +600,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-[#DCFCE7] flex items-center justify-center">
                     <img
                       src={FarmersCount}
                       alt="Farmers"
@@ -628,7 +628,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-[#FEF9C3] flex items-center justify-center">
                     <img
                       src={FarmsCount}
                       alt="Farms"
@@ -656,7 +656,7 @@ export default function DashboardPage() {
                       yesterday
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-[#DBEAFE] flex items-center justify-center">
                     <img
                       src={ScansCount}
                       alt="Scans"
