@@ -116,8 +116,8 @@ export default function RecentActivities({ limit = 5 }) {
     const styles = {
       ADD_FARM: {
         icon: Plus,
-        iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
+        iconColor: "text-emerald-600",
         border: "border-emerald-200/50",
         title: "New farm registered",
         text: farmName,
@@ -125,8 +125,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       DELETE_FARM: {
         icon: Trash2,
-        iconBg: "from-rose-400 to-rose-500",
         bg: "bg-rose-50/50",
+        iconColor: "text-rose-600",
         border: "border-rose-200/50",
         title: "Farm removed",
         text: farmName,
@@ -134,8 +134,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       UPDATE_FARM: {
         icon: Pencil,
-        iconBg: "from-blue-400 to-blue-500",
         bg: "bg-blue-50/50",
+        iconColor: "text-blue-600",
         border: "border-blue-200/50",
         title: "Farm updated",
         text: farmName,
@@ -143,8 +143,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       ACTIVE_FARM: {
         icon: CheckCheck,
-        iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
+        iconColor: "text-emerald-600",
         border: "border-emerald-200/50",
         title: "Farm activated",
         text: farmName,
@@ -152,8 +152,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       INACTIVE_FARM: {
         icon: Ban,
-        iconBg: "from-amber-400 to-amber-500",
         bg: "bg-amber-50/50",
+        iconColor: "text-amber-600",
         border: "border-amber-200/50",
         title: "Farm deactivated",
         text: farmName,
@@ -161,8 +161,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       ADD_FARMER: {
         icon: UserRoundPlus,
-        iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
+        iconColor: "text-emerald-600",
         border: "border-emerald-200/50",
         title: "New farmer onboarded",
         text: farmerName,
@@ -170,8 +170,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       REMOVE_FARMER: {
         icon: UserRoundMinus,
-        iconBg: "from-rose-400 to-rose-500",
         bg: "bg-rose-50/50",
+        iconColor: "text-rose-600",
         border: "border-rose-200/50",
         title: "Farmer removed",
         text: farmerName,
@@ -179,8 +179,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       UPDATE_PROFILE: {
         icon: UserRoundPen,
-        iconBg: "from-violet-400 to-violet-500",
         bg: "bg-violet-50/50",
+        iconColor: "text-violet-600",
         border: "border-violet-200/50",
         title: "Profile updated",
         text: details?.description || "Account information",
@@ -188,8 +188,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       CHANGE_PASSWORD: {
         icon: Lock,
-        iconBg: "from-amber-400 to-amber-500",
         bg: "bg-amber-50/50",
+        iconColor: "text-amber-600",
         border: "border-amber-200/50",
         title: "Security updated",
         text: "Password changed",
@@ -197,8 +197,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       DEACTIVATE_ACCOUNT: {
         icon: ShieldMinus,
-        iconBg: "from-slate-400 to-slate-500",
         bg: "bg-slate-50/50",
+        iconColor: "text-slate-600",
         border: "border-slate-200/50",
         title: "Account paused",
         text: "Account deactivated",
@@ -206,8 +206,8 @@ export default function RecentActivities({ limit = 5 }) {
       },
       REACTIVATE_ACCOUNT: {
         icon: ShieldCheck,
-        iconBg: "from-emerald-400 to-emerald-500",
         bg: "bg-emerald-50/50",
+        iconColor: "text-emerald-600",
         border: "border-emerald-200/50",
         title: "Account restored",
         text: "Account reactivated",
@@ -218,8 +218,8 @@ export default function RecentActivities({ limit = 5 }) {
     return (
       styles[action] || {
         icon: Info,
-        iconBg: "from-slate-400 to-slate-500",
         bg: "bg-slate-50/50",
+        iconColor: "text-slate-600",
         border: "border-slate-200/50",
         title: "System activity",
         text: action.replace(/_/g, " ").toLowerCase(),
@@ -234,7 +234,6 @@ export default function RecentActivities({ limit = 5 }) {
       {
         icon: Sprout,
         iconColor: "text-violet-600",
-        iconBg: "bg-violet-100",
         bg: "bg-violet-50/50",
         leftBorder: "border-l-violet-500",
         title: "Welcome aboard!",
