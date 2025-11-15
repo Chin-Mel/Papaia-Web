@@ -119,97 +119,107 @@ export default function RecentActivities({ limit = 5 }) {
         icon: Plus,
         iconColor: "text-emerald-700",
         bg: "bg-emerald-50/50",
-        leftBorder: "border-l-emerald-500",
+        leftBorder: "border-l-2 border-emerald-700",
         title: "New farm registered",
         text: farmName,
         subText: "was added to system",
       },
+
       DELETE_FARM: {
         icon: Trash2,
         iconColor: "text-rose-600",
         bg: "bg-rose-50/50",
-        leftBorder: "border-rose-200/50",
+        leftBorder: "border-l-2 border-rose-600",
         title: "Farm removed",
         text: farmName,
         subText: "deleted from system",
       },
+
       UPDATE_FARM: {
         icon: Pencil,
         iconColor: "text-blue-600",
         bg: "bg-blue-50/50",
-        leftBorder: "border-blue-200/50",
+        leftBorder: "border-l-2 border-blue-600",
         title: "Farm updated",
         text: farmName,
         subText: "information modified",
       },
+
       ACTIVE_FARM: {
         icon: CheckCheck,
         iconColor: "text-emerald-600",
         bg: "bg-emerald-50/50",
-        leftBorder: "border-emerald-200/50",
+        leftBorder: "border-l-2 border-emerald-600",
         title: "Farm activated",
         text: farmName,
         subText: "is now operational",
       },
+
       INACTIVE_FARM: {
         icon: Ban,
         iconColor: "text-amber-600",
         bg: "bg-amber-50/50",
-        leftBorder: "border-amber-200/50",
+        leftBorder: "border-l-2 border-amber-600",
         title: "Farm deactivated",
         text: farmName,
         subText: "temporarily paused",
       },
+
       ADD_FARMER: {
         icon: UserRoundPlus,
         iconColor: "text-emerald-600",
         bg: "bg-emerald-50/50",
-        leftBorder: "border-emerald-200/50",
+        leftBorder: "border-l-2 border-emerald-600",
         title: "New farmer onboarded",
         text: farmerName,
         subText: farmName ? `joined ${farmName}` : "joined the platform",
       },
+
       REMOVE_FARMER: {
         icon: UserRoundMinus,
         iconColor: "text-rose-600",
         bg: "bg-rose-50/50",
-        leftBorder: "border-rose-200/50",
+        leftBorder: "border-l-2 border-rose-600",
         title: "Farmer removed",
         text: farmerName,
         subText: farmName ? `from ${farmName}` : "from system",
       },
+
       UPDATE_PROFILE: {
         icon: UserRoundPen,
         iconColor: "text-violet-600",
         bg: "bg-violet-50/50",
-        leftBorder: "border-violet-200/50",
+        leftBorder: "border-l-2 border-violet-600",
         title: "Profile updated",
         text: details?.description || "Account information",
         subText: "successfully modified",
       },
+
       CHANGE_PASSWORD: {
         icon: Lock,
         iconColor: "text-amber-600",
         bg: "bg-amber-50/50",
-        leftBorder: "border-amber-200/50",
+        leftBorder: "border-l-2 border-amber-600",
         title: "Security updated",
         text: "Password changed",
         subText: "account secured",
       },
+
       DEACTIVATE_ACCOUNT: {
         icon: ShieldMinus,
         iconColor: "text-slate-600",
         bg: "bg-slate-50/50",
-        leftBorder: "border-slate-200/50",
+        leftBorder: "border-l-2 border-slate-600",
         title: "Account paused",
         text: "Account deactivated",
         subText: "temporarily inactive",
       },
+
       REACTIVATE_ACCOUNT: {
         icon: ShieldCheck,
         iconColor: "text-emerald-600",
         bg: "bg-emerald-50/50",
-        leftBorder: "border-emerald-200/50",
+        leftBorder: "border-l-2 border-emerald-600",
         title: "Account restored",
         text: "Account reactivated",
         subText: "now operational",
@@ -221,7 +231,7 @@ export default function RecentActivities({ limit = 5 }) {
         icon: Info,
         iconColor: "text-slate-600",
         bg: "bg-slate-50/50",
-        leftBorder: "border-slate-200/50",
+        leftBorder: "border-l-2 border-slate-600",
         title: "System activity",
         text: action.replace(/_/g, " ").toLowerCase(),
         subText: "recorded",
@@ -236,7 +246,7 @@ export default function RecentActivities({ limit = 5 }) {
         icon: Sprout,
         iconColor: "text-violet-600",
         bg: "bg-violet-50/50",
-        leftBorder: "border-l-violet-500",
+        leftBorder: "border-l-2 border-violet-600",
         title: "Welcome aboard!",
         text: "Start by adding your first farm",
         subText: "Your journey begins here",
@@ -247,14 +257,13 @@ export default function RecentActivities({ limit = 5 }) {
     []
   );
 
-  // Get error activity
   const getErrorActivity = useCallback(
     () => [
       {
         icon: Info,
         iconColor: "text-amber-600",
         bg: "bg-amber-50/50",
-        leftBorder: "border-l-amber-500",
+        leftBorder: "border-l-2 border-amber-600",
         title: "Connection issue",
         text: "Unable to load activities",
         subText: "Tap retry to refresh",
