@@ -604,8 +604,8 @@ export default function FarmDashboardPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 px-2 sm:px-4 lg:px-8 py-6 sm:py-8 max-w-[1600px] mx-auto">
-        <div className="space-y-8">
+      <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="w-full max-w-8xl mx-auto">
           {/* Top Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex-1">
