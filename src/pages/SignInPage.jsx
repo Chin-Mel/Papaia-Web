@@ -46,17 +46,18 @@ export default function SignInPage() {
     setError("");
 
     try {
-      const safeEmail = usernameOrEmail.trim();
+      const safeInput = usernameOrEmail.trim();
       const safePassword = password.trim();
 
       // Frontend validation
-      if (!safeEmail || !safePassword) {
+      if (!safeInput || !safePassword) {
         setError("All fields are required.");
         setLoading(false);
         return;
       }
 
-      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
+      // Validate email format only if input looks like an email
+      if (safeInput.includes("@") && !validateEmail(safeInput)) {
         setError("Invalid email format.");
         setLoading(false);
         return;
@@ -72,7 +73,7 @@ export default function SignInPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            "email/username": safeEmail,
+            "email/username": safeInput, // <-- pass either username or email
             password: safePassword,
           }),
           signal: controller.signal,
@@ -100,11 +101,7 @@ export default function SignInPage() {
       }
 
       // Role validation
-      if (
-        loginData.user &&
-        loginData.user.role &&
-        loginData.user.role.toLowerCase() === "farmer"
-      ) {
+      if (loginData.user?.role?.toLowerCase() === "farmer") {
         setError(
           "Access denied. This dashboard is only available for farm owners. Please use the farmer mobile app."
         );
@@ -130,7 +127,7 @@ export default function SignInPage() {
         localStorage.setItem("token", loginData.token);
       }
 
-      // Navigate
+      // Navigate to dashboard
       navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err.name === "AbortError") {
