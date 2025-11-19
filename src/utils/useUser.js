@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode"; // You'll need: npm install jwt-decode
+import { jwtDecode } from "jwt-decode";
 
 export const useUser = () => {
   const [user, setUser] = useState(null);
@@ -31,6 +31,11 @@ export const useUser = () => {
         );
 
         if (!response.ok) {
+          if (response.status === 401) {
+            // Token expired or invalid
+            localStorage.removeItem("token");
+            window.location.href = "/sign-in";
+          }
           throw new Error("Failed to fetch user data");
         }
 
@@ -51,6 +56,11 @@ export const useUser = () => {
   const refreshUser = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
+
+    if (!token) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const decoded = jwtDecode(token);
