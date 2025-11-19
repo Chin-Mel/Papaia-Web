@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
+import { useUser } from "../utils/useUser";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/Footer";
 import AddFarmModal from "../components/Popups/AddFarmModal";
@@ -73,6 +74,7 @@ const cachedFetch = async (
 };
 
 export default function DashboardPage() {
+  const { user, error } = useUser();
   const location = useLocation();
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
