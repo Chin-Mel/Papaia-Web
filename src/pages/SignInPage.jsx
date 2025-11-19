@@ -46,18 +46,17 @@ export default function SignInPage() {
     setError("");
 
     try {
-      const safeInput = usernameOrEmail.trim();
+      const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
       // Frontend validation
-      if (!safeInput || !safePassword) {
+      if (!safeEmail || !safePassword) {
         setError("All fields are required.");
         setLoading(false);
         return;
       }
 
-      // Validate email format only if input looks like an email
-      if (safeInput.includes("@") && !validateEmail(safeInput)) {
+      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
         setError("Invalid email format.");
         setLoading(false);
         return;
@@ -72,10 +71,7 @@ export default function SignInPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            "email/username": safeInput, // <-- pass either username or email
-            password: safePassword,
-          }),
+          body: JSON.stringify({ email: safeEmail, password: safePassword }),
           signal: controller.signal,
         }
       );
@@ -101,7 +97,11 @@ export default function SignInPage() {
       }
 
       // Role validation
-      if (loginData.user?.role?.toLowerCase() === "farmer") {
+      if (
+        loginData.user &&
+        loginData.user.role &&
+        loginData.user.role.toLowerCase() === "farmer"
+      ) {
         setError(
           "Access denied. This dashboard is only available for farm owners. Please use the farmer mobile app."
         );
@@ -127,7 +127,11 @@ export default function SignInPage() {
         localStorage.setItem("token", loginData.token);
       }
 
-      // Navigate to dashboard
+      if (loginData.user) {
+        localStorage.setItem("user", JSON.stringify(loginData.user));
+      }
+
+      // Navigate
       navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err.name === "AbortError") {
@@ -186,10 +190,7 @@ export default function SignInPage() {
               >
                 {/* Username */}
                 <div className="space-y-1">
-                  <label
-                    htmlFor="usernameOrEmail"
-                    className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium"
-                  >
+                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
                     <img
                       src={UserIcon}
                       alt="Username"
@@ -222,10 +223,7 @@ export default function SignInPage() {
 
                 {/* Password */}
                 <div className="space-y-1">
-                  <label
-                    htmlFor="password"
-                    className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium"
-                  >
+                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
                     <img
                       src={LockIcon}
                       alt="Password"
@@ -264,13 +262,8 @@ export default function SignInPage() {
 
                 {/* Remember me + Forgot password */}
                 <div className="flex items-center justify-between">
-                  <label
-                    htmlFor="rememberMe"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
-                      id="rememberMe"
-                      name="rememberMe"
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}

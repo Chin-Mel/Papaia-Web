@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import defaultUserPic from "../../assets/default-user.png";
+import { getLoggedInUser } from "../../utils/security";
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
+  const [userData, setUserData] = useState(user);
   const dropdownRef = useRef(null);
 
   if (!isOpen) return null;
@@ -25,30 +27,48 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     navigate("/profile");
   };
 
-  // Get profile picture URL
-  const getProfilePictureUrl = () => {
-    if (user?.profilePicture) {
-      if (user.profilePicture.startsWith("http")) {
-        return user.profilePicture;
+  // Sync local state whenever prop changes
+  useEffect(() => {
+    setUserData(user);
+  }, [user]);
+
+  // Listen for profile updates from other components
+  useEffect(() => {
+    const updateUser = () => {
+      const updatedUser = getLoggedInUser();
+      if (updatedUser) {
+        setUserData(updatedUser);
       }
-      return `https://papaiaapi.onrender.com${user.profilePicture}`;
+    };
+
+    window.addEventListener("userUpdated", updateUser);
+    return () => window.removeEventListener("userUpdated", updateUser);
+  }, []);
+
+  // Fixed helper function to get profile picture URL
+  const getProfilePictureUrl = () => {
+    if (userData?.profilePicture) {
+      // Check if it's already a full URL or just a path
+      if (userData.profilePicture.startsWith("http")) {
+        return userData.profilePicture;
+      }
+      return `https://papaiaapi.onrender.com${userData.profilePicture}`;
     }
     return defaultUserPic;
   };
 
-  // Get user's display name
+  // Helper function to get user's display name
   const getDisplayName = () => {
-    if (user?.firstName && user?.lastName) {
-      const middleInitial = user.middleName
-        ? `${user.middleName.charAt(0)}. `
+    if (userData?.firstName && userData?.lastName) {
+      const middleInitial = userData.middleName
+        ? `${userData.middleName.charAt(0)}. `
         : "";
-      const suffix = user.suffix ? ` ${user.suffix}` : "";
+      const suffix = userData.suffix ? ` ${userData.suffix}` : "";
 
-      return `${user.firstName} ${middleInitial}${user.lastName}${suffix}`;
+      return `${userData.firstName} ${middleInitial}${userData.lastName}${suffix}`;
     }
-    return user?.username || "Unknown User";
+    return userData?.username || "Unknown User";
   };
-
   return (
     <div className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
       {/* Header */}

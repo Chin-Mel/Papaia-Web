@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Bell } from "lucide-react";
-import { secureLogout } from "../../utils/security";
-import { useUser } from "../../utils/useUser";
+import { secureLogout, getLoggedInUser } from "../../utils/security";
 import { useNotifications } from "../../NotificationContext";
 
 import papaiaLogo from "../../assets/papaia-logo.png";
@@ -17,11 +16,9 @@ export default function HeaderMain() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Use the user hook
-  const { user: userData, loading: userLoading } = useUser();
 
   // Use the notifications hook
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
@@ -32,6 +29,26 @@ export default function HeaderMain() {
     { label: "Scan History", href: "/scan-history" },
     { label: "About", href: "/about" },
   ];
+
+  // Load user initially + listen for updates
+  useEffect(() => {
+    const loadUser = () => {
+      const user = getLoggedInUser();
+      setUserData(user);
+    };
+
+    loadUser();
+
+    const handleUserUpdate = () => {
+      loadUser();
+    };
+
+    window.addEventListener("userUpdated", handleUserUpdate);
+
+    return () => {
+      window.removeEventListener("userUpdated", handleUserUpdate);
+    };
+  }, []);
 
   const handleLogout = () => {
     secureLogout();
@@ -152,13 +169,11 @@ export default function HeaderMain() {
           <div className="flex items-center gap-4 relative">
             {/* Welcome Message */}
             <span className="hidden md:block text-[#4A7C59] font-medium truncate max-w-[180px]">
-              {userLoading
-                ? "Loading..."
-                : userData
+              {userData
                 ? `Welcome, ${
                     userData.firstName || userData.username || "User"
                   }!`
-                : "Welcome!"}
+                : "Loading..."}
             </span>
 
             {/* Notification Bell with Badge */}
