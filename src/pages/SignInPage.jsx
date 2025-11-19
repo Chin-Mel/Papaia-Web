@@ -71,7 +71,10 @@ export default function SignInPage() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: safeEmail, password: safePassword }),
+          body: JSON.stringify({
+            "email/username": safeEmail,
+            password: safePassword,
+          }),
           signal: controller.signal,
         }
       );
@@ -186,7 +189,10 @@ export default function SignInPage() {
               >
                 {/* Username */}
                 <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                  <label
+                    htmlFor="usernameOrEmail"
+                    className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium"
+                  >
                     <img
                       src={UserIcon}
                       alt="Username"
@@ -219,7 +225,10 @@ export default function SignInPage() {
 
                 {/* Password */}
                 <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                  <label
+                    htmlFor="password"
+                    className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium"
+                  >
                     <img
                       src={LockIcon}
                       alt="Password"
