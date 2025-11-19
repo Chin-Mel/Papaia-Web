@@ -116,7 +116,7 @@ export default function SignInPage() {
         !allowedRoles.includes(loginData.user.role.toLowerCase())
       ) {
         setError(
-          "Access denied. This dashboard is only available for farm owners."
+          "Access denied. This website is only available for farm owners."
         );
         setLoading(false);
         return;
