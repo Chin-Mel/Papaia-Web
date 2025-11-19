@@ -42,7 +42,6 @@ export default function SignInPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("=== LOGIN STARTED ===");
     setLoading(true);
     setError("");
 
@@ -50,30 +49,22 @@ export default function SignInPage() {
       const safeEmail = usernameOrEmail.trim();
       const safePassword = password.trim();
 
-      console.log("Step 1: Validating inputs...");
-      console.log("Email/Username:", safeEmail);
-
       // Frontend validation
       if (!safeEmail || !safePassword) {
-        console.log("Step 1 FAILED: Empty fields");
         setError("All fields are required.");
         setLoading(false);
         return;
       }
 
       if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
-        console.log("Step 1 FAILED: Invalid email format");
         setError("Invalid email format.");
         setLoading(false);
         return;
       }
 
-      console.log("Step 1 PASSED: Inputs are valid");
-
       // Login with timeout
-      console.log("Step 2: Sending login request...");
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
 
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
@@ -87,51 +78,30 @@ export default function SignInPage() {
 
       clearTimeout(timeoutId);
 
-      console.log("Step 2 Response Status:", loginResponse.status);
-
       if (!loginResponse.ok) {
-        console.log("Step 2 FAILED: Response not OK");
         const errorData = await loginResponse.json().catch(() => ({}));
-        console.log("Error data:", errorData);
         throw new Error(
           errorData.message || "Login failed. Please check your credentials."
         );
       }
 
-      console.log("Step 2 PASSED: Response OK");
-
       const loginData = await loginResponse.json();
-      console.log("Step 3: Login data received");
-      console.log("Full Response:", loginData);
-      console.log("Token exists?", !!loginData.token);
-      console.log("User exists?", !!loginData.user);
-
-      if (loginData.token) {
-        console.log("Token value:", loginData.token.substring(0, 20) + "...");
-      }
 
       // Verification checks
-      console.log("Step 4: Checking email verification...");
       if (loginData.user?.emailVerified === false) {
-        console.log("Step 4 FAILED: Email not verified");
         setError(
           "Your account is not verified. Please check your email and verify your account before logging in."
         );
         setLoading(false);
         return;
       }
-      console.log("Step 4 PASSED: Email verified or not checked");
 
       // Role validation
-      console.log("Step 5: Checking role...");
-      console.log("User role:", loginData.user?.role);
-
       if (
         loginData.user &&
         loginData.user.role &&
         loginData.user.role.toLowerCase() === "farmer"
       ) {
-        console.log("Step 5 FAILED: User is farmer");
         setError(
           "Access denied. This dashboard is only available for farm owners. Please use the farmer mobile app."
         );
@@ -145,50 +115,21 @@ export default function SignInPage() {
         loginData.user.role &&
         !allowedRoles.includes(loginData.user.role.toLowerCase())
       ) {
-        console.log("Step 5 FAILED: User role not allowed");
         setError(
-          "Access denied. This website is only available for farm owners."
+          "Access denied. This dashboard is only available for farm owners."
         );
         setLoading(false);
         return;
       }
 
-      console.log("Step 5 PASSED: User role is valid");
-
-      // Store token
-      console.log("Step 6: Storing token...");
+      // Store credentials
       if (loginData.token) {
-        console.log(
-          "Token before storage:",
-          loginData.token.substring(0, 20) + "..."
-        );
         localStorage.setItem("token", loginData.token);
-        const storedToken = localStorage.getItem("token");
-        console.log(
-          "Token after storage:",
-          storedToken ? storedToken.substring(0, 20) + "..." : "NULL"
-        );
-        console.log(
-          "Token stored successfully?",
-          storedToken === loginData.token
-        );
-      } else {
-        console.log("Step 6 FAILED: No token in response");
-        throw new Error("No authentication token received from server");
       }
 
-      console.log("Step 6 PASSED: Token stored");
-
       // Navigate
-      console.log("Step 7: Navigating to dashboard...");
       navigate("/dashboard", { replace: true });
-      console.log("=== LOGIN COMPLETED ===");
     } catch (err) {
-      console.error("=== LOGIN ERROR ===");
-      console.error("Error type:", err.name);
-      console.error("Error message:", err.message);
-      console.error("Full error:", err);
-
       if (err.name === "AbortError") {
         setError(
           "Request timeout. Please check your connection and try again."
@@ -198,7 +139,6 @@ export default function SignInPage() {
       }
     } finally {
       setLoading(false);
-      console.log("=== LOGIN PROCESS ENDED ===");
     }
   };
 
@@ -231,7 +171,7 @@ export default function SignInPage() {
                 />
               </div>
 
-              <h1 className="text-lg sm:text-xl font-bold text-white font-['Inter'] mt-[2px]">
+              <h1 className="text-lg sm:text-xl font-bold text-white font-['Poppins'] mt-[2px]">
                 Papaya Farm
               </h1>
               <p className="text-[#FDEDD3] text-xs sm:text-sm mt-1 text-center">
@@ -318,8 +258,13 @@ export default function SignInPage() {
 
                 {/* Remember me + Forgot password */}
                 <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label
+                    htmlFor="rememberMe"
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
                     <input
+                      id="rememberMe"
+                      name="rememberMe"
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}
@@ -341,7 +286,7 @@ export default function SignInPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   <img
                     src={LoginIcon}
