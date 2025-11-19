@@ -64,7 +64,7 @@ export default function SignInPage() {
 
       // Login with timeout
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
@@ -86,6 +86,10 @@ export default function SignInPage() {
       }
 
       const loginData = await loginResponse.json();
+
+      // DEBUG: Log the response to see what we're getting
+      console.log("Login Response:", loginData);
+      console.log("Token:", loginData.token);
 
       // Verification checks
       if (loginData.user?.emailVerified === false) {
@@ -122,14 +126,20 @@ export default function SignInPage() {
         return;
       }
 
-      // Store credentials
+      // Store token - Check if token exists
       if (loginData.token) {
+        console.log("Storing token:", loginData.token);
         localStorage.setItem("token", loginData.token);
+        console.log("Token stored. Checking:", localStorage.getItem("token"));
+      } else {
+        console.error("No token in response!");
+        throw new Error("No authentication token received from server");
       }
 
       // Navigate
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      console.error("Login error:", err);
       if (err.name === "AbortError") {
         setError(
           "Request timeout. Please check your connection and try again."
