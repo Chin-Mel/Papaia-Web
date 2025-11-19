@@ -304,12 +304,15 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (!mountedRef.current && user) {
+    if (!mountedRef.current) {
       mountedRef.current = true;
-      fetchFarms();
-      fetchDashboardStats();
+      const token = localStorage.getItem("token");
+      if (token) {
+        fetchFarms();
+        fetchDashboardStats();
+      }
     }
-  }, [user]);
+  }, []);
 
   const handleAddFarm = async (farmData) => {
     try {

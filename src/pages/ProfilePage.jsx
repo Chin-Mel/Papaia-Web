@@ -9,49 +9,22 @@ import {
   Tractor,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getLoggedInUser } from "../utils/security";
+import { useUser } from "../utils/useUser";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/Footer";
 import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({});
+  const { user: userData, loading: userLoading, refreshUser } = useUser();
   const [farmCount, setFarmCount] = useState(0);
 
-  const loggedInUser = getLoggedInUser();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    if (!loggedInUser || !token) return;
-
-    // Set initial user data
-    setUserData(loggedInUser);
+    if (!userData || !token) return;
 
     let mounted = true;
-
-    // Fetch latest user data from server to ensure we have current info
-    const fetchUserData = async () => {
-      try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (res.ok) {
-          const data = await res.json();
-          // Handle both possible response formats
-          const user = data.user || data;
-          if (mounted) {
-            setUserData(user);
-            // Update localStorage with fresh data
-            localStorage.setItem("user", JSON.stringify(user));
-          }
-        }
-      } catch (err) {
-        console.warn("Could not fetch fresh user data:", err.message);
-      }
-    };
 
     const fetchFarmCount = async () => {
       try {
@@ -67,31 +40,18 @@ export default function ProfilePage() {
         }
 
         const data = await res.json();
-        // Use the correct property name from API docs
         if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
         console.warn("Could not fetch farm count:", err.message);
       }
     };
 
-    fetchUserData();
     fetchFarmCount();
-
-    // Listen for user updates from other components
-    const handleUserUpdate = () => {
-      const updatedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (mounted && updatedUser.id) {
-        setUserData(updatedUser);
-      }
-    };
-
-    window.addEventListener("userUpdated", handleUserUpdate);
 
     return () => {
       mounted = false;
-      window.removeEventListener("userUpdated", handleUserUpdate);
     };
-  }, []);
+  }, [userData, token]);
 
   const handleEditProfile = () => {
     navigate("/edit-profile");
@@ -117,13 +77,13 @@ export default function ProfilePage() {
   };
 
   const getFullName = () => {
+    if (!userData) return "N/A";
     const { firstName, lastName, middleName, suffix } = userData;
     if (firstName && lastName) {
       let fullName = middleName
         ? `${firstName} ${middleName} ${lastName}`
         : `${firstName} ${lastName}`;
 
-      // Add suffix if it exists
       if (suffix) {
         fullName += ` ${suffix}`;
       }
@@ -133,25 +93,46 @@ export default function ProfilePage() {
     return userData.username || "N/A";
   };
 
-  // Fixed profile picture URL generation
   const getProfilePictureUrl = () => {
-    if (userData.profilePicture) {
-      // If it's already a full URL, use it as is
+    if (userData?.profilePicture) {
       if (userData.profilePicture.startsWith("http")) {
         return userData.profilePicture;
       }
-      // If it's a relative path, prepend the API base URL
       return `https://papaiaapi.onrender.com${userData.profilePicture}`;
     }
     return defaultUserPic;
   };
 
+  // Show loading state
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-3 border-gray-200 border-t-gray-600"></div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Show error state if no user
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <p className="text-gray-600">Unable to load profile data.</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
       <HeaderMain />
 
-      {/* Main Content */}
       <main className="flex-1 mt-16 px-4 sm:px-6 lg:px-8 mb-5">
         <div className="w-full">
           {/* Page Header */}
