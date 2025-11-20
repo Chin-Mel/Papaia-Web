@@ -36,7 +36,7 @@ const ArrowIcon = () => (
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen w-full bg-[#F7F7F7] overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen w-full overflow-x-hidden overflow-y-auto">
       <HeaderStart />
 
       {/* Hero Section */}
