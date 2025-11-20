@@ -205,11 +205,15 @@ export default function SignUpPage() {
         ></div>
 
         <div className="w-full max-w-7xl relative z-10">
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            {/* Keep original header */}
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+            {/* Header */}
             <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
               <div className="w-12 h-12 sm:w-11 sm:h-11 lg:w-13 lg:h-13 bg-white rounded-full flex items-center justify-center shadow-md">
-                <div className="w-8 h-8 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-orange-500 rounded-full"></div>
+                <img
+                  src={PapayaLogo}
+                  alt="Papaia Logo"
+                  className="w-8 h-8 sm:w-8 sm:h-8 lg:w-10 lg:h-10"
+                />
               </div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mt-2">
                 Sign Up
@@ -219,18 +223,22 @@ export default function SignUpPage() {
               </p>
             </div>
 
-            {/* Form Content */}
+            {/* Form */}
             <div className="p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-7">
-              {/* Personal Information Section */}
+              {/* Personal Information */}
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Personal Information
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Last Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -246,7 +254,12 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       First Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -262,7 +275,12 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={UserIcon}
+                        alt="User"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Middle Name
                     </label>
                     <input
@@ -278,14 +296,24 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={TagIcon}
+                        alt="Tag"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Suffix
                     </label>
                     <SuffixDropdown value={suffix} onChange={setSuffix} />
                   </div>
 
                   <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={CalendarIcon}
+                        alt="Calendar"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Date of Birth
                     </label>
                     <input
@@ -299,16 +327,20 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Account Information Section */}
+              {/* Account Information */}
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Account Information
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={AtsignIcon}
+                        alt="Username"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Username <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -324,7 +356,12 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={MailIcon}
+                        alt="Mail"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Email Address <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -340,7 +377,12 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={PhoneIcon}
+                        alt="Phone"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Phone Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -357,16 +399,20 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* Security Section */}
+              {/* Security */}
               <div>
-                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Security
                 </h2>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={LockIcon}
+                        alt="Lock"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Password <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -383,49 +429,24 @@ export default function SignUpPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        {showPassword ? (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        )}
+                        <img
+                          src={showPassword ? EyeOffIcon : EyeIcon}
+                          alt={showPassword ? "Hide" : "Show"}
+                          className="w-4 h-4 sm:w-5 sm:h-5"
+                        />
                       </button>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                      <img
+                        src={LockIcon}
+                        alt="Lock"
+                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                      />
                       Confirm Password <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
@@ -448,137 +469,75 @@ export default function SignUpPage() {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none"
+                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
-                        {showConfirmPassword ? (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
-                            />
-                          </svg>
-                        ) : (
-                          <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                            />
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                            />
-                          </svg>
-                        )}
+                        <img
+                          src={showConfirmPassword ? EyeOffIcon : EyeIcon}
+                          alt={showConfirmPassword ? "Hide" : "Show"}
+                          className="w-4 h-4 sm:w-5 sm:h-5"
+                        />
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Terms Agreement */}
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+              {/* Terms */}
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-md accent-orange-500 cursor-pointer transition-all duration-200 focus:ring-2 focus:ring-orange-500/20"
+                  className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 border-2 border-gray-300 rounded accent-orange-500 cursor-pointer transition-all"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-sm text-gray-600 leading-relaxed cursor-pointer"
+                  className="text-xs sm:text-sm text-gray-600 leading-relaxed cursor-pointer"
                 >
                   I agree to the{" "}
-                  <span className="text-orange-500 hover:text-orange-600 font-medium underline-offset-2 hover:underline transition-colors cursor-pointer">
+                  <span className="text-orange-500 hover:text-orange-600 font-medium hover:underline underline-offset-2 transition-colors">
                     Terms of Service
                   </span>{" "}
                   and{" "}
-                  <span className="text-orange-500 hover:text-orange-600 font-medium underline-offset-2 hover:underline transition-colors cursor-pointer">
+                  <span className="text-orange-500 hover:text-orange-600 font-medium hover:underline underline-offset-2 transition-colors">
                     Privacy Policy
                   </span>
                 </label>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <button
                 onClick={handleSubmit}
                 disabled={!isChecked || isLoading}
                 className={`
-                  w-full h-12 sm:h-13 lg:h-14 
+                  w-full h-11 sm:h-12 lg:h-14 
                   bg-gradient-to-r from-[#00712D] to-[#F97316]
-                  text-base sm:text-lg font-semibold text-white 
+                  text-sm sm:text-base lg:text-lg font-semibold text-white 
                   rounded-xl shadow-lg 
-                  flex items-center justify-center gap-3
-                  transition-all duration-300
+                  flex items-center justify-center gap-2
+                  transition-all duration-200
                   ${
                     !isChecked || isLoading
                       ? "opacity-50 cursor-not-allowed"
-                      : "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                      : "hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   }
                 `}
               >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                        fill="none"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      />
-                    </svg>
-                    <span>Creating Account...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                      />
-                    </svg>
-                    <span>Create Account</span>
-                  </>
-                )}
+                <img
+                  src={CreateUserIcon}
+                  alt="Create"
+                  className="w-4 h-4 sm:w-5 sm:h-5"
+                />
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
 
               {/* Error Message */}
               {(error ||
                 confirmPasswordError ||
                 Object.values(formErrors).find((err) => err)) && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                  <p className="text-sm text-red-600 text-center font-medium">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-xs sm:text-sm text-red-600 text-center font-medium">
                     {error ||
                       confirmPasswordError ||
                       "Please fill in all required fields."}
@@ -586,10 +545,10 @@ export default function SignUpPage() {
                 </div>
               )}
 
-              {/* Sign In Link */}
-              <p className="text-center text-sm text-gray-600">
+              {/* Sign In */}
+              <p className="text-center text-xs sm:text-sm text-gray-600">
                 Already have an account?{" "}
-                <span className="text-orange-500 hover:text-orange-600 font-semibold underline-offset-2 hover:underline transition-colors cursor-pointer">
+                <span className="text-orange-500 hover:text-orange-600 font-semibold hover:underline underline-offset-2 transition-colors cursor-pointer">
                   Sign in here
                 </span>
               </p>
