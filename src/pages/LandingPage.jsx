@@ -47,7 +47,7 @@ export default function LandingPage() {
           style={{ backgroundImage: `url(${MainBackground})` }}
         />
 
-        {/* Optional semi-transparent white overlay for extra lightness */}
+        {/* Optional white overlay for extra lightness */}
         <div className="absolute inset-0 bg-white/20 -z-10" />
 
         {/* Glassmorphism Box */}
