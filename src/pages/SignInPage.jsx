@@ -146,7 +146,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F0FDF4]">
+    <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
       <main className="flex-1 flex justify-center items-center py-16 sm:py-20 px-4">

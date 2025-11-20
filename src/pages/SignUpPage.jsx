@@ -361,7 +361,7 @@ export default function SignUpPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start w-full px-4 max-w-6xl relative">
                   <div className="hidden lg:block absolute left-1/2 top-0 h-full w-px bg-gray-300 -translate-x-1/2"></div>
                   {/* Personal Information Column */}
-                  <div className="flex flex-col items-center lg:items-start">
+                  <div className="flex flex-col items-center lg:items-start lg:pr-6">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
                         <User className="w-5 h-5 text-white" />
@@ -459,7 +459,7 @@ export default function SignUpPage() {
                   </div>
 
                   {/* Account Information Column */}
-                  <div className="lg:pl-8 flex flex-col items-center lg:items-start">
+                  <div className="lg:pl-6 flex flex-col items-center lg:items-start">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                         <Lock className="w-5 h-5 text-white" />
