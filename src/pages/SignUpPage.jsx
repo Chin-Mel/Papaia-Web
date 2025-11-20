@@ -4,7 +4,7 @@ import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import { ChevronDown } from "lucide-react";
 
-import BackgroundImage from "../assets/hero-background.png";
+import MainBackground from "../assets/MainBackground.jpg";
 import PapayaLogo from "../assets/papaia-logo.png";
 import UserIcon from "../assets/user-icon.png";
 import CreateUserIcon from "../assets/create-user.png";
@@ -33,11 +33,11 @@ function SuffixDropdown({ value, onChange }) {
   }, []);
 
   return (
-    <div className="relative min-w-[120px] sm:min-w-[140px]" ref={dropdownRef}>
+    <div className="relative min-w-[120px]" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-9 sm:h-10 lg:h-11 px-3 sm:px-4 border border-gray-300 rounded-xl flex justify-between items-center text-sm sm:text-base bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+        className="w-full h-9 px-3 border border-gray-300 rounded-lg flex justify-between items-center text-sm bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
       >
         <span className={value ? "text-gray-900" : "text-gray-400"}>
           {value || "Select suffix"}
@@ -50,7 +50,7 @@ function SuffixDropdown({ value, onChange }) {
       </button>
 
       {isOpen && (
-        <ul className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-auto">
+        <ul className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-auto">
           {options.map((option, index) => (
             <li
               key={`${option}-${index}`}
@@ -58,7 +58,7 @@ function SuffixDropdown({ value, onChange }) {
                 onChange(option);
                 setIsOpen(false);
               }}
-              className="px-3 sm:px-4 py-2.5 cursor-pointer hover:bg-green-700 hover:text-white text-sm sm:text-base transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl"
+              className="px-3 py-2.5 cursor-pointer hover:bg-green-700 hover:text-white text-sm transition-colors duration-150 first:rounded-t-lg last:rounded-b-lg"
             >
               {option || "None"}
             </li>
@@ -100,7 +100,7 @@ export default function SignUpPage() {
   // Preload all images on mount
   useEffect(() => {
     const images = [
-      BackgroundImage,
+      MainBackground,
       PapayaLogo,
       UserIcon,
       CreateUserIcon,
@@ -135,8 +135,8 @@ export default function SignUpPage() {
 
   // Input classes function
   const inputClasses = (hasError) => `
-    w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 text-sm sm:text-base 
-    bg-white border rounded-xl 
+    w-full h-9 px-3 text-sm 
+    bg-white border rounded-lg 
     transition-all duration-200
     placeholder:text-gray-400
     focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500
@@ -336,56 +336,53 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      <main className="flex-1 relative flex justify-center py-20 sm:py-24 px-2 sm:px-4">
+      <main className="flex-1 relative flex justify-center py-16 px-4 overflow-hidden">
+        {/* Fixed background */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url(${BackgroundImage})`,
-            willChange: "transform",
+            backgroundImage: `url(${MainBackground})`,
+            backgroundAttachment: "fixed",
           }}
         />
 
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-5xl relative z-10"
+          className="w-full max-w-4xl relative z-10 my-8"
         >
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
-              <div className="w-12 h-12 sm:w-11 sm:h-11 lg:w-13 lg:h-13 bg-white rounded-full flex items-center justify-center shadow-md">
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-6 px-4">
+              <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg mb-3">
                 <img
                   src={PapayaLogo}
                   alt="Papaia Logo"
-                  className="w-8 h-8 sm:w-8 sm:h-8 lg:w-10 lg:h-10"
+                  className="w-10 h-10"
                   loading="eager"
                   decoding="async"
                 />
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mt-2">
-                Sign Up
-              </h1>
-              <p className="text-[#FDEDD3] text-xs sm:text-sm lg:text-base mt-1 text-center">
+              <h1 className="text-2xl font-bold text-white">Sign Up</h1>
+              <p className="text-[#FDEDD3] text-sm mt-1 text-center">
                 Create your farm dashboard account
               </p>
             </div>
 
-            <div className="p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-7">
+            <div className="p-8 space-y-6">
               {/* Personal Information */}
               <div>
-                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                <h2 className="flex items-center gap-2 text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   <ChevronDown className="w-4 h-4 text-[#00712D]" />
                   Personal Information
                 </h2>
-                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Personal Information
-                </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={UserIcon}
                         alt="User"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -403,12 +400,12 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={UserIcon}
                         alt="User"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -426,12 +423,12 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={UserIcon}
                         alt="User"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -449,12 +446,12 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={TagIcon}
                         alt="Tag"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -463,12 +460,12 @@ export default function SignUpPage() {
                     <SuffixDropdown value={suffix} onChange={setSuffix} />
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2 lg:col-span-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={CalendarIcon}
                         alt="Calendar"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -479,7 +476,7 @@ export default function SignUpPage() {
                       value={dob}
                       onChange={(e) => setDob(e.target.value)}
                       max={maxDate}
-                      className={inputClasses(false) + " h-9 sm:h-10 lg:h-11"}
+                      className={inputClasses(false)}
                     />
                   </div>
                 </div>
@@ -487,21 +484,18 @@ export default function SignUpPage() {
 
               {/* Account Information */}
               <div>
-                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                <h2 className="flex items-center gap-2 text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   <ChevronDown className="w-4 h-4 text-[#00712D]" />
-                  Personal Information
-                </h2>
-                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Account Information
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={AtsignIcon}
                         alt="Username"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -519,12 +513,12 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={MailIcon}
                         alt="Mail"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -542,12 +536,12 @@ export default function SignUpPage() {
                     />
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={PhoneIcon}
                         alt="Phone"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -564,26 +558,13 @@ export default function SignUpPage() {
                       className={inputClasses(formErrors.phoneNumber)}
                     />
                   </div>
-                </div>
-              </div>
 
-              {/* Security */}
-              <div>
-                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  <ChevronDown className="w-4 h-4 text-[#00712D]" />
-                  Personal Information
-                </h2>
-                <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
-                  Security
-                </h2>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={LockIcon}
                         alt="Lock"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -598,17 +579,17 @@ export default function SignUpPage() {
                         value={password}
                         autoComplete="new-password"
                         onChange={handlePasswordChange}
-                        className={inputClasses(formErrors.password) + " pr-12"}
+                        className={inputClasses(formErrors.password) + " pr-10"}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         <img
                           src={showPassword ? EyeOffIcon : EyeIcon}
                           alt={showPassword ? "Hide" : "Show"}
-                          className="w-4 h-4 sm:w-5 sm:h-5"
+                          className="w-4 h-4"
                           loading="eager"
                           decoding="async"
                         />
@@ -616,12 +597,12 @@ export default function SignUpPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
+                  <div className="space-y-1.5 md:col-span-2">
+                    <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                       <img
                         src={LockIcon}
                         alt="Lock"
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4 opacity-70"
+                        className="w-3.5 h-3.5 opacity-70"
                         loading="eager"
                         decoding="async"
                       />
@@ -639,7 +620,7 @@ export default function SignUpPage() {
                         className={
                           inputClasses(
                             formErrors.confirmPassword || confirmPasswordError
-                          ) + " pr-12"
+                          ) + " pr-10"
                         }
                       />
                       <button
@@ -647,12 +628,12 @@ export default function SignUpPage() {
                         onClick={() =>
                           setShowConfirmPassword(!showConfirmPassword)
                         }
-                        className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                       >
                         <img
                           src={showConfirmPassword ? EyeOffIcon : EyeIcon}
                           alt={showConfirmPassword ? "Hide" : "Show"}
-                          className="w-4 h-4 sm:w-5 sm:h-5"
+                          className="w-4 h-4"
                           loading="eager"
                           decoding="async"
                         />
@@ -663,17 +644,17 @@ export default function SignUpPage() {
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 mt-4 sm:mt-5 lg:mt-7">
+              <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-4 h-4 sm:w-5 sm:h-5 mt-0.5 border-2 border-gray-300 rounded accent-orange-500 cursor-pointer flex-shrink-0"
+                  className="w-4 h-4 mt-0.5 border-2 border-gray-300 rounded accent-orange-500 cursor-pointer flex-shrink-0"
                 />
                 <label
                   htmlFor="terms"
-                  className="text-xs sm:text-sm text-gray-600 leading-relaxed cursor-pointer"
+                  className="text-sm text-gray-600 leading-relaxed cursor-pointer"
                 >
                   I agree to the{" "}
                   <Link
@@ -692,15 +673,15 @@ export default function SignUpPage() {
                 </label>
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!isChecked || isLoading}
                 className={`
-                  w-full mt-4 sm:mt-5 lg:mt-6 h-11 sm:h-12 lg:h-14 
+                  w-full h-11 
                   bg-gradient-to-r from-[#00712D] to-[#F97316]
-                  text-sm sm:text-base lg:text-lg font-semibold text-white 
-                  rounded-xl shadow-lg 
+                  text-base font-semibold text-white 
+                  rounded-lg shadow-lg 
                   flex items-center justify-center gap-2
                   transition-all duration-200
                   ${
@@ -713,7 +694,7 @@ export default function SignUpPage() {
                 <img
                   src={CreateUserIcon}
                   alt="Create"
-                  className="w-4 h-4 sm:w-5 sm:h-5"
+                  className="w-5 h-5"
                   loading="eager"
                   decoding="async"
                 />
@@ -724,8 +705,8 @@ export default function SignUpPage() {
               {(error ||
                 confirmPasswordError ||
                 Object.values(formErrors).find((err) => err)) && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl mt-2 sm:mt-3">
-                  <p className="text-xs sm:text-sm text-red-600 text-center font-medium">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600 text-center font-medium">
                     {error ||
                       confirmPasswordError ||
                       "Please fill in all required fields."}
@@ -733,8 +714,8 @@ export default function SignUpPage() {
                 </div>
               )}
 
-              {/* Sign In */}
-              <p className="text-center mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
+              {/* Sign In Link */}
+              <p className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
                 <Link
                   to="/sign-in"
