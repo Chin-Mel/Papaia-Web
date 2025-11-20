@@ -44,7 +44,7 @@ export default function LandingPage() {
         {/* Background */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${HeroBackgroundPNG})` }}
+          style={{ backgroundImage: `url(${MainBackground})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[rgba(12,32,29,0.2)] to-transparent" />
 
