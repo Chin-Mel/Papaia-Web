@@ -151,7 +151,7 @@ export default function SignInPage() {
 
       <main className="flex-1 flex justify-center items-center py-16 sm:py-20 px-4">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
           style={{
             backgroundImage: `url(${MainBackground})`,
           }}

@@ -7,12 +7,12 @@ import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
 import {
   ChevronDown,
   User,
-  Mail,
+  UserIcon,
+  MailIcon,
   Lock,
-  Phone,
-  Calendar,
+  LockIcon,
+  PhoneIcon,
   Tag,
-  AtSign,
 } from "lucide-react";
 
 import MainBackground from "../assets/MainBackground.png";
@@ -325,7 +325,7 @@ export default function SignUpPage() {
 
       <main className="flex-1 relative flex justify-center py-12 px-4">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
           style={{
             backgroundImage: `url(${MainBackground})`,
           }}
@@ -374,10 +374,16 @@ export default function SignUpPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={UserIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             First Name <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="firstName"
                               name="firstName"
@@ -393,10 +399,16 @@ export default function SignUpPage() {
 
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={UserIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Last Name <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="lastName"
                               name="lastName"
@@ -414,10 +426,16 @@ export default function SignUpPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={UserIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Middle Name
                           </label>
                           <div className="relative">
-                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="middleName"
                               name="middleName"
@@ -433,6 +451,13 @@ export default function SignUpPage() {
 
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={UserIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Suffix
                           </label>
                           <SuffixDropdown value={suffix} onChange={setSuffix} />
@@ -441,10 +466,16 @@ export default function SignUpPage() {
 
                       <div className="space-y-2 col-span-full">
                         <label className="text-sm font-semibold text-gray-700">
+                          <img
+                            src={UserIcon}
+                            alt="Username"
+                            className="w-4 h-4"
+                            loading="eager"
+                            decoding="async"
+                          />
                           Date of Birth
                         </label>
                         <div className="relative max-w-full">
-                          <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
                             type="date"
                             value={dob}
@@ -472,10 +503,16 @@ export default function SignUpPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={UserIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Username <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="username"
                               name="username"
@@ -491,10 +528,16 @@ export default function SignUpPage() {
 
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={PhoneIcon}
+                              alt="Phone"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Phone Number <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="phoneNumber"
                               name="phoneNumber"
@@ -511,10 +554,16 @@ export default function SignUpPage() {
 
                       <div className="space-y-2 col-span-full">
                         <label className="text-sm font-semibold text-gray-700">
+                          <img
+                            src={MailIcon}
+                            alt="Username"
+                            className="w-4 h-4"
+                            loading="eager"
+                            decoding="async"
+                          />
                           Email Address <span className="text-red-500">*</span>
                         </label>
                         <div className="relative max-w-full">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
                             id="email"
                             name="email"
@@ -531,10 +580,16 @@ export default function SignUpPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={LockIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Password <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="password"
                               name="password"
@@ -557,11 +612,17 @@ export default function SignUpPage() {
 
                         <div className="space-y-2">
                           <label className="text-sm font-semibold text-gray-700">
+                            <img
+                              src={LockIcon}
+                              alt="Username"
+                              className="w-4 h-4"
+                              loading="eager"
+                              decoding="async"
+                            />
                             Confirm Password{" "}
                             <span className="text-red-500">*</span>
                           </label>
                           <div className="relative">
-                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input
                               id="confirmPassword"
                               name="confirmPassword"

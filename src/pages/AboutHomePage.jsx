@@ -114,17 +114,11 @@ export default function AboutHomePage() {
                     Our Vision
                   </h3>
                 </div>
-                <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
-                  <p>
-                    To revolutionize agriculture through accessible AI
-                    technology,
-                  </p>
-                  <p>
-                    empowering every farmer with the tools to achieve
-                    sustainable
-                  </p>
-                  <p>and productive farming practices.</p>
-                </div>
+                <p className="text-papaia-text-secondary leading-relaxed text-sm sm:text-base">
+                  To revolutionize agriculture through accessible AI technology,
+                  empowering every farmer with the tools to achieve sustainable
+                  and productive farming practices.
+                </p>
               </div>
 
               {/* Mission */}
@@ -141,17 +135,11 @@ export default function AboutHomePage() {
                     Our Mission
                   </h3>
                 </div>
-                <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
-                  <p>
-                    To provide intelligent plant disease detection and
-                    agricultural
-                  </p>
-                  <p>
-                    guidance, helping farmers increase yields while promoting
-                    environmentally
-                  </p>
-                  <p>conscious farming methods.</p>
-                </div>
+                <p className="text-papaia-text-secondary leading-relaxed text-sm sm:text-base">
+                  To provide intelligent plant disease detection and
+                  agricultural guidance, helping farmers increase yields while
+                  promoting environmentally conscious farming methods.
+                </p>
               </div>
             </div>
           </div>
