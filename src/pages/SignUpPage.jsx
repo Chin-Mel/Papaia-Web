@@ -37,7 +37,7 @@ function SuffixDropdown({ value, onChange }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 sm:h-11 lg:h-12 px-3 sm:px-4 border border-gray-300 rounded-xl flex justify-between items-center text-sm sm:text-base bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+        className="w-full h-9 sm:h-10 lg:h-11 px-3 sm:px-4 border border-gray-300 rounded-xl flex justify-between items-center text-sm sm:text-base bg-white hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
       >
         <span className={value ? "text-gray-900" : "text-gray-400"}>
           {value || "Select suffix"}
@@ -371,6 +371,10 @@ export default function SignUpPage() {
             <div className="p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-7">
               {/* Personal Information */}
               <div>
+                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                  <ChevronDown className="w-4 h-4 text-[#00712D]" />
+                  Personal Information
+                </h2>
                 <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Personal Information
                 </h2>
@@ -475,7 +479,7 @@ export default function SignUpPage() {
                       value={dob}
                       onChange={(e) => setDob(e.target.value)}
                       max={maxDate}
-                      className={inputClasses(false)}
+                      className={inputClasses(false) + " h-9 sm:h-10 lg:h-11"}
                     />
                   </div>
                 </div>
@@ -483,6 +487,10 @@ export default function SignUpPage() {
 
               {/* Account Information */}
               <div>
+                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                  <ChevronDown className="w-4 h-4 text-[#00712D]" />
+                  Personal Information
+                </h2>
                 <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Account Information
                 </h2>
@@ -561,6 +569,10 @@ export default function SignUpPage() {
 
               {/* Security */}
               <div>
+                <h2 className="flex items-center gap-2 text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
+                  <ChevronDown className="w-4 h-4 text-[#00712D]" />
+                  Personal Information
+                </h2>
                 <h2 className="text-sm sm:text-base font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-200">
                   Security
                 </h2>
