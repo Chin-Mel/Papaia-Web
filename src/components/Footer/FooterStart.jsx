@@ -1,5 +1,5 @@
 // Finished fixing footer start
-import papaiaLogo from "../../assets/papaia-logo.png";
+import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import { Link } from "react-router-dom";
 
 export default function FooterStart() {

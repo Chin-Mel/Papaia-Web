@@ -4,7 +4,7 @@ import { MdEmail } from "react-icons/md";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
 import heroBackground from "../assets/hero-background.png";
-import PapayaLogo from "../assets/papaia-logo.png";
+import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
 import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
 import NewPasswordModal from "../components/Popups/NewPasswordModal";
 import PasswordUpdatedSuccessModal from "../components/Popups/PasswordUpdatedSuccessModal";

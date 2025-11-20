@@ -1,5 +1,5 @@
 // Finished fixing footer main
-import papaiaLogo from "../../assets/papaia-logo.png";
+import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function Footer() {
   return (

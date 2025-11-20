@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSignInAlt } from "react-icons/fa";
-import PapayaLogo from "../../assets/papaia-logo.png";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import { FiInfo } from "react-icons/fi";
 
 export default function OtpVerificationModal({ email, onSuccess }) {

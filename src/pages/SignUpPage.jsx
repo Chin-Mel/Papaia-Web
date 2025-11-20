@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useState, useRef, useEffect, useMemo } from "react";
 import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
+import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
+import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
 import {
   ChevronDown,
   User,
@@ -13,8 +15,8 @@ import {
   AtSign,
 } from "lucide-react";
 
-import MainBackground from "../assets/MainBackground.jpg";
-import PapayaLogo from "../assets/papaia-logo.png";
+import MainBackground from "../assets/MainBackground.png";
+import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
 import CreateUserIcon from "../assets/create-user.png";
 
 function SuffixDropdown({ value, onChange }) {
@@ -86,6 +88,8 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   const [formErrors, setFormErrors] = useState({
     lastName: "",
@@ -354,7 +358,8 @@ export default function SignUpPage() {
 
             <div className="p-8">
               <div className="w-full flex justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:divide-x lg:divide-gray-300 items-start w-full px-4 max-w-6xl">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start w-full px-4 max-w-6xl">
+                  <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-300 -translate-x-1/2"></div>
                   {/* Personal Information Column */}
                   <div className="flex flex-col items-center lg:items-start">
                     <div className="flex items-center gap-3 mb-6">
@@ -382,10 +387,7 @@ export default function SignUpPage() {
                               onChange={(e) => setFirstName(e.target.value)}
                               placeholder="Enter first name"
                               autoComplete="given-name"
-                              className={
-                                inputClasses(formErrors.firstName) +
-                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                              }
+                              className={inputClasses(formErrors.firstName)}
                             />
                           </div>
                         </div>
@@ -404,10 +406,7 @@ export default function SignUpPage() {
                               onChange={(e) => setLastName(e.target.value)}
                               placeholder="Enter last name"
                               autoComplete="family-name"
-                              className={
-                                inputClasses(formErrors.lastName) +
-                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                              }
+                              className={inputClasses(formErrors.lastName)}
                             />
                           </div>
                         </div>
@@ -428,10 +427,7 @@ export default function SignUpPage() {
                               onChange={(e) => setMiddleName(e.target.value)}
                               placeholder="Enter middle name"
                               autoComplete="middle-name"
-                              className={
-                                inputClasses(false) +
-                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                              }
+                              className={inputClasses(false)}
                             />
                           </div>
                         </div>
@@ -492,10 +488,7 @@ export default function SignUpPage() {
                               onChange={(e) => setUsername(e.target.value)}
                               placeholder="Choose username"
                               autoComplete="username"
-                              className={
-                                inputClasses(formErrors.username) +
-                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                              }
+                              className={inputClasses(formErrors.username)}
                             />
                           </div>
                         </div>
@@ -514,10 +507,7 @@ export default function SignUpPage() {
                               onChange={(e) => setPhoneNumber(e.target.value)}
                               placeholder="Enter phone number"
                               autoComplete="tel"
-                              className={
-                                inputClasses(formErrors.phoneNumber) +
-                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                              }
+                              className={inputClasses(formErrors.phoneNumber)}
                             />
                           </div>
                         </div>
@@ -536,7 +526,10 @@ export default function SignUpPage() {
                             value={email}
                             placeholder="Enter email address"
                             autoComplete="email"
-                            className={inputClasses(formErrors.email)}
+                            className={
+                              inputClasses(formErrors.email) +
+                              " w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                             onChange={handleChange}
                           />
                         </div>
@@ -557,9 +550,7 @@ export default function SignUpPage() {
                               value={password}
                               autoComplete="new-password"
                               onChange={handlePasswordChange}
-                              className={
-                                inputClasses(formErrors.password) + " pr-12"
-                              }
+                              className={inputClasses(formErrors.password)}
                             />
                             <button
                               type="button"
@@ -586,12 +577,10 @@ export default function SignUpPage() {
                               value={confirmPassword}
                               autoComplete="new-password"
                               onChange={handleConfirmPasswordChange}
-                              className={
-                                inputClasses(
-                                  formErrors.confirmPassword ||
-                                    confirmPasswordError
-                                ) + " pr-12"
-                              }
+                              className={inputClasses(
+                                formErrors.confirmPassword ||
+                                  confirmPasswordError
+                              )}
                             />
                             <button
                               type="button"
@@ -617,26 +606,41 @@ export default function SignUpPage() {
                   id="terms"
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg accent-orange-500 cursor-pointer flex-shrink-0"
+                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer flex-shrink-0 
+                            appearance-none bg-white checked:bg-orange-500 checked:border-orange-500
+                            checked:after:content-['✓'] checked:after:text-white checked:after:text-sm 
+                            checked:after:flex checked:after:items-center checked:after:justify-center
+                            checked:after:absolute checked:after:inset-0"
+                  style={{
+                    position: "relative",
+                  }}
                 />
                 <label
                   htmlFor="terms"
                   className="text-sm text-gray-700 leading-relaxed cursor-pointer"
                 >
                   I agree to the{" "}
-                  <Link
-                    to="/terms"
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowTermsModal(true);
+                    }}
                     className="text-orange-600 hover:text-orange-700 font-semibold hover:underline underline-offset-2 transition-colors"
                   >
                     Terms of Service
-                  </Link>{" "}
+                  </button>{" "}
                   and{" "}
-                  <Link
-                    to="/privacy"
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowPrivacyModal(true);
+                    }}
                     className="text-orange-600 hover:text-orange-700 font-semibold hover:underline underline-offset-2 transition-colors"
                   >
                     Privacy Policy
-                  </Link>
+                  </button>
                 </label>
               </div>
 
@@ -646,7 +650,7 @@ export default function SignUpPage() {
                 disabled={!isChecked || isLoading}
                 className={`
                   w-full h-12 
-                  bg-gradient-to-r from-[#00712D] to-[#F97316]
+                  bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700
                   text-base font-bold text-white 
                   rounded-xl shadow-lg 
                   flex items-center justify-center gap-2
@@ -694,6 +698,49 @@ export default function SignUpPage() {
             </div>
           </div>
         </form>
+        {/* Terms and Conditions Modal */}
+        {showTermsModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Terms of Service
+                </h2>
+                <button
+                  onClick={() => setShowTermsModal(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <TermsAndConditionsModal />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Privacy Policy Modal */}
+        {showPrivacyModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Privacy Policy
+                </h2>
+                <button
+                  onClick={() => setShowPrivacyModal(false)}
+                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <PrivacyPolicyModal />
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       <FooterStart />

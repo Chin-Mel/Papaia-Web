@@ -6,7 +6,7 @@ import AnalyticsIconPNG from "../assets/analytics-icon.png";
 import DiseaseIconPNG from "../assets/disease-icon.png";
 import MobileIconPNG from "../assets/mobile-icon.png";
 import ArrowIconPNG from "../assets/arrow-icon.png";
-import MainBackground from "../assets/MainBackground.jpg";
+import MainBackground from "../assets/MainBackground.png";
 
 // Icon wrappers
 const AnalyticsIcon = () => (

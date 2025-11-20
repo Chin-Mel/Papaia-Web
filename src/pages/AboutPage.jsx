@@ -7,10 +7,7 @@ import TargetIcon from "../assets/target-icon.png";
 import CameraIcon from "../assets/camera-icon.png";
 import TrendingUpIcon from "../assets/trending-up-icon.png";
 import ClipboardListIcon from "../assets/clipboard-list-icon.png";
-import MailIcon from "../assets/mail-icon.png";
-import PhoneIcon from "../assets/phone-icon.png";
-import MapPinIcon from "../assets/map-pin-icon.png";
-import HeroBackground from "../assets/hero-background.png";
+import HeroBackground from "../assets/MainBackground.png";
 
 import EbordaImage from "../assets/eborda.png";
 import EstomoImage from "../assets/estomo.jpg";
@@ -48,14 +45,14 @@ const developers = [
   },
 ];
 
-export default function AboutHomePage() {
+export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <HeaderMain />
 
       <main>
         {/* Hero Section */}
-        <section className="relative h-[35vh] sm:h-[40vh] md:h-[50vh] lg:h-[60vh] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
+        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
@@ -67,8 +64,8 @@ export default function AboutHomePage() {
             <div className="text-center">
               <div
                 className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg 
-        p-6 sm:p-8 md:p-10 
-        mt-4 sm:mt-6 md:mt-8 lg:mt-10 mb-6"
+                  p-6 sm:p-8 md:p-12 
+                  mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8"
               >
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                   About Papaia
@@ -90,12 +87,10 @@ export default function AboutHomePage() {
                 System Overview
               </h2>
               <p className="text-base sm:text-lg md:text-lg text-papaia-text-secondary leading-relaxed">
-                Papaia is an innovative mobile application that empowers farmers
-                with AI-driven crop disease detection, real-time analytics, and
-                personalized treatment recommendations. Our cutting-edge
-                technology helps farmers identify plant diseases early, optimize
-                crop yields, and make data-driven decisions for sustainable
-                agriculture.
+                Papaia is your intelligent agricultural companion, designed to
+                help farmers and gardeners identify plant diseases, optimize
+                crop health, and make informed farming decisions using advanced
+                AI technology.
               </p>
             </div>
           </div>
@@ -121,17 +116,14 @@ export default function AboutHomePage() {
                 </div>
                 <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
                   <p>
-                    To create a world where every farmer has access to
-                    intelligent
+                    To revolutionize agriculture through accessible AI
+                    technology,
                   </p>
                   <p>
-                    agricultural tools that ensure food security, promote
+                    empowering every farmer with the tools to achieve
                     sustainable
                   </p>
-                  <p>
-                    farming practices, and maximize crop productivity through
-                  </p>
-                  <p>advanced technology and data-driven insights.</p>
+                  <p>and productive farming practices.</p>
                 </div>
               </div>
 
@@ -151,11 +143,14 @@ export default function AboutHomePage() {
                 </div>
                 <div className="text-papaia-text-secondary leading-relaxed space-y-1 sm:space-y-2 text-sm sm:text-base">
                   <p>
-                    We develop innovative AI-powered solutions that help farmers
+                    To provide intelligent plant disease detection and
+                    agricultural
                   </p>
-                  <p>detect crop diseases early, receive expert treatment</p>
-                  <p>recommendations, and access comprehensive analytics to</p>
-                  <p>optimize their farming operations and increase yields.</p>
+                  <p>
+                    guidance, helping farmers increase yields while promoting
+                    environmentally
+                  </p>
+                  <p>conscious farming methods.</p>
                 </div>
               </div>
             </div>
@@ -212,6 +207,71 @@ export default function AboutHomePage() {
             </div>
           </div>
         </section>
+
+        {/* How to Use the App Section */}
+        <section className="py-12 sm:py-16 bg-gray-50">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
+                How to Use the App
+              </h2>
+              <p className="text-base sm:text-lg text-papaia-text-secondary">
+                Get started in just three simple steps
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
+              {/* Step 1 - Capture */}
+              <div className="text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl sm:text-3xl font-bold text-white">
+                    1
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
+                  Capture
+                </h3>
+                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
+                  Take a clear photo of the affected plant or leaf using your
+                  smartphone camera
+                </p>
+              </div>
+
+              {/* Step 2 - Analyze */}
+              <div className="text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl sm:text-3xl font-bold text-white">
+                    2
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
+                  Analyze
+                </h3>
+                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
+                  Our AI instantly analyzes the image and identifies potential
+                  diseases or issues
+                </p>
+              </div>
+
+              {/* Step 3 - Treat */}
+              <div className="text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <span className="text-2xl sm:text-3xl font-bold text-white">
+                    3
+                  </span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
+                  Treat
+                </h3>
+                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
+                  Receive detailed treatment recommendations and track your
+                  crop's recovery progress
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Meet the Developers */}
         <section className="py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-20">
@@ -244,58 +304,6 @@ export default function AboutHomePage() {
             </div>
           </div>
         </section>
-
-        {/* Contact Information */}
-        <section className="py-16 bg-[#E5E7EB]/10">
-          <div className="max-w-[1440px] mx-auto px-20">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-papaia-text-tertiary mb-4">
-                Contact Information
-              </h2>
-              <p className="text-lg text-[#909090]">
-                Get in touch with our team
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Email */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
-                  <img src={MailIcon} alt="Email" className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
-                  Email
-                </h3>
-                <p className="text-[#909090]">support@papaia.com</p>
-              </div>
-
-              {/* Phone */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
-                  <img src={PhoneIcon} alt="Phone" className="w-6 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
-                  Phone
-                </h3>
-                <p className="text-[#909090]">+1 (555) 123-4567</p>
-              </div>
-
-              {/* Address */}
-              <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-[#22C55E]/20 flex items-center justify-center mx-auto mb-6">
-                  <img src={MapPinIcon} alt="Address" className="w-5 h-6" />
-                </div>
-                <h3 className="text-xl font-bold text-papaia-text-tertiary mb-4">
-                  Address
-                </h3>
-                <p className="text-[#909090]">
-                  123 Agriculture St, Farm City, FC 12345
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-        {/* The remaining sections (How to Use, Developers, Contact) can be similarly updated with responsive classes */}
       </main>
 
       <FooterMain />
