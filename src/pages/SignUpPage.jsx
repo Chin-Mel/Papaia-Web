@@ -4,16 +4,11 @@ import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
 import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
-import {
-  ChevronDown,
-  User,
-  UserIcon,
-  MailIcon,
-  Lock,
-  LockIcon,
-  PhoneIcon,
-  Tag,
-} from "lucide-react";
+import { ChevronDown, User, Lock, Tag } from "lucide-react";
+import UserIcon from "../assets/user-icon.png";
+import LockIcon from "../assets/lock-icon.png";
+import MailIcon from "../assets/mail-icon.png";
+import PhoneIcon from "../assets/phone-icon.png";
 
 import MainBackground from "../assets/MainBackground.png";
 import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
@@ -373,11 +368,11 @@ export default function SignUpPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={UserIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="First Name"
                               loading="eager"
                               decoding="async"
                             />
@@ -398,11 +393,11 @@ export default function SignUpPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={UserIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Last Name"
                               loading="eager"
                               decoding="async"
                             />
@@ -425,11 +420,11 @@ export default function SignUpPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={UserIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Middle Name"
                               loading="eager"
                               decoding="async"
                             />
@@ -450,11 +445,11 @@ export default function SignUpPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={UserIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Suffix"
                               loading="eager"
                               decoding="async"
                             />
@@ -465,11 +460,11 @@ export default function SignUpPage() {
                       </div>
 
                       <div className="space-y-2 col-span-full">
-                        <label className="text-sm font-semibold text-gray-700">
+                        <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                           <img
                             src={UserIcon}
-                            alt="Username"
                             className="w-4 h-4"
+                            alt="Date of Birth"
                             loading="eager"
                             decoding="async"
                           />
@@ -502,11 +497,11 @@ export default function SignUpPage() {
                     <div className="space-y-4">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={UserIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Username"
                               loading="eager"
                               decoding="async"
                             />
@@ -527,11 +522,11 @@ export default function SignUpPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={PhoneIcon}
-                              alt="Phone"
                               className="w-4 h-4"
+                              alt="Phone Number"
                               loading="eager"
                               decoding="async"
                             />
@@ -553,11 +548,11 @@ export default function SignUpPage() {
                       </div>
 
                       <div className="space-y-2 col-span-full">
-                        <label className="text-sm font-semibold text-gray-700">
+                        <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                           <img
                             src={MailIcon}
-                            alt="Username"
                             className="w-4 h-4"
+                            alt="Email"
                             loading="eager"
                             decoding="async"
                           />
@@ -579,11 +574,11 @@ export default function SignUpPage() {
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={LockIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Password"
                               loading="eager"
                               decoding="async"
                             />
@@ -611,11 +606,11 @@ export default function SignUpPage() {
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700">
+                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <img
                               src={LockIcon}
-                              alt="Username"
                               className="w-4 h-4"
+                              alt="Confirm Password"
                               loading="eager"
                               decoding="async"
                             />
