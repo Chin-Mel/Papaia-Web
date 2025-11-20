@@ -453,8 +453,8 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Account Information Column */}
-                <div>
-                  <div className="lg:pl-8">
+                <div className="lg:pl-8">
+                  <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                       <Lock className="w-5 h-5 text-white" />
                     </div>
