@@ -358,8 +358,8 @@ export default function SignUpPage() {
 
             <div className="p-8">
               <div className="w-full flex justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start w-full px-4 max-w-6xl">
-                  <div className="hidden lg:block absolute left-1/2 top-0 bottom-0 w-px bg-gray-300 -translate-x-1/2"></div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start w-full px-4 max-w-6xl relative">
+                  <div className="hidden lg:block absolute left-1/2 top-0 h-full w-px bg-gray-300 -translate-x-1/2"></div>
                   {/* Personal Information Column */}
                   <div className="flex flex-col items-center lg:items-start">
                     <div className="flex items-center gap-3 mb-6">
@@ -600,7 +600,7 @@ export default function SignUpPage() {
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
+              <div className="flex items-start gap-3 p-5 mt-3 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
                 <input
                   type="checkbox"
                   id="terms"
