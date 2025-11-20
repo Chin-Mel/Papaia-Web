@@ -353,80 +353,108 @@ export default function SignUpPage() {
             </div>
 
             <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:divide-x lg:divide-gray-300 items-start w-full max-w-[1100px] mx-auto">
-                {/* Personal Information Column */}
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                      <User className="w-5 h-5 text-white" />
+              <div className="w-full flex justify-center">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:divide-x lg:divide-gray-300 items-start w-full px-4 max-w-6xl">
+                  {/* Personal Information Column */}
+                  <div className="flex flex-col items-center lg:items-start">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                        <User className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-800">
+                        Personal Information
+                      </h2>
                     </div>
-                    <h2 className="text-lg font-bold text-gray-800">
-                      Personal Information
-                    </h2>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          First Name <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            id="firstName"
-                            name="firstName"
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            placeholder="Enter first name"
-                            autoComplete="given-name"
-                            className={
-                              inputClasses(formErrors.firstName) +
-                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
-                          />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            First Name <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="firstName"
+                              name="firstName"
+                              type="text"
+                              value={firstName}
+                              onChange={(e) => setFirstName(e.target.value)}
+                              placeholder="Enter first name"
+                              autoComplete="given-name"
+                              className={
+                                inputClasses(formErrors.firstName) +
+                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Last Name <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="lastName"
+                              name="lastName"
+                              type="text"
+                              value={lastName}
+                              onChange={(e) => setLastName(e.target.value)}
+                              placeholder="Enter last name"
+                              autoComplete="family-name"
+                              className={
+                                inputClasses(formErrors.lastName) +
+                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Middle Name
+                          </label>
+                          <div className="relative">
+                            <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="middleName"
+                              name="middleName"
+                              type="text"
+                              value={middleName}
+                              onChange={(e) => setMiddleName(e.target.value)}
+                              placeholder="Enter middle name"
+                              autoComplete="middle-name"
+                              className={
+                                inputClasses(false) +
+                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Suffix
+                          </label>
+                          <SuffixDropdown value={suffix} onChange={setSuffix} />
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Last Name <span className="text-red-500">*</span>
+                          Date of Birth
                         </label>
                         <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
-                            id="lastName"
-                            name="lastName"
-                            type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            placeholder="Enter last name"
-                            autoComplete="family-name"
-                            className={
-                              inputClasses(formErrors.lastName) +
-                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Middle Name
-                        </label>
-                        <div className="relative">
-                          <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            id="middleName"
-                            name="middleName"
-                            type="text"
-                            value={middleName}
-                            onChange={(e) => setMiddleName(e.target.value)}
-                            placeholder="Enter middle name"
-                            autoComplete="middle-name"
+                            type="date"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            max={maxDate}
                             className={
                               inputClasses(false) +
                               "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
@@ -434,176 +462,147 @@ export default function SignUpPage() {
                           />
                         </div>
                       </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Suffix
-                        </label>
-                        <SuffixDropdown value={suffix} onChange={setSuffix} />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Date of Birth
-                      </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          type="date"
-                          value={dob}
-                          onChange={(e) => setDob(e.target.value)}
-                          max={maxDate}
-                          className={
-                            inputClasses(false) +
-                            "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                          }
-                        />
-                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Account Information Column */}
-                <div className="lg:pl-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                      <Lock className="w-5 h-5 text-white" />
+                  {/* Account Information Column */}
+                  <div className="lg:pl-8 flex flex-col items-center lg:items-start">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-white" />
+                      </div>
+                      <h2 className="text-lg font-bold text-gray-800">
+                        Account Information
+                      </h2>
                     </div>
-                    <h2 className="text-lg font-bold text-gray-800">
-                      Account Information
-                    </h2>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Username <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            id="username"
-                            name="username"
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Choose username"
-                            autoComplete="username"
-                            className={
-                              inputClasses(formErrors.username) +
-                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
-                          />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Username <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="username"
+                              name="username"
+                              type="text"
+                              value={username}
+                              onChange={(e) => setUsername(e.target.value)}
+                              placeholder="Choose username"
+                              autoComplete="username"
+                              className={
+                                inputClasses(formErrors.username) +
+                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Phone Number <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="phoneNumber"
+                              name="phoneNumber"
+                              type="tel"
+                              value={phoneNumber}
+                              onChange={(e) => setPhoneNumber(e.target.value)}
+                              placeholder="Enter phone number"
+                              autoComplete="tel"
+                              className={
+                                inputClasses(formErrors.phoneNumber) +
+                                "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                              }
+                            />
+                          </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Phone Number <span className="text-red-500">*</span>
+                          Email Address <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
-                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
-                            id="phoneNumber"
-                            name="phoneNumber"
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="Enter phone number"
-                            autoComplete="tel"
-                            className={
-                              inputClasses(formErrors.phoneNumber) +
-                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={email}
+                            placeholder="Enter email address"
+                            autoComplete="email"
+                            className={inputClasses(formErrors.email)}
+                            onChange={handleChange}
                           />
                         </div>
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={email}
-                          placeholder="Enter email address"
-                          autoComplete="email"
-                          className={
-                            inputClasses(formErrors.email) +
-                            "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                          }
-                          onChange={handleChange}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Password <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            id="password"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter password"
-                            value={password}
-                            autoComplete="new-password"
-                            onChange={handlePasswordChange}
-                            className={
-                              inputClasses(formErrors.password) + " pr-12"
-                            }
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            {showPassword ? "👁️" : "👁️‍🗨️"}
-                          </button>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Password <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="password"
+                              name="password"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter password"
+                              value={password}
+                              autoComplete="new-password"
+                              onChange={handlePasswordChange}
+                              className={
+                                inputClasses(formErrors.password) + " pr-12"
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              {showPassword ? "👁️" : "👁️‍🗨️"}
+                            </button>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-700">
-                          Confirm Password{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                          <input
-                            id="confirmPassword"
-                            name="confirmPassword"
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm password"
-                            value={confirmPassword}
-                            autoComplete="new-password"
-                            onChange={handleConfirmPasswordChange}
-                            className={
-                              inputClasses(
-                                formErrors.confirmPassword ||
-                                  confirmPasswordError
-                              ) + " pr-12"
-                            }
-                          />
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowConfirmPassword(!showConfirmPassword)
-                            }
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                          >
-                            {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
-                          </button>
+                        <div className="space-y-2">
+                          <label className="text-sm font-semibold text-gray-700">
+                            Confirm Password{" "}
+                            <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                              id="confirmPassword"
+                              name="confirmPassword"
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="Confirm password"
+                              value={confirmPassword}
+                              autoComplete="new-password"
+                              onChange={handleConfirmPasswordChange}
+                              className={
+                                inputClasses(
+                                  formErrors.confirmPassword ||
+                                    confirmPasswordError
+                                ) + " pr-12"
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                              }
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
