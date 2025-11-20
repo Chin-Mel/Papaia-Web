@@ -347,9 +347,9 @@ export default function SignUpPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-7xl relative z-10"
+          className="w-full max-w-5xl relative z-10"
         >
-          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100">
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
               <div className="w-12 h-12 sm:w-11 sm:h-11 lg:w-13 lg:h-13 bg-white rounded-full flex items-center justify-center shadow-md">
                 <img
@@ -375,7 +375,7 @@ export default function SignUpPage() {
                   Personal Information
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
                       <img
@@ -459,7 +459,7 @@ export default function SignUpPage() {
                     <SuffixDropdown value={suffix} onChange={setSuffix} />
                   </div>
 
-                  <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                  <div className="space-y-2 sm:col-span-2 lg:col-span-2">
                     <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
                       <img
                         src={CalendarIcon}
@@ -565,7 +565,7 @@ export default function SignUpPage() {
                   Security
                 </h2>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-gray-700 text-xs sm:text-sm font-medium">
                       <img
@@ -647,7 +647,6 @@ export default function SignUpPage() {
                       </button>
                     </div>
                   </div>
-                  <div className="hidden lg:block"></div>
                 </div>
               </div>
 
