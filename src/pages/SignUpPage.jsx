@@ -122,18 +122,18 @@ export default function SignUpPage() {
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const inputClasses = (hasError) => `
-    w-full max-w-[440px] h-10 pl-11 pr-4 text-sm 
-    bg-white/90 border-2 rounded-xl 
-    transition-all duration-200
-    placeholder:text-gray-400
-    focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:bg-white
-    hover:bg-white hover:border-orange-300
-    ${
-      hasError
-        ? "border-red-400 focus:ring-red-400 focus:border-red-400"
-        : "border-gray-200"
-    }
-  `;
+  w-full h-10 pl-11 pr-4 text-sm 
+  bg-white/90 border-2 rounded-xl 
+  transition-all duration-200
+  placeholder:text-gray-400
+  focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:bg-white
+  hover:bg-white hover:border-orange-300
+  ${
+    hasError
+      ? "border-red-400 focus:ring-red-400 focus:border-red-400"
+      : "border-gray-200"
+  }
+`;
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
@@ -440,11 +440,11 @@ export default function SignUpPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2 col-span-full">
                         <label className="text-sm font-semibold text-gray-700">
                           Date of Birth
                         </label>
-                        <div className="relative">
+                        <div className="relative max-w-full">
                           <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
                             type="date"
@@ -510,11 +510,11 @@ export default function SignUpPage() {
                         </div>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-2 col-span-full">
                         <label className="text-sm font-semibold text-gray-700">
                           Email Address <span className="text-red-500">*</span>
                         </label>
-                        <div className="relative">
+                        <div className="relative max-w-full">
                           <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
                             id="email"
