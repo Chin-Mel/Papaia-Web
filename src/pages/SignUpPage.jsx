@@ -118,7 +118,7 @@ export default function SignUpPage() {
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const inputClasses = (hasError) => `
-    w-full h-10 pl-11 pr-4 text-sm 
+    w-full max-w-[440px] h-10 pl-11 pr-4 text-sm 
     bg-white/90 border-2 rounded-xl 
     transition-all duration-200
     placeholder:text-gray-400
@@ -353,7 +353,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 divide-x-0 lg:divide-x-2 lg:divide-gray-200">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:divide-x lg:divide-gray-300 items-start w-full max-w-[1100px] mx-auto">
                 {/* Personal Information Column */}
                 <div>
                   <div className="flex items-center gap-3 mb-6">
@@ -381,7 +381,10 @@ export default function SignUpPage() {
                             onChange={(e) => setFirstName(e.target.value)}
                             placeholder="Enter first name"
                             autoComplete="given-name"
-                            className={inputClasses(formErrors.firstName)}
+                            className={
+                              inputClasses(formErrors.firstName) +
+                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                           />
                         </div>
                       </div>
@@ -400,7 +403,10 @@ export default function SignUpPage() {
                             onChange={(e) => setLastName(e.target.value)}
                             placeholder="Enter last name"
                             autoComplete="family-name"
-                            className={inputClasses(formErrors.lastName)}
+                            className={
+                              inputClasses(formErrors.lastName) +
+                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                           />
                         </div>
                       </div>
@@ -421,7 +427,10 @@ export default function SignUpPage() {
                             onChange={(e) => setMiddleName(e.target.value)}
                             placeholder="Enter middle name"
                             autoComplete="middle-name"
-                            className={inputClasses(false)}
+                            className={
+                              inputClasses(false) +
+                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                           />
                         </div>
                       </div>
@@ -445,7 +454,10 @@ export default function SignUpPage() {
                           value={dob}
                           onChange={(e) => setDob(e.target.value)}
                           max={maxDate}
-                          className={inputClasses(false)}
+                          className={
+                            inputClasses(false) +
+                            "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                          }
                         />
                       </div>
                     </div>
@@ -479,7 +491,10 @@ export default function SignUpPage() {
                             onChange={(e) => setUsername(e.target.value)}
                             placeholder="Choose username"
                             autoComplete="username"
-                            className={inputClasses(formErrors.username)}
+                            className={
+                              inputClasses(formErrors.username) +
+                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                           />
                         </div>
                       </div>
@@ -498,7 +513,10 @@ export default function SignUpPage() {
                             onChange={(e) => setPhoneNumber(e.target.value)}
                             placeholder="Enter phone number"
                             autoComplete="tel"
-                            className={inputClasses(formErrors.phoneNumber)}
+                            className={
+                              inputClasses(formErrors.phoneNumber) +
+                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                            }
                           />
                         </div>
                       </div>
@@ -517,7 +535,10 @@ export default function SignUpPage() {
                           value={email}
                           placeholder="Enter email address"
                           autoComplete="email"
-                          className={inputClasses(formErrors.email)}
+                          className={
+                            inputClasses(formErrors.email) +
+                            "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
+                          }
                           onChange={handleChange}
                         />
                       </div>
