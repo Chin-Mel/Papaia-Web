@@ -194,41 +194,37 @@ export default function SignUpPage() {
   `;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 via-white to-green-50">
+    <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      <main className="flex-1 relative flex justify-center py-12 sm:py-16 lg:py-20 px-4 sm:px-6">
-        {/* Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-orange-200/30 to-transparent rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-green-200/30 to-transparent rounded-full blur-3xl"></div>
-        </div>
+      <main className="flex-1 relative flex justify-center py-20 sm:py-24 px-2 sm:px-4">
+        {/* Keep original background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('your-background.png')" }}
+        ></div>
 
         <div className="w-full max-w-7xl relative z-10">
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
-            {/* Elegant Header */}
-            <div className="relative bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-8 sm:py-10">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSAxMCAwIEwgMCAwIDAgMTAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjA1IiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-30"></div>
-
-              <div className="relative flex flex-col items-center justify-center">
-                <div className="w-16 h-16 sm:w-18 sm:h-18 bg-white rounded-2xl flex items-center justify-center shadow-2xl ring-4 ring-white/30 transform hover:scale-105 transition-transform duration-300">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-orange-500 to-green-600 rounded-xl"></div>
-                </div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mt-4 tracking-tight">
-                  Create Account
-                </h1>
-                <p className="text-orange-100 text-sm sm:text-base lg:text-lg mt-2 text-center font-light">
-                  Join us and start managing your farm dashboard
-                </p>
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {/* Keep original header */}
+            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center py-4 sm:py-6 px-4">
+              <div className="w-12 h-12 sm:w-11 sm:h-11 lg:w-13 lg:h-13 bg-white rounded-full flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-orange-500 rounded-full"></div>
               </div>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mt-2">
+                Sign Up
+              </h1>
+              <p className="text-[#FDEDD3] text-xs sm:text-sm lg:text-base mt-1 text-center">
+                Create your farm dashboard account
+              </p>
             </div>
 
             {/* Form Content */}
-            <div className="p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-7 lg:space-y-8">
+            <div className="p-6 sm:p-8 lg:p-10 space-y-6 sm:space-y-7">
               {/* Personal Information Section */}
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1.5 h-6 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
                   Personal Information
                 </h2>
 
@@ -305,8 +301,8 @@ export default function SignUpPage() {
 
               {/* Account Information Section */}
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1.5 h-6 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
                   Account Information
                 </h2>
 
@@ -363,8 +359,8 @@ export default function SignUpPage() {
 
               {/* Security Section */}
               <div>
-                <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <div className="w-1.5 h-6 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
+                <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <div className="w-1 h-5 bg-gradient-to-b from-[#00712D] to-[#F97316] rounded-full"></div>
                   Security
                 </h2>
 
