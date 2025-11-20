@@ -321,9 +321,10 @@ export default function SignUpPage() {
 
       <main className="flex-1 relative flex justify-center py-12 px-4">
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
           style={{
             backgroundImage: `url(${MainBackground})`,
+            backgroundAttachment: "fixed",
           }}
         />
 
