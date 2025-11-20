@@ -451,10 +451,7 @@ export default function SignUpPage() {
                             value={dob}
                             onChange={(e) => setDob(e.target.value)}
                             max={maxDate}
-                            className={
-                              inputClasses(false) +
-                              "w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
+                            className={inputClasses(false)}
                           />
                         </div>
                       </div>
@@ -526,10 +523,7 @@ export default function SignUpPage() {
                             value={email}
                             placeholder="Enter email address"
                             autoComplete="email"
-                            className={
-                              inputClasses(formErrors.email) +
-                              " w-full max-w-[440px] h-10 pl-11 pr-4 text-sm"
-                            }
+                            className={inputClasses(formErrors.email)}
                             onChange={handleChange}
                           />
                         </div>
@@ -600,7 +594,7 @@ export default function SignUpPage() {
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 p-5 mt-3 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
+              <div className="flex items-start gap-3 p-5 mt-7 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
                 <input
                   type="checkbox"
                   id="terms"
