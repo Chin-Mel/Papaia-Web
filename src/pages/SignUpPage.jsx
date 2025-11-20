@@ -332,23 +332,22 @@ export default function SignUpPage() {
           onSubmit={handleSubmit}
           className="w-full max-w-6xl relative z-10 my-6"
         >
-          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0">
             {/* Header */}
-            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-10 px-6">
+            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-6 px-6">
               <div className="flex flex-col items-center">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl mb-4 ring-4 ring-white/30">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                   <img
                     src={PapayaLogo}
                     alt="Papaia Logo"
-                    className="w-12 h-12"
+                    className="w-10 h-10"
                     loading="eager"
                     decoding="async"
                   />
                 </div>
-                <h1 className="text-3xl font-bold text-white mb-2">Welcome!</h1>
-                <p className="text-white/90 text-base text-center max-w-md">
-                  Create your farm dashboard account and start managing your
-                  papaya farm
+                <h1 className="text-2xl font-bold text-white mb-1">Welcome!</h1>
+                <p className="text-white/90 text-sm text-center max-w-md">
+                  Create your farm dashboard account
                 </p>
               </div>
             </div>
@@ -487,21 +486,40 @@ export default function SignUpPage() {
 
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-700">
-                          Email Address <span className="text-red-500">*</span>
+                          Phone Number <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
-                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                           <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            value={email}
-                            placeholder="Enter email address"
-                            autoComplete="email"
-                            className={inputClasses(formErrors.email)}
-                            onChange={handleChange}
+                            id="phoneNumber"
+                            name="phoneNumber"
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="Enter phone number"
+                            autoComplete="tel"
+                            className={inputClasses(formErrors.phoneNumber)}
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-gray-700">
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                        <input
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={email}
+                          placeholder="Enter email address"
+                          autoComplete="email"
+                          className={inputClasses(formErrors.email)}
+                          onChange={handleChange}
+                        />
                       </div>
                     </div>
 
@@ -566,25 +584,6 @@ export default function SignUpPage() {
                             {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
                           </button>
                         </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Phone Number <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="phoneNumber"
-                          name="phoneNumber"
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          placeholder="Enter phone number"
-                          autoComplete="tel"
-                          className={inputClasses(formErrors.phoneNumber)}
-                        />
                       </div>
                     </div>
                   </div>
