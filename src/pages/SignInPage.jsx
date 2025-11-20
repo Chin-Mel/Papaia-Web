@@ -147,7 +147,6 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
-
       <main className="flex-1 flex justify-center items-center py-12 px-4 relative">
         {/* Background */}
         <div
@@ -155,7 +154,7 @@ export default function SignInPage() {
           style={{ backgroundImage: `url(${MainBackground})` }}
         ></div>
 
-        <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10">
+        <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10 my-12">
           <div className="w-full bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col">
             <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
