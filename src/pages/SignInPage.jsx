@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
+import MainBackground from "../assets/MainBackground.png";
 
 import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
 import UserIcon from "../assets/user-icon.png";
@@ -149,6 +150,13 @@ export default function SignInPage() {
       <HeaderStart />
 
       <main className="flex-1 flex justify-center items-center py-16 sm:py-20 px-4">
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          style={{
+            backgroundImage: `url(${MainBackground})`,
+            backgroundAttachment: "fixed",
+          }}
+        />
         <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10">
           <div className="w-full bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col">
             <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">

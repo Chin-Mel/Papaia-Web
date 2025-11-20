@@ -16,7 +16,7 @@ export default function PrivacyPolicyModal({ isOpen, onClose }) {
         >
           <div className="bg-white rounded-full p-4 shadow-lg mb-4">
             <img
-              src={PapayaLogo}
+              src={PapayaLogo || "https://via.placeholder.com/56"}
               alt="Papaia Logo"
               className="w-12 h-12 sm:w-14 sm:h-14"
             />

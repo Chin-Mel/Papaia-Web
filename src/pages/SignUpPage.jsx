@@ -600,48 +600,34 @@ export default function SignUpPage() {
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200 mt-8">
+              <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer flex-shrink-0 
-                            appearance-none bg-white checked:bg-orange-500 checked:border-orange-500
-                            checked:after:content-['✓'] checked:after:text-white checked:after:text-sm 
-                            checked:after:flex checked:after:items-center checked:after:justify-center
-                            checked:after:absolute checked:after:inset-0"
-                  style={{
-                    position: "relative",
-                  }}
+                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer"
                 />
-                <label
-                  htmlFor="terms"
-                  className="text-sm text-gray-700 leading-relaxed cursor-pointer"
-                >
+
+                <p className="text-sm text-gray-700">
                   I agree to the{" "}
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowTermsModal(true);
-                    }}
-                    className="text-orange-600 hover:text-orange-700 font-semibold hover:underline underline-offset-2 transition-colors"
+                    className="text-green-700 font-semibold underline hover:text-green-900"
+                    onClick={() => setShowTermsModal(true)}
                   >
-                    Terms of Service
+                    Terms and Conditions
                   </button>{" "}
                   and{" "}
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowPrivacyModal(true);
-                    }}
-                    className="text-orange-600 hover:text-orange-700 font-semibold hover:underline underline-offset-2 transition-colors"
+                    className="text-orange-700 font-semibold underline hover:text-orange-900"
+                    onClick={() => setShowPrivacyModal(true)}
                   >
                     Privacy Policy
                   </button>
-                </label>
+                  .
+                </p>
               </div>
 
               {/* Submit Button */}
@@ -698,49 +684,16 @@ export default function SignUpPage() {
             </div>
           </div>
         </form>
-        {/* Terms and Conditions Modal */}
-        {showTermsModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Terms of Service
-                </h2>
-                <button
-                  onClick={() => setShowTermsModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <TermsAndConditionsModal />
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Modals */}
+        <TermsAndConditionsModal
+          isOpen={showTermsModal}
+          onClose={() => setShowTermsModal(false)}
+        />
 
-        {/* Privacy Policy Modal */}
-        {showPrivacyModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-              <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Privacy Policy
-                </h2>
-                <button
-                  onClick={() => setShowPrivacyModal(false)}
-                  className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <PrivacyPolicyModal />
-              </div>
-            </div>
-          </div>
-        )}
+        <PrivacyPolicyModal
+          isOpen={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)}
+        />
       </main>
 
       <FooterStart />
