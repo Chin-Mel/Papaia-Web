@@ -43,10 +43,9 @@ export default function LandingPage() {
       <section className="relative h-[90vh] sm:h-[100vh] flex items-center justify-center overflow-hidden">
         {/* Background */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10"
           style={{ backgroundImage: `url(${MainBackground})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[rgba(12,32,29,0.2)] to-transparent" />
 
         {/* Glassmorphism Box */}
         <div
