@@ -465,41 +465,107 @@ export default function SignUpPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Username <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="username"
-                          name="username"
-                          type="text"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          placeholder="Choose username"
-                          autoComplete="username"
-                          className={inputClasses(formErrors.username)}
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Username <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <AtSign className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            id="username"
+                            name="username"
+                            type="text"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            placeholder="Choose username"
+                            autoComplete="username"
+                            className={inputClasses(formErrors.username)}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Email Address <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            id="email"
+                            name="email"
+                            type="email"
+                            value={email}
+                            placeholder="Enter email address"
+                            autoComplete="email"
+                            className={inputClasses(formErrors.email)}
+                            onChange={handleChange}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Email Address <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="email"
-                          name="email"
-                          type="email"
-                          value={email}
-                          placeholder="Enter email address"
-                          autoComplete="email"
-                          className={inputClasses(formErrors.email)}
-                          onChange={handleChange}
-                        />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Password <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            id="password"
+                            name="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter password"
+                            value={password}
+                            autoComplete="new-password"
+                            onChange={handlePasswordChange}
+                            className={
+                              inputClasses(formErrors.password) + " pr-12"
+                            }
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            {showPassword ? "👁️" : "👁️‍🗨️"}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Confirm Password{" "}
+                          <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <input
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm password"
+                            value={confirmPassword}
+                            autoComplete="new-password"
+                            onChange={handleConfirmPasswordChange}
+                            className={
+                              inputClasses(
+                                formErrors.confirmPassword ||
+                                  confirmPasswordError
+                              ) + " pr-12"
+                            }
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          >
+                            {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                          </button>
+                        </div>
                       </div>
                     </div>
 
@@ -521,72 +587,12 @@ export default function SignUpPage() {
                         />
                       </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Password <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="password"
-                          name="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Enter password"
-                          value={password}
-                          autoComplete="new-password"
-                          onChange={handlePasswordChange}
-                          className={
-                            inputClasses(formErrors.password) + " pr-12"
-                          }
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          {showPassword ? "👁️" : "👁️‍🗨️"}
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-700">
-                        Confirm Password <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                        <input
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm password"
-                          value={confirmPassword}
-                          autoComplete="new-password"
-                          onChange={handleConfirmPasswordChange}
-                          className={
-                            inputClasses(
-                              formErrors.confirmPassword || confirmPasswordError
-                            ) + " pr-12"
-                          }
-                        />
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                        >
-                          {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Terms */}
-              <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-green-50 to-orange-50 rounded-2xl border-2 border-orange-200 mt-8">
+              <div className="flex items-start gap-3 p-5 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200 mt-8">
                 <input
                   type="checkbox"
                   id="terms"
