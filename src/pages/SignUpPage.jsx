@@ -330,9 +330,9 @@ export default function SignUpPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-6xl relative z-10 my-6"
+          className="w-full max-w-6xl relative z-10 my-12"
         >
-          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0">
+          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0 ">
             {/* Header */}
             <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-6 px-6">
               <div className="flex flex-col items-center">
@@ -353,7 +353,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 divide-x-0 lg:divide-x-2 lg:divide-gray-200">
                 {/* Personal Information Column */}
                 <div>
                   <div className="flex items-center gap-3 mb-6">
@@ -454,7 +454,7 @@ export default function SignUpPage() {
 
                 {/* Account Information Column */}
                 <div>
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="lg:pl-8">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
                       <Lock className="w-5 h-5 text-white" />
                     </div>
