@@ -21,8 +21,7 @@ export default function DemoPage() {
         "View analytics and recent scans",
         "Access scan history and details",
         "Edit farm information and deactivate farms",
-        "Manage notifications (mark as read)",
-        "Edit profile data and images",
+        "Navigate the dashboard and farm dashboard interface",
       ],
     },
     {
