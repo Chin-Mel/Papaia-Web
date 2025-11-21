@@ -23,7 +23,6 @@ export default function DemoPage() {
         "Edit farm information and deactivate farms",
         "Manage notifications (mark as read)",
         "Edit profile data and images",
-        "Deactivate and reactivate user accounts",
       ],
     },
     {
