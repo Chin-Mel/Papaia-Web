@@ -52,7 +52,7 @@ export default function SignInPage() {
     setError("");
 
     try {
-      // Step 1: Call reactivation endpoint to change status
+      // Step 1: Call reactivation endpoint to change status from "deactivate" to "active"
       const reactivateResponse = await fetch(
         "https://papaiaapi.onrender.com/api/reactivate",
         {
@@ -72,44 +72,38 @@ export default function SignInPage() {
         );
       }
 
-      // Step 2: Parse the JWT token to get user ID
-      // JWT tokens have 3 parts separated by dots: header.payload.signature
-      // We need to decode the payload (middle part)
-      const tokenParts = deactivatedUserToken.split(".");
-      if (tokenParts.length !== 3) {
-        throw new Error("Invalid token format");
-      }
+      // Step 2: Account reactivated successfully - now log in again with the credentials
+      const safeEmail = usernameOrEmail.trim();
+      const safePassword = password.trim();
 
-      // Decode the payload (it's base64url encoded)
-      const payload = JSON.parse(atob(tokenParts[1]));
-      const userId = payload.userId || payload.id || payload.sub;
-
-      if (!userId) {
-        throw new Error("Could not extract user ID from token");
-      }
-
-      // Step 3: Fetch fresh user data using the user ID
-      const userResponse = await fetch(
-        `https://papaiaapi.onrender.com/api/user/${userId}`,
+      const loginResponse = await fetch(
+        "https://papaiaapi.onrender.com/api/login",
         {
-          headers: {
-            Authorization: `Bearer ${deactivatedUserToken}`,
-          },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: safeEmail, password: safePassword }),
         }
       );
 
-      if (!userResponse.ok) {
-        throw new Error("Failed to fetch user data after reactivation");
+      if (!loginResponse.ok) {
+        const errorData = await loginResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || "Failed to log in after reactivation."
+        );
       }
 
-      const userData = await userResponse.json();
-      const user = userData.user || userData;
+      const loginData = await loginResponse.json();
 
-      // Step 4: Store token and user data
-      localStorage.setItem("token", deactivatedUserToken);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Step 3: Store the fresh credentials (with reactivated status)
+      if (loginData.token) {
+        localStorage.setItem("token", loginData.token);
+      }
 
-      // Step 5: Dispatch update event for other components
+      if (loginData.user) {
+        localStorage.setItem("user", JSON.stringify(loginData.user));
+      }
+
+      // Step 4: Dispatch update event for other components
       window.dispatchEvent(new Event("userUpdated"));
 
       // Success - navigate to dashboard
