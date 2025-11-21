@@ -157,17 +157,17 @@ export default function SignInPage() {
         <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10 my-12">
           <div className="w-full bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col">
             <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
-              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                 <img
                   src={PapayaLogo}
                   alt="Papaia Logo"
-                  className="w-10 h-10 sm:w-12 sm:h-12"
+                  className="w-7 h-9"
                   loading="eager"
                   decoding="async"
                 />
               </div>
 
-              <h1 className="text-lg sm:text-xl font-bold text-white font-['Poppins'] mt-[2px]">
+              <h1 className="text-lg sm:text-xl font-bold text-white mt-[2px]">
                 Papaya Farm
               </h1>
               <p className="text-[#FDEDD3] text-xs sm:text-sm mt-1 text-center">
@@ -290,7 +290,7 @@ export default function SignInPage() {
                 </button>
 
                 {/* Error space */}
-                <div className="h-[14px] mt-1 flex items-center justify-center">
+                <div className="h-[11px] mt-1 flex items-center justify-center">
                   {error && (
                     <p className="text-red-500 text-xs text-center leading-none">
                       {error}
@@ -300,13 +300,13 @@ export default function SignInPage() {
               </form>
 
               {/* Sign up link */}
-              <div className="mt-4 text-center">
+              <div className="text-center">
                 <span className="text-gray-500 text-xs sm:text-sm">
                   Don't have an account?{" "}
                 </span>
                 <Link
                   to="/sign-up"
-                  className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors cursor-pointer inline-block"
+                  className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
                 >
                   Sign up here
                 </Link>

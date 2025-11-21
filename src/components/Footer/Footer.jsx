@@ -9,7 +9,7 @@ export default function Footer() {
         <img
           src={papaiaLogo}
           alt="Papaia Logo"
-          className="w-6 h-6 object-contain"
+          className="w-6 h-8 object-contain"
         />
 
         {/* All rights reserved */}

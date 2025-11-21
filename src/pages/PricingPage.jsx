@@ -1,319 +1,340 @@
-import React, { useState } from "react";
-import { Check, X, ArrowLeft } from "lucide-react";
-import Header from "../components/Header/HeaderMain";
-import Footer from "../components/Footer/Footer";
+import { Check, X } from "lucide-react";
+import HeaderMain from "../components/Header/HeaderMain";
+import FooterMain from "../components/Footer/Footer";
+import MainBackground from "../assets/MainBackground.png";
+
+// Mock images - replace with actual imports
+const HeroBackground =
+  "https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=1600&q=80";
 
 export default function PricingPage() {
-  const [isAnnual, setIsAnnual] = useState(false);
-
   const plans = [
     {
-      name: "Free Plan",
-      price: 0,
-      period: "month",
-      description: "Perfect for getting started",
-      tagline: "Limited daily use(10) plant scanning",
+      name: "Free",
+      price: "₱0",
+      period: "/month",
+      description: "Perfect for backyard growers testing Papaia",
       features: [
-        "Limited daily use(10) plant scanning",
-        "Disease identification",
-        "Basic recommendations",
+        "Up to 10 plant scans per month",
+        "AI-based disease detection",
+        "Basic treatment recommendations",
+        "Mobile app access only",
       ],
       limitations: [
         "No real-time monitoring",
-        "No expert reports",
-        "No treatment reminders",
-        "No advanced analytics",
-        "No priority support",
+        "No analytics or reports",
+        "No reminders",
+        "No team access",
       ],
-      buttonText: "Current Plan",
-      buttonStyle: "bg-gray-400 text-white cursor-not-allowed",
+      color: "from-gray-500 to-gray-600",
       popular: false,
-      isCurrent: true,
     },
     {
-      name: "Pro Plan",
-      price: isAnnual ? 119.88 : 9.99,
-      originalPrice: isAnnual ? 239.76 : 19.99,
-      period: isAnnual ? "year" : "month",
-      description: "For dedicated farm owners",
-      tagline: "Unlimited plant scans",
+      name: "Farmer",
+      price: "₱199",
+      period: "/month",
+      description: "Ideal for individual farmers managing 1-2 farms",
       features: [
-        "Unlimited plant scans",
-        "PDF expert reports",
-        "Treatment reminders",
-        "Advanced analytics",
-        "Priority support",
+        "Up to 100 scans per month",
+        "Disease detection & treatment suggestions",
+        "Treatment reminders & progress tracking",
+        "Farm health summary (basic analytics)",
+        "Mobile app access",
       ],
-      limitations: [
-        "No shared access with farm workers",
-        "No team management tools",
-        "No centralized reporting",
+      limitations: ["No web dashboard", "No multi-farm tools"],
+      color: "from-green-500 to-green-600",
+      popular: false,
+    },
+    {
+      name: "Basic",
+      price: "₱699",
+      period: "/month",
+      description: "For small farm owners or cooperatives (up to 5 farmers)",
+      features: [
+        "Everything in Farmer Plan",
+        "Farm management dashboard (web)",
+        "Shared access with up to 5 field farmers",
+        "Analytics and reports for multiple farms",
+        "Real-time monitoring",
+        "Treatment daily reminders for all members",
       ],
-      buttonText: "Subscribe Now",
-      buttonStyle: "bg-orange-500 text-white hover:bg-orange-600 shadow-lg",
+      limitations: [],
+      color: "from-orange-500 to-orange-600",
       popular: true,
     },
     {
-      name: "Farm Manager Plan",
-      price: isAnnual ? 239.88 : 19.99,
-      originalPrice: isAnnual ? 479.76 : 39.99,
-      period: isAnnual ? "year" : "month",
-      description: "For serious farm management",
-      tagline: "Everything in Pro Plan plus team features",
+      name: "Enterprise",
+      price: "₱1,299",
+      period: "/month",
+      description: "For large-scale farms and agribusinesses",
       features: [
-        "Everything in Pro Plan",
-        "Shared web UI with farm workers",
-        "Team management tools",
-        "Centralized reporting",
-        "Bulk data management",
-        "Multi-farm dashboard",
-        "Advanced team permissions",
+        "Everything in Basic Plan",
+        "Unlimited farmer accounts",
+        "Multi-farm & multi-location dashboard",
+        "Advanced analytics & AI-driven insights",
+        "PDF expert reports & bulk data exports",
+        "Priority support & system integration",
+        "Centralized management",
       ],
       limitations: [],
-      buttonText: "Subscribe Now",
-      buttonStyle: "bg-orange-500 text-white hover:bg-orange-600 shadow-lg",
+      color: "from-blue-600 to-blue-700",
       popular: false,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <Header />
+    <div className="min-h-screen bg-gray-50">
+      <HeaderMain />
 
-      <div className="py-8 lg:py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Title - Centered */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-              Choose Your Plan
-            </h1>
-            <p className="text-gray-600 text-base lg:text-lg">
-              Unlock powerful tools to manage your crops efficiently
-            </p>
+      <main>
+        {/* Hero Section */}
+        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] overflow-hidden">
+          <div className="absolute inset-0">
+            <img
+              src={MainBackground || HeroBackground}
+              alt="Background plants"
+              className="w-full h-full object-cover"
+            />
           </div>
-
-          {/* Billing Toggle - Centered */}
-          <div className="flex justify-center mb-12">
-            <div className="inline-flex items-center gap-3 bg-gray-100 rounded-full p-1 shadow-md">
-              <button
-                onClick={() => setIsAnnual(false)}
-                className={`px-6 lg:px-8 py-2.5 rounded-full font-medium transition-all text-sm lg:text-base ${
-                  !isAnnual
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setIsAnnual(true)}
-                className={`px-6 lg:px-8 py-2.5 rounded-full font-medium transition-all text-sm lg:text-base ${
-                  isAnnual
-                    ? "bg-green-600 text-white shadow-sm"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-              >
-                Annual
-              </button>
+          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                  Simple, Transparent Pricing
+                </h1>
+                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                  Choose the perfect plan for your farming needs. From backyard
+                  growers to large agribusinesses.
+                </p>
+              </div>
             </div>
           </div>
+        </section>
 
-          {isAnnual && (
-            <p className="text-green-600 font-semibold text-center mb-8 text-sm lg:text-base">
-              🎉 Save 50% with annual billing!
-            </p>
-          )}
+        {/* Pricing Explanation */}
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center max-w-4xl mx-auto mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Affordable & Sustainable
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-6">
+                Papaia's subscription model ensures accessibility for Filipino
+                farmers while maintaining system quality and continuous
+                improvements.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                <div className="bg-green-50 rounded-xl p-6">
+                  <h3 className="font-bold text-lg text-green-800 mb-2">
+                    Affordable for Filipino Farmers
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    The ₱199 Farmer Plan aligns with local income capacity.
+                    Small-scale papaya farmers typically earn around ₱20,000+
+                    per month, making this investment sustainable and valuable.
+                  </p>
+                </div>
+                <div className="bg-orange-50 rounded-xl p-6">
+                  <h3 className="font-bold text-lg text-orange-800 mb-2">
+                    Inclusive Features
+                  </h3>
+                  <p className="text-sm text-gray-700">
+                    Paid farm owners automatically grant their team members
+                    access to premium scanning tools, ensuring everyone benefits
+                    from advanced disease detection.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-          {/* Pricing Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto">
-            {plans.map((plan, index) => (
-              <div
-                key={index}
-                className={`relative bg-white rounded-2xl shadow-xl overflow-hidden transition-all hover:shadow-2xl ${
-                  plan.popular
-                    ? "ring-2 lg:ring-4 ring-orange-500 ring-opacity-50 lg:scale-105"
-                    : ""
-                }`}
-              >
-                {/* Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute top-0 right-0 bg-orange-500 text-white px-4 lg:px-6 py-1.5 lg:py-2 text-xs lg:text-sm font-bold rounded-bl-2xl shadow-lg z-10">
-                    MOST POPULAR
+        {/* Pricing Plans */}
+        <section className="py-12 sm:py-16 bg-gray-50">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Choose Your Plan
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600">
+                Select the subscription that fits your farm size and needs
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {plans.map((plan, index) => (
+                <div
+                  key={index}
+                  className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 ${
+                    plan.popular ? "ring-2 ring-orange-500" : ""
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
+                      POPULAR
+                    </div>
+                  )}
+
+                  <div
+                    className={`bg-gradient-to-r ${plan.color} p-6 text-white`}
+                  >
+                    <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                    <div className="flex items-baseline mb-2">
+                      <span className="text-4xl font-bold">{plan.price}</span>
+                      <span className="text-sm ml-1">{plan.period}</span>
+                    </div>
+                    <p className="text-sm text-white/90">{plan.description}</p>
                   </div>
-                )}
 
-                {/* Current Plan Badge */}
-                {plan.isCurrent && (
-                  <div className="absolute top-0 right-0 bg-gray-500 text-white px-4 lg:px-6 py-1.5 lg:py-2 text-xs lg:text-sm font-bold rounded-bl-2xl">
-                    CURRENT
-                  </div>
-                )}
+                  <div className="p-6">
+                    <div className="space-y-3 mb-6">
+                      {plan.features.map((feature, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-gray-700">
+                            {feature}
+                          </span>
+                        </div>
+                      ))}
+                      {plan.limitations.map((limitation, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <X className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                          <span className="text-sm text-gray-500">
+                            {limitation}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
 
-                <div className="p-5 lg:p-8">
-                  {/* User Type Badge */}
-                  <div className="mb-3">
-                    <span
-                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                        plan.userType === "For Farm Managers"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-green-100 text-green-700"
+                    <button
+                      className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                        plan.name === "Free"
+                          ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                          : `bg-gradient-to-r ${plan.color} text-white hover:shadow-lg`
                       }`}
                     >
-                      {plan.userType}
-                    </span>
+                      {plan.name === "Free"
+                        ? "Get Started Free"
+                        : "Choose Plan"}
+                    </button>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-                  {/* Plan Name */}
-                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900 mb-2">
-                    {plan.name}
-                  </h3>
-                  <p className="text-gray-600 text-sm lg:text-base mb-4 lg:mb-6 min-h-[40px]">
-                    {plan.tagline}
-                  </p>
+        {/* Cost Breakdown */}
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                Operational Transparency
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600">
+                Understanding how subscription fees support Papaia's
+                infrastructure
+              </p>
+            </div>
 
-                  {/* Price */}
-                  <div className="mb-4 lg:mb-6">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl lg:text-5xl font-bold text-gray-900">
-                        ${plan.price}
-                      </span>
-                      <span className="text-gray-600 text-sm lg:text-base">
-                        / {plan.period}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+              {/* Monthly OPEX */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-8 border border-green-200">
+                <h3 className="text-xl font-bold text-green-800 mb-6">
+                  Monthly Operating Costs
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { item: "Firebase (Database & Storage)", cost: "₱500" },
+                    { item: "Google Gemini API", cost: "₱300" },
+                    { item: "Render Hosting (Backend)", cost: "₱400" },
+                    { item: "Vercel Hosting (Frontend)", cost: "₱150" },
+                    { item: "System Maintenance & Support", cost: "₱650" },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center pb-3 border-b border-green-200 last:border-0"
+                    >
+                      <span className="text-sm text-gray-700">{item.item}</span>
+                      <span className="font-semibold text-green-700">
+                        {item.cost}
                       </span>
                     </div>
-                    {plan.originalPrice && (
-                      <div className="mt-1">
-                        <span className="text-gray-400 line-through text-sm lg:text-base">
-                          ${plan.originalPrice}
-                        </span>
-                        <span className="text-green-600 font-semibold ml-2 text-sm lg:text-base">
-                          Save {isAnnual ? "50%" : "50%"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CTA Button */}
-                  <button
-                    disabled={plan.isCurrent}
-                    className={`w-full py-3 lg:py-4 rounded-lg font-semibold text-base lg:text-lg transition-all mb-6 lg:mb-8 ${plan.buttonStyle}`}
-                  >
-                    {plan.buttonText}
-                  </button>
-
-                  {/* Features */}
-                  <div className="space-y-3 lg:space-y-4">
-                    {plan.features.map((feature, i) => (
-                      <div key={i} className="flex items-start gap-2 lg:gap-3">
-                        <Check className="w-4 h-4 lg:w-5 lg:h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700 text-sm lg:text-base leading-snug">
-                          {feature}
-                        </span>
-                      </div>
-                    ))}
-
-                    {plan.limitations.length > 0 && (
-                      <>
-                        <div className="border-t border-gray-200 my-3 lg:my-4"></div>
-                        {plan.limitations.map((limitation, i) => (
-                          <div
-                            key={i}
-                            className="flex items-start gap-2 lg:gap-3 opacity-40"
-                          >
-                            <X className="w-4 h-4 lg:w-5 lg:h-5 text-gray-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-gray-600 text-sm lg:text-base leading-snug">
-                              {limitation}
-                            </span>
-                          </div>
-                        ))}
-                      </>
-                    )}
+                  ))}
+                  <div className="flex justify-between items-center pt-4 border-t-2 border-green-300">
+                    <span className="font-bold text-gray-800">
+                      Total Monthly OPEX
+                    </span>
+                    <span className="font-bold text-xl text-green-700">
+                      ₱2,000
+                    </span>
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
 
-          {/* Special Note */}
-          <div className="mt-8 lg:mt-12 max-w-3xl mx-auto">
-            <div className="bg-green-50 border-l-4 border-green-600 rounded-lg p-4 lg:p-6 shadow-md">
-              <div className="flex items-start gap-3">
-                <div className="bg-green-600 text-white rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <span className="text-sm font-bold">i</span>
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2 text-sm lg:text-base">
-                    Special Note
-                  </h4>
-                  <p className="text-gray-700 text-sm lg:text-base leading-relaxed">
-                    If your Farm Manager is subscribed you don't need to pay for
-                    the subscription and get access to all premium features
-                  </p>
+              {/* Revenue Projection */}
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl p-8 border border-orange-200">
+                <h3 className="text-xl font-bold text-orange-800 mb-6">
+                  Sample Revenue Projection
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { plan: "Free (100 users)", revenue: "₱0" },
+                    { plan: "Farmer (30 users)", revenue: "₱5,970" },
+                    { plan: "Basic (15 users)", revenue: "₱10,485" },
+                    { plan: "Enterprise (5 users)", revenue: "₱6,495" },
+                  ].map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex justify-between items-center pb-3 border-b border-orange-200 last:border-0"
+                    >
+                      <span className="text-sm text-gray-700">{item.plan}</span>
+                      <span className="font-semibold text-orange-700">
+                        {item.revenue}
+                      </span>
+                    </div>
+                  ))}
+                  <div className="flex justify-between items-center pt-4 border-t-2 border-orange-300">
+                    <span className="font-bold text-gray-800">
+                      Total Monthly Revenue
+                    </span>
+                    <span className="font-bold text-xl text-orange-700">
+                      ₱22,950
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* FAQ Section */}
-          <div className="mt-12 lg:mt-20 max-w-3xl mx-auto">
-            <h2 className="text-2xl lg:text-3xl font-bold text-center text-gray-900 mb-6 lg:mb-8">
-              Frequently Asked Questions
+            <div className="text-center mt-8">
+              <p className="text-sm text-gray-600 max-w-2xl mx-auto">
+                Subscription revenue ensures continuous system improvements, API
+                usage coverage, and model updates without relying on external
+                funding. This sustainable model keeps Papaia accessible and
+                reliable for all farmers.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-12 sm:py-16 bg-gradient-to-r from-green-600 to-orange-500">
+          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 text-center">
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Ready to Transform Your Farm?
             </h2>
-            <div className="space-y-4 lg:space-y-6">
-              <div className="bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-base lg:text-lg text-gray-900 mb-2">
-                  Can I switch plans anytime?
-                </h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Yes! You can upgrade or downgrade your plan at any time.
-                  Changes take effect immediately.
-                </p>
-              </div>
-              <div className="bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-base lg:text-lg text-gray-900 mb-2">
-                  Is there a free trial for Premium plans?
-                </h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  Yes, we offer a 14-day free trial for both Pro and Farm
-                  Manager plans. No credit card required.
-                </p>
-              </div>
-              <div className="bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-base lg:text-lg text-gray-900 mb-2">
-                  What payment methods do you accept?
-                </h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  We accept credit cards, debit cards, GCash, and PayMaya.
-                </p>
-              </div>
-              <div className="bg-white rounded-xl p-4 lg:p-6 shadow-md hover:shadow-lg transition-shadow">
-                <h3 className="font-bold text-base lg:text-lg text-gray-900 mb-2">
-                  What happens if my Farm Manager subscribes?
-                </h3>
-                <p className="text-gray-600 text-sm lg:text-base">
-                  If your Farm Manager has an active subscription, you
-                  automatically get access to all premium features at no extra
-                  cost!
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom CTA */}
-          <div className="mt-12 lg:mt-16 text-center">
-            <p className="text-gray-600 text-sm lg:text-base mb-4">
-              Need help choosing?{" "}
-              <a
-                href="#"
-                className="text-green-600 font-semibold hover:underline"
-              >
-                Contact Support
-              </a>
+            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+              Join hundreds of Filipino farmers using Papaia to protect their
+              crops and increase yields.
             </p>
+            <button className="bg-white text-green-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all shadow-lg">
+              Start Your Free Trial
+            </button>
           </div>
-        </div>
-      </div>
-      <Footer />
+        </section>
+      </main>
+
+      <FooterMain />
     </div>
   );
 }

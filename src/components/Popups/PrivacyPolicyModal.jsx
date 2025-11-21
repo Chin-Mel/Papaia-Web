@@ -9,30 +9,31 @@ export default function PrivacyPolicyModal({ isOpen, onClose }) {
       <div className="w-full max-w-lg mx-auto rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header with gradient background */}
         <div
-          className="flex flex-col items-center justify-center text-white p-6"
+          className="flex flex-col items-center justify-center text-white p-4"
           style={{
             backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
         >
-          <div className="bg-white rounded-full p-4 shadow-lg mb-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
             <img
               src={PapayaLogo || "https://via.placeholder.com/56"}
               alt="Papaia Logo"
-              className="w-12 h-12 sm:w-14 sm:h-14"
+              className="w-7 h-9 sm:w-7 sm:h-9"
             />
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-center">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-center">
             Privacy Policy
-          </h2>
-          <p className="text-sm sm:text-base text-center opacity-90 mt-1">
+          </h3>
+
+          <p className="text-[9px] sm:text-xs md:text-sm text-center opacity-90 mt-1">
             Last Updated: October 29, 2025
           </p>
         </div>
 
         {/* Content */}
         <div className="bg-white p-6 overflow-y-auto flex-1">
-          <div className="text-gray-700 space-y-4 text-sm leading-relaxed">
+          <div className="text-gray-700 space-y-4 text-sm leading-relaxed text-justify">
             <p>
               Welcome to Papaia, an AI-powered system for papaya disease
               identification and farm management. By creating an account and
@@ -53,8 +54,9 @@ export default function PrivacyPolicyModal({ isOpen, onClose }) {
               <li>Activity and usage logs</li>
             </ul>
             <p>
-              All data are processed in accordance with the Data Privacy Act of
-              2012 (RA 10173). Data are used solely for:
+              All data are processed in accordance with the{" "}
+              <b>Data Privacy Act of 2012 (RA 10173).</b> Data are used solely
+              for:
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>AI-based disease analysis and model improvement</li>
@@ -62,8 +64,8 @@ export default function PrivacyPolicyModal({ isOpen, onClose }) {
               <li>User experience enhancement</li>
             </ul>
             <p>
-              Papaia does not sell, trade, or disclose personal data to third
-              parties without prior consent, except as required by law.
+              Papaia does not <b>sell, trade, or disclose</b> personal data to
+              third parties without prior consent, except as required by law.
             </p>
 
             <div className="pt-2">
@@ -87,12 +89,13 @@ export default function PrivacyPolicyModal({ isOpen, onClose }) {
             </div>
 
             <p>
-              Papaia uses Google Firebase for encrypted, cloud-based data
-              storage. All transmitted data are protected through SSL encryption
-              and authentication protocols. Periodic security audits are
-              conducted to safeguard against unauthorized access. However, users
-              acknowledge that no online system is completely secure and that
-              they share data at their own discretion.
+              Papaia uses <b>Google Firebase</b> for encrypted, cloud-based data
+              storage. All transmitted data are protected through{" "}
+              <b>SSL encryption and authentication protocols.</b> Periodic
+              security audits are conducted to safeguard against unauthorized
+              access. However, users acknowledge that no online system is
+              completely secure and that they share data at their own
+              discretion.
             </p>
           </div>
 

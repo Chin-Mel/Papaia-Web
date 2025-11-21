@@ -14,7 +14,7 @@ export default function FooterStart() {
               <img
                 src={papaiaLogo}
                 alt="Papaia Logo"
-                className="w-[50px] h-[50px] object-contain"
+                className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9"
               />
               <span className="text-white text-xl font-bold">Papaia</span>
             </div>
@@ -37,12 +37,12 @@ export default function FooterStart() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="/demo"
+                <Link
+                  to="/demo"
                   className="text-gray-300 hover:text-white transition-colors text-sm sm:text-base"
                 >
                   Demo
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

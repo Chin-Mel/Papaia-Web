@@ -18,6 +18,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import PricingHomePage from "./pages/PricingHomePage";
 import PricingPage from "./pages/PricingPage";
 import NotificationPage from "./pages/NotificationPage";
+import DemoPage from "./pages/DemoPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
       <Route path="/about-home" element={<AboutHomePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/pricing-home" element={<PricingHomePage />} />
+      <Route path="/demo" element={<DemoPage />} />
 
       {/* Protected Routes */}
       <Route

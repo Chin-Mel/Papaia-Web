@@ -4,6 +4,7 @@ import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
 import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
+import UserRoleModal from "../components/Popups/UserRoleModal";
 import { ChevronDown, User, Lock, Tag } from "lucide-react";
 import UserIcon from "../assets/user-icon.png";
 import LockIcon from "../assets/lock-icon.png";
@@ -85,7 +86,21 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(true); // show on page load
+  const [farmerMessage, setFarmerMessage] = useState("");
 
+  const handleRoleSelect = (role) => {
+    if (role === "farmer") {
+      setFarmerMessage("Please install the Papaia mobile app to continue.");
+
+      // Automatically clear message after 7 seconds
+      setTimeout(() => {
+        setFarmerMessage("");
+      }, 3000);
+    } else if (role === "owner") {
+      setShowRoleModal(false); // close modal, reveal full signup form
+    }
+  };
   const [formErrors, setFormErrors] = useState({
     lastName: "",
     firstName: "",
@@ -117,7 +132,7 @@ export default function SignUpPage() {
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const inputClasses = (hasError) => `
-  w-full h-10 pl-11 pr-4 text-sm 
+  w-full h-10 px-4 text-sm 
   bg-white/90 border-2 rounded-xl 
   transition-all duration-200
   placeholder:text-gray-400
@@ -338,7 +353,7 @@ export default function SignUpPage() {
                   <img
                     src={PapayaLogo}
                     alt="Papaia Logo"
-                    className="w-10 h-10"
+                    className="w-7 h-9"
                     loading="eager"
                     decoding="async"
                   />
@@ -679,6 +694,17 @@ export default function SignUpPage() {
                 </p>
               </div>
 
+              {/* Error Message */}
+              {(error ||
+                confirmPasswordError ||
+                Object.values(formErrors).find((err) => err)) && (
+                <p className="text-sm text-red-700 text-center font-semibold mb-4">
+                  {error ||
+                    confirmPasswordError ||
+                    "Please fill in all required fields."}
+                </p>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -707,19 +733,6 @@ export default function SignUpPage() {
                 {isLoading ? "Creating Account..." : "Create Account"}
               </button>
 
-              {/* Error Message */}
-              {(error ||
-                confirmPasswordError ||
-                Object.values(formErrors).find((err) => err)) && (
-                <div className="p-4 bg-red-50 border-2 border-red-300 rounded-xl">
-                  <p className="text-sm text-red-700 text-center font-semibold">
-                    {error ||
-                      confirmPasswordError ||
-                      "Please fill in all required fields."}
-                  </p>
-                </div>
-              )}
-
               {/* Sign In Link */}
               <p className="text-center text-sm text-gray-600 pt-2">
                 Already have an account?{" "}
@@ -733,7 +746,21 @@ export default function SignUpPage() {
             </div>
           </div>
         </form>
-        {/* Modals */}
+        {/* User Role Modal */}
+        {showRoleModal && (
+          <>
+            {/* Overlay + blur */}
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"></div>
+            <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
+          </>
+        )}
+
+        {/* Farmer Message */}
+        {farmerMessage && (
+          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-yellow-200 text-yellow-900 p-4 rounded-lg z-50 shadow-lg">
+            {farmerMessage}
+          </div>
+        )}
         <TermsAndConditionsModal
           isOpen={showTermsModal}
           onClose={() => setShowTermsModal(false)}

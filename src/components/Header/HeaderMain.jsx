@@ -143,8 +143,12 @@ export default function HeaderMain() {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Left: Logo + Nav */}
           <div className="flex items-center gap-6">
-            <Link to="/dashboard" className="flex items-center">
-              <img src={papaiaLogo} alt="Papaia Logo" className="w-7 h-7" />
+            <Link to="/dashboard">
+              <img
+                src={papaiaLogo}
+                alt="Papaia Logo"
+                className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9"
+              />
             </Link>
 
             <nav className="hidden lg:flex gap-6">

@@ -65,15 +65,17 @@ export default function HeaderStart() {
       >
         <div className="w-full px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-papaia-orange-400 to-papaia-orange-500 flex items-center justify-center">
-              <img
-                src={papaiaLogo}
-                alt="Papaia Logo"
-                className="w-6 h-6 sm:w-7 sm:h-7"
-              />
+          <div className="flex items-center">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-16 rounded-full bg-gradient-to-r from-papaia-orange-400 to-papaia-orange-500 flex items-center justify-center">
+              <Link to="/">
+                <img
+                  src={papaiaLogo}
+                  alt="Papaia Logo"
+                  className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9"
+                />
+              </Link>
             </div>
-            <span className="text-base sm:text-lg font-bold text-papaia-green-500">
+            <span className="text-base sm:text-lg font-bold text-green-900">
               Papaia
             </span>
           </div>

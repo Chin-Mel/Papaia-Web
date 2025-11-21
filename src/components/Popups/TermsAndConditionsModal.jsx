@@ -9,30 +9,31 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
       <div className="w-full max-w-lg mx-auto rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header with gradient background */}
         <div
-          className="flex flex-col items-center justify-center text-white p-6"
+          className="flex flex-col items-center justify-center text-white p-4"
           style={{
             backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
         >
-          <div className="bg-white rounded-full p-4 shadow-lg mb-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
             <img
               src={PapayaLogo || "https://via.placeholder.com/56"}
               alt="Papaia Logo"
-              className="w-12 h-12 sm:w-14 sm:h-14"
+              className="w-7 h-9 sm:w-7 sm:h-9"
             />
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-center">
+          <h3 className="text-base sm:text-lg md:text-xl font-bold text-center">
             Terms & Conditions
-          </h2>
-          <p className="text-sm sm:text-base text-center opacity-90 mt-1">
+          </h3>
+
+          <p className="text-[9px] sm:text-xs md:text-sm text-center opacity-90 mt-1">
             Last Updated: October 29, 2025
           </p>
         </div>
 
         {/* Content */}
         <div className="bg-white p-6 overflow-y-auto flex-1">
-          <div className="text-gray-700 space-y-4 text-sm leading-relaxed">
+          <div className="text-gray-700 space-y-4 text-sm leading-relaxed text-justify">
             <p>
               Welcome to Papaia, an AI-powered system for papaya disease
               identification and farm management. By creating an account and
@@ -40,6 +41,8 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
               Conditions of Use. Please read this document carefully before
               proceeding.
             </p>
+
+            <hr className="border-gray-300 my-3" />
 
             <div className="pt-2">
               <h3 className="font-semibold text-base text-gray-900">
@@ -84,7 +87,7 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
             </div>
 
             <p>
-              Users must provide accurate and truthful information during
+              Users must provide <b>accurate and truthful information</b> during
               registration. You are responsible for maintaining the
               confidentiality of your account credentials and for all activities
               under your account.
@@ -132,12 +135,13 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
 
             <p>
               Papaia's disease identification results are generated using
-              machine learning models (CNNs) trained on validated papaya
-              datasets. While the model strives for high accuracy, results
-              should be treated as decision support, not as an absolute
-              diagnosis. The developers, researchers, and partner institutions
-              shall not be held liable for losses, crop damage, or mismanagement
-              resulting from reliance solely on AI outputs.
+              <b>machine learning models (CNNs)</b> trained on validated papaya
+              datasets. While the model strives for high accuracy,{" "}
+              <b>results should be treated as decision support</b>, not as an
+              absolute diagnosis. The developers, researchers, and partner
+              institutions <b>shall not be held liable</b> for losses, crop
+              damage, or mismanagement resulting from reliance solely on AI
+              outputs.
             </p>
 
             <div className="pt-2">
@@ -201,8 +205,8 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
             </div>
 
             <p>
-              Papaia is provided on an "as is" and "as available" basis. No
-              warranties, whether express or implied, are made regarding:
+              Papaia is provided on an <b>"as is" and "as available"</b> basis.
+              No warranties, whether express or implied, are made regarding:
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Accuracy or reliability of results,</li>
@@ -221,9 +225,9 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
             </div>
 
             <p>
-              By using Papaia, you agree to indemnify and hold harmless the
-              developers, affiliated institutions, and partners from any claims,
-              losses, or damages (including legal fees) resulting from:
+              By using Papaia, you agree to <b>indemnify and hold harmless</b>{" "}
+              the developers, affiliated institutions, and partners from any
+              claims, losses, or damages (including legal fees) resulting from:
             </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Your misuse of the system,</li>
@@ -252,9 +256,12 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
 
             <p>
               These Terms and Conditions shall be governed by and construed in
-              accordance with the laws of the Republic of the Philippines. Any
-              dispute arising from the use of Papaia shall fall under the
-              exclusive jurisdiction of the courts of Cebu City, Philippines.
+              accordance with the{" "}
+              <b>laws of the Republic of the Philippines.</b>
+              Any dispute arising from the use of Papaia shall fall under the
+              <b>
+                exclusive jurisdiction of the courts of Cebu City, Philippines.
+              </b>
             </p>
 
             <div className="pt-2">
@@ -265,7 +272,8 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
 
             <p>
               For technical assistance, bug reporting, or account issues, you
-              may reach the team through: Email through support.papaia@gmail.com
+              may reach the team through: Email through{" "}
+              <b>support.papaia@gmail.com</b>
               or via the in-app Help & Feedback feature.
             </p>
 
@@ -275,7 +283,9 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
               </h3>
             </div>
 
-            <p>By checking the checkbox, you confirm that you:</p>
+            <p>
+              By <b>checking the checkbox</b>, you confirm that you:
+            </p>
             <ul className="list-disc pl-5 space-y-1">
               <li>Have read and understood these Terms and Conditions;</li>
               <li>

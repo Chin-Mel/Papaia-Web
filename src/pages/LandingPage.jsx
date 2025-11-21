@@ -1,5 +1,5 @@
 // Finished fixing the Landing page
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
 import AnalyticsIconPNG from "../assets/analytics-icon.png";
@@ -7,6 +7,7 @@ import DiseaseIconPNG from "../assets/disease-icon.png";
 import MobileIconPNG from "../assets/mobile-icon.png";
 import ArrowIconPNG from "../assets/arrow-icon.png";
 import MainBackground from "../assets/MainBackground.png";
+import UserRoleModal from "../components/Popups/UserRoleModal";
 
 // Icon wrappers
 const AnalyticsIcon = () => (
@@ -35,6 +36,8 @@ const ArrowIcon = () => (
 );
 
 export default function LandingPage() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden overflow-y-auto">
       <HeaderStart />
@@ -66,12 +69,13 @@ export default function LandingPage() {
             harvest smarter, and cultivate the future of sustainable farming.
           </p>
 
-          <Link to="/sign-up">
-            <button className="transition-all duration-200 bg-[#e6782e] hover:bg-orange-500 active:scale-95 cursor-pointer bg-gradient-to-r text-white px-6 sm:px-10 lg:px-12 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold inline-flex items-center gap-3">
-              Get Started
-              <ArrowIcon />
-            </button>
-          </Link>
+          <button
+            onClick={() => navigate("/sign-up")}
+            className="transition-all duration-200 bg-[#e6782e] hover:bg-orange-500 active:scale-95 cursor-pointer bg-gradient-to-r text-white px-6 sm:px-10 lg:px-12 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold inline-flex items-center gap-3"
+          >
+            Get Started
+            <ArrowIcon />
+          </button>
         </div>
       </section>
 
