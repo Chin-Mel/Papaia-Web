@@ -12,7 +12,8 @@ export default function DemoPage() {
       title: "Web Dashboard Tutorial",
       description:
         "Learn how to use Papaia's web dashboard to manage your farms, analyze disease patterns, and track crop health from your desktop.",
-      videoUrl: "https://www.youtube.com/embed/BVfViC1UjBk?si=VVqp86yGwgw1CnDi",
+      embedUrl: "https://www.youtube.com/embed/BVfViC1UjBk?si=duAbdBcisa9cl64C",
+      watchUrl: "https://www.youtube.com/watch?v=BVfViC1UjBk",
       duration: "8:45",
       features: [
         "Navigate the dashboard interface",
@@ -29,7 +30,8 @@ export default function DemoPage() {
       title: "Mobile App Tutorial",
       description:
         "Discover how to use the Papaia mobile app in the field to scan plants, get instant disease detection, and receive treatment recommendations.",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with actual video
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with actual mobile video
+      watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with actual mobile video
       duration: "6:30",
       features: [
         "Take photos of affected plants",
@@ -108,7 +110,7 @@ export default function DemoPage() {
                         <div className="aspect-video">
                           <iframe
                             className="w-full h-full"
-                            src={tutorial.videoUrl}
+                            src={tutorial.embedUrl}
                             title={tutorial.title}
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
@@ -168,7 +170,7 @@ export default function DemoPage() {
                       </div>
 
                       <a
-                        href={tutorial.videoUrl}
+                        href={tutorial.watchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`inline-block mt-6 px-6 py-3 rounded-lg font-semibold text-white transition-all shadow-lg hover:shadow-xl ${
