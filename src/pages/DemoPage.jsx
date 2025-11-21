@@ -16,11 +16,14 @@ export default function DemoPage() {
       watchUrl: "https://www.youtube.com/watch?v=BVfViC1UjBk",
       duration: "8:45",
       features: [
-        "Navigate the dashboard interface",
-        "Upload and analyze plant images",
-        "View analytics and reports",
-        "Manage multiple farms",
-        "Export data and insights",
+        "Add and manage farms",
+        "Add and remove farmers",
+        "View analytics and recent scans",
+        "Access scan history and details",
+        "Edit farm information and deactivate farms",
+        "Manage notifications (mark as read)",
+        "Edit profile data and images",
+        "Deactivate and reactivate user accounts",
       ],
     },
     {
@@ -30,8 +33,8 @@ export default function DemoPage() {
       title: "Mobile App Tutorial",
       description:
         "Discover how to use the Papaia mobile app in the field to scan plants, get instant disease detection, and receive treatment recommendations.",
-      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", // Replace with actual mobile video
-      watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Replace with actual mobile video
+      embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      watchUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       duration: "6:30",
       features: [
         "Take photos of affected plants",
