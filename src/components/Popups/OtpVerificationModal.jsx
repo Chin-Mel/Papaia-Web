@@ -109,11 +109,13 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
         >
-          <div className="bg-white rounded-full p-4 shadow-lg mb-4">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
             <img
               src={PapayaLogo}
               alt="Papaia Logo"
-              className="w-12 h-12 sm:w-14 sm:h-14"
+              className="w-7 h-9"
+              loading="eager"
+              decoding="async"
             />
           </div>
           <h2 className="text-lg sm:text-xl font-bold">Email Authentication</h2>

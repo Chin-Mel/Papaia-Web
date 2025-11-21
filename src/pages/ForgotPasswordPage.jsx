@@ -3,7 +3,7 @@ import { FaSignInAlt } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
-import heroBackground from "../assets/hero-background.png";
+import MainBackground from "../assets/MainBackground.png";
 import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
 import OtpVerificationModal from "../components/Popups/OtpVerificationModal";
 import NewPasswordModal from "../components/Popups/NewPasswordModal";
@@ -62,7 +62,7 @@ export default function ForgotPasswordPage() {
 
       <div
         className="min-h-screen flex items-center justify-center bg-cover bg-center relative px-4 sm:px-6"
-        style={{ backgroundImage: `url(${heroBackground})` }}
+        style={{ backgroundImage: `url(${MainBackground})` }}
       >
         {/* Forgot Password Form */}
         {!showOtpModal && !showNewPasswordModal && !showPasswordUpdated && (
@@ -73,11 +73,13 @@ export default function ForgotPasswordPage() {
                 backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
               }}
             >
-              <div className="bg-white rounded-full p-4 shadow-lg mb-4">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                 <img
                   src={PapayaLogo}
                   alt="Papaia Logo"
-                  className="w-12 h-12 sm:w-14 sm:h-14"
+                  className="w-7 h-9"
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
 

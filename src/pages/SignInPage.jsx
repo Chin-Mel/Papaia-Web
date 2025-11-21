@@ -18,6 +18,8 @@ export default function SignInPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [reactivationPrompt, setReactivationPrompt] = useState(false);
+  const [deactivatedUserToken, setDeactivatedUserToken] = useState(null);
   const navigate = useNavigate();
 
   // Preload all images on mount
@@ -39,10 +41,78 @@ export default function SignInPage() {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  const handleReactivate = async () => {
+    if (!deactivatedUserToken) {
+      setError("Unable to reactivate. Please try logging in again.");
+      setReactivationPrompt(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const reactivateResponse = await fetch(
+        "https://papaiaapi.onrender.com/api/reactivate",
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${deactivatedUserToken}`,
+          },
+        }
+      );
+
+      if (!reactivateResponse.ok) {
+        const errorData = await reactivateResponse.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            "Failed to reactivate account. Please try again."
+        );
+      }
+
+      // Store the token
+      localStorage.setItem("token", deactivatedUserToken);
+
+      // Fetch fresh user data after reactivation
+      const userResponse = await fetch(
+        "https://papaiaapi.onrender.com/api/user/me",
+        {
+          headers: {
+            Authorization: `Bearer ${deactivatedUserToken}`,
+          },
+        }
+      );
+
+      if (userResponse.ok) {
+        const userData = await userResponse.json();
+        localStorage.setItem("user", JSON.stringify(userData.user || userData));
+      }
+
+      // Success - navigate to dashboard
+      alert("Welcome back! Your account has been reactivated successfully.");
+      navigate("/dashboard", { replace: true });
+    } catch (err) {
+      setError(err.message || "Failed to reactivate account.");
+      setReactivationPrompt(false);
+      setDeactivatedUserToken(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelReactivation = () => {
+    setReactivationPrompt(false);
+    setDeactivatedUserToken(null);
+    setError("");
+    setLoading(false);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setReactivationPrompt(false);
 
     try {
       const safeEmail = usernameOrEmail.trim();
@@ -85,6 +155,17 @@ export default function SignInPage() {
       }
 
       const loginData = await loginResponse.json();
+
+      // Check if account is deactivated
+      if (
+        loginData.user?.status &&
+        loginData.user.status.toLowerCase() === "deactivate"
+      ) {
+        setDeactivatedUserToken(loginData.token);
+        setReactivationPrompt(true);
+        setLoading(false);
+        return;
+      }
 
       // Verification checks
       if (loginData.user?.emailVerified === false) {
@@ -144,6 +225,7 @@ export default function SignInPage() {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
@@ -176,141 +258,191 @@ export default function SignInPage() {
             </div>
 
             <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
-              <form
-                className="space-y-4 sm:space-y-5 flex flex-col justify-start"
-                onSubmit={handleSubmit}
-              >
-                {/* Username */}
-                <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
-                    <img
-                      src={UserIcon}
-                      alt="Username"
-                      className="w-4 h-4"
-                      loading="eager"
-                      decoding="async"
-                    />
-                    Username or Email
-                  </label>
-                  <input
-                    id="usernameOrEmail"
-                    name="usernameOrEmail"
-                    type="text"
-                    placeholder="Enter your username or email"
-                    value={usernameOrEmail}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setUsernameOrEmail(value);
+              {/* Reactivation Prompt */}
+              {reactivationPrompt ? (
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xl font-bold">!</span>
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-yellow-900 mb-1 text-sm sm:text-base">
+                          Account Deactivated
+                        </h3>
+                        <p className="text-xs sm:text-sm text-yellow-800 leading-relaxed">
+                          Your account is currently deactivated. Would you like
+                          to reactivate it now to regain full access to your
+                          farm dashboard?
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-                      if (value.includes("@") && !validateEmail(value)) {
-                        setError("Invalid email format.");
-                      } else {
-                        setError("");
-                      }
-                    }}
-                    className="w-full h-10 sm:h-11 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                    autoComplete="username"
-                  />
-                </div>
-
-                {/* Password */}
-                <div className="space-y-1">
-                  <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
-                    <img
-                      src={LockIcon}
-                      alt="Password"
-                      className="w-4 h-4"
-                      loading="eager"
-                      decoding="async"
-                    />
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full h-10 sm:h-11 px-3 pr-10 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                      autoComplete="current-password"
-                    />
+                  <div className="space-y-3">
                     <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      onClick={handleReactivate}
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm sm:text-base font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? "Reactivating..." : "Reactivate My Account"}
+                    </button>
+
+                    <button
+                      onClick={handleCancelReactivation}
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 border-2 border-gray-300 text-gray-700 text-sm sm:text-base font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-xs sm:text-sm text-center">
+                      {error}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Login Form
+                <>
+                  <form
+                    className="space-y-4 sm:space-y-5 flex flex-col justify-start"
+                    onSubmit={handleSubmit}
+                  >
+                    {/* Username */}
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                        <img
+                          src={UserIcon}
+                          alt="Username"
+                          className="w-4 h-4"
+                          loading="eager"
+                          decoding="async"
+                        />
+                        Username or Email
+                      </label>
+                      <input
+                        id="usernameOrEmail"
+                        name="usernameOrEmail"
+                        type="text"
+                        placeholder="Enter your username or email"
+                        value={usernameOrEmail}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          setUsernameOrEmail(value);
+
+                          if (value.includes("@") && !validateEmail(value)) {
+                            setError("Invalid email format.");
+                          } else {
+                            setError("");
+                          }
+                        }}
+                        className="w-full h-10 sm:h-11 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                        autoComplete="username"
+                      />
+                    </div>
+
+                    {/* Password */}
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                        <img
+                          src={LockIcon}
+                          alt="Password"
+                          className="w-4 h-4"
+                          loading="eager"
+                          decoding="async"
+                        />
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          id="password"
+                          name="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full h-10 sm:h-11 px-3 pr-10 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <img
+                            src={showPassword ? EyeOffIcon : EyeIcon}
+                            alt={showPassword ? "Hide" : "Show"}
+                            className="w-5 h-5"
+                            loading="eager"
+                            decoding="async"
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Remember me + Forgot password */}
+                    <div className="flex items-center justify-between">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500"
+                        />
+                        <span className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:underline">
+                          Remember me
+                        </span>
+                      </label>
+                      <Link
+                        to="/forgot-password"
+                        className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline cursor-pointer transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+
+                    {/* Submit button */}
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <img
-                        src={showPassword ? EyeOffIcon : EyeIcon}
-                        alt={showPassword ? "Hide" : "Show"}
-                        className="w-5 h-5"
+                        src={LoginIcon}
+                        alt="Login"
+                        className="w-4 h-4 sm:w-5 sm:h-5"
                         loading="eager"
                         decoding="async"
                       />
+                      {loading ? "Logging in..." : "Login to Farm"}
                     </button>
-                  </div>
-                </div>
 
-                {/* Remember me + Forgot password */}
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:underline">
-                      Remember me
+                    {/* Error space */}
+                    <div className="h-[11px] mt-1 flex items-center justify-center">
+                      {error && (
+                        <p className="text-red-500 text-xs text-center leading-none">
+                          {error}
+                        </p>
+                      )}
+                    </div>
+                  </form>
+
+                  {/* Sign up link */}
+                  <div className="text-center">
+                    <span className="text-gray-500 text-xs sm:text-sm">
+                      Don't have an account?{" "}
                     </span>
-                  </label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline cursor-pointer transition-colors"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <img
-                    src={LoginIcon}
-                    alt="Login"
-                    className="w-4 h-4 sm:w-5 sm:h-5"
-                    loading="eager"
-                    decoding="async"
-                  />
-                  {loading ? "Logging in..." : "Login to Farm"}
-                </button>
-
-                {/* Error space */}
-                <div className="h-[11px] mt-1 flex items-center justify-center">
-                  {error && (
-                    <p className="text-red-500 text-xs text-center leading-none">
-                      {error}
-                    </p>
-                  )}
-                </div>
-              </form>
-
-              {/* Sign up link */}
-              <div className="text-center">
-                <span className="text-gray-500 text-xs sm:text-sm">
-                  Don't have an account?{" "}
-                </span>
-                <Link
-                  to="/sign-up"
-                  className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
-                >
-                  Sign up here
-                </Link>
-              </div>
+                    <Link
+                      to="/sign-up"
+                      className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+                    >
+                      Sign up here
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
