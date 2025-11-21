@@ -52,7 +52,7 @@ export default function SignInPage() {
     setError("");
 
     try {
-      // Call reactivation endpoint
+      // Step 1: Call reactivation endpoint to change status
       const reactivateResponse = await fetch(
         "https://papaiaapi.onrender.com/api/reactivate",
         {
@@ -72,57 +72,45 @@ export default function SignInPage() {
         );
       }
 
-      // Get reactivation response data
-      const reactivateData = await reactivateResponse.json();
-      console.log("Reactivation response:", reactivateData);
+      // Step 2: Parse the JWT token to get user ID
+      // JWT tokens have 3 parts separated by dots: header.payload.signature
+      // We need to decode the payload (middle part)
+      const tokenParts = deactivatedUserToken.split(".");
+      if (tokenParts.length !== 3) {
+        throw new Error("Invalid token format");
+      }
 
-      // Store the token immediately
-      localStorage.setItem("token", deactivatedUserToken);
+      // Decode the payload (it's base64url encoded)
+      const payload = JSON.parse(atob(tokenParts[1]));
+      const userId = payload.userId || payload.id || payload.sub;
 
-      // Try to get user data - check multiple possible response formats
-      let userData = null;
+      if (!userId) {
+        throw new Error("Could not extract user ID from token");
+      }
 
-      // Check if reactivation response contains user data
-      if (reactivateData.user) {
-        userData = reactivateData.user;
-        console.log("User data from reactivation response:", userData);
-      } else if (reactivateData.data && reactivateData.data.user) {
-        userData = reactivateData.data.user;
-        console.log("User data from reactivation response (nested):", userData);
-      } else {
-        // Fetch user data separately using the user ID from token or response
-        console.log("Fetching user data separately...");
-
-        try {
-          // Try fetching current user
-          const userResponse = await fetch(
-            "https://papaiaapi.onrender.com/api/user/me",
-            {
-              headers: {
-                Authorization: `Bearer ${deactivatedUserToken}`,
-              },
-            }
-          );
-
-          if (userResponse.ok) {
-            const fetchedData = await userResponse.json();
-            userData = fetchedData.user || fetchedData;
-            console.log("User data from /user/me:", userData);
-          } else {
-            console.warn("Failed to fetch from /user/me");
-          }
-        } catch (userFetchError) {
-          console.error("Error fetching user data:", userFetchError);
+      // Step 3: Fetch fresh user data using the user ID
+      const userResponse = await fetch(
+        `https://papaiaapi.onrender.com/api/user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${deactivatedUserToken}`,
+          },
         }
+      );
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to fetch user data after reactivation");
       }
 
-      // Store user data if we got it
-      if (userData) {
-        localStorage.setItem("user", JSON.stringify(userData));
-        console.log("Stored user data:", userData);
-      } else {
-        console.warn("No user data available after reactivation");
-      }
+      const userData = await userResponse.json();
+      const user = userData.user || userData;
+
+      // Step 4: Store token and user data
+      localStorage.setItem("token", deactivatedUserToken);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Step 5: Dispatch update event for other components
+      window.dispatchEvent(new Event("userUpdated"));
 
       // Success - navigate to dashboard
       alert("Welcome back! Your account has been reactivated successfully.");
