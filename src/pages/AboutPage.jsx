@@ -1,6 +1,6 @@
 // Finished Fixing the About home page
-import HeaderMain from "../components/Header/HeaderMain";
-import FooterMain from "../components/Footer/Footer";
+import Header from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/Footer";
 
 import EyeIcon from "../assets/eye-icon-about.png";
 import TargetIcon from "../assets/target-icon.png";
@@ -48,7 +48,7 @@ const developers = [
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <HeaderMain />
+      <Header />
 
       <main>
         {/* Hero Section */}
@@ -295,7 +295,7 @@ export default function AboutPage() {
         </section>
       </main>
 
-      <FooterMain />
+      <Footer />
     </div>
   );
 }

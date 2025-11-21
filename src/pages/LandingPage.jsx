@@ -7,7 +7,6 @@ import DiseaseIconPNG from "../assets/disease-icon.png";
 import MobileIconPNG from "../assets/mobile-icon.png";
 import ArrowIconPNG from "../assets/arrow-icon.png";
 import MainBackground from "../assets/MainBackground.png";
-import UserRoleModal from "../components/Popups/UserRoleModal";
 
 // Icon wrappers
 const AnalyticsIcon = () => (
@@ -150,10 +149,16 @@ export default function LandingPage() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="transition-all duration-200 active:scale-95 cursor-pointer bg-gradient-to-r bg-[#FF8C42] hover:bg-orange-500 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold">
+              <button
+                onClick={() => navigate("/sign-up")}
+                className="transition-all duration-200 active:scale-95 cursor-pointer bg-gradient-to-r bg-[#FF8C42] hover:bg-orange-500 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold"
+              >
                 Start Free Trial
               </button>
-              <button className="transition-all duration-200 active:scale-95 cursor-pointer border-2 border-[#4A7C59] text-[#4A7C59] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-[#4A7C59] hover:text-white">
+              <button
+                onClick={() => navigate("/demo")}
+                className="transition-all duration-200 active:scale-95 cursor-pointer border-2 border-[#4A7C59] text-[#4A7C59] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-[#4A7C59] hover:text-white"
+              >
                 Watch Demo
               </button>
             </div>

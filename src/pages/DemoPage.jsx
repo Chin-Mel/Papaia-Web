@@ -167,84 +167,23 @@ export default function DemoPage() {
                         </ul>
                       </div>
 
-                      <button
-                        className={`mt-6 px-6 py-3 rounded-lg font-semibold text-white transition-all shadow-lg hover:shadow-xl ${
+                      <a
+                        href={tutorial.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-block mt-6 px-6 py-3 rounded-lg font-semibold text-white transition-all shadow-lg hover:shadow-xl ${
                           tutorial.platform === "Web"
                             ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                             : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
                         }`}
                       >
-                        Watch Full Tutorial
-                      </button>
+                        Watch Full Tutorial on YouTube
+                      </a>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </section>
-
-        {/* Quick Tips Section */}
-        <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
-            <div className="text-center mb-12">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Quick Tips for Better Results
-              </h2>
-              <p className="text-base sm:text-lg text-gray-600">
-                Follow these best practices to get the most accurate disease
-                detection
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  title: "Take Clear Photos",
-                  tip: "Ensure good lighting and focus on the affected area. Hold your camera steady and avoid shadows.",
-                  icon: "📸",
-                },
-                {
-                  title: "Multiple Angles",
-                  tip: "Capture images from different angles to give the AI more context about the plant's condition.",
-                  icon: "🔄",
-                },
-                {
-                  title: "Regular Monitoring",
-                  tip: "Scan your plants regularly to catch diseases early and track treatment progress over time.",
-                  icon: "📊",
-                },
-              ].map((tip, index) => (
-                <div
-                  key={index}
-                  className="bg-gradient-to-br from-green-50 to-orange-50 rounded-2xl p-6 border-2 border-green-200"
-                >
-                  <div className="text-4xl mb-4">{tip.icon}</div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">
-                    {tip.title}
-                  </h3>
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {tip.tip}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-12 sm:py-16 bg-gradient-to-r from-green-600 to-orange-500">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 text-center">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-              Ready to Start Using Papaia?
-            </h2>
-            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-              Sign up now and start protecting your papaya crops with AI-powered
-              disease detection.
-            </p>
-            <button className="bg-white text-green-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all shadow-lg">
-              Get Started Free
-            </button>
           </div>
         </section>
       </main>
