@@ -46,6 +46,19 @@ export default function FooterStart() {
               </li>
             </ul>
           </div>
+          {/* Contact Support */}
+          <div className="space-y-4 text-center sm:text-left">
+            <h3 className="text-white text-base font-semibold">
+              Contact Support
+            </h3>
+            <ul className="space-y-3">
+              <li>
+                <p className="text-gray-300 text-sm sm:text-base">
+                  support@papaia.com
+                </p>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Bottom Copyright */}
