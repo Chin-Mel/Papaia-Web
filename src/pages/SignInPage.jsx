@@ -52,6 +52,7 @@ export default function SignInPage() {
     setError("");
 
     try {
+      // Call reactivation endpoint
       const reactivateResponse = await fetch(
         "https://papaiaapi.onrender.com/api/reactivate",
         {
@@ -71,28 +72,63 @@ export default function SignInPage() {
         );
       }
 
-      // Store the token
+      // Get reactivation response data
+      const reactivateData = await reactivateResponse.json();
+      console.log("Reactivation response:", reactivateData);
+
+      // Store the token immediately
       localStorage.setItem("token", deactivatedUserToken);
 
-      // Fetch fresh user data after reactivation
-      const userResponse = await fetch(
-        "https://papaiaapi.onrender.com/api/user/me",
-        {
-          headers: {
-            Authorization: `Bearer ${deactivatedUserToken}`,
-          },
-        }
-      );
+      // Try to get user data - check multiple possible response formats
+      let userData = null;
 
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        localStorage.setItem("user", JSON.stringify(userData.user || userData));
+      // Check if reactivation response contains user data
+      if (reactivateData.user) {
+        userData = reactivateData.user;
+        console.log("User data from reactivation response:", userData);
+      } else if (reactivateData.data && reactivateData.data.user) {
+        userData = reactivateData.data.user;
+        console.log("User data from reactivation response (nested):", userData);
+      } else {
+        // Fetch user data separately using the user ID from token or response
+        console.log("Fetching user data separately...");
+
+        try {
+          // Try fetching current user
+          const userResponse = await fetch(
+            "https://papaiaapi.onrender.com/api/user/me",
+            {
+              headers: {
+                Authorization: `Bearer ${deactivatedUserToken}`,
+              },
+            }
+          );
+
+          if (userResponse.ok) {
+            const fetchedData = await userResponse.json();
+            userData = fetchedData.user || fetchedData;
+            console.log("User data from /user/me:", userData);
+          } else {
+            console.warn("Failed to fetch from /user/me");
+          }
+        } catch (userFetchError) {
+          console.error("Error fetching user data:", userFetchError);
+        }
+      }
+
+      // Store user data if we got it
+      if (userData) {
+        localStorage.setItem("user", JSON.stringify(userData));
+        console.log("Stored user data:", userData);
+      } else {
+        console.warn("No user data available after reactivation");
       }
 
       // Success - navigate to dashboard
       alert("Welcome back! Your account has been reactivated successfully.");
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      console.error("Reactivation error:", err);
       setError(err.message || "Failed to reactivate account.");
       setReactivationPrompt(false);
       setDeactivatedUserToken(null);
