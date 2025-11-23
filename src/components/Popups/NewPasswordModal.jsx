@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, Home } from "lucide-react";
-
-// Mock logo
-const PapayaLogoImage =
-  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80' fill='%23F97316'%3EP%3C/text%3E%3C/svg%3E";
-
+import PapayaLogoImage from "../../assets/ic_papaia_logo_no_word.png";
 // Mock eye icons - replace with your actual icons
 const EyeIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
