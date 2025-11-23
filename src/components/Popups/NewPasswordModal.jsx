@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { ArrowRight, Home } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
-import EyeIcon from "../assets/eye-icon.png";
-import EyeOffIcon from "../assets/eye-off-icon.png";
+import EyeIcon from "../../assets/eye-icon.png";
+import EyeOffIcon from "../../assets/eye-off-icon.png";
 
 // Success Modal Component
 export default function NewPasswordModal({ userId, onPasswordSaved }) {
@@ -141,12 +141,12 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 transition-all"
               />
-              <button
+              <img
+                src={showNewPassword ? EyeOffIcon : EyeIcon}
+                alt="toggle visibility"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
-              >
-                {showNewPassword ? EyeOffIcon : EyeIcon}
-              </button>
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer w-5 h-5"
+              />
             </div>
           </div>
 
@@ -174,12 +174,12 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 transition-all"
               />
-              <button
+              <img
+                src={showConfirmPassword ? EyeOffIcon : EyeIcon}
+                alt="toggle visibility"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
-              >
-                {showConfirmPassword ? EyeOffIcon : EyeIcon}
-              </button>
+                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer w-5 h-5"
+              />
             </div>
           </div>
 

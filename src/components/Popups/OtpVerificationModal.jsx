@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { FaSignInAlt } from "react-icons/fa";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import { FiInfo } from "react-icons/fi";
-import Info from "../Icons/Info";
 
 export default function OtpVerificationModal({ email, onSuccess }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -157,7 +156,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
 
           {/* Security Reminder */}
           <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-start gap-2">
-            <Info className="mt-0.5 flex-shrink-0 w-4 h-4 text-blue-600" />
+            <FiInfo className="mt-0.5 flex-shrink-0 w-4 h-4 text-blue-600" />
             <div className="text-xs">
               <p className="font-bold mb-1">Security Reminder</p>
               <p className="text-blue-700">
