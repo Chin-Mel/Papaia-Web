@@ -138,30 +138,28 @@ export default function LandingPage() {
 
       {/* CTA Section */}
       <section className="py-16 sm:py-20">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12">
-          <div className="p-6 sm:p-10 lg:p-16 text-center rounded-3xl bg-white shadow-lg">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#4A7C59] mb-4 sm:mb-6">
-              Ready to Transform Your Farm?
-            </h2>
-            <p className="text-base sm:text-lg lg:text-xl text-[#4A7C59] mb-8 sm:mb-12 max-w-2xl mx-auto">
-              Join thousands of farmers who are already using Papaia to increase
-              their productivity and sustainability.
-            </p>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#4A7C59] mb-4 sm:mb-6">
+            Ready to Transform Your Farm?
+          </h2>
+          <p className="text-base sm:text-lg lg:text-xl text-[#4A7C59] mb-8 sm:mb-12 max-w-2xl mx-auto">
+            Join thousands of farmers who are already using Papaia to increase
+            their productivity and sustainability.
+          </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => navigate("/sign-up")}
-                className="transition-all duration-200 active:scale-95 cursor-pointer bg-gradient-to-r bg-[#FF8C42] hover:bg-orange-500 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold"
-              >
-                Start Free Trial
-              </button>
-              <button
-                onClick={() => navigate("/demo")}
-                className="transition-all duration-200 active:scale-95 cursor-pointer border-2 border-[#4A7C59] text-[#4A7C59] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-[#4A7C59] hover:text-white"
-              >
-                Watch Demo
-              </button>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <button
+              onClick={() => navigate("/sign-up")}
+              className="transition-all duration-200 active:scale-95 cursor-pointer bg-gradient-to-r bg-[#FF8C42] hover:bg-orange-500 text-white px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold"
+            >
+              Start Free Trial
+            </button>
+            <button
+              onClick={() => navigate("/demo")}
+              className="transition-all duration-200 active:scale-95 cursor-pointer border-2 border-[#4A7C59] text-[#4A7C59] px-6 sm:px-8 lg:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-[#4A7C59] hover:text-white"
+            >
+              Watch Demo
+            </button>
           </div>
         </div>
       </section>
