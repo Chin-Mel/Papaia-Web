@@ -1,63 +1,10 @@
 import { useState } from "react";
 import { ArrowRight, Home } from "lucide-react";
-import PapayaLogoImage from "../../assets/ic_papaia_logo_no_word.png";
-import EyeIcon from "../../assets/eye-icon.png";
-import EyeOffIcon from "../../assets/eye-off-icon.png";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import EyeIcon from "../assets/eye-icon.png";
+import EyeOffIcon from "../assets/eye-off-icon.png";
 
 // Success Modal Component
-function PasswordUpdatedSuccessModal({ isOpen, onContinue, onBackHome }) {
-  if (!isOpen) return null;
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden bg-white">
-        {/* Header */}
-        <div
-          className="flex flex-col items-center justify-center text-white py-6 px-6"
-          style={{
-            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
-          }}
-        >
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-            <img src={PapayaLogoImage} alt="Papaia Logo" className="w-7 h-9" />
-          </div>
-          <h2 className="text-xl font-bold text-center">
-            Password Updated Successfully
-          </h2>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-6">
-          <p className="text-gray-600 text-center mb-6 text-sm">
-            Your password has been changed. You can now log in with your new
-            credentials.
-          </p>
-
-          {/* Buttons */}
-          <div className="space-y-3">
-            <button
-              onClick={onContinue}
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <ArrowRight className="w-5 h-5" />
-              Continue to Sign in
-            </button>
-
-            <button
-              onClick={onBackHome}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
-            >
-              <Home className="w-5 h-5" />
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Main New Password Modal
 export default function NewPasswordModal({ userId, onPasswordSaved }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -65,9 +12,7 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
   const [passwordError, setPasswordError] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Password validation
   const validatePassword = (password) => {
     if (password.length < 8) return "Password must be at least 8 characters";
     if (!/[A-Z]/.test(password))
@@ -118,34 +63,11 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
       return;
     }
 
-    if (!userId) {
-      alert("Missing user ID");
-      return;
-    }
-
     setLoading(true);
-    try {
-      const res = await fetch(
-        "https://papaiaapi.onrender.com/api/reset-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, newPassword }),
-        }
-      );
-
-      if (res.ok) {
-        setShowSuccess(true);
-      } else {
-        const data = await res.json();
-        alert(data.message || "Failed to reset password");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("An error occurred. Please try again.");
-    } finally {
+    setTimeout(() => {
+      onPasswordSaved();
       setLoading(false);
-    }
+    }, 1000);
   };
 
   const isPasswordValid =
@@ -154,47 +76,29 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
     confirmPassword &&
     newPassword === confirmPassword;
 
-  if (showSuccess) {
-    return (
-      <PasswordUpdatedSuccessModal
-        isOpen={showSuccess}
-        onContinue={() => {
-          if (typeof onPasswordSaved === "function") {
-            onPasswordSaved();
-          }
-          // Navigate to sign-in
-          window.location.href = "/sign-in";
-        }}
-        onBackHome={() => {
-          window.location.href = "/";
-        }}
-      />
-    );
-  }
-
-  // Main password form
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-3xl shadow-2xl overflow-hidden bg-white">
+    <div className="flex justify-center items-center min-h-[calc(100vh-120px)] px-4 py-6">
+      <div className="w-full max-w-md rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.2)] bg-white">
         {/* Header */}
         <div
-          className="flex flex-col items-center justify-center text-white py-6 px-6"
+          className="flex flex-col items-center justify-center text-white py-5 px-4"
           style={{
-            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
+            backgroundImage:
+              "linear-gradient(to bottom right, #00712D, #F97316)",
           }}
         >
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-            <img src={PapayaLogoImage} alt="Papaia Logo" className="w-7 h-9" />
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-lg mb-3 ring-4 ring-white/30">
+            <img src={PapayaLogo} alt="Logo" className="w-8 h-8" />
           </div>
-          <h2 className="text-xl font-bold">Create New Password</h2>
+          <h2 className="text-lg font-bold">Create New Password</h2>
         </div>
 
         {/* Content */}
-        <div className="px-6 py-6">
-          {/* Security Verified Badge */}
-          <div className="flex items-center justify-center gap-2 mb-3">
+        <div className="px-6 py-5">
+          {/* Security Badge */}
+          <div className="flex items-center justify-center gap-2 mb-2">
             <svg
-              className="w-5 h-5 text-green-600"
+              className="w-4 h-4 text-green-600"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -204,21 +108,20 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 clipRule="evenodd"
               />
             </svg>
-            <p className="text-green-700 font-semibold text-sm">
+            <p className="text-green-700 font-semibold text-xs">
               Security Verified
             </p>
           </div>
 
-          <p className="text-gray-600 text-center mb-6 text-sm">
-            Your OTP has been verified successfully. Your account is now ready
-            to set a new password.
+          <p className="text-gray-600 text-center mb-5 text-xs">
+            Your account is ready to set a new password.
           </p>
 
           {/* New Password */}
-          <div className="mb-4">
-            <label className="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-2">
+          <div className="mb-3">
+            <label className="text-xs font-semibold text-gray-800 flex items-center gap-1 mb-1">
               <svg
-                className="w-4 h-4 text-orange-500"
+                className="w-3 h-3 text-orange-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -236,22 +139,22 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 placeholder="Enter password"
                 value={newPassword}
                 onChange={(e) => handlePasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500 transition-all text-gray-700 placeholder-gray-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 transition-all"
               />
               <button
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
               >
-                {showNewPassword ? <EyeOffIcon /> : <EyeIcon />}
+                {showNewPassword ? EyeOffIcon : EyeIcon}
               </button>
             </div>
           </div>
 
           {/* Confirm Password */}
-          <div className="mb-6">
-            <label className="text-sm font-semibold text-gray-800 flex items-center gap-2 mb-2">
+          <div className="mb-4">
+            <label className="text-xs font-semibold text-gray-800 flex items-center gap-1 mb-1">
               <svg
-                className="w-4 h-4 text-orange-500"
+                className="w-3 h-3 text-orange-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -269,31 +172,31 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500 transition-all text-gray-700 placeholder-gray-400"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-500 transition-all"
               />
               <button
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-xl"
               >
-                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+                {showConfirmPassword ? EyeOffIcon : EyeIcon}
               </button>
             </div>
           </div>
 
-          {/* Error Message */}
+          {/* Error */}
           {passwordError && (
-            <p className="text-red-500 text-sm text-center mb-4">
+            <p className="text-red-500 text-xs text-center mb-3">
               {passwordError}
             </p>
           )}
 
-          {/* Password Requirements - Only show when typing */}
+          {/* Requirements */}
           {newPassword && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <p className="text-xs font-semibold text-blue-800 mb-2">
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs font-semibold text-blue-800 mb-1">
                 Password must contain:
               </p>
-              <ul className="text-xs space-y-1">
+              <ul className="text-xs space-y-0.5">
                 <li
                   className={
                     newPassword.length >= 8
@@ -338,7 +241,7 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                   }
                 >
                   {/[!@#$%^&*(),.?":{}|<>]/.test(newPassword) ? "✓" : "○"} One
-                  special character (!@#$%^&*...)
+                  special character
                 </li>
               </ul>
             </div>
@@ -348,13 +251,13 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
           <button
             disabled={!isPasswordValid || loading}
             onClick={handleSavePassword}
-            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-base ${
+            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-2.5 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm ${
               !isPasswordValid || loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:shadow-xl active:scale-[0.98]"
             }`}
           >
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-4 h-4" />
             {loading ? "Saving..." : "Save New Password"}
           </button>
         </div>
