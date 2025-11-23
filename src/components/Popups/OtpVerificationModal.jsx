@@ -6,8 +6,7 @@ import { FiInfo } from "react-icons/fi";
 export default function OtpVerificationModal({ email, onSuccess }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [countdown, setCountdown] = useState(150); // 10 minutes
+  const [countdown, setCountdown] = useState(60);
   const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
   const [isLoading, setIsLoading] = useState(false);

@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { ArrowRight, Home } from "lucide-react";
 import PapayaLogoImage from "../../assets/ic_papaia_logo_no_word.png";
+
+// Mock logo
+const PapayaLogoImage =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='80' font-size='80' fill='%23F97316'%3EP%3C/text%3E%3C/svg%3E";
+
 // Mock eye icons - replace with your actual icons
 const EyeIcon = () => (
   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -57,7 +62,7 @@ function PasswordUpdatedSuccessModal({ isOpen, onContinue, onBackHome }) {
           <div className="space-y-3">
             <button
               onClick={onContinue}
-              className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3.5 rounded-xl shadow-lg transition-all duration-200 hover:shadow-xl active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <ArrowRight className="w-5 h-5" />
               Continue to Sign in
@@ -65,7 +70,7 @@ function PasswordUpdatedSuccessModal({ isOpen, onContinue, onBackHome }) {
 
             <button
               onClick={onBackHome}
-              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3.5 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2"
             >
               <Home className="w-5 h-5" />
               Back to Home
@@ -300,6 +305,13 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
             </div>
           </div>
 
+          {/* Error Message */}
+          {passwordError && (
+            <p className="text-red-500 text-sm text-center mb-4">
+              {passwordError}
+            </p>
+          )}
+
           {/* Password Requirements - Only show when typing */}
           {newPassword && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
@@ -355,13 +367,6 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
                 </li>
               </ul>
             </div>
-          )}
-
-          {/* Error Message */}
-          {passwordError && (
-            <p className="text-red-500 text-sm text-center mb-4">
-              {passwordError}
-            </p>
           )}
 
           {/* Save Button */}
