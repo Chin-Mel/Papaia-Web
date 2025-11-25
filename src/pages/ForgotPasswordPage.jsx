@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
         {showPasswordUpdated && (
           <PasswordUpdatedSuccessModal
             isOpen={showPasswordUpdated}
-            onContinueToSignIn={() => (window.location.href = "/signin")}
+            onContinueToSignIn={() => (window.location.href = "/sign-in")}
             onBackToHome={() => (window.location.href = "/")}
           />
         )}

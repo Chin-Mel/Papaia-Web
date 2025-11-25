@@ -72,8 +72,8 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen px-4 pt-24 sm:pt-28 pb-6">
-      <div className="w-full max-w-lg sm:max-w-xl rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.2)] bg-white">
+    <div className="flex justify-center items-start min-h-screen px-4 pt-16 sm:pt-20 pb-6">
+      <div className="w-full max-w-sm sm:max-w-md rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.15)] bg-white">
         {/* Header */}
         <div
           className="flex flex-col items-center justify-center text-white py-8 sm:py-10 px-4"
