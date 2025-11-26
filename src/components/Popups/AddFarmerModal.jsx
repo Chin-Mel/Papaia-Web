@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 import { useState, useEffect } from "react";
 
-function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
+function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -123,9 +123,8 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId }) {
 
       onFarmerAdded(farmerData, refreshedFarmers);
 
-      // Refresh activities immediately
-      if (window.refreshActivities) {
-        window.refreshActivities();
+      if (onRefresh) {
+        onRefresh();
       }
 
       // Reset form and close modal

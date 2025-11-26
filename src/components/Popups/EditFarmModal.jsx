@@ -1,7 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
 
-function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
+function EditFarmModal({
+  isOpen,
+  onClose,
+  farmData,
+  onFarmUpdated,
+  onRefresh,
+}) {
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
@@ -251,8 +257,8 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
         console.log("🎉 Farm updated successfully!");
 
         // Refresh activities immediately
-        if (window.refreshActivities) {
-          window.refreshActivities();
+        if (onRefresh) {
+          onRefresh();
         }
 
         // Call the update callback

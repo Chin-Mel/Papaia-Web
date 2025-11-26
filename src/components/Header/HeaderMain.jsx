@@ -58,12 +58,27 @@ export default function HeaderMain() {
   };
 
   // Get profile picture URL
+  // const getProfilePictureUrl = () => {
+  //   if (userData?.profilePicture) {
+  //     if (userData.profilePicture.startsWith("http")) {
+  //       return userData.profilePicture;
+  //     }
+  //     // Add /api/ to the path and cache-busting timestamp
+  //     return `https://papaiaapi.onrender.com/api/${
+  //       userData.profilePicture
+  //     }?t=${Date.now()}`;
+  //   }
+  //   return defaultUser;
+  // };
+
+  // Get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
-      if (userData.profilePicture.startsWith("http")) {
-        return userData.profilePicture;
-      }
-      return `https://papaiaapi.onrender.com${userData.profilePicture}`;
+      // Profile picture is already a full Firebase Storage URL
+      // Just add cache-busting timestamp
+      return `${userData.profilePicture}${
+        userData.profilePicture.includes("?") ? "&" : "?"
+      }t=${Date.now()}`;
     }
     return defaultUser;
   };

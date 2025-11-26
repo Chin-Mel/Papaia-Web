@@ -5,21 +5,43 @@ import { ChartBarIncreasing, AlertCircle, CheckCircle } from "lucide-react";
 // Simple in-memory cache
 const cache = {
   data: {},
+
+  getUserId() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(window.atob(base64));
+      return payload.userId || payload.id || payload.sub;
+    } catch {
+      return null;
+    }
+  },
+
   set(key, value, ttl = 60000) {
-    this.data[key] = {
+    const userId = this.getUserId();
+    if (!userId) return;
+    const userKey = `${userId}:${key}`;
+    this.data[userKey] = {
       value,
       expires: Date.now() + ttl,
     };
   },
+
   get(key) {
-    const item = this.data[key];
+    const userId = this.getUserId();
+    if (!userId) return null;
+    const userKey = `${userId}:${key}`;
+    const item = this.data[userKey];
     if (!item) return null;
     if (Date.now() > item.expires) {
-      delete this.data[key];
+      delete this.data[userKey];
       return null;
     }
     return item.value;
   },
+
   clear() {
     this.data = {};
   },

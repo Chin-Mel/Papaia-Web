@@ -25,6 +25,10 @@ import RecentScans from "./RecentScans";
 import FarmTeams from "./FarmTeams";
 import FarmAnalyticsSummary from "./FarmAnalyticsSummary";
 
+const refreshActivities = () => {
+  fetchFarmData();
+};
+
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
   const navigate = useNavigate();
@@ -97,11 +101,6 @@ export default function FarmDashboardPage() {
       setIsAddFarmerModalOpen(false);
       setNewlyAddedFarmer(farmerData);
       setIsFarmerAddedSuccessModalOpen(true);
-
-      // Refresh activities immediately
-      if (window.refreshActivities) {
-        window.refreshActivities();
-      }
     } catch (error) {
       console.error("Error handling farmer addition:", error);
     }
@@ -146,11 +145,6 @@ export default function FarmDashboardPage() {
 
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
-
-      // Refresh activities immediately
-      if (window.refreshActivities) {
-        window.refreshActivities();
-      }
     } catch (error) {
       console.error("Error removing farmer:", error);
       alert(error.message);
@@ -173,11 +167,6 @@ export default function FarmDashboardPage() {
 
   const handleFarmUpdated = () => {
     fetchFarmData(); // Refresh farm data after successful update
-
-    // Refresh activities immediately
-    if (window.refreshActivities) {
-      window.refreshActivities();
-    }
   };
 
   const handleStatusToggled = (newStatus) => {
@@ -426,6 +415,7 @@ export default function FarmDashboardPage() {
             onClose={() => setIsAddFarmerModalOpen(false)}
             onFarmerAdded={handleFarmerAdded}
             farmId={farmId}
+            onRefresh={refreshActivities}
           />
 
           <EditFarmModal
@@ -433,6 +423,7 @@ export default function FarmDashboardPage() {
             onClose={handleCloseEditFarmModal}
             farmData={farmData}
             onFarmUpdated={handleFarmUpdated}
+            onRefresh={refreshActivities}
           />
 
           <FarmerDetailModal

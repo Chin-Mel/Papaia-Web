@@ -33,8 +33,8 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
         await onConfirmRemove();
 
         // Refresh activities immediately
-        if (window.refreshActivities) {
-          window.refreshActivities();
+        if (onRefresh) {
+          onRefresh();
         }
       } catch (error) {
         console.error("Error removing farmer:", error);
