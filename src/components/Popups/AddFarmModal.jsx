@@ -47,10 +47,8 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
     setLoading(true);
 
-    // Pass the form data to parent component with the correct field names
-    // The parent will handle the API call
     const farmData = {
-      name: formData.farmName, // Map farmName to name for parent component
+      name: formData.farmName,
       location: formData.location,
       description: formData.description,
       farmImage: formData.farmImage,
@@ -66,34 +64,42 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-5 relative">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
-              <Leaf className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <Leaf className="w-6 h-6 text-white" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Add a Farm</h2>
-              <p className="text-white/80 text-sm">Create a new farm profile</p>
+              <p className="text-white/90 text-sm">Create a new farm profile</p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors disabled:opacity-50"
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Body - Scrollable */}
+        <div className="overflow-y-auto flex-1">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
             {/* Farm Name */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Farm Name <span className="text-red-500">*</span>
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                Farm Name
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -102,17 +108,18 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 placeholder="Enter your farm name"
                 required
                 disabled={loading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
               />
             </div>
 
             {/* Location */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Location/Address <span className="text-red-500">*</span>
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                Location/Address
+                <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-orange-500" />
+                <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
                 <input
                   type="text"
                   value={formData.location}
@@ -122,42 +129,49 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                   placeholder="Enter farm address or location"
                   required
                   disabled={loading}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
                 />
               </div>
             </div>
 
             {/* Farm Image */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Farm Picture (Optional)
+              <label className="text-sm font-semibold text-gray-700">
+                Farm Picture
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  (Optional)
+                </span>
               </label>
               <div
                 onClick={() => !loading && fileInputRef.current?.click()}
-                className={`border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400 transition-colors ${
+                className={`border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
-                }`}
+                } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
               >
                 {imagePreview ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <img
                       src={imagePreview}
                       alt="Farm preview"
-                      className="w-32 h-32 mx-auto object-cover rounded-lg"
+                      className="w-28 h-28 mx-auto object-cover rounded-lg border-2 border-gray-200"
                     />
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 font-medium">
                       {loading ? "Uploading..." : "Click to change image"}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-                      <Camera className="w-6 h-6 text-orange-500" />
+                  <div className="space-y-3">
+                    <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                      <Camera className="w-7 h-7 text-orange-500" />
                     </div>
-                    <p className="text-sm font-medium text-gray-700">
-                      Click to upload farm image
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG up to 10MB</p>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-700">
+                        Click to upload farm image
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        PNG, JPG up to 10MB
+                      </p>
+                    </div>
                   </div>
                 )}
                 <input
@@ -173,45 +187,51 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
             {/* Description */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Description (Optional)
+              <label className="text-sm font-semibold text-gray-700">
+                Description
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  (Optional)
+                </span>
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) =>
                   handleInputChange("description", e.target.value)
                 }
-                placeholder="Describe your farm..."
+                placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
                 rows={4}
                 disabled={loading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
               />
             </div>
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={loading}
-                className="px-4 py-2 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={
-                  loading ||
-                  !formData.farmName.trim() ||
-                  !formData.location.trim()
-                }
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Plus className="w-4 h-4" />
-                {loading ? "Adding..." : "Add Farm"}
-              </button>
-            </div>
           </form>
+        </div>
+
+        {/* Footer */}
+        <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="px-5 py-2.5 border-2 border-orange-500 text-orange-500 rounded-xl hover:bg-orange-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              disabled={
+                loading ||
+                !formData.farmName.trim() ||
+                !formData.location.trim()
+              }
+              className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="w-4 h-4" />
+              {loading ? "Adding..." : "Add Farm"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

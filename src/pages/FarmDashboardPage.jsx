@@ -18,6 +18,7 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
+import ReactivateFarmerModal from "../components/Popups/ReactivateFarmerModal";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
@@ -57,6 +58,10 @@ export default function FarmDashboardPage() {
   const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
 
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
+
+  const [isReactivateFarmerModalOpen, setIsReactivateFarmerModalOpen] =
+    useState(false);
+  const [farmerToReactivate, setFarmerToReactivate] = useState(null);
 
   // Fetch farm data
   const fetchFarmData = async () => {
@@ -132,21 +137,92 @@ export default function FarmDashboardPage() {
   };
 
   const handleConfirmRemoveFarmer = async () => {
-    if (!isActive) return;
+    if (!isActive || !selectedFarmer) return;
+
     try {
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
+        `https://papaiaapi.onrender.com/api/farmer/deactivate`,
         {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            farmerId: selectedFarmer.id,
+          }),
         }
       );
-      if (!response.ok) throw new Error("Failed to remove farmer");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to deactivate farmer");
+      }
 
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
+
+      // Refresh the page to update farmer list
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
     } catch (error) {
-      console.error("Error removing farmer:", error);
+      console.error("Error deactivating farmer:", error);
+      alert(error.message);
+    }
+  };
+
+  const handleReactivateFarmer = async (farmerId) => {
+    if (!isActive) return;
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await response.json();
+      if (data.status === "success") {
+        setFarmerToReactivate(data.farmer);
+        setIsReactivateFarmerModalOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching farmer details:", error);
+    }
+  };
+
+  const handleConfirmReactivate = async () => {
+    if (!isActive || !farmerToReactivate) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/farmer/reactivate`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            farmerId: farmerToReactivate.id,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to reactivate farmer");
+      }
+
+      setIsReactivateFarmerModalOpen(false);
+
+      // Show success message
+      alert("Farmer reactivated successfully!");
+
+      // Refresh the page
+      window.location.reload();
+    } catch (error) {
+      console.error("Error reactivating farmer:", error);
       alert(error.message);
     }
   };
@@ -237,17 +313,26 @@ export default function FarmDashboardPage() {
                   {farmData.farmName}
                 </h1>
                 <span
-                  className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full ${
+                  className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full flex items-center gap-1.5 ${
                     isActive
                       ? "bg-green-100 text-green-700"
                       : "bg-red-100 text-red-700"
                   }`}
                 >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isActive ? "bg-green-500" : "bg-red-500"
+                    }`}
+                  />
                   {isActive ? "Active" : "Inactive"}
                 </span>
               </div>
               <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 text-sm sm:text-base">
-                <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
+                <MapPin
+                  size={12}
+                  className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 fill-slate-500"
+                  fill="currentColor"
+                />
                 {farmData.location || "No location specified"}
               </p>
             </div>
@@ -400,6 +485,7 @@ export default function FarmDashboardPage() {
               farmId={farmId}
               onAddFarmer={isActive ? handleAddFarmer : () => {}}
               onViewFarmer={isActive ? handleViewFarmer : () => {}}
+              onReactivateFarmer={isActive ? handleReactivateFarmer : () => {}}
             />
           </div>
         </div>
@@ -450,6 +536,12 @@ export default function FarmDashboardPage() {
             isOpen={isFarmerRemovedSuccessModalOpen}
             onClose={handleSuccessModalClose}
             farmer={selectedFarmer}
+          />
+          <ReactivateFarmerModal
+            isOpen={isReactivateFarmerModalOpen}
+            onClose={() => setIsReactivateFarmerModalOpen(false)}
+            onConfirm={handleConfirmReactivate}
+            farmer={farmerToReactivate}
           />
         </>
       )}

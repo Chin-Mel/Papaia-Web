@@ -75,7 +75,7 @@ function App() {
         }
       />
       <Route
-        path="//scan-history-details/:scanId"
+        path="/scan-history-details/:farmId/:scanId"
         element={
           <ProtectedRoute>
             <ScanDetailsPage />

@@ -101,8 +101,38 @@ export default function RecentScans({ farmId }) {
           const farmerIdNumbers = farmersList.map((f) => f.idNumber);
 
           // Filter and sort scans - now showing 5 instead of 4
+          // const filteredScans = (scansData || [])
+          //   .filter((scan) => farmerIdNumbers.includes(scan.idNumber))
+          //   .sort((a, b) => {
+          //     const parseTimestamp = (timestamp) => {
+          //       if (!timestamp) return new Date(0);
+          //       try {
+          //         const [datePart, timePart, period] = timestamp.split(/\s+/);
+          //         const [month, day, year] = datePart.split("/");
+          //         const [hours, minutes] = timePart.split(":");
+          //         let hour24 = parseInt(hours);
+          //         if (period === "PM" && hour24 !== 12) hour24 += 12;
+          //         if (period === "AM" && hour24 === 12) hour24 = 0;
+          //         return new Date(year, month - 1, day, hour24, minutes);
+          //       } catch {
+          //         return new Date(timestamp);
+          //       }
+          //     };
+          //     return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
+          //   })
+          //   .slice(0, 5);
+          // Update the filter to exclude deactivated farmers
           const filteredScans = (scansData || [])
-            .filter((scan) => farmerIdNumbers.includes(scan.idNumber))
+            .filter((scan) => {
+              const farmer = farmersList.find(
+                (f) => f.idNumber === scan.idNumber
+              );
+              const isActive =
+                farmer &&
+                farmer.status !== "deactivate" &&
+                farmer.status !== "inactive";
+              return farmerIdNumbers.includes(scan.idNumber) && isActive;
+            })
             .sort((a, b) => {
               const parseTimestamp = (timestamp) => {
                 if (!timestamp) return new Date(0);

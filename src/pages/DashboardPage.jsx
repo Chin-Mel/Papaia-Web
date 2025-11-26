@@ -9,6 +9,7 @@ import RecentActivities from "../pages/RecentActivities";
 import ScansCount from "../assets/ic_todays_scan.png";
 import FarmersCount from "../assets/ic_all_farmers.png";
 import FarmsCount from "../assets/ic_all_farms.png";
+import FarmAddedSuccessModal from "../components/Popups/FarmAddedSuccessModal";
 
 // ============ IN-MEMORY CACHE ============
 const cache = {
@@ -90,6 +91,8 @@ export default function DashboardPage() {
     scansTrend: "no change",
   });
   const mountedRef = useRef(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [addedFarmData, setAddedFarmData] = useState(null);
 
   // Preload images
   useEffect(() => {
@@ -324,7 +327,9 @@ export default function DashboardPage() {
           window.refreshActivities();
         }
 
+        setAddedFarmData(farmData);
         setShowAddFarmModal(false);
+        setShowSuccessModal(true);
       }
     } catch (err) {
       // Silent error handling
@@ -334,6 +339,23 @@ export default function DashboardPage() {
   };
 
   const handleCloseModal = () => setShowAddFarmModal(false);
+
+  // Add these handlers
+  const handleViewDashboard = () => {
+    setShowSuccessModal(false);
+    // Optionally navigate to the new farm's dashboard if you have the farm ID
+  };
+
+  const handleAddAnother = () => {
+    setShowSuccessModal(false);
+    setAddedFarmData(null);
+    setShowAddFarmModal(true);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setShowSuccessModal(false);
+    setAddedFarmData(null);
+  };
 
   const getTrendColor = (trend) => {
     switch (trend) {
@@ -543,18 +565,19 @@ export default function DashboardPage() {
                           <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">
                             {farm.desc}
                           </p>
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500">
-                              <MapPin size={12} className="flex-shrink-0" />
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500 flex-1 min-w-0">
+                              <MapPin
+                                size={12}
+                                className="flex-shrink-0 fill-slate-500"
+                                fill="currentColor"
+                              />
                               <span className="truncate">{farm.location}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Leaf
-                                size={12}
-                                className="text-emerald-500 flex-shrink-0"
-                              />
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              <Leaf size={12} className="text-emerald-500" />
                               <span
-                                className={`text-[10px] sm:text-xs font-semibold ${getHealthColor(
+                                className={`text-[10px] sm:text-xs font-semibold whitespace-nowrap ${getHealthColor(
                                   farm.health
                                 )}`}
                               >
@@ -600,7 +623,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-[#DCFCE7] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-[#DCFCE7] flex items-center justify-center">
                     <img
                       src={FarmersCount}
                       alt="Farmers"
@@ -628,7 +651,7 @@ export default function DashboardPage() {
                       last month
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-[#FEF9C3] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-[#FEF9C3] flex items-center justify-center">
                     <img
                       src={FarmsCount}
                       alt="Farms"
@@ -656,7 +679,7 @@ export default function DashboardPage() {
                       yesterday
                     </span>
                   </div>
-                  <div className="w-16 h-16 rounded-xl bg-[#DBEAFE] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-[#DBEAFE] flex items-center justify-center">
                     <img
                       src={ScansCount}
                       alt="Scans"
@@ -737,20 +760,21 @@ export default function DashboardPage() {
                             <p className="text-sm text-slate-600 mb-2 line-clamp-2">
                               {farm.desc}
                             </p>
-                            <div className="flex flex-col gap-1.5">
-                              <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                <MapPin size={12} className="flex-shrink-0" />
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-1 min-w-0">
+                                <MapPin
+                                  size={12}
+                                  className="flex-shrink-0 fill-slate-500"
+                                  fill="currentColor"
+                                />
                                 <span className="truncate">
                                   {farm.location}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-1.5">
-                                <Leaf
-                                  size={12}
-                                  className="text-emerald-500 flex-shrink-0"
-                                />
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <Leaf size={12} className="text-emerald-500" />
                                 <span
-                                  className={`text-xs font-semibold ${getHealthColor(
+                                  className={`text-xs font-semibold whitespace-nowrap ${getHealthColor(
                                     farm.health
                                   )}`}
                                 >
@@ -772,6 +796,15 @@ export default function DashboardPage() {
 
       {showAddFarmModal && (
         <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
+      )}
+
+      {showSuccessModal && (
+        <FarmAddedSuccessModal
+          onClose={handleCloseSuccessModal}
+          onViewDashboard={handleViewDashboard}
+          onAddAnother={handleAddAnother}
+          farmData={addedFarmData}
+        />
       )}
       <Footer />
     </div>
