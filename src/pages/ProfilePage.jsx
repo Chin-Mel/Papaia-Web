@@ -8,6 +8,7 @@ import {
   Calendar,
   Edit3,
   Tractor,
+  FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
@@ -170,7 +171,7 @@ export default function ProfilePage() {
           {/* Page Header */}
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
-              Profile Settings
+              Profile
             </h1>
             <p className="text-gray-600 text-sm sm:text-base">
               Manage your account information and preferences
@@ -219,9 +220,10 @@ export default function ProfilePage() {
                 {/* Manage Billing Button */}
                 <button
                   onClick={() => navigate("/billing")}
-                  className="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                  className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-start gap-3 transition-colors border border-gray-200"
                 >
-                  Manage Billing
+                  <FileText className="w-5 h-5 text-gray-600" />
+                  <span>Manage Billing</span>
                 </button>
               </div>
             </div>
