@@ -153,24 +153,6 @@ function FarmerDetailModal({ isOpen, onClose, onRemoveFarmer, farmer }) {
               </div>
             </div>
 
-            {/* Username and Email */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  Username
-                </p>
-                <p className="text-gray-900 font-semibold">
-                  {farmer.username || "N/A"}
-                </p>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                <p className="text-gray-500 text-xs font-medium mb-1">Email</p>
-                <p className="text-gray-900 font-semibold truncate">
-                  {farmer.email || "N/A"}
-                </p>
-              </div>
-            </div>
-
             {/* Address - Full width */}
             <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
               <p className="text-gray-500 text-xs font-medium mb-1">Address</p>

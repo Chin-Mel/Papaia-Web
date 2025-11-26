@@ -1,3 +1,4 @@
+//new
 import React, { useState, useRef, useEffect } from "react";
 import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
 
@@ -17,18 +18,21 @@ function EditFarmModal({
   const [imagePreview, setImagePreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [imageError, setImageError] = useState(false);
   const modalRef = useRef(null);
 
+  // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+        handleClose();
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, []);
 
+  // Initialize form when modal opens or farmData changes
   useEffect(() => {
     if (farmData && isOpen) {
       setFormData({
@@ -48,54 +52,46 @@ function EditFarmModal({
 
       setSelectedImage(null);
       setErrors({});
+      setImageError(false);
     }
   }, [farmData, isOpen]);
 
+  // Handle form field changes
   const handleInputChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: "",
-      }));
-    }
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  // Handle image selection
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        setErrors((prev) => ({
-          ...prev,
-          farmImage: "Please select a valid image file",
-        }));
-        return;
-      }
+    if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          farmImage: "Image size must be less than 5MB",
-        }));
-        return;
-      }
-
-      setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (!file.type.startsWith("image/")) {
       setErrors((prev) => ({
         ...prev,
-        farmImage: "",
+        farmImage: "Please select a valid image file",
       }));
+      return;
     }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({
+        ...prev,
+        farmImage: "Image size must be less than 5MB",
+      }));
+      return;
+    }
+
+    setSelectedImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setErrors((prev) => ({ ...prev, farmImage: "" }));
+    setImageError(false);
   };
 
+  // Save changes
   const handleSave = async () => {
     setErrors({});
-
     if (!farmData?.id) {
       setErrors({ general: "Farm ID is missing. Please try again." });
       return;
@@ -108,29 +104,19 @@ function EditFarmModal({
     const trimmedLocation = formData.location.trim();
     const trimmedDescription = formData.description.trim();
 
-    const originalFarmName = String(farmData?.farmName || "").trim();
-    const originalLocation = String(farmData?.location || "").trim();
-    const originalDescription = String(farmData?.description || "").trim();
-
-    if (trimmedFarmName !== originalFarmName) {
+    if (trimmedFarmName !== (farmData.farmName || "").trim()) {
       updatedData.farmName = trimmedFarmName;
       hasChanges = true;
     }
-
-    if (trimmedLocation !== originalLocation) {
+    if (trimmedLocation !== (farmData.location || "").trim()) {
       updatedData.location = trimmedLocation;
       hasChanges = true;
     }
-
-    if (trimmedDescription !== originalDescription) {
+    if (trimmedDescription !== (farmData.description || "").trim()) {
       updatedData.description = trimmedDescription;
       hasChanges = true;
     }
-
-    const hasImageChange = !!selectedImage;
-    if (hasImageChange) {
-      hasChanges = true;
-    }
+    if (selectedImage) hasChanges = true;
 
     if (!hasChanges) {
       handleClose();
@@ -138,71 +124,34 @@ function EditFarmModal({
     }
 
     const formDataToSend = new FormData();
-    Object.keys(updatedData).forEach((key) => {
-      formDataToSend.append(key, updatedData[key]);
-    });
-
-    if (selectedImage) {
-      formDataToSend.append("farmImage", selectedImage);
-    }
+    Object.keys(updatedData).forEach((key) =>
+      formDataToSend.append(key, updatedData[key])
+    );
+    if (selectedImage) formDataToSend.append("farmImage", selectedImage);
 
     setIsLoading(true);
-
     try {
-      const url = `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`;
       const token = localStorage.getItem("token");
-
-      if (!token) {
-        throw new Error("Authentication token not found. Please log in again.");
-      }
-
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formDataToSend,
-      });
-
-      const responseText = await response.text();
-
-      if (!response.ok) {
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage =
-            errorData.message || `HTTP error! status: ${response.status}`;
-        } catch {
-          errorMessage = `HTTP error! status: ${response.status}. Response: ${responseText}`;
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formDataToSend,
         }
-        throw new Error(errorMessage);
-      }
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        throw new Error("Invalid response from server");
-      }
+      );
+      const data = await response.json();
 
       if (data.status === "success") {
-        if (onRefresh) {
-          onRefresh();
-        }
-
-        if (onFarmUpdated) {
-          onFarmUpdated();
-        }
-
+        onRefresh?.();
+        onFarmUpdated?.();
         handleClose();
         alert("Farm updated successfully!");
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
-    } catch (error) {
-      setErrors({
-        general: `Failed to update farm: ${error.message}`,
-      });
+    } catch (err) {
+      setErrors({ general: `Failed to update farm: ${err.message}` });
     } finally {
       setIsLoading(false);
     }
@@ -212,15 +161,11 @@ function EditFarmModal({
     if (selectedImage && imagePreview && imagePreview.startsWith("blob:")) {
       URL.revokeObjectURL(imagePreview);
     }
-
     setSelectedImage(null);
-    setFormData({
-      farmName: "",
-      location: "",
-      description: "",
-    });
+    setFormData({ farmName: "", location: "", description: "" });
     setImagePreview("");
     setErrors({});
+    setImageError(false);
     onClose();
   };
 
@@ -228,7 +173,10 @@ function EditFarmModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-2xl p-6 relative">
           <div className="flex items-center gap-3">
@@ -246,6 +194,7 @@ function EditFarmModal({
           </div>
           <button
             onClick={handleClose}
+            aria-label="Close modal"
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
             disabled={isLoading}
           >
@@ -270,28 +219,23 @@ function EditFarmModal({
               </span>
             </label>
             <div className="relative">
-              {imagePreview ? (
+              {imagePreview && !imageError ? (
                 <img
                   src={imagePreview}
                   alt="Farm preview"
                   className="w-full h-64 object-cover rounded-xl border-2 border-gray-200 shadow-sm"
-                  onError={(e) => {
-                    e.target.src = "";
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
+                  onError={() => setImageError(true)}
                 />
-              ) : null}
-
-              <div
-                className="w-full h-64 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center"
-                style={{ display: imagePreview ? "none" : "flex" }}
-              >
-                <div className="text-center">
-                  <Upload className="w-12 h-12 text-gray-300 mx-auto mb-2" />
-                  <p className="text-gray-400 font-medium">No image selected</p>
+              ) : (
+                <div className="w-full h-64 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                  <div className="text-center">
+                    <Upload className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-400 font-medium">
+                      No image selected
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               <label className="absolute bottom-4 right-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-xl cursor-pointer hover:from-orange-600 hover:to-orange-700 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center gap-2 font-semibold">
                 <Upload className="w-4 h-4" />
@@ -365,6 +309,7 @@ function EditFarmModal({
         <div className="p-6 border-t-2 border-gray-100 flex flex-col sm:flex-row gap-3 justify-end">
           <button
             onClick={handleClose}
+            aria-label="Cancel"
             className="px-6 py-3 border-2 border-gray-300 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
             disabled={isLoading}
           >
@@ -395,6 +340,7 @@ function EditFarmModal({
 
 export default EditFarmModal;
 
+//old
 // import React, { useState, useRef, useEffect } from "react";
 // import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
 
