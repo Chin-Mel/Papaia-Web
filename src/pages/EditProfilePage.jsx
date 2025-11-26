@@ -19,8 +19,6 @@ import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import defaultUserPic from "../assets/default-user.png";
 import { getLoggedInUser } from "../utils/security";
-// import ProfileInput from "../components/Profile/ProfileInput";
-// import ProfileSelect from "../components/Profile/ProfileSelect";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -146,19 +144,16 @@ function EditProfilePage() {
       return;
     }
 
-    // Check file size (10MB = 10485760 bytes)
     if (file.size > 10485760) {
       alert("File size exceeds 10MB limit");
       return;
     }
 
-    // Check file type
     if (!file.type.startsWith("image/")) {
       alert("Please select a valid image file");
       return;
     }
 
-    // Store the file and create preview URL
     setSelectedImage(file);
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
@@ -168,14 +163,11 @@ function EditProfilePage() {
     fileInputRef.current?.click();
   };
 
-  // Handle input changes
   const handleChange = (key, value) => {
     setFormValues({ ...formValues, [key]: value });
   };
 
-  // Handle save changes
   const handleSaveChanges = async () => {
-    // Validate required fields
     if (!formValues.firstName?.trim()) {
       alert("First name is required and cannot be empty");
       return;
@@ -210,7 +202,6 @@ function EditProfilePage() {
         throw new Error("Authentication error. Please log in again.");
       }
 
-      // FIRST: Upload profile picture if one was selected
       let updatedProfilePicture = userData.profilePicture;
       if (selectedImage) {
         const formData = new FormData();
@@ -239,7 +230,6 @@ function EditProfilePage() {
         }
       }
 
-      // SECOND: Update user profile data
       const updatedData = {};
       Object.keys(formValues).forEach((key) => {
         let newValue = formValues[key];
@@ -287,25 +277,21 @@ function EditProfilePage() {
         }
       }
 
-      // Merge all updated data
       const mergedData = {
         ...userData,
         ...updatedData,
         profilePicture: updatedProfilePicture,
       };
 
-      // Update state and localStorage
       setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
 
-      // Clear image selection
       setSelectedImage(null);
       setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
-      // Update form values
       setFormValues({
         firstName: mergedData.firstName || "",
         middleName: mergedData.middleName || "",
@@ -317,7 +303,6 @@ function EditProfilePage() {
         birthDate: formatDateForInput(mergedData.birthDate),
       });
 
-      // Dispatch event to update other components
       window.dispatchEvent(new Event("userUpdated"));
 
       alert("Profile updated successfully!");
@@ -335,7 +320,6 @@ function EditProfilePage() {
     setShowDeactivateAccountModal(false);
 
   const getProfilePictureUrl = () => {
-    // Show preview if image is selected
     if (previewUrl) {
       return previewUrl;
     }
@@ -354,7 +338,6 @@ function EditProfilePage() {
     navigate("/login");
   };
 
-  // Loading state
   if (initialLoad) {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -370,7 +353,6 @@ function EditProfilePage() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -411,12 +393,10 @@ function EditProfilePage() {
     );
   }
 
-  // Main content
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <HeaderMain />
 
-      {/* Hidden file input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -427,7 +407,6 @@ function EditProfilePage() {
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 mt-16">
         <div className="max-w-6xl mx-auto">
-          {/* Top Profile Info */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="relative flex flex-col items-center">
@@ -440,7 +419,6 @@ function EditProfilePage() {
                   onError={(e) => (e.currentTarget.src = defaultUserPic)}
                 />
 
-                {/* Camera button */}
                 <button
                   onClick={handleCameraClick}
                   className="absolute bottom-1 right-1 w-10 h-10 bg-[#F97316] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition border-2 border-white hover:bg-orange-600"
@@ -449,7 +427,6 @@ function EditProfilePage() {
                   <Camera className="w-5 h-5 text-white" />
                 </button>
 
-                {/* Preview message */}
                 {selectedImage && (
                   <p className="text-xs text-orange-600 mt-2 text-center max-w-[140px]">
                     New image selected. Click "Save Changes" to update.
@@ -482,7 +459,6 @@ function EditProfilePage() {
             </div>
           </div>
 
-          {/* Personal Information Section */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
@@ -581,7 +557,6 @@ function EditProfilePage() {
             </div>
           </div>
 
-          {/* Security Section */}
           <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               Security & Privacy
@@ -606,7 +581,6 @@ function EditProfilePage() {
             </div>
           </div>
 
-          {/* Danger Zone Section */}
           <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-200">
             <h2 className="text-2xl font-bold text-red-700 mb-4">
               Danger Zone
@@ -635,7 +609,6 @@ function EditProfilePage() {
         </div>
       </main>
 
-      {/* Modals */}
       {showChangePasswordModal && (
         <ChangePasswordModal
           isOpen={showChangePasswordModal}
@@ -653,6 +626,85 @@ function EditProfilePage() {
     </div>
   );
 }
+
+// ProfileInput Component
+const ProfileInput = ({
+  label,
+  icon,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
+  max,
+}) => {
+  return (
+    <div className="flex flex-col">
+      <label className="text-sm font-medium text-gray-600 mb-1">{label}</label>
+      <div className="relative flex items-center">
+        {icon && <div className="absolute left-3 text-gray-400">{icon}</div>}
+        <input
+          type={type}
+          value={value || ""}
+          placeholder={placeholder || ""}
+          onChange={(e) => onChange(e.target.value)}
+          max={max}
+          className={`w-full border border-gray-300 rounded-lg p-3 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all ${
+            icon ? "pl-10" : ""
+          }`}
+        />
+      </div>
+    </div>
+  );
+};
+
+// ProfileSelect Component
+const ProfileSelect = ({ label, value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const displayValue = value || "Select Suffix";
+
+  return (
+    <div className="flex flex-col" ref={dropdownRef}>
+      <label className="text-sm font-medium text-gray-600 mb-1">{label}</label>
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg flex justify-between items-center text-sm hover:bg-gray-50 bg-white transition-all cursor-pointer text-gray-800"
+        >
+          <span className="truncate">{displayValue}</span>
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        </button>
+        {isOpen && (
+          <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+            {options.map((option) => (
+              <li
+                key={option.value}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className="px-4 py-2 cursor-pointer hover:bg-[#F97316] hover:text-white text-sm whitespace-nowrap transition-colors"
+              >
+                {option.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default EditProfilePage;
 
