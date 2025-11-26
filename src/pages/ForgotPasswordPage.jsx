@@ -155,7 +155,7 @@ export default function ForgotPasswordPage() {
         {/* New Password Modal */}
         {showNewPasswordModal && verifiedUserId && (
           <NewPasswordModal
-            userId={verifiedUserId}
+            user_Id={verifiedUserId}
             onPasswordSaved={() => {
               setShowNewPasswordModal(false);
               setShowPasswordUpdated(true); // now this will trigger

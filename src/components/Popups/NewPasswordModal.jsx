@@ -5,7 +5,7 @@ import EyeIcon from "../../assets/eye-icon.png";
 import EyeOffIcon from "../../assets/eye-off-icon.png";
 
 // Success Modal Component
-export default function NewPasswordModal({ userId, onPasswordSaved }) {
+export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -73,7 +73,7 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            idNumber: userId,
+            userId: user_Id,
             newPassword: newPassword,
           }),
         }
