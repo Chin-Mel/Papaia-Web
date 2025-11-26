@@ -30,7 +30,7 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
       try {
         await onConfirmRemove();
       } catch (error) {
-        console.error("Error removing farmer:", error);
+        //console.error("Error removing farmer:", error);
       } finally {
         setIsLoading(false);
       }

@@ -66,7 +66,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
         setError(errorMessage);
       }
     } catch (error) {
-      console.error("Error deactivating account:", error);
+      // console.error("Error deactivating account:", error);
       setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);

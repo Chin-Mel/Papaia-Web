@@ -120,7 +120,7 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
       setFarmerId("");
       onClose();
     } catch (err) {
-      console.error("Error adding farmer:", err);
+      // console.error("Error adding farmer:", err);
       alert("Error adding farmer: " + err.message);
     } finally {
       setIsLoading(false);

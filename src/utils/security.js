@@ -62,7 +62,7 @@ export async function secureApiCall(url, options = {}) {
 
     return response;
   } catch (error) {
-    console.error("API call failed:", error);
+    //console.error("API call failed:", error);
     throw error;
   }
 }

@@ -131,7 +131,7 @@ export default function ScanDetailsPage() {
             }
           } catch (farmError) {
             if (farmError.name !== "AbortError") {
-              console.warn("Could not fetch farm details:", farmError);
+              //console.warn("Could not fetch farm details:", farmError);
             }
           }
         }
@@ -161,7 +161,7 @@ export default function ScanDetailsPage() {
             }
           } catch (farmerError) {
             if (farmerError.name !== "AbortError") {
-              console.warn("Could not fetch farmer details:", farmerError);
+              //console.warn("Could not fetch farmer details:", farmerError);
             }
           }
         }

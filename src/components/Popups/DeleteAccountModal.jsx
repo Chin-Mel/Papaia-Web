@@ -92,7 +92,7 @@ export default function DeleteAccountModal({ isOpen, onClose }) {
         }
       }
     } catch (error) {
-      console.error("Error deleting account:", error);
+      //console.error("Error deleting account:", error);
       setError("Network error. Please check your connection and try again.");
     } finally {
       setIsLoading(false);

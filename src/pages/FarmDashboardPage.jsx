@@ -80,7 +80,7 @@ export default function FarmDashboardPage() {
       const farm = data.farms?.find((f) => f.id === farmId);
       setFarmData(farm || null);
     } catch (error) {
-      console.error("Failed to fetch farm data:", error);
+      //console.error("Failed to fetch farm data:", error);
       setFarmData(null);
     } finally {
       setLoading(false);
@@ -107,7 +107,7 @@ export default function FarmDashboardPage() {
       setNewlyAddedFarmer(farmerData);
       setIsFarmerAddedSuccessModalOpen(true);
     } catch (error) {
-      console.error("Error handling farmer addition:", error);
+      //console.error("Error handling farmer addition:", error);
     }
   };
 
@@ -126,7 +126,7 @@ export default function FarmDashboardPage() {
         setIsFarmerDetailModalOpen(true);
       }
     } catch (error) {
-      console.error("Error fetching farmer details:", error);
+      //console.error("Error fetching farmer details:", error);
     }
   };
 
@@ -167,7 +167,7 @@ export default function FarmDashboardPage() {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      console.error("Error deactivating farmer:", error);
+      //console.error("Error deactivating farmer:", error);
       alert(error.message);
     }
   };
@@ -187,7 +187,7 @@ export default function FarmDashboardPage() {
         setIsReactivateFarmerModalOpen(true);
       }
     } catch (error) {
-      console.error("Error fetching farmer details:", error);
+      //console.error("Error fetching farmer details:", error);
     }
   };
 
@@ -222,7 +222,7 @@ export default function FarmDashboardPage() {
       // Refresh the page
       window.location.reload();
     } catch (error) {
-      console.error("Error reactivating farmer:", error);
+      //console.error("Error reactivating farmer:", error);
       alert(error.message);
     }
   };

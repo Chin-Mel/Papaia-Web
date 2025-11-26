@@ -57,7 +57,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     try {
       await onSubmit(farmData);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      // console.error("Error submitting form:", error);
       alert("Failed to add farm. Please try again.");
     } finally {
       setLoading(false);

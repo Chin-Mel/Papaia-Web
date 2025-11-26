@@ -60,7 +60,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
         throw new Error(data.message || "Failed to toggle farm status");
       }
     } catch (error) {
-      console.error("Error toggling farm status:", error);
+      // console.error("Error toggling farm status:", error);
       alert(`Failed to toggle farm status: ${error.message}`);
     } finally {
       setIsLoading(false);

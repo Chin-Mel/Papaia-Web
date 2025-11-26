@@ -1,4 +1,3 @@
-//new
 import React, { useState, useEffect, useRef } from "react";
 import {
   Mail,
@@ -18,11 +17,10 @@ import FooterMain from "../components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
-import DeleteAccountModal from "../components/Popups/DeleteAccountModal";
 import defaultUserPic from "../assets/default-user.png";
 import { getLoggedInUser } from "../utils/security";
-import ProfileInput from "../components/Profile/ProfileInput";
-import ProfileSelect from "../components/Profile/ProfileSelect";
+// import ProfileInput from "../components/Profile/ProfileInput";
+// import ProfileSelect from "../components/Profile/ProfileSelect";
 
 function EditProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -38,7 +36,6 @@ function EditProfilePage() {
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
     useState(false);
-  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
 
   // Helper function to format date for input[type="date"]
   const formatDateForInput = (dateString) => {
@@ -336,7 +333,6 @@ function EditProfilePage() {
     setShowChangePasswordModal(false);
   const handleCloseDeactivateAccountModal = () =>
     setShowDeactivateAccountModal(false);
-  const handleCloseDeleteAccountModal = () => setShowDeleteAccountModal(false);
 
   const getProfilePictureUrl = () => {
     // Show preview if image is selected
@@ -361,7 +357,7 @@ function EditProfilePage() {
   // Loading state
   if (initialLoad) {
     return (
-      <div className="bg-white min-h-screen flex flex-col">
+      <div className="bg-gray-50 min-h-screen flex flex-col">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
@@ -377,7 +373,7 @@ function EditProfilePage() {
   // Error state
   if (error) {
     return (
-      <div className="bg-white min-h-screen flex flex-col">
+      <div className="bg-gray-50 min-h-screen flex flex-col">
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center p-4">
           <div className="max-w-lg w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
@@ -417,7 +413,7 @@ function EditProfilePage() {
 
   // Main content
   return (
-    <div className="bg-white min-h-screen flex flex-col">
+    <div className="bg-gray-50 min-h-screen flex flex-col">
       <HeaderMain />
 
       {/* Hidden file input */}
@@ -429,241 +425,214 @@ function EditProfilePage() {
         style={{ display: "none" }}
       />
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-16 py-10 mt-0">
-        {/* Top Profile Info */}
-        <div className="flex flex-col sm:flex-row items-center sm:items-start sm:space-x-6 pb-8 border-b border-gray-200 mb-5">
-          <div className="relative mb-4 sm:mb-0 flex flex-col items-center">
-            <img
-              src={getProfilePictureUrl()}
-              alt={`${userData?.firstName || ""} ${userData?.lastName || ""}`}
-              className="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover"
-              onError={(e) => (e.currentTarget.src = defaultUserPic)}
-            />
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 mt-16">
+        <div className="max-w-6xl mx-auto">
+          {/* Top Profile Info */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              <div className="relative flex flex-col items-center">
+                <img
+                  src={getProfilePictureUrl()}
+                  alt={`${userData?.firstName || ""} ${
+                    userData?.lastName || ""
+                  }`}
+                  className="w-32 h-32 rounded-full border-4 border-gray-100 shadow-md object-cover"
+                  onError={(e) => (e.currentTarget.src = defaultUserPic)}
+                />
 
-            {/* Camera button */}
-            <button
-              onClick={handleCameraClick}
-              className="absolute bottom-1 right-2 w-8 h-8 bg-gradient-to-r from-[#FF8C42] to-[#F97316] rounded-full flex items-center justify-center shadow hover:shadow-md transition border-2 border-white"
-              title="Change profile picture"
-            >
-              <Camera className="w-4 h-4 text-white" />
-            </button>
+                {/* Camera button */}
+                <button
+                  onClick={handleCameraClick}
+                  className="absolute bottom-1 right-1 w-10 h-10 bg-[#F97316] rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition border-2 border-white hover:bg-orange-600"
+                  title="Change profile picture"
+                >
+                  <Camera className="w-5 h-5 text-white" />
+                </button>
 
-            {/* Preview message */}
-            {selectedImage && (
-              <p className="text-sm text-orange-600 mt-2 text-center">
-                New image selected. Click "Save Changes" to update.
-              </p>
-            )}
+                {/* Preview message */}
+                {selectedImage && (
+                  <p className="text-xs text-orange-600 mt-2 text-center max-w-[140px]">
+                    New image selected. Click "Save Changes" to update.
+                  </p>
+                )}
+              </div>
+
+              <div className="flex-1 text-center sm:text-left">
+                <h1 className="text-3xl font-bold text-gray-800 mb-1">
+                  {userData?.firstName}{" "}
+                  {userData?.middleName
+                    ? `${userData.middleName.charAt(0)}. `
+                    : ""}
+                  {userData?.lastName}
+                  {userData?.suffix ? ` ${userData.suffix}` : ""}
+                </h1>
+                <p className="text-gray-600 mb-3">Farm Owner</p>
+
+                <div className="flex items-center justify-center sm:justify-start text-gray-500 text-sm">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Joined{" "}
+                  {userData?.createdAt
+                    ? new Date(userData.createdAt).toLocaleString("default", {
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : "N/A"}
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              {userData?.firstName}{" "}
-              {userData?.middleName ? `${userData.middleName.charAt(0)}. ` : ""}
-              {userData?.lastName}
-              {userData?.suffix ? ` ${userData.suffix}` : ""}
-            </h1>
-            <p className="text-base sm:text-lg text-gray-500">Farm Owner</p>
+          {/* Personal Information Section */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Personal Information
+              </h2>
+              <button
+                onClick={handleSaveChanges}
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#F97316] text-white rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+              >
+                <Save size={18} />
+                {loading ? "Saving..." : "Save Changes"}
+              </button>
+            </div>
 
-            <div className="flex flex-col sm:flex-row sm:space-x-6 mt-3 text-gray-500 text-sm sm:text-base">
-              <div className="flex items-center justify-center sm:justify-start">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-5 h-5 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <ProfileInput
+                label="First Name"
+                icon={<User size={18} />}
+                value={formValues.firstName}
+                placeholder="First Name"
+                onChange={(val) => handleChange("firstName", val)}
+              />
+
+              <ProfileInput
+                label="Middle Name (Optional)"
+                icon={<User size={18} />}
+                value={formValues.middleName}
+                placeholder="Middle Name"
+                onChange={(val) => handleChange("middleName", val)}
+              />
+
+              <ProfileInput
+                label="Last Name"
+                icon={<User size={18} />}
+                value={formValues.lastName}
+                placeholder="Last Name"
+                onChange={(val) => handleChange("lastName", val)}
+              />
+
+              <ProfileSelect
+                label="Suffix (Optional)"
+                value={formValues.suffix}
+                onChange={(val) => handleChange("suffix", val)}
+                options={[
+                  { value: "", label: "Select Suffix" },
+                  { value: "Jr.", label: "Jr." },
+                  { value: "Sr.", label: "Sr." },
+                  { value: "II", label: "II" },
+                  { value: "III", label: "III" },
+                  { value: "IV", label: "IV" },
+                  { value: "V", label: "V" },
+                ]}
+              />
+
+              <ProfileInput
+                label="Username"
+                icon={<User size={18} />}
+                value={formValues.username}
+                placeholder="Username"
+                onChange={(val) => handleChange("username", val)}
+              />
+
+              <ProfileInput
+                label="Email Address"
+                type="email"
+                icon={<Mail size={18} />}
+                value={formValues.email}
+                placeholder="Email"
+                onChange={(val) => handleChange("email", val)}
+              />
+
+              <ProfileInput
+                label="Contact Number"
+                type="tel"
+                icon={<Phone size={18} />}
+                value={formValues.contactNumber}
+                placeholder="Contact Number"
+                onChange={(val) => handleChange("contactNumber", val)}
+                required
+              />
+
+              <ProfileInput
+                label="Birth Date (Optional)"
+                type="date"
+                icon={<Calendar size={18} />}
+                value={formValues.birthDate}
+                placeholder="mm/dd/yyyy"
+                onChange={(val) => handleChange("birthDate", val)}
+                max={(() => {
+                  const today = new Date();
+                  today.setFullYear(today.getFullYear() - 18);
+                  return today.toISOString().split("T")[0];
+                })()}
+              />
+            </div>
+          </div>
+
+          {/* Security Section */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Security & Privacy
+            </h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                  Change Password
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Update your account password to keep it secure
+                </p>
+              </div>
+              <button
+                onClick={() => setShowChangePasswordModal(true)}
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-2.5 bg-[#F97316] text-white rounded-lg font-medium hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md whitespace-nowrap"
+              >
+                <Shield size={18} />
+                Change Password
+              </button>
+            </div>
+          </div>
+
+          {/* Danger Zone Section */}
+          <div className="bg-white rounded-2xl shadow-sm p-6 border-2 border-red-200">
+            <h2 className="text-2xl font-bold text-red-700 mb-4">
+              Danger Zone
+            </h2>
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-red-50 rounded-xl border border-red-200">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                    Deactivate Account
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Temporarily disable your account. You can reactivate it
+                    anytime.
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowDeactivateAccountModal(true)}
+                  disabled={loading}
+                  className="px-5 py-2.5 border-2 border-red-500 text-red-600 rounded-lg font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 whitespace-nowrap"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z"
-                  />
-                </svg>
-                Joined{" "}
-                {userData?.createdAt
-                  ? new Date(userData.createdAt).toLocaleString("default", {
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : "N/A"}
+                  Deactivate Account
+                </button>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Personal Information Section */}
-        <section className="mb-12">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-700">
-              Personal Information
-            </h2>
-            <button
-              onClick={handleSaveChanges}
-              disabled={loading}
-              className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-orange-500 text-orange-500 font-medium hover:bg-orange-500 hover:text-white transition-colors disabled:opacity-50"
-            >
-              <Save size={18} className="mr-2" />
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ProfileInput
-              label="First Name"
-              icon={<User size={20} />}
-              value={formValues.firstName}
-              placeholder="First Name"
-              onChange={(val) => handleChange("firstName", val)}
-            />
-
-            <ProfileInput
-              label="Middle Name (Optional)"
-              icon={<User size={20} />}
-              value={formValues.middleName}
-              placeholder="Middle Name"
-              onChange={(val) => handleChange("middleName", val)}
-            />
-
-            <ProfileInput
-              label="Last Name"
-              icon={<User size={20} />}
-              value={formValues.lastName}
-              placeholder="Last Name"
-              onChange={(val) => handleChange("lastName", val)}
-            />
-
-            <ProfileSelect
-              label="Suffix (Optional)"
-              value={formValues.suffix}
-              onChange={(val) => handleChange("suffix", val)}
-              options={[
-                { value: "", label: "Select Suffix" },
-                { value: "Jr.", label: "Jr." },
-                { value: "Sr.", label: "Sr." },
-                { value: "II", label: "II" },
-                { value: "III", label: "III" },
-                { value: "IV", label: "IV" },
-                { value: "V", label: "V" },
-              ]}
-            />
-
-            <ProfileInput
-              label="Username"
-              icon={<User size={20} />}
-              value={formValues.username}
-              placeholder="Username"
-              onChange={(val) => handleChange("username", val)}
-            />
-
-            <ProfileInput
-              label="Email Address"
-              type="email"
-              icon={<Mail size={20} />}
-              value={formValues.email}
-              placeholder="Email"
-              onChange={(val) => handleChange("email", val)}
-            />
-
-            <ProfileInput
-              label="Contact Number"
-              type="tel"
-              icon={<Phone size={20} />}
-              value={formValues.contactNumber}
-              placeholder="Contact Number"
-              onChange={(val) => handleChange("contactNumber", val)}
-              required
-            />
-
-            <ProfileInput
-              label="Birth Date (Optional)"
-              type="date"
-              icon={<Calendar size={20} />}
-              value={formValues.birthDate}
-              placeholder="mm/dd/yyyy"
-              onChange={(val) => handleChange("birthDate", val)}
-              max={(() => {
-                const today = new Date();
-                today.setFullYear(today.getFullYear() - 18);
-                return today.toISOString().split("T")[0];
-              })()}
-            />
-          </div>
-        </section>
-
-        {/* Security Section */}
-        <section className="mb-12">
-          <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-6">
-            Security & Privacy
-          </h2>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-6 rounded-xl shadow border border-gray-200">
-            <div className="flex-1 text-center sm:text-left">
-              <h3 className="text-lg font-medium text-gray-800">
-                Change Password
-              </h3>
-              <p className="text-sm text-gray-500">
-                Update your account password to keep it secure
-              </p>
-            </div>
-            <button
-              onClick={() => setShowChangePasswordModal(true)}
-              disabled={loading}
-              className="w-full sm:w-auto flex items-center justify-center bg-orange-500 text-white font-semibold py-3 px-6 rounded-xl shadow hover:bg-orange-600 transition-colors disabled:opacity-50"
-            >
-              <Shield size={20} className="mr-2" />
-              Change Password
-            </button>
-          </div>
-        </section>
-
-        {/* Danger Zone Section */}
-        <section className="p-6 rounded-2xl border-2 border-red-500 bg-white">
-          <h2 className="text-xl sm:text-2xl font-semibold text-red-700 mb-6">
-            Danger Zone
-          </h2>
-          <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 bg-red-100 rounded-xl gap-4">
-              <div className="text-center sm:text-left">
-                <h3 className="text-lg font-medium text-red-800">
-                  Deactivate Account
-                </h3>
-                <p className="text-sm text-red-600">
-                  Temporarily disable your account. You can reactivate it
-                  anytime.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowDeactivateAccountModal(true)}
-                disabled={loading}
-                className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-500 text-red-500 font-medium hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50"
-              >
-                Deactivate Account
-              </button>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-5 bg-red-100 rounded-xl gap-4">
-              <div className="text-center sm:text-left">
-                <h3 className="text-lg font-medium text-red-800">
-                  Delete Account
-                </h3>
-                <p className="text-sm text-red-600">
-                  Permanently delete your account and all associated data. This
-                  action cannot be undone.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowDeleteAccountModal(true)}
-                disabled={loading}
-                className="w-full sm:w-auto flex items-center justify-center px-5 py-2 rounded-lg border border-red-800 text-red-800 font-medium hover:bg-red-800 hover:text-white transition-colors disabled:opacity-50"
-              >
-                <Trash2 size={18} className="mr-2" />
-                Delete Account
-              </button>
-            </div>
-          </div>
-        </section>
       </main>
 
       {/* Modals */}
@@ -677,12 +646,6 @@ function EditProfilePage() {
         <DeactivateAccountModal
           isOpen={showDeactivateAccountModal}
           onClose={handleCloseDeactivateAccountModal}
-        />
-      )}
-      {showDeleteAccountModal && (
-        <DeleteAccountModal
-          isOpen={showDeleteAccountModal}
-          onClose={handleCloseDeleteAccountModal}
         />
       )}
 

@@ -29,7 +29,7 @@ export default function ResetPasswordFlow({ userId }) {
         alert(data.message || "Failed to reset password.");
       }
     } catch (error) {
-      console.error("Error resetting password:", error);
+      // console.error("Error resetting password:", error);
       alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);

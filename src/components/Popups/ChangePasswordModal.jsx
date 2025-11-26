@@ -95,7 +95,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
         }
       }
     } catch (error) {
-      console.error("Error updating password:", error);
+      // console.error("Error updating password:", error);
       setErrors({
         general: "Network error. Please check your connection and try again.",
       });

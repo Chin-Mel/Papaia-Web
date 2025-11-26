@@ -49,7 +49,7 @@ export function NotificationProvider({ children }) {
 
       const token = localStorage.getItem("token");
       if (!token) {
-        console.error("[DEBUG] No token found in localStorage");
+        //console.error("[DEBUG] No token found in localStorage");
         if (!silent) setLoading(false);
         setError("No authentication token found");
         setNotifications([]);
@@ -79,7 +79,7 @@ export function NotificationProvider({ children }) {
         }
 
         if (response.status === 401) {
-          console.error("[DEBUG] Unauthorized - token may be invalid");
+          //console.error("[DEBUG] Unauthorized - token may be invalid");
           setError("Unauthorized - please log in again");
           setNotifications([]);
           setUnreadCount(0);
@@ -111,12 +111,12 @@ export function NotificationProvider({ children }) {
         previousCountRef.current = unread;
         setUnreadCount(unread);
 
-        console.log(
-          `[DEBUG] Total: ${normalizedNotifications.length} notifications, ${unread} unread`
-        );
+        // console.log(
+        //   `[DEBUG] Total: ${normalizedNotifications.length} notifications, ${unread} unread`
+        // );
       }
     } catch (error) {
-      console.error("[DEBUG] Error fetching notifications:", error);
+      //console.error("[DEBUG] Error fetching notifications:", error);
       if (isMountedRef.current) {
         setError(error.message);
         setNotifications([]);
@@ -137,7 +137,7 @@ export function NotificationProvider({ children }) {
 
     // Poll for new notifications every 15 seconds (silent)
     const interval = setInterval(() => {
-      console.log("[DEBUG] Polling for new notifications...");
+      //console.log("[DEBUG] Polling for new notifications...");
       fetchNotifications(true);
     }, 15000);
 
@@ -156,9 +156,9 @@ export function NotificationProvider({ children }) {
           return;
         }
 
-        console.log(
-          `[DEBUG] Marking notification ${notificationId} as read...`
-        );
+        // console.log(
+        //   `[DEBUG] Marking notification ${notificationId} as read...`
+        // );
 
         // Optimistically update UI immediately
         setNotifications((prev) =>
@@ -181,7 +181,7 @@ export function NotificationProvider({ children }) {
 
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          console.error(`[DEBUG] Mark as read failed:`, errorData);
+          //console.error(`[DEBUG] Mark as read failed:`, errorData);
 
           // Revert on error
           await fetchNotifications(true);
@@ -190,9 +190,9 @@ export function NotificationProvider({ children }) {
           );
         }
 
-        console.log(
-          `[DEBUG] Successfully marked notification ${notificationId} as read`
-        );
+        // console.log(
+        //   `[DEBUG] Successfully marked notification ${notificationId} as read`
+        // );
       } catch (error) {
         console.error("[DEBUG] Error in markAsRead:", error);
         showToast("Failed to mark as read", "error");
@@ -216,9 +216,9 @@ export function NotificationProvider({ children }) {
         return;
       }
 
-      console.log(
-        `[DEBUG] Marking all ${unreadNotifications.length} notifications as read...`
-      );
+      // console.log(
+      //   `[DEBUG] Marking all ${unreadNotifications.length} notifications as read...`
+      // );
 
       // Optimistically update UI immediately
       setNotifications((prev) =>
@@ -240,17 +240,17 @@ export function NotificationProvider({ children }) {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error(`[DEBUG] Mark all as read failed:`, errorData);
+        //console.error(`[DEBUG] Mark all as read failed:`, errorData);
 
         // Revert on error
         await fetchNotifications(true);
         throw new Error(errorData.error || "Failed to mark all as read");
       }
 
-      console.log("[DEBUG] Successfully marked all notifications as read");
+      //console.log("[DEBUG] Successfully marked all notifications as read");
       showToast("All notifications marked as read", "success");
     } catch (error) {
-      console.error("[DEBUG] Error in markAllAsRead:", error);
+      //console.error("[DEBUG] Error in markAllAsRead:", error);
       showToast("Failed to mark all as read", "error");
     }
   }, [notifications, fetchNotifications]);

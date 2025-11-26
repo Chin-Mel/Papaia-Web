@@ -54,7 +54,7 @@ export default function ProfilePage() {
           }
         }
       } catch (err) {
-        console.warn("Could not fetch fresh user data:", err.message);
+        //console.warn("Could not fetch fresh user data:", err.message);
       }
     };
 
@@ -75,7 +75,7 @@ export default function ProfilePage() {
         // Use the correct property name from API docs
         if (mounted) setFarmCount(data.farmCount ?? 0);
       } catch (err) {
-        console.warn("Could not fetch farm count:", err.message);
+        // console.warn("Could not fetch farm count:", err.message);
       }
     };
 

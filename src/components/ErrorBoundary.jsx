@@ -13,11 +13,11 @@ class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     // Log error to monitoring service (e.g., Sentry)
-    console.error("Error caught by boundary:", error, errorInfo);
-    
+    // console.error("Error caught by boundary:", error, errorInfo);
+
     // Don't expose sensitive error details to users
     // Only log to monitoring service, not to console in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       // Send to error monitoring service
       // errorMonitoringService.captureException(error, errorInfo);
     }
@@ -44,15 +44,16 @@ class ErrorBoundary extends React.Component {
                 />
               </svg>
             </div>
-            
+
             <h2 className="text-xl font-bold text-gray-800 mb-2">
               Something went wrong
             </h2>
-            
+
             <p className="text-gray-600 mb-6">
-              We're sorry, but something unexpected happened. Please try refreshing the page or contact support if the problem persists.
+              We're sorry, but something unexpected happened. Please try
+              refreshing the page or contact support if the problem persists.
             </p>
-            
+
             <div className="space-y-3">
               <button
                 onClick={() => window.location.reload()}
@@ -60,9 +61,9 @@ class ErrorBoundary extends React.Component {
               >
                 Refresh Page
               </button>
-              
+
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
                 className="w-full py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Go to Home
