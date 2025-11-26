@@ -4,25 +4,21 @@ import { useEffect } from "react";
 export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
   useEffect(() => {
     if (isOpen) {
-      // Prevent background scrolling when modal is open
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "hidden"; // prevent background scroll
     } else {
       document.body.style.overflow = "unset";
     }
-
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
-  // Handle ESC key to close modal
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
-
     document.addEventListener("keydown", handleEsc);
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
@@ -31,30 +27,27 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      onClick={onClose}
+      className="fixed inset-0 flex items-center justify-center z-50 p-4"
+      // Remove onClick here to avoid accidental close on click outside
     >
-      <div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Section - Icon */}
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+        {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
             <LogOut className="w-8 h-8 text-red-500" />
           </div>
         </div>
 
-        {/* Middle Section - Title and Message */}
+        {/* Message */}
         <div className="text-center mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-3">Logout</h2>
-          <div className="text-gray-600 space-y-1">
-            <p>Are you sure you want to sign out of your account?</p>
-            <p>You'll need to sign in again to access your dashboard.</p>
-          </div>
+          <p className="text-gray-600">
+            Are you sure you want to sign out of your account? You'll need to
+            sign in again to access your dashboard.
+          </p>
         </div>
 
-        {/* Bottom Section - Action Buttons */}
+        {/* Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onClose}
