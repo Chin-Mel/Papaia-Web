@@ -112,9 +112,10 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     onClose();
 
     // Call the parent logout handler
-    if (onLogout) {
-      onLogout();
-    }
+    if (onLogout) onLogout();
+
+    // ✅ Redirect to sign-in page
+    navigate("/sign-in", { replace: true });
   };
 
   return (
