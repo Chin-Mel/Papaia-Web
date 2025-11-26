@@ -9,13 +9,14 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(user);
   const dropdownRef = useRef(null);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   if (!isOpen) return null;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        onClose();
+        onClose?.();
       }
     };
 
