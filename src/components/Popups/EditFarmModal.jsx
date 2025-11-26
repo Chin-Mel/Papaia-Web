@@ -1,4 +1,3 @@
-old;
 import React, { useState, useRef, useEffect } from "react";
 import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
 
