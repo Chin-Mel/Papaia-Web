@@ -64,10 +64,36 @@ export default function NewPasswordModal({ userId, onPasswordSaved }) {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      onPasswordSaved();
+    setPasswordError("");
+
+    try {
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/reset-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            idNumber: userId,
+            newPassword: newPassword,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // Password reset successfully
+        onPasswordSaved();
+      } else {
+        setPasswordError(
+          data.message || "Failed to reset password. Please try again."
+        );
+      }
+    } catch (error) {
+      setPasswordError("Failed to connect to server. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   const isPasswordValid =
