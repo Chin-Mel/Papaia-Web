@@ -165,7 +165,7 @@ export default function ProfilePage() {
       <HeaderMain />
 
       {/* Main Content */}
-      <main className="flex-1 mt-16 px-4 sm:px-6 lg:px-8 mb-5">
+      <main className="flex-1 mt-8 px-4 sm:px-6 lg:px-8 mb-10">
         <div className="w-full">
           {/* Page Header */}
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
@@ -216,6 +216,13 @@ export default function ProfilePage() {
                     </span>
                   </div>
                 </div>
+                {/* Manage Billing Button */}
+                <button
+                  onClick={() => navigate("/billing")}
+                  className="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg text-sm font-medium"
+                >
+                  Manage Billing
+                </button>
               </div>
             </div>
 

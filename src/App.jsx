@@ -19,6 +19,7 @@ import PricingHomePage from "./pages/PricingHomePage";
 import PricingPage from "./pages/PricingPage";
 import NotificationPage from "./pages/NotificationPage";
 import DemoPage from "./pages/DemoPage";
+import ManageBillingPage from "./pages/ManageBillingPage";
 
 function App() {
   return (
@@ -103,6 +104,15 @@ function App() {
 
       <Route
         path="/notifications"
+        element={
+          <ProtectedRoute>
+            <NotificationPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/billing"
         element={
           <ProtectedRoute>
             <NotificationPage />
