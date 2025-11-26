@@ -115,7 +115,7 @@ function App() {
         path="/billing"
         element={
           <ProtectedRoute>
-            <NotificationPage />
+            <ManageBillingPage />
           </ProtectedRoute>
         }
       />
