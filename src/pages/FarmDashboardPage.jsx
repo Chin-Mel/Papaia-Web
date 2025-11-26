@@ -509,7 +509,6 @@ export default function FarmDashboardPage() {
             onClose={handleCloseEditFarmModal}
             farmData={farmData}
             onFarmUpdated={handleFarmUpdated}
-            onRefresh={refreshActivities}
           />
 
           <FarmerDetailModal
