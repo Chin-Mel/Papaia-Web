@@ -3,6 +3,7 @@ import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import defaultUserPic from "../../assets/default-user.png";
 import { getLoggedInUser } from "../../utils/security";
+import LogoutModal from "./LogoutModal";
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
