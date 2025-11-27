@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, Home } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
-import EyeIcon from "../../assets/eye-icon.png";
-import EyeOffIcon from "../../assets/eye-off-icon.png";
 
 // Success Modal Component
 export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
@@ -181,9 +179,9 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showNewPassword ? (
-                  <EyeOffIcon className="w-5 h-5" />
+                  <EyeOff className="w-5 h-5" />
                 ) : (
-                  <EyeIcon className="w-5 h-5" />
+                  <EyeI className="w-5 h-5" />
                 )}
               </button>
             </div>
@@ -219,9 +217,9 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showConfirmPassword ? (
-                  <EyeOffIcon className="w-5 h-5" />
+                  <EyeOff className="w-5 h-5" />
                 ) : (
-                  <EyeIcon className="w-5 h-5" />
+                  <Eye className="w-5 h-5" />
                 )}
               </button>
             </div>
