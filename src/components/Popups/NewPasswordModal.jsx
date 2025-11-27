@@ -181,7 +181,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 {showNewPassword ? (
                   <EyeOff className="w-5 h-5" />
                 ) : (
-                  <EyeI className="w-5 h-5" />
+                  <Eye className="w-5 h-5" />
                 )}
               </button>
             </div>
