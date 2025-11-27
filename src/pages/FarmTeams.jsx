@@ -500,7 +500,6 @@ export default function FarmTeams({
                   </div>
 
                   <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
-                    // In FarmTeams component, update the action buttons:
                     {isArchived ? (
                       <button
                         onClick={() =>
@@ -619,7 +618,6 @@ export default function FarmTeams({
 
                   {/* Actions */}
                   <div className="col-span-2">
-                    // In FarmTeams component, update the action buttons:
                     {isArchived ? (
                       <button
                         onClick={() =>
