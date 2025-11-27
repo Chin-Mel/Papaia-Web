@@ -338,14 +338,21 @@ export default function RecentActivities({ limit = 5 }) {
         const data = await res.json();
 
         if (data.status === "success" && Array.isArray(data.activities)) {
-          activityCache.set(data.activities);
+          // Sort activities by createdAt timestamp (most recent first)
+          const sortedActivities = [...data.activities].sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateB - dateA; // Descending order (newest first)
+          });
 
-          const processed = data.activities.slice(0, limit).map((act) => ({
+          activityCache.set(sortedActivities);
+
+          const processed = sortedActivities.slice(0, limit).map((act) => ({
             ...getActivityStyle(act.action, act.details),
             time: formatTime(act.createdAt),
             id: act.id,
+            createdAt: act.createdAt, // Keep original timestamp for debugging
           }));
-
           if (mountedRef.current) {
             setActivities(processed.length ? processed : getFallbackActivity());
           }
@@ -453,11 +460,12 @@ export default function RecentActivities({ limit = 5 }) {
             const IconComponent = act.icon;
             return (
               <div
-                className={`${act.bg} rounded-xl p-3 border border-gray-100 transition-all duration-200 hover:shadow-md cursor-pointer`}
+                key={act.id}
+                className={`${act.bg} ${act.leftBorder} rounded-lg p-3 hover:shadow-md transition-all duration-200 cursor-pointer`}
               >
                 <div className="flex items-start gap-3">
                   <IconComponent
-                    className={`w-5 h-5 ${act.iconColor} flex-shrink-0`}
+                    className={`w-5 h-5 ${act.iconColor} flex-shrink-0 mt-0.5`}
                     strokeWidth={2.5}
                   />
                   <div className="flex-1 min-w-0">
