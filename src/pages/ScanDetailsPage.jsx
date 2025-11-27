@@ -383,8 +383,8 @@ export default function ScanDetailsPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-12 xl:px-16 py-6 lg:py-8">
-        <div className="max-w-5xl mx-auto">
+      <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
+        <div className="w-full max-w-8xl mx-auto">
           {/* Header with Back Button */}
           <div className="mb-6">
             <button

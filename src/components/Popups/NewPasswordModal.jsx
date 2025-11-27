@@ -103,34 +103,36 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
     newPassword === confirmPassword;
 
   return (
-    <div className="flex justify-center items-start min-h-screen px-4 pt-12 sm:pt-16 md:pt-20 pb-6">
-      <div className="w-full max-w-sm sm:max-w-md md:max-w-lg rounded-xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.15)] bg-white">
-        {/* Header */}
+    <div className="flex justify-center items-start min-h-screen px-4 py-12">
+      <div className="w-full max-w-lg mx-auto rounded-2xl overflow-hidden max-h-[85vh] flex flex-col">
+        {/* Header with gradient background */}
         <div
-          className="flex flex-col items-center justify-center text-white py-6 sm:py-7 md:py-8 px-4"
+          className="flex flex-col items-center justify-center text-white p-4"
           style={{
-            backgroundImage:
-              "linear-gradient(to bottom right, #00712D, #F97316)",
+            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
         >
-          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-3 sm:mb-4 ring-4 ring-white/30">
+          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
             <img
               src={PapayaLogo}
               alt="Logo"
-              className="w-8 h-8 sm:w-10 sm:h-10"
+              className="w-7 h-9 sm:w-7 sm:h-9"
             />
           </div>
-          <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
+          <h2 className="text-base sm:text-lg md:text-xl font-bold text-center">
             Create New Password
           </h2>
+          <p className="text-[9px] sm:text-xs md:text-sm text-center opacity-90 mt-1">
+            Set a secure password for your account
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="px-5 sm:px-6 md:px-8 py-5 sm:py-6 md:py-7">
+        {/* Content - Scrollable */}
+        <div className="bg-white p-6 overflow-y-auto flex-1">
           {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-2 mb-4">
             <svg
-              className="w-4 h-4 sm:w-5 sm:h-5 text-green-600"
+              className="w-5 h-5 text-green-600"
               fill="currentColor"
               viewBox="0 0 20 20"
             >
@@ -140,20 +142,20 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 clipRule="evenodd"
               />
             </svg>
-            <p className="text-green-700 font-semibold text-xs sm:text-sm">
+            <p className="text-green-700 font-semibold text-sm">
               Security Verified
             </p>
           </div>
 
-          <p className="text-gray-600 text-center mb-5 sm:mb-6 text-xs sm:text-sm">
+          <p className="text-gray-600 text-center mb-5 text-sm">
             Your account is ready to set a new password.
           </p>
 
           {/* New Password */}
-          <div className="mb-3 sm:mb-4">
-            <label className="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1 mb-1.5">
+          <div className="mb-4">
+            <label className="text-sm font-semibold text-gray-800 flex items-center gap-1 mb-1.5">
               <svg
-                className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500"
+                className="w-4 h-4 text-orange-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -171,22 +173,23 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 placeholder="Enter password"
                 value={newPassword}
                 onChange={(e) => handlePasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 sm:py-2.5 text-sm sm:text-base focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
               />
-              <img
-                src={showNewPassword ? EyeOffIcon : EyeIcon}
-                alt="toggle visibility"
+              <button
+                type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer w-5 h-5"
-              />
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
+              >
+                {showNewPassword ? EyeOffIcon : EyeIcon}
+              </button>
             </div>
           </div>
 
           {/* Confirm Password */}
           <div className="mb-4">
-            <label className="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-1 mb-1.5">
+            <label className="text-sm font-semibold text-gray-800 flex items-center gap-1 mb-1.5">
               <svg
-                className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500"
+                className="w-4 h-4 text-orange-500"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -204,31 +207,32 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 sm:py-2.5 text-sm sm:text-base focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
               />
-              <img
-                src={showConfirmPassword ? EyeOffIcon : EyeIcon}
-                alt="toggle visibility"
+              <button
+                type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer w-5 h-5"
-              />
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
+              >
+                {showConfirmPassword ? EyeOffIcon : EyeIcon}
+              </button>
             </div>
           </div>
 
           {/* Error */}
           {passwordError && (
-            <p className="text-red-500 text-xs sm:text-sm text-center mb-3 sm:mb-4">
+            <p className="text-red-500 text-sm text-center mb-4">
               {passwordError}
             </p>
           )}
 
           {/* Requirements */}
           {newPassword && (
-            <div className="mb-4 sm:mb-5 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-xs sm:text-sm font-semibold text-blue-800 mb-1.5 sm:mb-2">
+            <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm font-semibold text-blue-800 mb-2">
                 Password must contain:
               </p>
-              <ul className="text-xs sm:text-sm space-y-1">
+              <ul className="text-sm space-y-1">
                 <li
                   className={
                     newPassword.length >= 8
@@ -283,13 +287,13 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           <button
             disabled={!isPasswordValid || loading}
             onClick={handleSavePassword}
-            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-2.5 sm:py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm sm:text-base ${
+            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-base ${
               !isPasswordValid || loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:shadow-xl active:scale-[0.98]"
             }`}
           >
-            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ArrowRight className="w-5 h-5" />
             {loading ? "Saving..." : "Save New Password"}
           </button>
         </div>

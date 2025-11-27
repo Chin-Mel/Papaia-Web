@@ -181,7 +181,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     formData.description.trim() !== (farmData?.description || "").trim();
 
   return (
-    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
         className="bg-gray-50 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"

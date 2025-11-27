@@ -5,7 +5,7 @@ export default function TermsAndConditionsModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50 px-4">
+    <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 px-4">
       <div className="w-full max-w-lg mx-auto rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden max-h-[85vh] flex flex-col">
         {/* Header with gradient background */}
         <div

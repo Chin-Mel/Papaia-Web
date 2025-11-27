@@ -108,7 +108,7 @@ export default function UserRoleModal({ isOpen, onSelect }) {
 
   // Role Selection Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center bg-black/50 justify-center p-4">
       <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-3xl shadow-2xl w-full max-w-3xl p-6 sm:p-8 relative">
         {/* Back Button - Top Left */}
         <button

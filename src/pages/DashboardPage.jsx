@@ -795,7 +795,11 @@ export default function DashboardPage() {
       </main>
 
       {showAddFarmModal && (
-        <AddFarmModal onClose={handleCloseModal} onSubmit={handleAddFarm} />
+        <AddFarmModal
+          isOpen={showAddFarmModal}
+          onClose={handleCloseModal}
+          onSubmit={handleAddFarm}
+        />
       )}
 
       {showSuccessModal && (

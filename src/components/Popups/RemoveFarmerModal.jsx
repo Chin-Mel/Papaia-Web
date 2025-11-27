@@ -61,10 +61,10 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 relative">
@@ -97,125 +97,129 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-5">
-          {/* Farmer Info Card */}
-          <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
-            <div className="flex items-center gap-3">
-              <img
-                src={farmer?.profilePicture || defaultUserPic}
-                alt="Farmer"
-                className="w-14 h-14 rounded-full object-cover border-2 border-green-300 shadow-sm"
-                onError={(e) => (e.target.src = defaultUserPic)}
-              />
-              <div className="flex-1">
-                <h3 className="font-bold text-gray-900 text-lg">
-                  {getFullName(farmer)}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  ID:{" "}
-                  <span className="font-semibold">
-                    {farmer?.idNumber || "N/A"}
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6 space-y-5">
+            {/* Farmer Info Card */}
+            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
+              <div className="flex items-center gap-3">
+                <img
+                  src={farmer?.profilePicture || defaultUserPic}
+                  alt="Farmer"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-green-300 shadow-sm"
+                  onError={(e) => (e.target.src = defaultUserPic)}
+                />
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg">
+                    {getFullName(farmer)}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    ID:{" "}
+                    <span className="font-semibold">
+                      {farmer?.idNumber || "N/A"}
+                    </span>
+                  </p>
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full mt-1">
+                    Active
                   </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Warning Message */}
+            <div className="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border-2 border-amber-200">
+              <AlertTriangle className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-bold text-amber-900 mb-1">
+                  Are you sure you want to remove this farmer?
                 </p>
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full mt-1">
-                  Active
-                </span>
+                <p className="text-sm text-amber-800">
+                  This action cannot be undone and will have the following
+                  consequences:
+                </p>
               </div>
             </div>
-          </div>
 
-          {/* Warning Message */}
-          <div className="flex items-start gap-3 bg-amber-50 p-4 rounded-xl border-2 border-amber-200">
-            <AlertTriangle className="w-6 h-6 text-amber-600 mt-0.5 flex-shrink-0" />
+            {/* Consequences */}
+            <div className="space-y-3">
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <XCircle className="w-5 h-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-red-900 text-sm mb-1">
+                      Access Revoked:
+                    </p>
+                    <p className="text-xs text-red-800">
+                      Farmer will lose access to the farm.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Database className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-blue-900 text-sm mb-1">
+                      Data Retained:
+                    </p>
+                    <p className="text-xs text-blue-800">
+                      All their existing reports and analytics will remain.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Confirmation Input */}
             <div>
-              <p className="font-bold text-amber-900 mb-1">
-                Are you sure you want to remove this farmer?
+              <p className="text-sm text-gray-800 font-semibold mb-2">
+                Type <span className="font-bold text-red-600">"REMOVE"</span> to
+                confirm this action:
               </p>
-              <p className="text-sm text-amber-800">
-                This action cannot be undone and will have the following
-                consequences:
-              </p>
+              <input
+                type="text"
+                value={confirmationText}
+                onChange={(e) => setConfirmationText(e.target.value)}
+                placeholder="Type REMOVE here"
+                className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+                disabled={isLoading}
+              />
             </div>
           </div>
 
-          {/* Consequences */}
-          <div className="space-y-3">
-            <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <XCircle className="w-5 h-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="font-bold text-red-900 text-sm mb-1">
-                    Access Revoked:
-                  </p>
-                  <p className="text-xs text-red-800">
-                    Farmer will lose access to the farm.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Database className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-bold text-blue-900 text-sm mb-1">
-                    Data Retained:
-                  </p>
-                  <p className="text-xs text-blue-800">
-                    All their existing reports and analytics will remain.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Confirmation Input */}
-          <div>
-            <p className="text-sm text-gray-800 font-semibold mb-2">
-              Type <span className="font-bold text-red-600">"REMOVE"</span> to
-              confirm this action:
-            </p>
-            <input
-              type="text"
-              value={confirmationText}
-              onChange={(e) => setConfirmationText(e.target.value)}
-              placeholder="Type REMOVE here"
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 focus:outline-none"
+          {/* Footer */}
+          <div className="p-6 border-t-2 border-gray-100 flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
               disabled={isLoading}
-            />
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmRemove}
+              disabled={
+                confirmationText.toUpperCase() !== "REMOVE" || isLoading
+              }
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                <>
+                  <UserMinus className="w-4 h-4" />
+                  Remove Farmer
+                </>
+              )}
+            </button>
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 border-t-2 border-gray-100 flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
-            disabled={isLoading}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirmRemove}
-            disabled={confirmationText.toUpperCase() !== "REMOVE" || isLoading}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Removing...
-              </>
-            ) : (
-              <>
-                <UserMinus className="w-4 h-4" />
-                Remove Farmer
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>

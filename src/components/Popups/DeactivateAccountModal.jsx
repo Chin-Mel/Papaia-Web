@@ -87,7 +87,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header with gradient */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4">
@@ -110,93 +110,95 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
         </div>
 
         {/* Body */}
-        <div className="px-6 py-6 space-y-5">
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
-              {error}
-            </div>
-          )}
-
-          {/* Warning message */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-sm font-bold">!</span>
+        <div className="overflow-y-auto flex-1">
+          <div className="px-6 py-6 space-y-5">
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+                {error}
               </div>
-              <p className="text-gray-700 text-sm leading-relaxed">
-                Deactivating your account will temporarily disable your profile
-                and farm access. You can reactivate anytime by logging back in.
-              </p>
+            )}
+
+            {/* Warning message */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-white text-sm font-bold">!</span>
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed">
+                  Deactivating your account will temporarily disable your
+                  profile and farm access. You can reactivate anytime by logging
+                  back in.
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Reason for Deactivation */}
-          <div className="space-y-3">
-            <label className="text-gray-800 font-semibold text-base block">
-              Reason for Deactivation
-            </label>
-            {[
-              "I no longer use the app",
-              "I want to take a break",
-              "Privacy concerns",
-              "Technical issues",
-              "Other",
-            ].map((item) => (
-              <label
-                key={item}
-                className="flex items-center gap-3 cursor-pointer group"
-              >
+            {/* Reason for Deactivation */}
+            <div className="space-y-3">
+              <label className="text-gray-800 font-semibold text-base block">
+                Reason for Deactivation
+              </label>
+              {[
+                "I no longer use the app",
+                "I want to take a break",
+                "Privacy concerns",
+                "Technical issues",
+                "Other",
+              ].map((item) => (
+                <label
+                  key={item}
+                  className="flex items-center gap-3 cursor-pointer group"
+                >
+                  <input
+                    type="radio"
+                    name="deactivateReason"
+                    value={item}
+                    checked={reason === item}
+                    onChange={() => setReason(item)}
+                    className="w-5 h-5 text-orange-500 border-gray-300 focus:ring-orange-400 focus:ring-2"
+                  />
+                  <span className="text-gray-700 text-sm group-hover:text-gray-900 transition-colors">
+                    {item}
+                  </span>
+                </label>
+              ))}
+            </div>
+
+            {/* Other reason input */}
+            {reason === "Other" && (
+              <div className="space-y-2">
+                <label className="text-gray-700 font-medium text-sm">
+                  Please specify:
+                </label>
                 <input
-                  type="radio"
-                  name="deactivateReason"
-                  value={item}
-                  checked={reason === item}
-                  onChange={() => setReason(item)}
-                  className="w-5 h-5 text-orange-500 border-gray-300 focus:ring-orange-400 focus:ring-2"
-                />
-                <span className="text-gray-700 text-sm group-hover:text-gray-900 transition-colors">
-                  {item}
-                </span>
-              </label>
-            ))}
-          </div>
-
-          {/* Other reason input */}
-          {reason === "Other" && (
-            <div className="space-y-2">
-              <label className="text-gray-700 font-medium text-sm">
-                Please specify:
-              </label>
-              <input
-                type="text"
-                placeholder="Tell us more about your reason..."
-                value={otherReason}
-                onChange={(e) => setOtherReason(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg 
+                  type="text"
+                  placeholder="Tell us more about your reason..."
+                  value={otherReason}
+                  onChange={(e) => setOtherReason(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg 
                  focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
                  text-sm placeholder-gray-400"
+                  disabled={isLoading}
+                />
+              </div>
+            )}
+
+            {/* Acknowledgment checkbox */}
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={acknowledged}
+                onChange={() => setAcknowledged(!acknowledged)}
+                className="mt-0.5 w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-400 focus:ring-2"
                 disabled={isLoading}
               />
-            </div>
-          )}
-
-          {/* Acknowledgment checkbox */}
-          <label className="flex items-start gap-3 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={acknowledged}
-              onChange={() => setAcknowledged(!acknowledged)}
-              className="mt-0.5 w-5 h-5 text-orange-500 border-gray-300 rounded focus:ring-orange-400 focus:ring-2"
-              disabled={isLoading}
-            />
-            <span className="text-gray-700 text-sm leading-relaxed">
-              I understand that my account will be temporarily disabled and I
-              can reactivate it by logging back in at any time.
-            </span>
-          </label>
+              <span className="text-gray-700 text-sm leading-relaxed">
+                I understand that my account will be temporarily disabled and I
+                can reactivate it by logging back in at any time.
+              </span>
+            </label>
+          </div>
         </div>
-
         {/* Footer buttons */}
         <div className="flex gap-3 px-6 pb-6">
           <button
