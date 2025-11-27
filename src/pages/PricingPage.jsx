@@ -68,7 +68,6 @@ export default function PricingPage() {
         "Unlimited farmer accounts",
         "Multi-farm & multi-location dashboard",
         "Advanced analytics & AI-driven insights",
-        "PDF expert reports & bulk data exports",
         "Priority support & system integration",
         "Centralized management",
       ],

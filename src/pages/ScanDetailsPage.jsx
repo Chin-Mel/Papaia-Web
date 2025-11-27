@@ -509,9 +509,9 @@ export default function ScanDetailsPage() {
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
                       <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                           <svg
-                            className="w-5 h-5 text-gray-600"
+                            className="w-6 h-6 text-gray-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -524,23 +524,23 @@ export default function ScanDetailsPage() {
                             />
                           </svg>
                         </div>
-                        <div>
-                          <div className="font-semibold text-gray-900 text-sm">
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">
                             {farmerDetails?.fullName ||
                               farmerDetails?.name ||
                               scanDetails.idNumber}
                           </div>
-                          <div className="text-xs text-gray-500">Farmer</div>
+                          <div className="text-sm text-gray-600">Farmer</div>
                         </div>
                       </div>
                     )}
 
-                    {/* Farm Name - Right Side */}
-                    <div className="text-right ml-auto">
-                      <div className="text-xs text-gray-500 mb-1">
+                    {/* Farm Name */}
+                    <div>
+                      <div className="text-sm text-gray-600 mb-1">
                         Farm Name
                       </div>
-                      <div className="text-sm font-semibold text-gray-900">
+                      <div className="font-semibold text-gray-900">
                         {farmDetails.farmName}
                       </div>
                     </div>
@@ -548,7 +548,6 @@ export default function ScanDetailsPage() {
                 </div>
               </div>
             )}
-
             {/* Suggested Treatment Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 bg-white border-b border-gray-100">

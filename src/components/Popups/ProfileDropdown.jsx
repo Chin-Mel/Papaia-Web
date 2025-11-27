@@ -123,8 +123,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
           <button
             onClick={() => {
               onClose();
-              // navigate("/pricing");
-              //console.log("Navigate to pricing page");
+              navigate("/pricing");
             }}
             className="w-full flex items-start gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors text-left"
           >
