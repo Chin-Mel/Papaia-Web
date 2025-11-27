@@ -3,13 +3,11 @@ import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import defaultUserPic from "../../assets/default-user.png";
 import { getLoggedInUser } from "../../utils/security";
-import LogoutModal from "./LogoutModal";
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
   const [userData, setUserData] = useState(user);
   const dropdownRef = useRef(null);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   if (!isOpen) return null;
 
@@ -29,12 +27,10 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     navigate("/profile");
   };
 
-  // Sync local state whenever prop changes
   useEffect(() => {
     setUserData(user);
   }, [user]);
 
-  // Listen for profile updates from other components
   useEffect(() => {
     const updateUser = () => {
       const updatedUser = getLoggedInUser();
@@ -47,31 +43,13 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     return () => window.removeEventListener("userUpdated", updateUser);
   }, []);
 
-  // Fixed helper function to get profile picture URL
-  // const getProfilePictureUrl = () => {
-  //   if (userData?.profilePicture) {
-  //     // Check if it's already a full URL or just a path
-  //     if (userData.profilePicture.startsWith("http")) {
-  //       return userData.profilePicture;
-  //     }
-  //     // Add /api/ to the path and cache-busting timestamp
-  //     return `https://papaiaapi.onrender.com/api/${
-  //       userData.profilePicture
-  //     }?t=${Date.now()}`;
-  //   }
-  //   return defaultUserPic;
-  // };
-
-  // Fixed helper function to get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
-      // Return the Firebase Storage URL directly without cache-busting
       return userData.profilePicture;
     }
     return defaultUserPic;
   };
 
-  // Helper function to get user's display name
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
       const middleInitial = userData.middleName
@@ -84,26 +62,10 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     return userData?.username || "Unknown User";
   };
 
-  // Handle logout button click - open modal
+  // ✅ SIMPLIFIED - Just call onLogout which will trigger HeaderMain's modal
   const handleLogoutClick = () => {
-    setShowLogoutModal(true);
-  };
-
-  // Handle modal close
-  const handleModalClose = () => {
-    setShowLogoutModal(false);
-  };
-
-  // Handle confirmed logout
-  // REPLACE the handleConfirmLogout function with:
-  const handleConfirmLogout = () => {
-    // Close modal and dropdown
-    setShowLogoutModal(false);
-    onClose();
-
-    // Call the parent logout handler (which now opens the HeaderMain modal)
     if (onLogout) {
-      onLogout();
+      onLogout(); // This calls HeaderMain's handleLogoutClick
     }
   };
 
@@ -187,13 +149,6 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
           </button>
         </div>
       </div>
-
-      {/* Logout Modal */}
-      <LogoutModal
-        isOpen={showLogoutModal}
-        onClose={handleModalClose}
-        onConfirmLogout={handleConfirmLogout}
-      />
     </>
   );
 }

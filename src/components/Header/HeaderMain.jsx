@@ -274,7 +274,6 @@ export default function HeaderMain() {
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
-              // ✅ CORRECT:
               {isProfileOpen && (
                 <ProfileDropdown
                   isOpen={isProfileOpen}
