@@ -402,8 +402,8 @@ export default function ScanDetailsPage() {
           {/* LEFT COLUMN - Scanned Image */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900">
+              <div className="px-6 py-4 bg-white border-b border-gray-100">
+                <h2 className="text-base font-semibold text-gray-900">
                   Scanned Image
                 </h2>
               </div>
@@ -414,28 +414,24 @@ export default function ScanDetailsPage() {
                     "https://via.placeholder.com/400x300?text=No+Image"
                   }
                   alt="Scan"
-                  className="w-full h-80 object-cover rounded-lg mb-6 border border-gray-200"
+                  className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/400x300?text=No+Image";
                   }}
                 />
-                <div className="space-y-4">
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1.5">
-                      Scan Date:
-                    </div>
-                    <div className="text-base text-gray-900 font-normal">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Scan Date:</span>
+                    <span className="text-sm text-gray-900 font-medium">
                       {dateTime.date}
-                    </div>
+                    </span>
                   </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1.5">
-                      Scan Time:
-                    </div>
-                    <div className="text-base text-gray-900 font-normal">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Scan Time:</span>
+                    <span className="text-sm text-gray-900 font-medium">
                       {dateTime.time}
-                    </div>
+                    </span>
                   </div>
                 </div>
               </div>
@@ -484,7 +480,7 @@ export default function ScanDetailsPage() {
                         {confidencePercentage}%
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full max-w-md bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="h-2 rounded-full transition-all duration-500 bg-red-500"
                         style={{ width: `${confidencePercentage}%` }}
@@ -504,7 +500,8 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="space-y-5">
+                  <div className="flex items-center justify-between">
+                    {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
@@ -523,7 +520,7 @@ export default function ScanDetailsPage() {
                           </svg>
                         </div>
                         <div>
-                          <div className="font-bold text-gray-900 text-base">
+                          <div className="font-semibold text-gray-900 text-base">
                             {farmerDetails?.fullName ||
                               farmerDetails?.name ||
                               scanDetails.idNumber}
@@ -532,11 +529,13 @@ export default function ScanDetailsPage() {
                         </div>
                       </div>
                     )}
-                    <div>
-                      <div className="text-sm text-gray-500 mb-2">
+
+                    {/* Farm Name - Right Side */}
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 mb-1">
                         Farm Name
                       </div>
-                      <div className="text-base font-bold text-gray-900">
+                      <div className="text-base font-semibold text-gray-900">
                         {farmDetails.farmName}
                       </div>
                     </div>
