@@ -13,7 +13,7 @@ import defaultUserPic from "../assets/default-user.png";
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const options = ["All Status", "Active", "Pending", "Inactive", "Archived"];
+  const options = ["All Status", "Active", "Inactive", "Archived"];
   const dropdownRef = useRef(null);
 
   useEffect(() => {
