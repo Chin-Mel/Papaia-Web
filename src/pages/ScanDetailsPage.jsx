@@ -505,10 +505,10 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-start justify-between gap-8">
+                  <div className="flex items-start gap-16">
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
-                      <div className="flex items-start gap-3 flex-1">
+                      <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                           <svg
                             className="w-5 h-5 text-gray-600"
@@ -536,7 +536,7 @@ export default function ScanDetailsPage() {
                     )}
 
                     {/* Farm Name - Right Side */}
-                    <div className="text-right flex-1">
+                    <div className="text-right ml-auto">
                       <div className="text-xs text-gray-500 mb-1">
                         Farm Name
                       </div>
