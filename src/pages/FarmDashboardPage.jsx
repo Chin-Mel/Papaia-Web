@@ -592,7 +592,7 @@ export default function FarmDashboardPage() {
             isOpen={isRestoreFarmerModalOpen}
             onClose={() => setIsRestoreFarmerModalOpen(false)}
             onConfirm={handleConfirmRestore}
-            farmer={selectedFarmer} // Changed from farmerToRestore
+            farmer={selectedFarmer}
           />
 
           <FarmerAddedSuccessModal

@@ -416,7 +416,7 @@ export default function FarmTeams({
               <div
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
-                  isArchived || isInactive
+                  isArchived
                     ? "opacity-50 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
@@ -426,7 +426,7 @@ export default function FarmTeams({
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
                       <img
-                        src={farmer.profilePicture || { defaultUserPic }}
+                        src={farmer.profilePicture || defaultUserPic}
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
                           isInactive
@@ -439,14 +439,10 @@ export default function FarmTeams({
                         }}
                       />
                       <div
-                        className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                        className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
                           isArchived
-                            ? "bg-red-500"
-                            : farmerStatus === "active"
-                            ? "bg-emerald-500"
-                            : farmerStatus === "pending"
-                            ? "bg-amber-500"
-                            : "bg-gray-400"
+                            ? "opacity-50 border-gray-200"
+                            : "border-gray-200 hover:border-green-300 hover:shadow-md"
                         }`}
                       ></div>
                     </div>
@@ -520,7 +516,7 @@ export default function FarmTeams({
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={farmer.profilePicture || { defaultUserPic }}
+                        src={farmer.profilePicture || defaultUserPic}
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
                           isInactive
@@ -588,7 +584,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onViewFarmer(farmer.id, isArchived);
+                          onRestoreFarmer(farmer.id);
                         }}
                         className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
                       >
@@ -611,7 +607,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onViewFarmer(farmer.id, isArchived);
+                          onRestoreFarmer(farmer.id);
                         }}
                         className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
