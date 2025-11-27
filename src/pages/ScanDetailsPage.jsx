@@ -505,10 +505,10 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-start gap-12">
+                  <div className="flex items-start justify-between gap-8">
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-3 flex-1">
                         <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                           <svg
                             className="w-5 h-5 text-gray-600"
@@ -536,7 +536,7 @@ export default function ScanDetailsPage() {
                     )}
 
                     {/* Farm Name - Right Side */}
-                    <div className="text-right ml-auto">
+                    <div className="text-right flex-1">
                       <div className="text-xs text-gray-500 mb-1">
                         Farm Name
                       </div>
@@ -559,34 +559,39 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
               </div>
-              <div className="p-6 bg-green-50/50">
-                <ul className="space-y-2">
-                  {(apiSuggestions.length > 0
-                    ? apiSuggestions
-                    : treatmentSuggestions
-                  ).map((suggestion, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm">
-                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <svg
-                          className="w-2.5 h-2.5 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          strokeWidth={3}
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-gray-700 leading-relaxed flex-1">
-                        {suggestion}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="p-6">
+                <div className="bg-green-50 rounded-lg p-5">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm">
+                    Immediate Action Required
+                  </h3>
+                  <ul className="space-y-2">
+                    {(apiSuggestions.length > 0
+                      ? apiSuggestions
+                      : treatmentSuggestions
+                    ).map((suggestion, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-sm">
+                        <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <svg
+                            className="w-2.5 h-2.5 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={3}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                        <span className="text-gray-700 leading-relaxed flex-1">
+                          {suggestion}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
