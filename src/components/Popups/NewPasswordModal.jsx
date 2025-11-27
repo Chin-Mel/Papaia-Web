@@ -103,8 +103,8 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
     newPassword === confirmPassword;
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4 py-12">
-      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col ">
         {/* Header with gradient background */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
@@ -181,9 +181,9 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showNewPassword ? (
-                  <EyeOff className="w-5 h-5" />
+                  <EyeOffIcon className="w-5 h-5" />
                 ) : (
-                  <Eye className="w-5 h-5" />
+                  <EyeIcon className="w-5 h-5" />
                 )}
               </button>
             </div>
@@ -219,9 +219,9 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
                 {showConfirmPassword ? (
-                  <EyeOff className="w-5 h-5" />
+                  <EyeOffIcon className="w-5 h-5" />
                 ) : (
-                  <Eye className="w-5 h-5" />
+                  <EyeIcon className="w-5 h-5" />
                 )}
               </button>
             </div>

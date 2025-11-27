@@ -1,7 +1,5 @@
 import { ArrowRight, Home } from "lucide-react";
-
-// Using placeholder image - replace with your actual asset
-const PapayaLogo = "https://via.placeholder.com/40/00712D/ffffff?text=P";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function PasswordUpdatedSuccessModal({
   isOpen,

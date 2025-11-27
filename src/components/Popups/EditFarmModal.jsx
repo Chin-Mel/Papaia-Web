@@ -1,7 +1,7 @@
 //new
 import React, { useState, useRef, useEffect } from "react";
 import { X, Leaf, Save, Upload, Loader2 } from "lucide-react";
-import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const [formData, setFormData] = useState({

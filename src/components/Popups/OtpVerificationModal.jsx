@@ -107,7 +107,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4 py-12">
+    <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
       <div
         className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
         style={{ minHeight: "450px" }}
