@@ -405,35 +405,29 @@ export default function EditProfilePage() {
         style={{ display: "none" }}
       />
 
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto w-full">
+      <main className="flex-1 w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
         {/* Profile Header Card */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="relative flex flex-col items-center">
+            <div className="relative">
               <img
                 src={getProfilePictureUrl()}
                 alt={`${userData?.firstName || ""} ${userData?.lastName || ""}`}
-                className="w-32 h-32 rounded-full border-4 border-gray-100 shadow-md object-cover"
+                className="w-24 h-24 rounded-full border-2 border-gray-200 object-cover"
                 onError={(e) => (e.currentTarget.src = defaultUserPic)}
               />
 
               <button
                 onClick={handleCameraClick}
-                className="absolute bottom-1 right-1 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition border-2 border-white hover:bg-orange-600"
+                className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition border-2 border-white"
                 title="Change profile picture"
               >
-                <Camera className="w-5 h-5 text-white" />
+                <Camera className="w-4 h-4 text-white" />
               </button>
-
-              {selectedImage && (
-                <p className="text-xs text-orange-600 mt-2 text-center max-w-[140px]">
-                  New image selected. Click "Save Changes" to update.
-                </p>
-              )}
             </div>
 
             <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-3xl font-bold text-gray-800 mb-1">
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">
                 {userData?.firstName}{" "}
                 {userData?.middleName
                   ? `${userData.middleName.charAt(0)}. `
@@ -441,7 +435,7 @@ export default function EditProfilePage() {
                 {userData?.lastName}
                 {userData?.suffix ? ` ${userData.suffix}` : ""}
               </h1>
-              <p className="text-gray-600 mb-3 text-lg">Farm Owner</p>
+              <p className="text-gray-600 mb-2">Farm Owner</p>
 
               <div className="flex items-center justify-center sm:justify-start text-gray-500 text-sm">
                 <Calendar className="w-4 h-4 mr-2" />
@@ -451,7 +445,7 @@ export default function EditProfilePage() {
                       month: "long",
                       year: "numeric",
                     })
-                  : "N/A"}
+                  : "October 2025"}
               </div>
             </div>
           </div>
