@@ -509,9 +509,9 @@ export default function ScanDetailsPage() {
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                           <svg
-                            className="w-6 h-6 text-gray-600"
+                            className="w-5 h-5 text-gray-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -525,12 +525,12 @@ export default function ScanDetailsPage() {
                           </svg>
                         </div>
                         <div>
-                          <div className="font-semibold text-gray-900 text-base">
+                          <div className="font-semibold text-gray-900 text-sm">
                             {farmerDetails?.fullName ||
                               farmerDetails?.name ||
                               scanDetails.idNumber}
                           </div>
-                          <div className="text-sm text-gray-500">Farmer</div>
+                          <div className="text-xs text-gray-500">Farmer</div>
                         </div>
                       </div>
                     )}
@@ -540,7 +540,7 @@ export default function ScanDetailsPage() {
                       <div className="text-xs text-gray-500 mb-1">
                         Farm Name
                       </div>
-                      <div className="text-base font-semibold text-gray-900">
+                      <div className="text-sm font-semibold text-gray-900">
                         {farmDetails.farmName}
                       </div>
                     </div>
@@ -553,47 +553,30 @@ export default function ScanDetailsPage() {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 bg-white border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center flex-shrink-0">
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
+                  <div className="w-1 h-4 bg-green-500 rounded-sm"></div>
                   <h2 className="text-base font-semibold text-gray-900">
                     Suggested Treatment
                   </h2>
                 </div>
               </div>
-              <div className="p-6 bg-green-50/30">
-                <h3 className="font-semibold text-gray-900 mb-4 text-sm">
-                  Immediate Action Required
-                </h3>
-                <ul className="space-y-3">
+              <div className="p-6 bg-green-50/40">
+                <ul className="space-y-2.5">
                   {(apiSuggestions.length > 0
                     ? apiSuggestions
                     : treatmentSuggestions
                   ).map((suggestion, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm">
-                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <li key={idx} className="flex items-start gap-2.5 text-sm">
+                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg
-                          className="w-3 h-3 text-white"
+                          className="w-2.5 h-2.5 text-white"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
+                          strokeWidth={3}
                         >
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2.5}
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
