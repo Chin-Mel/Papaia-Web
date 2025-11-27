@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
+import { X, MapPin, Camera, Plus } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
@@ -20,9 +20,11 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         onClose();
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -38,9 +40,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async () => {
     if (!formData.farmName.trim() || !formData.location.trim()) {
       alert("Please fill in all required fields");
       return;
@@ -57,25 +57,39 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
     try {
       await onSubmit(farmData);
+      // Reset form after successful submission
+      setFormData({
+        farmName: "",
+        location: "",
+        description: "",
+        farmImage: "",
+      });
+      setImagePreview(null);
     } catch (error) {
-      // console.error("Error submitting form:", error);
       alert("Failed to add farm. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="fixed inset-0 items-center justify-center z-50 p-4 bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-5 relative">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 p-5 flex items-center gap-3 relative">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
               src={PapayaLogo}
               alt="Papaia Logo"
@@ -91,7 +105,8 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
+            type="button"
+            className="text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5 flex-shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,7 +114,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
         {/* Body - Scrollable */}
         <div className="overflow-y-auto flex-1">
-          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+          <div className="p-6 space-y-5">
             {/* Farm Name */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
@@ -110,8 +125,8 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 type="text"
                 value={formData.farmName}
                 onChange={(e) => handleInputChange("farmName", e.target.value)}
+                onKeyPress={handleKeyPress}
                 placeholder="Enter your farm name"
-                required
                 disabled={loading}
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
               />
@@ -131,8 +146,8 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
                   }
+                  onKeyPress={handleKeyPress}
                   placeholder="Enter farm address or location"
-                  required
                   disabled={loading}
                   className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
                 />
@@ -209,7 +224,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
               />
             </div>
-          </form>
+          </div>
         </div>
 
         {/* Footer */}
@@ -224,7 +239,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               Cancel
             </button>
             <button
-              type="submit"
+              type="button"
               onClick={handleSubmit}
               disabled={
                 loading ||
