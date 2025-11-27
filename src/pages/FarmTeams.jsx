@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import defaultUserPic from "../../assets/default-user.png";
+import defaultUserPic from "../assets/default-user.png";
 
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
