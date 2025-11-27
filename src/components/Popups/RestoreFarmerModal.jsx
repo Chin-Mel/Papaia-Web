@@ -58,16 +58,14 @@ export default function RestoreFarmerModal({
         {/* Header - Green/Orange Gradient */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-                <img
-                  src={PapayaLogo}
-                  alt="Papaia Logo"
-                  className="w-7 h-9"
-                  loading="eager"
-                  decoding="async"
-                />
-              </div>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+              <img
+                src={PapayaLogo}
+                alt="Papaia Logo"
+                className="w-7 h-9"
+                loading="eager"
+                decoding="async"
+              />
             </div>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-white text-center">

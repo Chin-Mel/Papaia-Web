@@ -89,7 +89,7 @@ function FarmerDetailModal({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <p className="text-sm font-semibold text-red-900">
-                This farmer is currently archived and inactive
+                This farmer is currently archived
               </p>
             </div>
           </div>
