@@ -497,6 +497,7 @@ export default function ScanDetailsPage() {
             </div>
 
             {/* Farm Information Card */}
+            {/* Farm Information Card */}
             {farmDetails && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 bg-white border-b border-gray-100">
@@ -505,10 +506,10 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-8">
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
                           <svg
                             className="w-5 h-5 text-gray-600"
@@ -559,13 +560,13 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
               </div>
-              <div className="p-6 bg-green-50/40">
-                <ul className="space-y-2.5">
+              <div className="p-6 bg-green-50/50">
+                <ul className="space-y-2">
                   {(apiSuggestions.length > 0
                     ? apiSuggestions
                     : treatmentSuggestions
                   ).map((suggestion, idx) => (
-                    <li key={idx} className="flex items-start gap-2.5 text-sm">
+                    <li key={idx} className="flex items-start gap-2 text-sm">
                       <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg
                           className="w-2.5 h-2.5 text-white"
