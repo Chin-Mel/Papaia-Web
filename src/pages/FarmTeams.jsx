@@ -417,7 +417,7 @@ export default function FarmTeams({
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
                   isArchived
-                    ? "opacity-50 bg-gray-50 border-gray-300"
+                    ? "opacity-50 bg-gray-50 border-gray-300 cursor-default"
                     : isInactive
                     ? "opacity-60 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
@@ -502,26 +502,31 @@ export default function FarmTeams({
                   <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
                     {isArchived ? (
                       <button
-                        onClick={() =>
-                          onRestoreFarmer && onRestoreFarmer(farmer.id)
-                        }
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRestoreFarmer && onRestoreFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         Restore →
                       </button>
                     ) : isInactive ? (
                       <button
-                        onClick={() =>
-                          onReactivateFarmer && onReactivateFarmer(farmer.id)
-                        }
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReactivateFarmer && onReactivateFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         Reactivate →
                       </button>
                     ) : (
                       <button
-                        onClick={() => onViewFarmer(farmer.id)}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         View Details →
                       </button>
@@ -620,26 +625,31 @@ export default function FarmTeams({
                   <div className="col-span-2">
                     {isArchived ? (
                       <button
-                        onClick={() =>
-                          onRestoreFarmer && onRestoreFarmer(farmer.id)
-                        }
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRestoreFarmer && onRestoreFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         Restore →
                       </button>
                     ) : isInactive ? (
                       <button
-                        onClick={() =>
-                          onReactivateFarmer && onReactivateFarmer(farmer.id)
-                        }
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReactivateFarmer && onReactivateFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         Reactivate →
                       </button>
                     ) : (
                       <button
-                        onClick={() => onViewFarmer(farmer.id)}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onViewFarmer(farmer.id);
+                        }}
+                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
                         View Details →
                       </button>
