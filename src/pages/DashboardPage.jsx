@@ -10,6 +10,7 @@ import ScansCount from "../assets/ic_todays_scan.png";
 import FarmersCount from "../assets/ic_all_farmers.png";
 import FarmsCount from "../assets/ic_all_farms.png";
 import FarmAddedSuccessModal from "../components/Popups/FarmAddedSuccessModal";
+import MainBackground from "../assets/MainBackground.png";
 
 // ============ IN-MEMORY CACHE ============
 const cache = {
@@ -236,7 +237,7 @@ export default function DashboardPage() {
 
       if (data.status === "success" && data.farms) {
         const mappedFarms = data.farms.map((f) => {
-          let farmImage = `https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop&auto=format`;
+          let farmImage = MainBackground;
           if (f.farmImage && f.farmImage.startsWith("http")) {
             farmImage = f.farmImage;
             const img = new Image();
