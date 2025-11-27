@@ -497,7 +497,6 @@ export default function ScanDetailsPage() {
             </div>
 
             {/* Farm Information Card */}
-            {/* Farm Information Card */}
             {farmDetails && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 bg-white border-b border-gray-100">
@@ -506,7 +505,7 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="flex items-start justify-between gap-8">
+                  <div className="flex items-start gap-12">
                     {/* Farmer Info - Left Side */}
                     {(farmerDetails || scanDetails.idNumber) && (
                       <div className="flex items-start gap-3">
@@ -537,7 +536,7 @@ export default function ScanDetailsPage() {
                     )}
 
                     {/* Farm Name - Right Side */}
-                    <div className="text-right">
+                    <div className="text-right ml-auto">
                       <div className="text-xs text-gray-500 mb-1">
                         Farm Name
                       </div>
