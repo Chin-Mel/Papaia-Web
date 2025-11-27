@@ -51,10 +51,20 @@ export default function HeaderMain() {
   }, []);
 
   const handleLogout = () => {
-    secureLogout();
+    // Clear all auth data
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    sessionStorage.clear();
+
+    // Clear user state
+    setUserData(null);
+
+    // Close dropdowns
     setIsProfileOpen(false);
     setIsMenuOpen(false);
-    navigate("/sign-in");
+
+    // Use window.location for a clean redirect
+    window.location.href = "/sign-in";
   };
 
   // Get profile picture URL
@@ -74,11 +84,8 @@ export default function HeaderMain() {
   // Get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
-      // Profile picture is already a full Firebase Storage URL
-      // Just add cache-busting timestamp
-      return `${userData.profilePicture}${
-        userData.profilePicture.includes("?") ? "&" : "?"
-      }t=${Date.now()}`;
+      // Return the Firebase Storage URL directly without cache-busting
+      return userData.profilePicture;
     }
     return defaultUser;
   };

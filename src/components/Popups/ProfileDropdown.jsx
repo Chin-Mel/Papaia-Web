@@ -65,11 +65,8 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   // Fixed helper function to get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
-      // Profile picture is already a full Firebase Storage URL
-      // Just add cache-busting timestamp
-      return `${userData.profilePicture}${
-        userData.profilePicture.includes("?") ? "&" : "?"
-      }t=${Date.now()}`;
+      // Return the Firebase Storage URL directly without cache-busting
+      return userData.profilePicture;
     }
     return defaultUserPic;
   };
@@ -102,7 +99,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     // Clear user data
     setUserData(null);
 
-    // Clear local storage or session storage
+    // Clear local storage
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     sessionStorage.clear();
@@ -111,11 +108,13 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
     setShowLogoutModal(false);
     onClose();
 
-    // Call the parent logout handler
-    if (onLogout) onLogout();
-
-    // ✅ Redirect to sign-in page
-    navigate("/sign-in", { replace: true });
+    // Call the parent logout handler if provided
+    if (onLogout) {
+      onLogout();
+    } else {
+      // If no parent handler, directly navigate and reload
+      window.location.href = "/sign-in";
+    }
   };
 
   return (

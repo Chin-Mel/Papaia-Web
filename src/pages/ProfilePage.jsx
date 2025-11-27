@@ -150,12 +150,9 @@ export default function ProfilePage() {
   // };
 
   const getProfilePictureUrl = () => {
-    if (userData.profilePicture) {
-      // Profile picture is already a full Firebase Storage URL
-      // Just add cache-busting timestamp
-      return `${userData.profilePicture}${
-        userData.profilePicture.includes("?") ? "&" : "?"
-      }t=${Date.now()}`;
+    if (userData?.profilePicture) {
+      // Return the Firebase Storage URL directly without cache-busting
+      return userData.profilePicture;
     }
     return defaultUserPic;
   };
