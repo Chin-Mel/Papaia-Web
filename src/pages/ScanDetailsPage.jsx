@@ -446,7 +446,7 @@ export default function ScanDetailsPage() {
                 <h2 className="text-base font-semibold text-gray-900">
                   Scan Status
                 </h2>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50">
+                <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-red-50">
                   <svg
                     className="w-4 h-4 text-red-500"
                     fill="currentColor"
@@ -458,29 +458,34 @@ export default function ScanDetailsPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-sm font-bold text-red-600">
+                  <span className="text-sm font-medium text-red-600">
                     {statusInfo.label}
                   </span>
                 </div>
               </div>
               <div className="p-6">
-                <div className="space-y-4">
-                  <div>
+                <div className="flex items-start justify-between gap-8">
+                  {/* Left side - Disease Identified */}
+                  <div className="flex-1">
                     <div className="text-sm text-gray-500 mb-2">
                       Disease Identified
                     </div>
-                    <div className={`text-xl font-bold ${statusInfo.color}`}>
+                    <div
+                      className={`text-xl font-semibold ${statusInfo.color}`}
+                    >
                       {scanDetails.prediction}
                     </div>
                   </div>
-                  <div>
+
+                  {/* Right side - Confidence Level */}
+                  <div className="flex-1">
                     <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="text-gray-700">Confidence Level</span>
-                      <span className="font-bold text-gray-900">
+                      <span className="text-gray-500">Confidence Level</span>
+                      <span className="font-semibold text-gray-900">
                         {confidencePercentage}%
                       </span>
                     </div>
-                    <div className="w-full max-w-md bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="h-2 rounded-full transition-all duration-500 bg-red-500"
                         style={{ width: `${confidencePercentage}%` }}
@@ -546,7 +551,7 @@ export default function ScanDetailsPage() {
 
             {/* Suggested Treatment Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-green-50/30 border-b border-gray-100">
+              <div className="px-6 py-4 bg-white border-b border-gray-100">
                 <div className="flex items-center gap-2">
                   <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center flex-shrink-0">
                     <svg
@@ -568,19 +573,19 @@ export default function ScanDetailsPage() {
                   </h2>
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="font-bold text-gray-900 mb-4 text-sm">
+              <div className="p-6 bg-green-50/30">
+                <h3 className="font-semibold text-gray-900 mb-4 text-sm">
                   Immediate Action Required
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {(apiSuggestions.length > 0
                     ? apiSuggestions
                     : treatmentSuggestions
                   ).map((suggestion, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm">
-                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <li key={idx} className="flex items-start gap-3 text-sm">
+                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg
-                          className="w-2.5 h-2.5 text-white"
+                          className="w-3 h-3 text-white"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -588,7 +593,7 @@ export default function ScanDetailsPage() {
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={3}
+                            strokeWidth={2.5}
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
