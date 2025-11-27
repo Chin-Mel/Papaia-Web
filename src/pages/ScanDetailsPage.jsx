@@ -402,8 +402,8 @@ export default function ScanDetailsPage() {
           {/* LEFT COLUMN - Scanned Image */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-200">
-                <h2 className="text-lg font-bold text-gray-900">
+              <div className="px-6 py-4 bg-white border-b border-gray-100">
+                <h2 className="text-base font-semibold text-gray-900">
                   Scanned Image
                 </h2>
               </div>
@@ -420,18 +420,14 @@ export default function ScanDetailsPage() {
                       "https://via.placeholder.com/400x300?text=No+Image";
                   }}
                 />
-                <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
                   <div>
                     <div className="text-xs text-gray-500 mb-1">Scan Date:</div>
-                    <div className="font-medium text-gray-900 text-sm">
-                      {dateTime.date}
-                    </div>
+                    <div className="text-sm text-gray-900">{dateTime.date}</div>
                   </div>
                   <div>
                     <div className="text-xs text-gray-500 mb-1">Scan Time:</div>
-                    <div className="font-medium text-gray-900 text-sm">
-                      {dateTime.time}
-                    </div>
+                    <div className="text-sm text-gray-900">{dateTime.time}</div>
                   </div>
                 </div>
               </div>
@@ -442,8 +438,10 @@ export default function ScanDetailsPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Scan Status Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-200 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-900">Scan Status</h2>
+              <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
+                <h2 className="text-base font-semibold text-gray-900">
+                  Scan Status
+                </h2>
                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-red-50">
                   <svg
                     className="w-4 h-4 text-red-500"
@@ -464,7 +462,7 @@ export default function ScanDetailsPage() {
               <div className="p-6">
                 <div className="space-y-6">
                   <div>
-                    <div className="text-xs font-medium text-gray-500 mb-2">
+                    <div className="text-xs text-gray-500 mb-2">
                       Disease Identified
                     </div>
                     <div className={`text-lg font-bold ${statusInfo.color}`}>
@@ -472,21 +470,15 @@ export default function ScanDetailsPage() {
                     </div>
                   </div>
                   <div>
-                    <div className="flex justify-between text-sm mb-3">
-                      <span className="text-gray-600 font-medium">
-                        Confidence Level
-                      </span>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-500">Confidence Level</span>
                       <span className="font-bold text-gray-900">
                         {confidencePercentage}%
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className={`h-2.5 rounded-full transition-all duration-500 ${
-                          statusInfo.status === "healthy"
-                            ? "bg-red-500"
-                            : "bg-red-500"
-                        }`}
+                        className="h-2 rounded-full transition-all duration-500 bg-red-500"
                         style={{ width: `${confidencePercentage}%` }}
                       ></div>
                     </div>
@@ -498,18 +490,18 @@ export default function ScanDetailsPage() {
             {/* Farm Information Card */}
             {farmDetails && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="px-6 py-4 bg-white border-b border-gray-200">
-                  <h2 className="text-lg font-bold text-gray-900">
+                <div className="px-6 py-4 bg-white border-b border-gray-100">
+                  <h2 className="text-base font-semibold text-gray-900">
                     Farm Information
                   </h2>
                 </div>
                 <div className="p-6">
                   <div className="space-y-4">
                     {(farmerDetails || scanDetails.idNumber) && (
-                      <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                        <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                           <svg
-                            className="w-6 h-6 text-gray-500"
+                            className="w-5 h-5 text-gray-500"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -523,17 +515,17 @@ export default function ScanDetailsPage() {
                           </svg>
                         </div>
                         <div>
-                          <div className="font-bold text-gray-900 text-base">
+                          <div className="font-semibold text-gray-900 text-sm">
                             {farmerDetails?.fullName ||
                               farmerDetails?.name ||
                               scanDetails.idNumber}
                           </div>
-                          <div className="text-sm text-gray-500">Farmer</div>
+                          <div className="text-xs text-gray-500">Farmer</div>
                         </div>
                       </div>
                     )}
                     <div>
-                      <div className="text-xs font-medium text-gray-500 mb-2">
+                      <div className="text-xs text-gray-500 mb-2">
                         Farm Name
                       </div>
                       <div className="font-semibold text-gray-900">
@@ -547,11 +539,11 @@ export default function ScanDetailsPage() {
 
             {/* Suggested Treatment Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-green-50 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-green-500 rounded-md flex items-center justify-center flex-shrink-0">
+              <div className="px-6 py-4 bg-green-50/30 border-b border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center flex-shrink-0">
                     <svg
-                      className="w-4 h-4 text-white"
+                      className="w-3 h-3 text-white"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -564,7 +556,7 @@ export default function ScanDetailsPage() {
                       />
                     </svg>
                   </div>
-                  <h2 className="text-base font-bold text-gray-900">
+                  <h2 className="text-base font-semibold text-gray-900">
                     Suggested Treatment
                   </h2>
                 </div>
@@ -573,15 +565,15 @@ export default function ScanDetailsPage() {
                 <h3 className="font-bold text-gray-900 mb-4 text-sm">
                   Immediate Action Required
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-2">
                   {(apiSuggestions.length > 0
                     ? apiSuggestions
                     : treatmentSuggestions
                   ).map((suggestion, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-sm">
-                      <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <li key={idx} className="flex items-start gap-2 text-sm">
+                      <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         <svg
-                          className="w-3 h-3 text-white"
+                          className="w-2.5 h-2.5 text-white"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
