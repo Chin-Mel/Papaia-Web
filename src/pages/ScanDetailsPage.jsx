@@ -383,176 +383,187 @@ export default function ScanDetailsPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
-      <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-        <div className="w-full max-w-8xl mx-auto">
-          {/* Header with Back Button */}
-          <div className="mb-6">
-            <button
-              onClick={() => navigate("/scan-history")}
-              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-2"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="font-semibold text-lg">Scan Results</span>
-            </button>
-            <p className="text-sm text-gray-600 ml-7">
-              Detailed analysis of your crop health assessment
-            </p>
-          </div>
-
-          <div
-            ref={reportRef}
-            className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-7xl mx-auto w-full">
+        {/* Header with Back Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate("/scan-history")}
+            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-2"
           >
-            {/* LEFT COLUMN - Scanned Image Card - Takes 2 columns */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-fit">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-base font-semibold text-gray-900">
+            <ArrowLeft className="w-5 h-5" />
+            <span className="font-semibold text-lg">Scan Results</span>
+          </button>
+          <p className="text-sm text-gray-600 ml-7">
+            Detailed analysis of your crop health assessment
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT COLUMN - Scanned Image */}
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-gray-50">
+                <h2 className="text-lg font-semibold text-gray-900">
                   Scanned Image
                 </h2>
               </div>
-              <div className="p-4">
+              <div className="p-6">
                 <img
                   src={
                     scanDetails.imageUrl ||
                     "https://via.placeholder.com/400x300?text=No+Image"
                   }
                   alt="Scan"
-                  className="w-full h-64 object-cover rounded-lg mb-4"
+                  className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/400x300?text=No+Image";
                   }}
                 />
-                <div className="space-y-3 text-sm">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <div className="text-gray-600 mb-1">Scan Date:</div>
-                      <div className="font-medium text-gray-900">
-                        {dateTime.date}
-                      </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-gray-500 mb-1 text-xs uppercase tracking-wide">
+                      Scan Date
                     </div>
-                    <div>
-                      <div className="text-gray-600 mb-1">Scan Time:</div>
-                      <div className="font-medium text-gray-900">
-                        {dateTime.time}
-                      </div>
+                    <div className="font-semibold text-gray-900">
+                      {dateTime.date}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 mb-1 text-xs uppercase tracking-wide">
+                      Scan Time
+                    </div>
+                    <div className="font-semibold text-gray-900">
+                      {dateTime.time}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN - All other cards */}
+          <div className="space-y-6">
+            {/* Scan Status Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Scan Status
+                </h2>
+                <div
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${
+                    statusInfo.status === "healthy"
+                      ? "bg-green-100"
+                      : "bg-red-100"
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      statusInfo.status === "healthy"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  ></span>
+                  <span
+                    className={`text-sm font-semibold ${
+                      statusInfo.status === "healthy"
+                        ? "text-green-700"
+                        : "text-red-700"
+                    }`}
+                  >
+                    {statusInfo.label}
+                  </span>
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="space-y-5">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-2 uppercase tracking-wide">
+                      Disease Identified
+                    </div>
+                    <div className={`text-2xl font-bold ${statusInfo.color}`}>
+                      {scanDetails.prediction}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-600 font-medium">
+                        Confidence Level
+                      </span>
+                      <span className="font-bold text-gray-900">
+                        {confidencePercentage}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div
+                        className={`h-3 rounded-full transition-all duration-500 ${
+                          statusInfo.status === "healthy"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        }`}
+                        style={{ width: `${confidencePercentage}%` }}
+                      ></div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* RIGHT COLUMN - All other cards */}
-            <div className="lg:col-span-3 space-y-4">
-              {/* Scan Status Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-gray-900">
-                    Scan Status
+            {/* Farm Information Card */}
+            {farmDetails && (
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="p-4 border-b border-gray-200 bg-gray-50">
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Farm Information
                   </h2>
-                  <div
-                    className={`flex items-center gap-2 px-3 py-1 rounded ${statusInfo.badgeBg}`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        statusInfo.status === "healthy"
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    ></span>
-                    <span
-                      className={`text-sm font-medium ${statusInfo.badgeText}`}
-                    >
-                      {statusInfo.label}
-                    </span>
-                  </div>
                 </div>
-                <div className="p-4">
+                <div className="p-6">
                   <div className="space-y-4">
+                    {(farmerDetails || scanDetails.idNumber) && (
+                      <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <svg
+                            className="w-6 h-6 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-bold text-gray-900 text-base">
+                            {farmerDetails?.fullName ||
+                              farmerDetails?.name ||
+                              scanDetails.idNumber}
+                          </div>
+                          <div className="text-sm text-gray-500">Farmer</div>
+                        </div>
+                      </div>
+                    )}
                     <div>
-                      <div className="text-sm text-gray-600 mb-2">
-                        Disease Identified
+                      <div className="text-xs text-gray-500 mb-1 uppercase tracking-wide">
+                        Farm Name
                       </div>
-                      <div className={`text-lg font-bold ${statusInfo.color}`}>
-                        {scanDetails.prediction}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="text-gray-600">Confidence Level</span>
-                        <span className="font-semibold text-gray-900">
-                          {confidencePercentage}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            statusInfo.status === "healthy"
-                              ? "bg-green-500"
-                              : "bg-red-500"
-                          }`}
-                          style={{ width: `${confidencePercentage}%` }}
-                        ></div>
+                      <div className="font-semibold text-gray-900 text-base">
+                        {farmDetails.farmName}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            )}
 
-              {/* Farm Information Card */}
-              {farmDetails && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
-                    <h2 className="text-base font-semibold text-gray-900">
-                      Farm Information
-                    </h2>
-                  </div>
-                  <div className="p-4">
-                    <div className="space-y-4">
-                      {(farmerDetails || scanDetails.idNumber) && (
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                            <svg
-                              className="w-6 h-6 text-gray-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900">
-                              {farmerDetails?.fullName ||
-                                farmerDetails?.name ||
-                                scanDetails.idNumber}
-                            </div>
-                            <div className="text-sm text-gray-600">Farmer</div>
-                          </div>
-                        </div>
-                      )}
-                      <div>
-                        <div className="text-sm text-gray-600 mb-1">
-                          Farm Name
-                        </div>
-                        <div className="font-semibold text-gray-900">
-                          {farmDetails.farmName}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Suggested Treatment Card */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-4 border-b border-gray-200 bg-green-50">
-                  <div className="flex items-center gap-2">
+            {/* Suggested Treatment Card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-4 border-b border-gray-200 bg-green-50">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg
                       className="w-5 h-5 text-green-600"
                       fill="none"
@@ -566,29 +577,31 @@ export default function ScanDetailsPage() {
                         d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                       />
                     </svg>
-                    <h2 className="text-base font-semibold text-gray-900">
-                      Suggested Treatment
-                    </h2>
                   </div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Suggested Treatment
+                  </h2>
                 </div>
-                <div className="p-4">
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      Immediate Action Required
-                    </h3>
-                  </div>
-                  <ul className="space-y-2">
-                    {(apiSuggestions.length > 0
-                      ? apiSuggestions
-                      : treatmentSuggestions
-                    ).map((suggestion, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></span>
-                        <span className="text-gray-700">{suggestion}</span>
-                      </li>
-                    ))}
-                  </ul>
+              </div>
+              <div className="p-6">
+                <div className="mb-4">
+                  <h3 className="font-bold text-gray-900 mb-1 text-base">
+                    Immediate Action Required
+                  </h3>
                 </div>
+                <ul className="space-y-3">
+                  {(apiSuggestions.length > 0
+                    ? apiSuggestions
+                    : treatmentSuggestions
+                  ).map((suggestion, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 flex-shrink-0"></span>
+                      <span className="text-gray-700 leading-relaxed">
+                        {suggestion}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
