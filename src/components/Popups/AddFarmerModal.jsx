@@ -1,5 +1,5 @@
 import { X, UserPlus } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   const [farmerId, setFarmerId] = useState("");
