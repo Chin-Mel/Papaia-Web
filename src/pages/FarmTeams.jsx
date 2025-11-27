@@ -500,17 +500,7 @@ export default function FarmTeams({
                   </div>
 
                   <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
-                    {isArchived ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRestoreFarmer && onRestoreFarmer(farmer.id);
-                        }}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
-                      >
-                        Restore →
-                      </button>
-                    ) : isInactive ? (
+                    {isInactive ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -524,7 +514,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onViewFarmer(farmer.id);
+                          onViewFarmer(farmer.id, isArchived);
                         }}
                         className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >
@@ -623,17 +613,7 @@ export default function FarmTeams({
 
                   {/* Actions */}
                   <div className="col-span-2">
-                    {isArchived ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRestoreFarmer && onRestoreFarmer(farmer.id);
-                        }}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
-                      >
-                        Restore →
-                      </button>
-                    ) : isInactive ? (
+                    {isInactive ? (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -647,7 +627,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onViewFarmer(farmer.id);
+                          onViewFarmer(farmer.id, isArchived);
                         }}
                         className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                       >

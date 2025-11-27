@@ -167,23 +167,55 @@ export default function FarmDashboardPage() {
     }
   };
 
-  const handleViewFarmer = async (farmerId) => {
-    if (!isActive) return;
+  // Update the handleViewFarmer function to accept isArchived parameter
+  const handleViewFarmer = async (farmerId, isArchived = false) => {
     try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      if (isArchived) {
+        // Fetch from archived farmers
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+
+        if (data.status === "success") {
+          const archivedFarmer = data.removedFarmers.find(
+            (f) => f.id === farmerId
+          );
+          if (archivedFarmer) {
+            setSelectedFarmer({ ...archivedFarmer, isArchived: true });
+            setIsFarmerDetailModalOpen(true);
+          }
         }
-      );
-      const data = await response.json();
-      if (data.status === "success") {
-        setSelectedFarmer(data.farmer);
-        setIsFarmerDetailModalOpen(true);
+      } else {
+        // Fetch from active farmers (existing code)
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status === "success") {
+          setSelectedFarmer({ ...data.farmer, isArchived: false });
+          setIsFarmerDetailModalOpen(true);
+        }
       }
     } catch (error) {
-      //console.error("Error fetching farmer details:", error);
+      console.error("Error fetching farmer details:", error);
     }
+  };
+
+  // Add handler for restoring from detail modal
+  const handleRestoreFarmerFromDetail = () => {
+    setIsFarmerDetailModalOpen(false);
+    setIsRestoreFarmerModalOpen(true);
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -535,9 +567,9 @@ export default function FarmDashboardPage() {
             )}
             <FarmTeams
               farmId={farmId}
-              onAddFarmer={isActive ? handleAddFarmer : () => {}}
-              onViewFarmer={isActive ? handleViewFarmer : () => {}}
-              onReactivateFarmer={isActive ? handleReactivateFarmer : () => {}}
+              onAddFarmer={handleAddFarmer}
+              onViewFarmer={handleViewFarmer}
+              onReactivateFarmer={handleReactivateFarmer}
             />
           </div>
         </div>
@@ -567,7 +599,9 @@ export default function FarmDashboardPage() {
             isOpen={isFarmerDetailModalOpen}
             onClose={() => setIsFarmerDetailModalOpen(false)}
             onRemoveFarmer={handleRemoveFarmerFromDetail}
+            onRestoreFarmer={handleRestoreFarmerFromDetail}
             farmer={selectedFarmer}
+            isArchived={selectedFarmer?.isArchived}
           />
 
           <RemoveFarmerModal
