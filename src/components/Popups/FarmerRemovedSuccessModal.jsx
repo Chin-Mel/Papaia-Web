@@ -2,7 +2,7 @@ import { CheckCircle, X, UserRoundMinus, ArrowLeft } from "lucide-react";
 import { useRef, useEffect } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
-function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
+export default function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   const modalRef = useRef(null);
 
   useEffect(() => {

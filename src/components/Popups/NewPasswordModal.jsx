@@ -101,8 +101,8 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
     newPassword === confirmPassword;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+    <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
+      <div className="mx-auto bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
         {/* Header with gradient background */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
