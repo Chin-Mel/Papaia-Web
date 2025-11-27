@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowRight, Home } from "lucide-react";
+import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 // Success Modal Component
