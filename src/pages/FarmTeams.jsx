@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
+import defaultUserPic from "../../assets/default-user.png";
 
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
@@ -414,9 +415,7 @@ export default function FarmTeams({
               <div
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
-                  isArchived
-                    ? "opacity-50 bg-gray-50 border-gray-300"
-                    : isInactive
+                  isInactive
                     ? "opacity-60 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
@@ -432,9 +431,7 @@ export default function FarmTeams({
                         }
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
-                          isArchived
-                            ? "grayscale border-gray-300"
-                            : isInactive
+                          isInactive
                             ? "grayscale border-gray-200"
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
@@ -456,18 +453,10 @@ export default function FarmTeams({
                       ></div>
                     </div>
                     <div className="flex-1">
-                      <h3
-                        className={`font-semibold text-sm ${
-                          isArchived ? "text-gray-500" : "text-gray-900"
-                        }`}
-                      >
+                      <h3 className="font-semibold text-sm text-gray-900">
                         {farmerName}
                       </h3>
-                      <p
-                        className={`text-xs font-mono mt-1 ${
-                          isArchived ? "text-gray-400" : "text-gray-600"
-                        }`}
-                      >
+                      <p className="text-xs font-mono mt-1 text-gray-600">
                         {farmer.idNumber || "N/A"}
                       </p>
                       <div className="mt-2">
@@ -483,20 +472,10 @@ export default function FarmTeams({
                   </div>
 
                   <div className="mb-3 pl-15">
-                    <p
-                      className={`text-xs mb-1 font-medium ${
-                        isArchived ? "text-gray-400" : "text-gray-500"
-                      }`}
-                    >
+                    <p className="text-xs mb-1 font-medium text-gray-500">
                       Address
                     </p>
-                    <p
-                      className={`text-sm ${
-                        isArchived ? "text-gray-500" : "text-gray-700"
-                      }`}
-                    >
-                      {farmerAddress}
-                    </p>
+                    <p className="text-sm text-gray-700">{farmerAddress}</p>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
@@ -504,7 +483,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRestoreFarmer(farmer.id, farmer);
+                          onViewFarmer(farmer.id, isArchived);
                         }}
                         className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
                       >
@@ -549,9 +528,7 @@ export default function FarmTeams({
                         }
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
-                          isArchived
-                            ? "grayscale border-gray-300"
-                            : isInactive
+                          isInactive
                             ? "grayscale border-gray-200"
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
@@ -573,18 +550,10 @@ export default function FarmTeams({
                       ></div>
                     </div>
                     <div>
-                      <p
-                        className={`font-medium text-sm ${
-                          isArchived ? "text-gray-500" : "text-gray-800"
-                        }`}
-                      >
+                      <p className="font-medium text-sm text-gray-800">
                         {farmerName}
                       </p>
-                      <p
-                        className={`text-xs ${
-                          isArchived ? "text-gray-400" : "text-gray-500"
-                        }`}
-                      >
+                      <p className="text-xs text-gray-500">
                         {farmer.role || "Farmer"}
                       </p>
                     </div>
@@ -592,13 +561,7 @@ export default function FarmTeams({
 
                   {/* Farmer ID */}
                   <div className="col-span-2">
-                    <p
-                      className={`text-sm font-mono px-2 py-1 rounded inline-block ${
-                        isArchived
-                          ? "bg-gray-100 text-gray-500"
-                          : "bg-gray-50 text-gray-700"
-                      }`}
-                    >
+                    <p className="text-sm font-mono px-2 py-1 rounded inline-block bg-gray-50 text-gray-700">
                       {farmer.idNumber || "N/A"}
                     </p>
                   </div>
@@ -606,9 +569,7 @@ export default function FarmTeams({
                   {/* Address */}
                   <div className="col-span-4">
                     <p
-                      className={`text-sm truncate ${
-                        isArchived ? "text-gray-500" : "text-gray-700"
-                      }`}
+                      className="text-sm truncate text-gray-700"
                       title={farmerAddress}
                     >
                       {farmerAddress}
@@ -632,7 +593,7 @@ export default function FarmTeams({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onRestoreFarmer(farmer.id, farmer);
+                          onViewFarmer(farmer.id, isArchived);
                         }}
                         className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
                       >

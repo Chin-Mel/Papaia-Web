@@ -66,31 +66,6 @@ export default function FarmDashboardPage() {
 
   const [isRestoreFarmerModalOpen, setIsRestoreFarmerModalOpen] =
     useState(false);
-  const [farmerToRestore, setFarmerToRestore] = useState(null);
-
-  const handleRestoreFarmer = async (farmerId) => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const data = await response.json();
-
-      if (data.status === "success") {
-        const archivedFarmer = data.removedFarmers.find(
-          (f) => f.id === farmerId
-        );
-        if (archivedFarmer) {
-          setFarmerToRestore(archivedFarmer);
-          setIsRestoreFarmerModalOpen(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching archived farmer:", error);
-    }
-  };
 
   const handleConfirmRestore = async () => {
     if (!selectedFarmer) return;
@@ -617,7 +592,7 @@ export default function FarmDashboardPage() {
             isOpen={isRestoreFarmerModalOpen}
             onClose={() => setIsRestoreFarmerModalOpen(false)}
             onConfirm={handleConfirmRestore}
-            farmer={selectedFarmer}
+            farmer={selectedFarmer} // Changed from farmerToRestore
           />
 
           <FarmerAddedSuccessModal
