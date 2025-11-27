@@ -1,8 +1,22 @@
-import { X, User, Phone, CheckCircle, RotateCcw, Calendar } from "lucide-react";
+import {
+  X,
+  User,
+  Phone,
+  CheckCircle,
+  RotateCcw,
+  Calendar,
+  Trash2,
+} from "lucide-react";
 import { useEffect, useRef } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
-function FarmerDetailModal({ isOpen, onClose, onRestoreFarmer, farmer }) {
+function FarmerDetailModal({
+  isOpen,
+  onClose,
+  onRestoreFarmer,
+  onRemoveFarmer,
+  farmer,
+}) {
   if (!isOpen || !farmer) return null;
 
   const fullName = [
@@ -345,9 +359,9 @@ function FarmerDetailModal({ isOpen, onClose, onRestoreFarmer, farmer }) {
             </div>
           </div>
 
-          {/* Restore Button (only for archived farmers) */}
-          {isArchived && (
-            <div className="mt-6">
+          {/* Action Button - Restore for archived, Remove for active */}
+          <div className="mt-6">
+            {isArchived ? (
               <button
                 onClick={onRestoreFarmer}
                 className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
@@ -355,8 +369,16 @@ function FarmerDetailModal({ isOpen, onClose, onRestoreFarmer, farmer }) {
                 <RotateCcw className="w-4 h-4" />
                 Restore Farmer
               </button>
-            </div>
-          )}
+            ) : (
+              <button
+                onClick={onRemoveFarmer}
+                className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Remove Farmer
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
