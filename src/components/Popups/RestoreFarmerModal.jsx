@@ -1,6 +1,7 @@
 import { CheckCircle, X, UserPlus, Loader2 } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import React from "react";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function RestoreFarmerModal({
   isOpen,
@@ -58,8 +59,14 @@ export default function RestoreFarmerModal({
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-full flex items-center justify-center">
-                <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+                <img
+                  src={PapayaLogo}
+                  alt="Papaia Logo"
+                  className="w-7 h-9"
+                  loading="eager"
+                  decoding="async"
+                />
               </div>
             </div>
           </div>
