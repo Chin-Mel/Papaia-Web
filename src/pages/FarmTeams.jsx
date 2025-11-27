@@ -8,6 +8,7 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
+import defaultUserPic from "../assets/default-user.png";
 
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
@@ -426,10 +427,7 @@ export default function FarmTeams({
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
                       <img
-                        src={
-                          farmer.profilePicture ||
-                          "https://via.placeholder.com/150/cccccc/666666?text=User"
-                        }
+                        src={farmer.profilePicture || defaultUserPic}
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
                           isArchived
@@ -518,10 +516,7 @@ export default function FarmTeams({
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={
-                          farmer.profilePicture ||
-                          "https://via.placeholder.com/150/cccccc/666666?text=User"
-                        }
+                        src={farmer.profilePicture || defaultUserPic}
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
                           isArchived
