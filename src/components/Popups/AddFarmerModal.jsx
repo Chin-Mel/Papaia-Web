@@ -4,15 +4,16 @@ import { useState, useEffect } from "react";
 function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const modalRef = useRef(null);
 
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === "Escape") {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
         onClose();
       }
     };
-    document.addEventListener("keydown", handleEsc);
-    return () => document.removeEventListener("keydown", handleEsc);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
   if (!isOpen) return null;
@@ -134,7 +135,10 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+      >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between rounded-t-2xl relative">
           <div className="flex items-center gap-3">

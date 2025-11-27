@@ -11,6 +11,7 @@ import defaultUser from "../../assets/default-user.png";
 
 import ProfileDropdown from "../Popups/ProfileDropdown";
 import NotificationDropdown from "../Popups/NotificationDropdown";
+import LogoutModal from "../Popups/LogoutModal";
 
 export default function HeaderMain() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,6 +20,7 @@ export default function HeaderMain() {
   const [userData, setUserData] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Use the notifications hook
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
@@ -50,7 +52,14 @@ export default function HeaderMain() {
     };
   }, []);
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true);
+    setIsMenuOpen(false); // Close mobile menu
+    setIsProfileOpen(false); // Close profile dropdown
+  };
+
+  // 3. ADD new function for actual logout after confirmation:
+  const handleConfirmLogout = () => {
     // Clear all auth data
     localStorage.removeItem("user");
     localStorage.removeItem("token");
@@ -59,11 +68,12 @@ export default function HeaderMain() {
     // Clear user state
     setUserData(null);
 
-    // Close dropdowns
+    // Close modal and dropdowns
+    setShowLogoutModal(false);
     setIsProfileOpen(false);
     setIsMenuOpen(false);
 
-    // Use window.location for a clean redirect
+    // Redirect to sign-in
     window.location.href = "/sign-in";
   };
 
@@ -264,12 +274,12 @@ export default function HeaderMain() {
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
               </button>
-
+              // ✅ CORRECT:
               {isProfileOpen && (
                 <ProfileDropdown
                   isOpen={isProfileOpen}
                   onClose={() => setIsProfileOpen(false)}
-                  onLogout={handleLogout}
+                  onLogout={handleLogoutClick}
                   user={userData}
                 />
               )}
@@ -337,7 +347,7 @@ export default function HeaderMain() {
 
             {/* Mobile Logout Button */}
             <button
-              onClick={handleLogout}
+              onClick={handleLogoutClick}
               className="w-full flex items-center justify-center gap-2 py-2 px-4 border-2 border-red-500 text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors"
             >
               <LogOut className="w-4 h-4" />
@@ -346,6 +356,11 @@ export default function HeaderMain() {
           </div>
         )}
       </header>
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirmLogout={handleConfirmLogout}
+      />
 
       <div className="pt-14 sm:pt-16"></div>
     </>

@@ -107,8 +107,11 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   };
 
   return (
-    <div className="flex justify-center items-start min-h-screen px-4 py-12">
-      <div className="w-full max-w-lg mx-auto rounded-2xl overflow-hidden max-h-[85vh] flex flex-col">
+    <div className="flex justify-center items-center min-h-screen px-4 py-12">
+      <div
+        className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+        style={{ minHeight: "450px" }}
+      >
         {/* Header with gradient background */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
@@ -137,7 +140,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="bg-white p-6 overflow-y-auto flex-1">
+        <div className="bg-white p-6 overflow-y-auto">
           <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
             Enter the 4 digit code to continue
           </p>
@@ -188,7 +191,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           <button
             onClick={handleVerify}
             disabled={isLoading || isResending}
-            className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 text-base mb-6 ${
+            className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 text-sm mb-6 ${
               isLoading || isResending
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:shadow-xl active:scale-[0.98]"

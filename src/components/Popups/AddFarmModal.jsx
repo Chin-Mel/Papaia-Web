@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X, Leaf, MapPin, Camera, Plus } from "lucide-react";
+import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
 
 export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -70,23 +71,27 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     <div className="fixed inset-0 bg-black/50flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="fixed inset-0 items-center justify-center z-50 p-4 bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-5 relative">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Leaf className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Add a Farm</h2>
-              <p className="text-white/90 text-sm">Create a new farm profile</p>
-            </div>
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+            <img
+              src={PapayaLogo}
+              alt="Papaia Logo"
+              className="w-5 h-7"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-white">Add a Farm</h2>
+            <p className="text-white/90 text-sm">Create a new farm profile</p>
           </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
+            className="text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
           >
             <X className="w-5 h-5" />
           </button>

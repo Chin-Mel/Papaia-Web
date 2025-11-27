@@ -95,25 +95,15 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   };
 
   // Handle confirmed logout
+  // REPLACE the handleConfirmLogout function with:
   const handleConfirmLogout = () => {
-    // Clear user data
-    setUserData(null);
-
-    // Clear local storage
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    sessionStorage.clear();
-
     // Close modal and dropdown
     setShowLogoutModal(false);
     onClose();
 
-    // Call the parent logout handler if provided
+    // Call the parent logout handler (which now opens the HeaderMain modal)
     if (onLogout) {
       onLogout();
-    } else {
-      // If no parent handler, directly navigate and reload
-      window.location.href = "/sign-in";
     }
   };
 

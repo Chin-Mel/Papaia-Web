@@ -244,6 +244,38 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
                 </p>
               )}
             </div>
+            {newPassword && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-xs font-semibold text-blue-800 mb-2">
+                  Password must contain:
+                </p>
+                <ul className="space-y-1">
+                  {passwordRequirements.map((req, idx) => (
+                    <li
+                      key={idx}
+                      className={`flex items-center gap-2 text-xs ${
+                        req.met
+                          ? "text-green-600 font-semibold"
+                          : "text-blue-700"
+                      }`}
+                    >
+                      <span>{req.met ? "✓" : "○"}</span>
+                      <span>{req.text}</span>
+                    </li>
+                  ))}
+                  <li
+                    className={`flex items-center gap-2 text-xs ${
+                      passwordsMatch && confirmPassword
+                        ? "text-green-600 font-semibold"
+                        : "text-blue-700"
+                    }`}
+                  >
+                    <span>{passwordsMatch && confirmPassword ? "✓" : "○"}</span>
+                    <span>Passwords match</span>
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 

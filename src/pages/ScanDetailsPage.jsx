@@ -401,10 +401,10 @@ export default function ScanDetailsPage() {
 
           <div
             ref={reportRef}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+            className="grid grid-cols-1 lg:grid-cols-5 gap-4"
           >
-            {/* LEFT COLUMN - Scanned Image Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-fit">
+            {/* LEFT COLUMN - Scanned Image Card - Takes 2 columns */}
+            <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-fit">
               <div className="p-4 border-b border-gray-200">
                 <h2 className="text-base font-semibold text-gray-900">
                   Scanned Image
@@ -424,16 +424,18 @@ export default function ScanDetailsPage() {
                   }}
                 />
                 <div className="space-y-3 text-sm">
-                  <div>
-                    <div className="text-gray-600 mb-1">Scan Date:</div>
-                    <div className="font-medium text-gray-900">
-                      {dateTime.date}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <div className="text-gray-600 mb-1">Scan Date:</div>
+                      <div className="font-medium text-gray-900">
+                        {dateTime.date}
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <div className="text-gray-600 mb-1">Scan Time:</div>
-                    <div className="font-medium text-gray-900">
-                      {dateTime.time}
+                    <div>
+                      <div className="text-gray-600 mb-1">Scan Time:</div>
+                      <div className="font-medium text-gray-900">
+                        {dateTime.time}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -441,7 +443,7 @@ export default function ScanDetailsPage() {
             </div>
 
             {/* RIGHT COLUMN - All other cards */}
-            <div className="space-y-4">
+            <div className="lg:col-span-3 space-y-4">
               {/* Scan Status Card */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">

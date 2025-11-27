@@ -103,8 +103,8 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
     newPassword === confirmPassword;
 
   return (
-    <div className="flex justify-center items-start min-h-screen px-4 py-12">
-      <div className="w-full max-w-lg mx-auto rounded-2xl overflow-hidden max-h-[85vh] flex flex-col">
+    <div className="flex justify-center items-center min-h-screen px-4 py-12">
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header with gradient background */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
@@ -173,14 +173,18 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 placeholder="Enter password"
                 value={newPassword}
                 onChange={(e) => handlePasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showNewPassword ? EyeOffIcon : EyeIcon}
+                {showNewPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -207,14 +211,18 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
                 placeholder="Confirm new password"
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-lg"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showConfirmPassword ? EyeOffIcon : EyeIcon}
+                {showConfirmPassword ? (
+                  <EyeOff className="w-5 h-5" />
+                ) : (
+                  <Eye className="w-5 h-5" />
+                )}
               </button>
             </div>
           </div>
@@ -228,11 +236,11 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
           {/* Requirements */}
           {newPassword && (
-            <div className="mb-5 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm font-semibold text-blue-800 mb-2">
+            <div className="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs font-semibold text-blue-800 mb-2">
                 Password must contain:
               </p>
-              <ul className="text-sm space-y-1">
+              <ul className="text-xs space-y-1">
                 <li
                   className={
                     newPassword.length >= 8
@@ -287,7 +295,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           <button
             disabled={!isPasswordValid || loading}
             onClick={handleSavePassword}
-            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-base ${
+            className={`w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center gap-2 text-sm ${
               !isPasswordValid || loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:shadow-xl active:scale-[0.98]"
