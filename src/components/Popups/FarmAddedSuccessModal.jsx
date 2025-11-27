@@ -25,14 +25,13 @@ export default function FarmAddedSuccessModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-8 relative">
-          {/* Success Icon */}
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 p-8 relative flex-shrink-0">
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl">
-              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
                 <img
                   src={PapayaLogo}
                   alt="Papaia Logo"
@@ -43,13 +42,9 @@ export default function FarmAddedSuccessModal({
               </div>
             </div>
           </div>
-
-          {/* Title */}
           <h2 className="text-2xl font-bold text-white text-center">
             Farm Successfully Added!
           </h2>
-
-          {/* Close Button */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
@@ -58,60 +53,60 @@ export default function FarmAddedSuccessModal({
           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6">
-          {/* Message */}
-          <p className="text-center text-gray-600 mb-6">
-            Your new farm has been registered and is now ready for management.
-            You can start adding farmers and tracking your farm.
-          </p>
+        {/* Body - Scrollable */}
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6">
+            <p className="text-center text-gray-600 mb-6">
+              Your new farm has been registered and is now ready for management.
+              You can start adding farmers and tracking your farm.
+            </p>
 
-          {/* Farm Card */}
-          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border-2 border-green-200 shadow-sm">
-            <div className="flex items-center gap-4">
-              {/* Farm Icon */}
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                <Leaf className="w-7 h-7 text-white" />
-              </div>
-
-              {/* Farm Details */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-lg text-slate-900 truncate">
-                    {farmData?.name || "Green Valley Farm"}
-                  </h3>
-                  <span className="px-2.5 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
-                    Active
-                  </span>
+            {/* Farm Card */}
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 mb-6 border-2 border-green-200 shadow-sm">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                  <Leaf className="w-7 h-7 text-white" />
                 </div>
-                <div className="flex items-center gap-1.5 mt-1">
-                  <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" />
-                  <span className="text-sm text-slate-600 truncate">
-                    {farmData?.location || "Liloan, Cebu"}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-slate-900 truncate">
+                      {farmData?.name || "Green Valley Farm"}
+                    </h3>
+                    <span className="px-2.5 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
+                      Active
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <MapPin className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span className="text-sm text-slate-600 truncate">
+                      {farmData?.location || "Liloan, Cebu"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* What's Next */}
+            <div className="mb-6">
+              <h3 className="font-bold text-lg text-slate-800 mb-3">
+                What's Next?
+              </h3>
+              <div className="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span className="text-slate-700 font-medium">
+                    Invite team members
                   </span>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* What's Next */}
-          <div className="mb-6">
-            <h3 className="font-bold text-lg text-slate-800 mb-3">
-              What's Next?
-            </h3>
-            <div className="bg-slate-50 rounded-xl p-4 border-2 border-slate-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Users className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="text-slate-700 font-medium">
-                  Invite team members
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
+        {/* Footer */}
+        <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={onAddAnother}

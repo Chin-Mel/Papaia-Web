@@ -2,7 +2,7 @@ import { CheckCircle, X, UserRoundMinus, ArrowLeft } from "lucide-react";
 import { useRef, useEffect } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
-export default function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
+function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -31,10 +31,10 @@ export default function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-8 relative">
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 p-8 relative flex-shrink-0">
           <div className="flex justify-center mb-4">
             <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl">
               <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
@@ -53,45 +53,51 @@ export default function FarmerRemovedSuccessModal({ isOpen, onClose, farmer }) {
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
-          <p className="text-center text-gray-600 mb-6">
-            The farmer has been removed from the farm management system.
-            However, relevant data still remained.
-          </p>
+        {/* Body - Scrollable */}
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6">
+            <p className="text-center text-gray-600 mb-6">
+              The farmer has been removed from the farm management system.
+              However, relevant data still remained.
+            </p>
 
-          {/* Farmer Card */}
-          <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-5 mb-6 border-2 border-red-200">
-            <div className="flex items-center gap-4">
-              <img
-                src={farmer?.profilePicture || defaultUserPic}
-                alt="Farmer"
-                className="w-14 h-14 rounded-full object-cover border-2 border-red-300 shadow-sm"
-                onError={(e) => (e.target.src = defaultUserPic)}
-              />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-bold text-lg text-slate-900 truncate">
-                  {formatName()}
-                </h3>
-                <p className="text-sm text-slate-600 mb-2">
-                  Farmer ID:{" "}
-                  <span className="font-semibold">
-                    #{farmer?.idNumber || "N/A"}
-                  </span>
-                </p>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-500 text-white text-xs font-semibold rounded-full">
-                  Removed
-                </span>
-                {farmer?.farmName && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    Farm: {farmer.farmName}
+            {/* Farmer Card */}
+            <div className="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-5 mb-6 border-2 border-red-200 shadow-sm">
+              <div className="flex items-center gap-4">
+                <img
+                  src={farmer?.profilePicture || defaultUserPic}
+                  alt="Farmer"
+                  className="w-14 h-14 rounded-full object-cover border-2 border-red-300 shadow-sm flex-shrink-0"
+                  onError={(e) => (e.target.src = defaultUserPic)}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-slate-900 truncate">
+                      {formatName()}
+                    </h3>
+                    <span className="px-2.5 py-0.5 bg-red-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
+                      Removed
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-2">
+                    Farmer ID:{" "}
+                    <span className="font-semibold">
+                      #{farmer?.idNumber || "N/A"}
+                    </span>
                   </p>
-                )}
+                  {farmer?.farmName && (
+                    <p className="text-xs text-slate-500 mt-1">
+                      Farm: {farmer.farmName}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Back Button */}
+        {/* Footer */}
+        <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
           <button
             onClick={onClose}
             className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl transition-all shadow-sm hover:shadow-md active:scale-95 flex items-center justify-center gap-2"
