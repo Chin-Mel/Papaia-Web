@@ -63,6 +63,62 @@ export default function FarmDashboardPage() {
     useState(false);
   const [farmerToReactivate, setFarmerToReactivate] = useState(null);
 
+  const [isRestoreFarmerModalOpen, setIsRestoreFarmerModalOpen] =
+    useState(false);
+  const [farmerToRestore, setFarmerToRestore] = useState(null);
+
+  const handleRestoreFarmer = async (farmerId) => {
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      const data = await response.json();
+
+      if (data.status === "success") {
+        const archivedFarmer = data.removedFarmers.find(
+          (f) => f.id === farmerId
+        );
+        if (archivedFarmer) {
+          setFarmerToRestore(archivedFarmer);
+          setIsRestoreFarmerModalOpen(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching archived farmer:", error);
+    }
+  };
+
+  const handleConfirmRestore = async () => {
+    if (!farmerToRestore) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${farmerToRestore.id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to restore farmer");
+      }
+
+      setIsRestoreFarmerModalOpen(false);
+      alert("Farmer restored successfully!");
+      window.location.reload();
+    } catch (error) {
+      console.error("Error restoring farmer:", error);
+      alert(error.message);
+    }
+  };
   // Fetch farm data
   const fetchFarmData = async () => {
     if (!farmId) return;
@@ -141,16 +197,12 @@ export default function FarmDashboardPage() {
 
     try {
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/farmer/deactivate`,
+        `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
         {
-          method: "PATCH",
+          method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            farmerId: selectedFarmer.id,
-          }),
         }
       );
 
