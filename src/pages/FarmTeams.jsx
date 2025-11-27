@@ -427,7 +427,8 @@ export default function FarmTeams({
                     <div className="relative">
                       <img
                         src={
-                          farmer.profilePicture || "/assets/default-user.png"
+                          farmer.profilePicture ||
+                          "https://via.placeholder.com/150/cccccc/666666?text=User"
                         }
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
@@ -438,7 +439,8 @@ export default function FarmTeams({
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
                         onError={(e) => {
-                          e.target.src = "/assets/default-user.png";
+                          e.target.src =
+                            "https://via.placeholder.com/150/cccccc/666666?text=User";
                         }}
                       />
                       <div
@@ -517,7 +519,8 @@ export default function FarmTeams({
                     <div className="relative">
                       <img
                         src={
-                          farmer.profilePicture || "/assets/default-user.png"
+                          farmer.profilePicture ||
+                          "https://via.placeholder.com/150/cccccc/666666?text=User"
                         }
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
@@ -528,7 +531,8 @@ export default function FarmTeams({
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
                         onError={(e) => {
-                          e.target.src = "/assets/default-user.png";
+                          e.target.src =
+                            "https://via.placeholder.com/150/cccccc/666666?text=User";
                         }}
                       />
                       <div
