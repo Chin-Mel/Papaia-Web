@@ -8,12 +8,11 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import defaultUserPic from "../assets/default-user.png";
 
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const options = ["All Status", "Active", "Inactive", "Archived"];
+  const options = ["All Status", "Active", "Pending", "Inactive", "Archived"];
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -407,7 +406,6 @@ export default function FarmTeams({
             const farmerStatus = farmer.status || "active";
             const isArchived =
               farmer.isArchived || farmerStatus.toLowerCase() === "archived";
-
             const isInactive =
               farmerStatus.toLowerCase() === "deactivate" ||
               farmerStatus.toLowerCase() === "inactive";
@@ -417,7 +415,9 @@ export default function FarmTeams({
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
                   isArchived
-                    ? "opacity-50 border-gray-200"
+                    ? "opacity-50 bg-gray-50 border-gray-300"
+                    : isInactive
+                    ? "opacity-60 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
               >
@@ -426,10 +426,15 @@ export default function FarmTeams({
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
                       <img
-                        src={farmer.profilePicture || defaultUserPic}
+                        src={
+                          farmer.profilePicture ||
+                          "https://via.placeholder.com/150/cccccc/666666?text=User"
+                        }
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
-                          isInactive
+                          isArchived
+                            ? "grayscale border-gray-300"
+                            : isInactive
                             ? "grayscale border-gray-200"
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
@@ -439,18 +444,30 @@ export default function FarmTeams({
                         }}
                       />
                       <div
-                        className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
+                        className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                           isArchived
-                            ? "opacity-50 border-gray-200"
-                            : "border-gray-200 hover:border-green-300 hover:shadow-md"
+                            ? "bg-red-500"
+                            : farmerStatus === "active"
+                            ? "bg-emerald-500"
+                            : farmerStatus === "pending"
+                            ? "bg-amber-500"
+                            : "bg-gray-400"
                         }`}
                       ></div>
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-sm text-gray-900">
+                      <h3
+                        className={`font-semibold text-sm ${
+                          isArchived ? "text-gray-500" : "text-gray-900"
+                        }`}
+                      >
                         {farmerName}
                       </h3>
-                      <p className="text-xs font-mono mt-1 text-gray-600">
+                      <p
+                        className={`text-xs font-mono mt-1 ${
+                          isArchived ? "text-gray-400" : "text-gray-600"
+                        }`}
+                      >
                         {farmer.idNumber || "N/A"}
                       </p>
                       <div className="mt-2">
@@ -466,47 +483,32 @@ export default function FarmTeams({
                   </div>
 
                   <div className="mb-3 pl-15">
-                    <p className="text-xs mb-1 font-medium text-gray-500">
+                    <p
+                      className={`text-xs mb-1 font-medium ${
+                        isArchived ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
                       Address
                     </p>
-                    <p className="text-sm text-gray-700">{farmerAddress}</p>
+                    <p
+                      className={`text-sm ${
+                        isArchived ? "text-gray-500" : "text-gray-700"
+                      }`}
+                    >
+                      {farmerAddress}
+                    </p>
                   </div>
 
                   <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
-                    {isArchived ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewFarmer(farmer.id, isArchived);
-                        }}
-                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
-                        Restore
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onViewFarmer(farmer.id, isArchived);
-                        }}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
-                      >
-                        View Details →
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewFarmer(farmer.id, isArchived);
+                      }}
+                      className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
+                    >
+                      View Details →
+                    </button>
                   </div>
                 </div>
 
@@ -516,10 +518,15 @@ export default function FarmTeams({
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={farmer.profilePicture || defaultUserPic}
+                        src={
+                          farmer.profilePicture ||
+                          "https://via.placeholder.com/150/cccccc/666666?text=User"
+                        }
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
-                          isInactive
+                          isArchived
+                            ? "grayscale border-gray-300"
+                            : isInactive
                             ? "grayscale border-gray-200"
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
@@ -541,10 +548,18 @@ export default function FarmTeams({
                       ></div>
                     </div>
                     <div>
-                      <p className="font-medium text-sm text-gray-800">
+                      <p
+                        className={`font-medium text-sm ${
+                          isArchived ? "text-gray-500" : "text-gray-800"
+                        }`}
+                      >
                         {farmerName}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p
+                        className={`text-xs ${
+                          isArchived ? "text-gray-400" : "text-gray-500"
+                        }`}
+                      >
                         {farmer.role || "Farmer"}
                       </p>
                     </div>
@@ -552,7 +567,13 @@ export default function FarmTeams({
 
                   {/* Farmer ID */}
                   <div className="col-span-2">
-                    <p className="text-sm font-mono px-2 py-1 rounded inline-block bg-gray-50 text-gray-700">
+                    <p
+                      className={`text-sm font-mono px-2 py-1 rounded inline-block ${
+                        isArchived
+                          ? "bg-gray-100 text-gray-500"
+                          : "bg-gray-50 text-gray-700"
+                      }`}
+                    >
                       {farmer.idNumber || "N/A"}
                     </p>
                   </div>
@@ -560,7 +581,9 @@ export default function FarmTeams({
                   {/* Address */}
                   <div className="col-span-4">
                     <p
-                      className="text-sm truncate text-gray-700"
+                      className={`text-sm truncate ${
+                        isArchived ? "text-gray-500" : "text-gray-700"
+                      }`}
                       title={farmerAddress}
                     >
                       {farmerAddress}
@@ -580,40 +603,15 @@ export default function FarmTeams({
 
                   {/* Actions */}
                   <div className="col-span-2">
-                    {isArchived ? (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRestoreFarmer(farmer.id);
-                        }}
-                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all duration-150 active:scale-95 shadow-sm hover:shadow-md flex items-center gap-2 text-sm"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                          />
-                        </svg>
-                        Restore
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onRestoreFarmer(farmer.id);
-                        }}
-                        className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
-                      >
-                        View Details →
-                      </button>
-                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewFarmer(farmer.id, isArchived);
+                      }}
+                      className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
+                    >
+                      View Details →
+                    </button>
                   </div>
                 </div>
               </div>

@@ -25,7 +25,7 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
   }, [onClose]);
 
   const handleConfirmRemove = async () => {
-    if (confirmationText === "REMOVE") {
+    if (confirmationText.toUpperCase() === "REMOVE") {
       setIsLoading(true);
       try {
         await onConfirmRemove();
@@ -202,7 +202,9 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
             </button>
             <button
               onClick={handleConfirmRemove}
-              disabled={confirmationText !== "REMOVE" || isLoading}
+              disabled={
+                confirmationText.toUpperCase() !== "REMOVE" || isLoading
+              }
               className="flex-1 px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95"
             >
               {isLoading ? (
