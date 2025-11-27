@@ -13,7 +13,7 @@ import defaultUserPic from "../../assets/default-user.png";
 // StatusDropdown Component
 function StatusDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
-  const options = ["All Status", "Active", "Pending", "Inactive", "Archived"];
+  const options = ["All Status", "Active", "Inactive", "Archived"];
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -407,6 +407,7 @@ export default function FarmTeams({
             const farmerStatus = farmer.status || "active";
             const isArchived =
               farmer.isArchived || farmerStatus.toLowerCase() === "archived";
+
             const isInactive =
               farmerStatus.toLowerCase() === "deactivate" ||
               farmerStatus.toLowerCase() === "inactive";
@@ -415,8 +416,8 @@ export default function FarmTeams({
               <div
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all duration-200 group ${
-                  isInactive
-                    ? "opacity-60 border-gray-200"
+                  isArchived || isInactive
+                    ? "opacity-50 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
               >
@@ -425,10 +426,7 @@ export default function FarmTeams({
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
                       <img
-                        src={
-                          farmer.profilePicture ||
-                          "https://via.placeholder.com/150/cccccc/666666?text=User"
-                        }
+                        src={farmer.profilePicture || { defaultUserPic }}
                         alt={farmerName}
                         className={`w-12 h-12 rounded-full object-cover border-2 ${
                           isInactive
@@ -522,10 +520,7 @@ export default function FarmTeams({
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
                       <img
-                        src={
-                          farmer.profilePicture ||
-                          "https://via.placeholder.com/150/cccccc/666666?text=User"
-                        }
+                        src={farmer.profilePicture || { defaultUserPic }}
                         alt={farmerName}
                         className={`w-10 h-10 rounded-full object-cover border-2 ${
                           isInactive
