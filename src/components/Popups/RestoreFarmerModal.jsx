@@ -1,5 +1,6 @@
-import { CheckCircle, X, UserPlus } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { CheckCircle, X, UserPlus, Loader2 } from "lucide-react";
+import { useRef, useEffect, useState } from "react";
+import React from "react";
 
 export default function RestoreFarmerModal({
   isOpen,
@@ -8,16 +9,26 @@ export default function RestoreFarmerModal({
   farmer,
 }) {
   const modalRef = useRef(null);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+        if (!isRestoring) {
+          onClose();
+        }
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [onClose, isRestoring]);
+
+  // Reset restoring state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setIsRestoring(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -31,17 +42,23 @@ export default function RestoreFarmerModal({
     return nameParts.length > 0 ? nameParts.join(" ") : "Unknown Farmer";
   };
 
+  const handleConfirm = async () => {
+    setIsRestoring(true);
+    await onConfirm();
+    // Note: Don't set isRestoring to false here as the modal will likely close/refresh
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
       >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 sm:p-8 relative">
+        {/* Header - Green/Orange Gradient */}
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-full flex items-center justify-center shadow-lg">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-full flex items-center justify-center">
                 <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
               </div>
             </div>
@@ -51,7 +68,8 @@ export default function RestoreFarmerModal({
           </h2>
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
+            disabled={isRestoring}
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <X className="w-5 h-5" />
           </button>
@@ -70,9 +88,9 @@ export default function RestoreFarmerModal({
             </p>
 
             {/* Farmer Info */}
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 sm:p-5 mb-6 border border-green-200/50">
+            <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 sm:p-5 mb-6 border border-green-200/50">
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
                   <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -81,7 +99,7 @@ export default function RestoreFarmerModal({
                       {formatName()}
                     </h3>
                     <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
-                      Restoring
+                      {isRestoring ? "Restoring..." : "Ready to Restore"}
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-600 font-mono">
@@ -122,15 +140,24 @@ export default function RestoreFarmerModal({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold"
+                disabled={isRestoring}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
               <button
-                onClick={onConfirm}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md hover:shadow-lg active:scale-95"
+                onClick={handleConfirm}
+                disabled={isRestoring}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:active:scale-100 flex items-center justify-center gap-2"
               >
-                Restore Farmer
+                {isRestoring ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Restoring...
+                  </>
+                ) : (
+                  "Restore Farmer"
+                )}
               </button>
             </div>
           </div>
