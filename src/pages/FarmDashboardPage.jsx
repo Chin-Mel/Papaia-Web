@@ -18,7 +18,7 @@ import FarmerAddedSuccessModal from "../components/Popups/FarmerAddedSuccessModa
 import FarmerRemovedSuccessModal from "../components/Popups/FarmerRemovedSuccessModal";
 import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
-import ReactivateFarmerModal from "../components/Popups/ReactivateFarmerModal";
+import RestoreFarmerModal from "../components/Popups/RestoreFarmerModal";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
@@ -92,11 +92,11 @@ export default function FarmDashboardPage() {
   };
 
   const handleConfirmRestore = async () => {
-    if (!farmerToRestore) return;
+    if (!selectedFarmer) return;
 
     try {
       const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${farmerToRestore.id}`,
+        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${selectedFarmer.id}`,
         {
           method: "POST",
           headers: {
@@ -212,12 +212,6 @@ export default function FarmDashboardPage() {
     }
   };
 
-  // Add handler for restoring from detail modal
-  const handleRestoreFarmerFromDetail = () => {
-    setIsFarmerDetailModalOpen(false);
-    setIsRestoreFarmerModalOpen(true);
-  };
-
   const handleRemoveFarmerFromDetail = () => {
     if (!isActive) return;
     setIsFarmerDetailModalOpen(false);
@@ -314,6 +308,13 @@ export default function FarmDashboardPage() {
   const handleBackToDetailModal = () => {
     setIsRemoveFarmerModalOpen(false);
     setIsFarmerDetailModalOpen(true);
+  };
+
+  // Add handler for restoring from detail modal
+  const handleRestoreFarmerFromDetail = () => {
+    setIsFarmerDetailModalOpen(false);
+    setIsRestoreFarmerModalOpen(true);
+    // Use selectedFarmer directly - no need to fetch again since we already have the data
   };
 
   const handleSuccessModalClose = () => {
@@ -608,6 +609,13 @@ export default function FarmDashboardPage() {
             isOpen={isRemoveFarmerModalOpen}
             onClose={handleBackToDetailModal}
             onConfirmRemove={handleConfirmRemoveFarmer}
+            farmer={selectedFarmer}
+          />
+
+          <RestoreFarmerModal
+            isOpen={isRestoreFarmerModalOpen}
+            onClose={() => setIsRestoreFarmerModalOpen(false)}
+            onConfirm={handleConfirmRestore}
             farmer={selectedFarmer}
           />
 
