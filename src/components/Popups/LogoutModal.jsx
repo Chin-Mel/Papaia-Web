@@ -43,10 +43,20 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
     }
   };
 
+  const handleBackdropClick = (e) => {
+    // Prevent closing if logging out
+    if (e.target === e.currentTarget && !isLoggingOut) {
+      onClose();
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex bg-black/50 items-center justify-center z-[60] p-4">
+    <div
+      className="fixed inset-0 flex bg-black/50 items-center justify-center z-[60] p-4"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         {/* Icon */}
         <div className="flex justify-center mb-6">

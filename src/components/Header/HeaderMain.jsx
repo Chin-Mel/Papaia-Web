@@ -59,7 +59,11 @@ export default function HeaderMain() {
   };
 
   // 3. ADD new function for actual logout after confirmation:
-  const handleConfirmLogout = () => {
+  // Update this function to be async and add a small delay to show the loading state
+  const handleConfirmLogout = async () => {
+    // Add a small delay to ensure the loading animation is visible
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // Clear all auth data
     localStorage.removeItem("user");
     localStorage.removeItem("token");
