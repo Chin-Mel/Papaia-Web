@@ -13,7 +13,8 @@ import PhoneIcon from "../assets/phone-icon.png";
 import { Eye, EyeOff } from "lucide-react";
 
 import MainBackground from "../assets/MainBackground.png";
-import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
+import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
+
 import CreateUserIcon from "../assets/create-user.png";
 
 function SuffixDropdown({ value, onChange }) {
@@ -352,11 +353,9 @@ export default function SignUpPage() {
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                   <img
-                    src={PapayaLogo}
+                    src={papaiaLogo}
                     alt="Papaia Logo"
-                    className="w-7 h-9"
-                    loading="eager"
-                    decoding="async"
+                    className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
                   />
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-1">Welcome!</h1>

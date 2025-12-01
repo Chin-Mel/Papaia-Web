@@ -5,7 +5,7 @@ import HeaderStart from "../components/Header/HeaderStart";
 import Alert from "../components/Alert";
 import MainBackground from "../assets/MainBackground.png";
 
-import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
+import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import UserIcon from "../assets/user-icon.png";
 import LockIcon from "../assets/lock-icon.png";
 import EyeIcon from "../assets/eye-icon.png";
@@ -280,11 +280,9 @@ export default function SignInPage() {
             <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                 <img
-                  src={PapayaLogo}
+                  src={papaiaLogo}
                   alt="Papaia Logo"
-                  className="w-7 h-9"
-                  loading="eager"
-                  decoding="async"
+                  className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
                 />
               </div>
 
