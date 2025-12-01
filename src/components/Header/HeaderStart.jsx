@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.svg";
+import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
