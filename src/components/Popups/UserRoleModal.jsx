@@ -34,8 +34,8 @@ export default function UserRoleModal({ isOpen, onSelect }) {
   if (showAppModal) {
     return (
       <div className="fixed inset-0 z-50 pt-16 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative p-6">
-          <div className="relative mb-6 flex items-center">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+          <div className="relative mb-4 flex items-center">
             <div className="flex-1 h-1 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" />
             <button
               onClick={() => setShowAppModal(false)}
@@ -45,21 +45,20 @@ export default function UserRoleModal({ isOpen, onSelect }) {
             </button>
           </div>
 
-          <div className="mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#2D5016] mb-2">
+          <div className="mb-2">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#2D5016] mb-1">
               Install our App
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              To start using Papaia and access all farmer features, please
-              install the Papaia mobile application. Scan the QR code or enter
-              the join link to proceed.
+              To start using Papaia and access all farmer features, install the
+              Papaia mobile app. Scan the QR code or use the join link below.
             </p>
           </div>
 
           <div className="bg-gray-100 rounded-xl p-4 mb-3 flex flex-col items-center">
             <div className="bg-white p-3 rounded-lg shadow-sm mb-2">
               <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white border-4 border-black flex items-center justify-center">
-                <div className="text-xs text-center font-mono">QR CODE</div>
+                <div className="text-xs font-mono">QR CODE</div>
               </div>
             </div>
             <p className="text-xs text-gray-600">Papaia App's QR Code</p>
@@ -71,10 +70,10 @@ export default function UserRoleModal({ isOpen, onSelect }) {
             <div className="flex-1 h-px bg-gray-300" />
           </div>
 
-          <div className="bg-gray-100 rounded-xl p-3 mb-4">
-            <p className="text-xs text-gray-600 mb-2">Papaia App Link</p>
+          <div className="bg-gray-100 rounded-xl p-3">
+            <p className="text-xs text-gray-600 mb-1">Papaia App Link</p>
             <div className="flex items-center gap-2">
-              <div className="flex-1 bg-white px-3 py-2 rounded-lg text-xs text-gray-700 border border-gray-200">
+              <div className="flex-1 bg-white px-3 py-2 rounded-lg text-xs text-gray-700 border">
                 papaia.app/farm/abc123xyz
               </div>
               <button
@@ -85,13 +84,6 @@ export default function UserRoleModal({ isOpen, onSelect }) {
               </button>
             </div>
           </div>
-
-          <button
-            onClick={handleBack}
-            className="w-full text-center text-gray-600 hover:text-gray-800 font-medium transition-colors text-sm"
-          >
-            Back
-          </button>
         </div>
       </div>
     );
@@ -99,7 +91,7 @@ export default function UserRoleModal({ isOpen, onSelect }) {
 
   // Role Selection Modal
   return (
-    <div className="fixed inset-0 z-40 pt-16 flex items-center bg-black/50 justify-center p-4">
+    <div className="fixed inset-0 z-40 pt-16 flex items-center justify-center p-4">
       <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-3xl shadow-2xl w-full max-w-3xl p-6 sm:p-8 relative">
         {/* Back Button - Top Left */}
         <button
