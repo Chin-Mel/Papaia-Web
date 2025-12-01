@@ -1,4 +1,3 @@
-//new
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
@@ -83,13 +82,6 @@ export default function DashboardPage() {
     totalFarmers: 0,
     totalFarms: 0,
     todayScans: 0,
-    yesterdayScans: 0,
-    farmersChange: 0,
-    farmsChange: 0,
-    scansChange: 0,
-    farmersTrend: "no change",
-    farmsTrend: "no change",
-    scansTrend: "no change",
   });
   const mountedRef = useRef(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -125,84 +117,31 @@ export default function DashboardPage() {
     return timestampStr.includes(todayStr);
   };
 
-  const isYesterday = (timestampStr) => {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yesterdayStr = yesterday.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
-    return timestampStr.includes(yesterdayStr);
-  };
-
   // ============ OPTIMIZED FETCH WITH CACHING ============
   const fetchDashboardStats = async () => {
     try {
       const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
-      const [
-        farmCountData,
-        farmerCountData,
-        identificationData,
-        farmersComparisonData,
-        farmsComparisonData,
-      ] = await Promise.all([
-        cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000),
-        cachedFetch(`${API_BASE}/count-farmers`, {}, "farmer_count", 60000),
-        cachedFetch(
-          `${API_BASE}/identification-history`,
-          {},
-          "id_history",
-          120000
-        ),
-        cachedFetch(
-          `${API_BASE}/farmers-comparison`,
-          {},
-          "farmers_comp",
-          60000
-        ),
-        cachedFetch(`${API_BASE}/farms-comparison`, {}, "farms_comp", 60000),
-      ]).catch(() => [{}, {}, [], {}, {}]);
+      const [farmCountData, farmerCountData, identificationData] =
+        await Promise.all([
+          cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000),
+          cachedFetch(`${API_BASE}/count-farmers`, {}, "farmer_count", 60000),
+          cachedFetch(
+            `${API_BASE}/identification-history`,
+            {},
+            "id_history",
+            120000
+          ),
+        ]).catch(() => [{}, {}, []]);
 
       const todayScansCount = Array.isArray(identificationData)
         ? identificationData.filter((pred) => isToday(pred.timestamp)).length
         : 0;
 
-      const yesterdayScansCount = Array.isArray(identificationData)
-        ? identificationData.filter((pred) => isYesterday(pred.timestamp))
-            .length
-        : 0;
-
-      let scansChangePercent = 0;
-      let scansTrendType = "no change";
-
-      if (yesterdayScansCount > 0) {
-        scansChangePercent = (
-          ((todayScansCount - yesterdayScansCount) / yesterdayScansCount) *
-          100
-        ).toFixed(2);
-        if (todayScansCount > yesterdayScansCount) {
-          scansTrendType = "increase";
-        } else if (todayScansCount < yesterdayScansCount) {
-          scansTrendType = "decrease";
-        }
-      } else if (todayScansCount > 0) {
-        scansChangePercent = 100;
-        scansTrendType = "increase";
-      }
-
       setDashboardStats({
         totalFarmers: farmerCountData.totalFarmers || 0,
         totalFarms: farmCountData.farmCount || 0,
         todayScans: todayScansCount,
-        yesterdayScans: yesterdayScansCount,
-        farmersChange: farmersComparisonData.percentageChange || 0,
-        farmsChange: farmsComparisonData.percentageChange || 0,
-        scansChange: parseFloat(scansChangePercent) || 0,
-        farmersTrend: farmersComparisonData.trend || "no change",
-        farmsTrend: farmsComparisonData.trend || "no change",
-        scansTrend: scansTrendType,
       });
     } catch (err) {
       // Silent error handling
@@ -250,15 +189,14 @@ export default function DashboardPage() {
             desc: f.description || `Farm located in ${f.location}`,
             location: f.location,
             health: "0.00",
-            status: f.status === "active" ? "Active" : "Inactive",
             img: farmImage,
           };
         });
 
         const sortedFarms = mappedFarms.sort((a, b) => {
-          if (a.status === "Active" && b.status === "Inactive") return -1;
-          if (a.status === "Inactive" && b.status === "Active") return 1;
-          return 0;
+          const healthA = parseFloat(a.health);
+          const healthB = parseFloat(b.health);
+          return healthB - healthA;
         });
 
         setFarms(sortedFarms);
@@ -341,10 +279,8 @@ export default function DashboardPage() {
 
   const handleCloseModal = () => setShowAddFarmModal(false);
 
-  // Add these handlers
   const handleViewDashboard = () => {
     setShowSuccessModal(false);
-    // Optionally navigate to the new farm's dashboard if you have the farm ID
   };
 
   const handleAddAnother = () => {
@@ -358,29 +294,38 @@ export default function DashboardPage() {
     setAddedFarmData(null);
   };
 
-  const getTrendColor = (trend) => {
-    switch (trend) {
-      case "increase":
-        return "text-emerald-600";
-      case "decrease":
-        return "text-rose-600";
-      default:
-        return "text-slate-600";
-    }
-  };
-
-  const getTrendPrefix = (trend) => {
-    if (trend === "increase") return "+";
-    if (trend === "decrease") return "-";
-    return "";
-  };
-
-  const getHealthColor = (healthPercentage) => {
-    if (healthPercentage >= 80) return "text-emerald-600";
-    else if (healthPercentage >= 60) return "text-amber-600";
-    else if (healthPercentage >= 40) return "text-orange-600";
-    else if (healthPercentage >= 20) return "text-rose-600";
-    else return "text-slate-600";
+  const getHealthStatus = (healthPercentage) => {
+    const health = parseFloat(healthPercentage);
+    if (health >= 80)
+      return {
+        status: "Excellent",
+        bgColor: "bg-emerald-500",
+        textColor: "text-emerald-600",
+      };
+    else if (health >= 60)
+      return {
+        status: "Good",
+        bgColor: "bg-amber-500",
+        textColor: "text-amber-600",
+      };
+    else if (health >= 40)
+      return {
+        status: "Fair",
+        bgColor: "bg-orange-500",
+        textColor: "text-orange-600",
+      };
+    else if (health >= 20)
+      return {
+        status: "Poor",
+        bgColor: "bg-rose-500",
+        textColor: "text-rose-600",
+      };
+    else
+      return {
+        status: "Critical",
+        bgColor: "bg-slate-500",
+        textColor: "text-slate-600",
+      };
   };
 
   const formatHealthDisplay = (health) => {
@@ -410,15 +355,6 @@ export default function DashboardPage() {
                     <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                       {dashboardStats.totalFarmers.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-semibold ${getTrendColor(
-                        dashboardStats.farmersTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmersTrend)}
-                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
-                      last month
-                    </span>
                   </div>
                   <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
                     <img
@@ -439,15 +375,6 @@ export default function DashboardPage() {
                     <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                       {dashboardStats.totalFarms.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-semibold ${getTrendColor(
-                        dashboardStats.farmsTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmsTrend)}
-                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
-                      last month
-                    </span>
                   </div>
                   <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center">
                     <img
@@ -468,15 +395,6 @@ export default function DashboardPage() {
                     <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                       {dashboardStats.todayScans.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-xs sm:text-sm font-semibold ${getTrendColor(
-                        dashboardStats.scansTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.scansTrend)}
-                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
-                      yesterday
-                    </span>
                   </div>
                   <div className="w-14 h-14 rounded-full bg-[#DBEAFE] flex items-center justify-center">
                     <img
@@ -528,67 +446,58 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   ) : (
-                    farms.map((farm) => (
-                      <Link
-                        key={farm.id}
-                        to={`/farm-dashboard/${farm.id}`}
-                        className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
-                          farm.status === "Active"
-                            ? "bg-white/80 backdrop-blur-sm"
-                            : "bg-slate-200/50"
-                        }`}
-                      >
-                        <div className="relative">
-                          <img
-                            src={farm.img}
-                            alt={farm.name}
-                            className={`w-full h-32 sm:h-40 object-cover ${
-                              farm.status === "Inactive"
-                                ? "opacity-50 grayscale"
-                                : ""
-                            }`}
-                            loading="eager"
-                          />
-                          <span
-                            className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${
-                              farm.status === "Active"
-                                ? "bg-emerald-500 text-white"
-                                : "bg-slate-500 text-white"
-                            }`}
-                          >
-                            {farm.status}
-                          </span>
-                        </div>
-                        <div className="p-3 sm:p-4">
-                          <h3 className="font-bold text-xs sm:text-base text-slate-900 mb-1">
-                            {farm.name}
-                          </h3>
-                          <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">
-                            {farm.desc}
-                          </p>
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500 flex-1 min-w-0">
-                              <MapPin
-                                size={12}
-                                className="flex-shrink-0 fill-slate-500"
-                                fill="currentColor"
-                              />
-                              <span className="truncate">{farm.location}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 flex-shrink-0">
-                              <Leaf size={12} className="text-emerald-500" />
-                              <span
-                                className={`text-[10px] sm:text-xs font-semibold whitespace-nowrap ${getHealthColor(
-                                  farm.health
-                                )}`}
-                              >
-                                {formatHealthDisplay(farm.health)} Health
-                              </span>
+                    farms.map((farm) => {
+                      const healthStatus = getHealthStatus(farm.health);
+                      return (
+                        <Link
+                          key={farm.id}
+                          to={`/farm-dashboard/${farm.id}`}
+                          className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                        >
+                          <div className="relative">
+                            <img
+                              src={farm.img}
+                              alt={farm.name}
+                              className="w-full h-32 sm:h-40 object-cover"
+                              loading="eager"
+                            />
+                            <span
+                              className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
+                            >
+                              {healthStatus.status}
+                            </span>
+                          </div>
+                          <div className="p-3 sm:p-4">
+                            <h3 className="font-bold text-xs sm:text-base text-slate-900 mb-1">
+                              {farm.name}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">
+                              {farm.desc}
+                            </p>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500 flex-1 min-w-0">
+                                <MapPin
+                                  size={12}
+                                  className="flex-shrink-0 fill-slate-500"
+                                  fill="currentColor"
+                                />
+                                <span className="truncate">
+                                  {farm.location}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                <Leaf size={12} className="text-emerald-500" />
+                                <span
+                                  className={`text-[10px] sm:text-xs font-semibold whitespace-nowrap ${healthStatus.textColor}`}
+                                >
+                                  {formatHealthDisplay(farm.health)} Health
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
-                    ))
+                        </Link>
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -614,15 +523,6 @@ export default function DashboardPage() {
                     <h3 className="text-3xl font-bold text-slate-900">
                       {dashboardStats.totalFarmers.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-sm font-semibold ${getTrendColor(
-                        dashboardStats.farmersTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmersTrend)}
-                      {Math.abs(dashboardStats.farmersChange).toFixed(1)}% from
-                      last month
-                    </span>
                   </div>
                   <div className="w-16 h-16 rounded-full bg-[#DCFCE7] flex items-center justify-center">
                     <img
@@ -642,15 +542,6 @@ export default function DashboardPage() {
                     <h3 className="text-3xl font-bold text-slate-900">
                       {dashboardStats.totalFarms.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-sm font-semibold ${getTrendColor(
-                        dashboardStats.farmsTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.farmsTrend)}
-                      {Math.abs(dashboardStats.farmsChange).toFixed(1)}% from
-                      last month
-                    </span>
                   </div>
                   <div className="w-16 h-16 rounded-full bg-[#FEF9C3] flex items-center justify-center">
                     <img
@@ -670,15 +561,6 @@ export default function DashboardPage() {
                     <h3 className="text-3xl font-bold text-slate-900">
                       {dashboardStats.todayScans.toLocaleString()}
                     </h3>
-                    <span
-                      className={`text-sm font-semibold ${getTrendColor(
-                        dashboardStats.scansTrend
-                      )}`}
-                    >
-                      {getTrendPrefix(dashboardStats.scansTrend)}
-                      {Math.abs(dashboardStats.scansChange).toFixed(1)}% from
-                      yesterday
-                    </span>
                   </div>
                   <div className="w-16 h-16 rounded-full bg-[#DBEAFE] flex items-center justify-center">
                     <img
@@ -723,69 +605,61 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     ) : (
-                      farms.map((farm) => (
-                        <Link
-                          key={farm.id}
-                          to={`/farm-dashboard/${farm.id}`}
-                          className={`border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
-                            farm.status === "Active"
-                              ? "bg-white/80 backdrop-blur-sm"
-                              : "bg-slate-200/50"
-                          }`}
-                        >
-                          <div className="relative">
-                            <img
-                              src={farm.img}
-                              alt={farm.name}
-                              className={`w-full h-48 object-cover ${
-                                farm.status === "Inactive"
-                                  ? "opacity-50 grayscale"
-                                  : ""
-                              }`}
-                              loading="eager"
-                            />
-                            <span
-                              className={`absolute top-3 right-3 px-3 py-1.5 text-xs rounded-full font-semibold shadow-lg ${
-                                farm.status === "Active"
-                                  ? "bg-emerald-500 text-white"
-                                  : "bg-slate-500 text-white"
-                              }`}
-                            >
-                              {farm.status}
-                            </span>
-                          </div>
-                          <div className="p-4">
-                            <h3 className="font-bold text-lg text-slate-900 mb-1">
-                              {farm.name}
-                            </h3>
-                            <p className="text-sm text-slate-600 mb-2 line-clamp-2">
-                              {farm.desc}
-                            </p>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-1 min-w-0">
-                                <MapPin
-                                  size={12}
-                                  className="flex-shrink-0 fill-slate-500"
-                                  fill="currentColor"
-                                />
-                                <span className="truncate">
-                                  {farm.location}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
-                                <Leaf size={12} className="text-emerald-500" />
-                                <span
-                                  className={`text-xs font-semibold whitespace-nowrap ${getHealthColor(
-                                    farm.health
-                                  )}`}
-                                >
-                                  {formatHealthDisplay(farm.health)} Health
-                                </span>
+                      farms.map((farm) => {
+                        const healthStatus = getHealthStatus(farm.health);
+                        return (
+                          <Link
+                            key={farm.id}
+                            to={`/farm-dashboard/${farm.id}`}
+                            className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer"
+                          >
+                            <div className="relative">
+                              <img
+                                src={farm.img}
+                                alt={farm.name}
+                                className="w-full h-48 object-cover"
+                                loading="eager"
+                              />
+                              <span
+                                className={`absolute top-3 right-3 px-3 py-1.5 text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
+                              >
+                                {healthStatus.status}
+                              </span>
+                            </div>
+                            <div className="p-4">
+                              <h3 className="font-bold text-lg text-slate-900 mb-1">
+                                {farm.name}
+                              </h3>
+                              <p className="text-sm text-slate-600 mb-2 line-clamp-2">
+                                {farm.desc}
+                              </p>
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-1 min-w-0">
+                                  <MapPin
+                                    size={12}
+                                    className="flex-shrink-0 fill-slate-500"
+                                    fill="currentColor"
+                                  />
+                                  <span className="truncate">
+                                    {farm.location}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1.5 flex-shrink-0">
+                                  <Leaf
+                                    size={12}
+                                    className="text-emerald-500"
+                                  />
+                                  <span
+                                    className={`text-xs font-semibold whitespace-nowrap ${healthStatus.textColor}`}
+                                  >
+                                    {formatHealthDisplay(farm.health)} Health
+                                  </span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </Link>
-                      ))
+                          </Link>
+                        );
+                      })
                     )}
                   </div>
                 )}
