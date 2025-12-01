@@ -15,6 +15,7 @@ export default function FarmAnalytics({
   farmId,
   timeFilter = "Daily",
   onTimeFilterChange,
+  onDateRangeChange, // ADD THIS
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -42,23 +43,28 @@ export default function FarmAnalytics({
 
   // Reset date range when timeFilter changes to appropriate default
   useEffect(() => {
+    let newRange;
     switch (timeFilter) {
       case "Daily":
-        setDateRange("Last 11 days");
+        newRange = "Last 11 days";
         break;
       case "Weekly":
-        setDateRange("Last 9 weeks");
+        newRange = "Last 9 weeks";
         break;
       case "Monthly":
-        setDateRange("Last 12 months");
+        newRange = "Last 12 months";
         break;
       case "Yearly":
-        setDateRange("Last 7 years");
+        newRange = "Last 7 years";
         break;
       default:
-        setDateRange("Last 11 days");
+        newRange = "Last 11 days";
     }
-  }, [timeFilter]);
+    setDateRange(newRange);
+    if (onDateRangeChange) {
+      onDateRangeChange(newRange);
+    }
+  }, [timeFilter, onDateRangeChange]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -439,6 +445,9 @@ export default function FarmAnalytics({
                     onClick={() => {
                       setDateRange(option);
                       setIsDateRangeOpen(false);
+                      if (onDateRangeChange) {
+                        onDateRangeChange(option);
+                      }
                     }}
                     className={`px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-50 hover:text-green-700 text-xs sm:text-sm transition-colors ${
                       dateRange === option

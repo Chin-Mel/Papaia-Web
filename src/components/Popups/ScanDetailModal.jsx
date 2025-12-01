@@ -1,330 +1,204 @@
-// import { X } from "lucide-react";
+import { X, Calendar, User, MapPin, AlertCircle } from "lucide-react";
+import { useEffect, useRef } from "react";
 
-// export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
-//   if (!isOpen || !scan) return null;
+export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
+  const modalRef = useRef(null);
 
-//   const getCardStyle = (prediction) => {
-//     const styles = {
-//       Healthy: {
-//         bg: "bg-emerald-50",
-//         border: "border-emerald-700",
-//         textColor: "text-emerald-700",
-//         badgeBg: "bg-emerald-100",
-//       },
-//       "Ring Spot Virus": {
-//         bg: "bg-orange-50",
-//         border: "border-orange-600",
-//         textColor: "text-orange-600",
-//         badgeBg: "bg-orange-100",
-//       },
-//       Anthracnose: {
-//         bg: "bg-rose-50",
-//         border: "border-rose-600",
-//         textColor: "text-rose-600",
-//         badgeBg: "bg-rose-100",
-//       },
-//       "Powdery Mildew": {
-//         bg: "bg-blue-50",
-//         border: "border-blue-600",
-//         textColor: "text-blue-600",
-//         badgeBg: "bg-blue-100",
-//       },
-//     };
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
 
-//     return (
-//       styles[prediction] || {
-//         bg: "bg-slate-50",
-//         border: "border-slate-600",
-//         textColor: "text-slate-600",
-//         badgeBg: "bg-slate-100",
-//       }
-//     );
-//   };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden";
+    }
 
-//   const formatDateTime = (timestamp) => {
-//     try {
-//       if (!timestamp) return { date: "", time: "" };
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
 
-//       const parts = timestamp.trim().split(/\s+/);
-//       if (parts.length !== 3) return { date: timestamp, time: "" };
+  if (!isOpen || !scan) return null;
 
-//       const datePart = parts[0];
-//       const timePart = parts[1];
-//       const period = parts[2];
+  const getCardStyle = (prediction) => {
+    const styles = {
+      Healthy: {
+        bg: "from-emerald-500 to-emerald-600",
+        badge: "bg-emerald-100 text-emerald-700",
+      },
+      "Ring Spot Virus": {
+        bg: "from-orange-500 to-orange-600",
+        badge: "bg-orange-100 text-orange-700",
+      },
+      Anthracnose: {
+        bg: "from-rose-500 to-rose-600",
+        badge: "bg-rose-100 text-rose-700",
+      },
+      "Powdery Mildew": {
+        bg: "from-blue-500 to-blue-600",
+        badge: "bg-blue-100 text-blue-700",
+      },
+    };
 
-//       const [month, day, year] = datePart.split("/");
-//       if (!month || !day || !year) return { date: timestamp, time: "" };
+    return (
+      styles[prediction] || {
+        bg: "from-slate-500 to-slate-600",
+        badge: "bg-slate-100 text-slate-700",
+      }
+    );
+  };
 
-//       const monthNames = [
-//         "January",
-//         "February",
-//         "March",
-//         "April",
-//         "May",
-//         "June",
-//         "July",
-//         "August",
-//         "September",
-//         "October",
-//         "November",
-//         "December",
-//       ];
+  const cardStyle = getCardStyle(scan.prediction);
 
-//       const monthName = monthNames[parseInt(month) - 1];
-//       const fullYear = year.length === 2 ? `20${year}` : year;
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+      >
+        {/* Header */}
+        <div
+          className={`bg-gradient-to-r ${cardStyle.bg} p-6 flex items-center justify-between`}
+        >
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-white mb-1">Scan Details</h2>
+            <p className="text-white/90 text-sm">
+              Complete information about this prediction
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-2"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-//       return {
-//         date: `${monthName} ${parseInt(day)}, ${fullYear}`,
-//         time: `${timePart} ${period}`,
-//       };
-//     } catch (error) {
-//       return { date: timestamp, time: "" };
-//     }
-//   };
+        {/* Body - Scrollable */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {/* Image */}
+          <div className="mb-6">
+            <img
+              src={scan.imageUrl}
+              alt="Scan"
+              className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
+              onError={(e) => {
+                e.target.src = "";
+                e.target.alt = "Image not available";
+                e.target.className =
+                  "w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400";
+              }}
+            />
+          </div>
 
-//   const getTreatmentSuggestions = (prediction) => {
-//     if (!prediction) return [];
+          {/* Prediction Badge */}
+          <div className="mb-6">
+            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+              Prediction Result
+            </label>
+            <span
+              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg ${cardStyle.badge}`}
+            >
+              <AlertCircle className="w-5 h-5" />
+              {scan.prediction}
+            </span>
+          </div>
 
-//     const predLower = prediction.toLowerCase();
+          {/* Confidence */}
+          <div className="mb-6">
+            <label className="text-sm font-semibold text-gray-700 mb-2 block">
+              Confidence Level
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-gray-200 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full bg-gradient-to-r ${cardStyle.bg}`}
+                  style={{ width: `${(scan.confidence * 100).toFixed(0)}%` }}
+                />
+              </div>
+              <span className="text-lg font-bold text-gray-700">
+                {(scan.confidence * 100).toFixed(0)}%
+              </span>
+            </div>
+          </div>
 
-//     if (predLower === "healthy") {
-//       return [
-//         "Continue regular monitoring of plant health",
-//         "Maintain proper watering schedule",
-//         "Ensure adequate sunlight and air circulation",
-//         "Apply balanced fertilizer as needed",
-//       ];
-//     }
+          {/* Info Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Farmer Name */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <User className="w-4 h-4 text-gray-500" />
+                <label className="text-xs font-semibold text-gray-600">
+                  Scanned By
+                </label>
+              </div>
+              <p className="text-sm font-medium text-gray-800">{farmerName}</p>
+            </div>
 
-//     if (predLower.includes("ring spot") || predLower.includes("virus")) {
-//       return [
-//         "Apply copper-based fungicide (Copper sulfate) immediately",
-//         "Remove and destroy all infected plant parts",
-//         "Improve air circulation between plants",
-//         "Reduce overhead watering to minimize moisture",
-//       ];
-//     }
+            {/* Timestamp */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="w-4 h-4 text-gray-500" />
+                <label className="text-xs font-semibold text-gray-600">
+                  Date & Time
+                </label>
+              </div>
+              <p className="text-sm font-medium text-gray-800">
+                {scan.timestamp}
+              </p>
+            </div>
+          </div>
 
-//     if (predLower.includes("anthracnose")) {
-//       return [
-//         "Apply copper-based fungicide immediately",
-//         "Remove and destroy all infected plant parts",
-//         "Improve air circulation between plants",
-//         "Reduce overhead watering to minimize moisture",
-//         "Apply preventive fungicide sprays during wet seasons",
-//       ];
-//     }
+          {/* Suggestions */}
+          {scan.suggestions && (
+            <div>
+              <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                Recommendations
+              </label>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="prose prose-sm max-w-none">
+                  {scan.suggestions.split("\n").map((line, index) => {
+                    const trimmedLine = line.trim();
+                    if (!trimmedLine) return null;
 
-//     if (predLower.includes("powdery mildew")) {
-//       return [
-//         "Apply sulfur-based or potassium bicarbonate fungicide",
-//         "Improve air circulation around plants",
-//         "Avoid overhead watering",
-//         "Remove infected leaves and dispose properly",
-//         "Apply preventive treatments during favorable conditions",
-//       ];
-//     }
+                    // Check if line starts with bullet point
+                    if (trimmedLine.startsWith("*")) {
+                      return (
+                        <p
+                          key={index}
+                          className="text-sm text-gray-700 mb-2 pl-4"
+                        >
+                          • {trimmedLine.substring(1).trim()}
+                        </p>
+                      );
+                    }
 
-//     return [
-//       "Consult with agricultural extension officer for specific treatment",
-//       "Remove and destroy infected plant parts",
-//       "Apply appropriate fungicide or treatment",
-//       "Monitor plant health closely",
-//     ];
-//   };
+                    return (
+                      <p key={index} className="text-sm text-gray-700 mb-2">
+                        {trimmedLine}
+                      </p>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
-//   const parseSuggestions = (suggestions) => {
-//     if (!suggestions) return [];
-//     return suggestions
-//       .split("\n")
-//       .map((line) => line.replace(/^\*\s*/, "").trim())
-//       .filter((line) => line.length > 0);
-//   };
-
-//   // Use result or prediction field (API uses 'result' in scan history)
-//   const prediction = scan.result || scan.prediction;
-//   const cardStyle = getCardStyle(prediction);
-//   const dateTime = formatDateTime(scan.timestamp);
-//   const confidencePercentage = Math.min(
-//     100,
-//     Math.max(0, Math.round((scan.confidence || 0) * 100))
-//   );
-
-//   const apiSuggestions = parseSuggestions(scan.suggestions);
-//   const treatmentSuggestions = getTreatmentSuggestions(prediction);
-//   const displaySuggestions =
-//     apiSuggestions.length > 0 ? apiSuggestions : treatmentSuggestions;
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-//       <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-//         {/* Header */}
-//         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-//           <h2 className="text-xl font-bold text-gray-800">Scan Details</h2>
-//           <button
-//             onClick={onClose}
-//             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-//           >
-//             <X className="w-5 h-5 text-gray-600" />
-//           </button>
-//         </div>
-
-//         {/* Content */}
-//         <div className="p-6 space-y-6">
-//           {/* Image */}
-//           <div className="flex justify-center">
-//             <img
-//               src={scan.imageUrl}
-//               alt="Scan"
-//               className="max-w-full max-h-96 rounded-lg border-2 border-gray-200 object-contain"
-//               onError={(e) => {
-//                 e.target.style.display = "none";
-//                 e.target.nextSibling.style.display = "flex";
-//               }}
-//             />
-//             <div
-//               className="w-full h-64 rounded-lg border-2 border-gray-200 bg-gray-100 items-center justify-center text-gray-400 hidden"
-//               style={{ display: "none" }}
-//             >
-//               <div className="text-center">
-//                 <p className="text-lg font-medium">Image Not Available</p>
-//                 <p className="text-sm">The scan image could not be loaded</p>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Prediction Result */}
-//           <div
-//             className={`${cardStyle.bg} border-l-4 ${cardStyle.border} rounded-lg p-4`}
-//           >
-//             <div className="flex items-center justify-between mb-2">
-//               <span className="text-sm font-medium text-gray-600">
-//                 Disease Identified
-//               </span>
-//               <span
-//                 className={`${cardStyle.badgeBg} ${cardStyle.textColor} px-3 py-1 rounded-full text-sm font-bold`}
-//               >
-//                 {prediction}
-//               </span>
-//             </div>
-
-//             {/* Confidence Level */}
-//             <div className="mt-4">
-//               <div className="flex justify-between items-center text-sm mb-2">
-//                 <span className="text-gray-600">Confidence Level</span>
-//                 <span className="font-semibold text-gray-900">
-//                   {confidencePercentage}%
-//                 </span>
-//               </div>
-//               <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-//                 <div
-//                   className={`h-2 rounded-full transition-all duration-500`}
-//                   style={{
-//                     width: `${confidencePercentage}%`,
-//                     backgroundColor: cardStyle.border.includes("emerald")
-//                       ? "#22c55e"
-//                       : cardStyle.border.includes("orange")
-//                       ? "#ea580c"
-//                       : cardStyle.border.includes("rose")
-//                       ? "#dc2626"
-//                       : cardStyle.border.includes("blue")
-//                       ? "#2563eb"
-//                       : "#64748b",
-//                   }}
-//                 ></div>
-//               </div>
-//             </div>
-//           </div>
-
-//           {/* Details Grid */}
-//           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-//             {/* Date */}
-//             <div className="bg-gray-50 rounded-lg p-4">
-//               <p className="text-xs text-gray-500 mb-1">Date</p>
-//               <p className="text-sm font-semibold text-gray-800">
-//                 {dateTime.date}
-//               </p>
-//             </div>
-
-//             {/* Time */}
-//             <div className="bg-gray-50 rounded-lg p-4">
-//               <p className="text-xs text-gray-500 mb-1">Time</p>
-//               <p className="text-sm font-semibold text-gray-800">
-//                 {dateTime.time}
-//               </p>
-//             </div>
-
-//             {/* Farmer */}
-//             <div className="bg-gray-50 rounded-lg p-4">
-//               <p className="text-xs text-gray-500 mb-1">Scanned By</p>
-//               <p className="text-sm font-semibold text-gray-800">
-//                 {farmerName}
-//               </p>
-//             </div>
-
-//             {/* Farmer ID */}
-//             <div className="bg-gray-50 rounded-lg p-4">
-//               <p className="text-xs text-gray-500 mb-1">Farmer ID</p>
-//               <p className="text-sm font-semibold text-gray-800">
-//                 {scan.idNumber}
-//               </p>
-//             </div>
-//           </div>
-
-//           {/* Suggested Treatment */}
-//           <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-//             <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
-//               <div className="flex items-center gap-2">
-//                 <div className="w-1 h-4 bg-green-500 rounded-sm"></div>
-//                 <h3 className="text-sm font-semibold text-gray-900">
-//                   Suggested Treatment
-//                 </h3>
-//               </div>
-//             </div>
-//             <div className="p-4">
-//               <div className="bg-green-50 rounded-lg p-4">
-//                 <h4 className="font-semibold text-gray-900 mb-3 text-sm">
-//                   Immediate Action Required
-//                 </h4>
-//                 <ul className="space-y-2">
-//                   {displaySuggestions.map((suggestion, idx) => (
-//                     <li key={idx} className="flex items-start gap-2 text-sm">
-//                       <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-//                         <svg
-//                           className="w-2.5 h-2.5 text-white"
-//                           fill="none"
-//                           viewBox="0 0 24 24"
-//                           stroke="currentColor"
-//                           strokeWidth={3}
-//                         >
-//                           <path
-//                             strokeLinecap="round"
-//                             strokeLinejoin="round"
-//                             d="M5 13l4 4L19 7"
-//                           />
-//                         </svg>
-//                       </div>
-//                       <span className="text-gray-700 leading-relaxed flex-1">
-//                         {suggestion}
-//                       </span>
-//                     </li>
-//                   ))}
-//                 </ul>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Footer */}
-//         <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-2xl">
-//           <button
-//             onClick={onClose}
-//             className="w-full px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-colors font-medium"
-//           >
-//             Close
-//           </button>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+        {/* Footer */}
+        <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50">
+          <button
+            onClick={onClose}
+            className="w-full px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg transition-all font-semibold shadow-md hover:shadow-lg"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

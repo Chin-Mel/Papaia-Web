@@ -10,6 +10,7 @@ import UserIcon from "../assets/user-icon.png";
 import LockIcon from "../assets/lock-icon.png";
 import MailIcon from "../assets/mail-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
+import { Eye, EyeOff } from "lucide-react";
 
 import MainBackground from "../assets/MainBackground.png";
 import PapayaLogo from "../assets/ic_papaia_logo_no_word.png";
@@ -615,7 +616,11 @@ export default function SignUpPage() {
                               onClick={() => setShowPassword(!showPassword)}
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                             >
-                              {showPassword ? "👁️" : "👁️‍🗨️"}
+                              {showNewPassword ? (
+                                <EyeOff className="w-5 h-5" />
+                              ) : (
+                                <Eye className="w-5 h-5" />
+                              )}
                             </button>
                           </div>
                         </div>
@@ -653,7 +658,11 @@ export default function SignUpPage() {
                               }
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                             >
-                              {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+                              {showNewPassword ? (
+                                <EyeOff className="w-5 h-5" />
+                              ) : (
+                                <Eye className="w-5 h-5" />
+                              )}
                             </button>
                           </div>
                         </div>

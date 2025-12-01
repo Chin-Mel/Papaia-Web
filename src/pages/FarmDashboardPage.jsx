@@ -67,6 +67,7 @@ export default function FarmDashboardPage() {
   const [isRestoreFarmerModalOpen, setIsRestoreFarmerModalOpen] =
     useState(false);
   const [farmerToRestore, setFarmerToRestore] = useState(null);
+  const [dateRange, setDateRange] = useState("Last 11 days");
 
   const handleRestoreFarmer = async (farmerId) => {
     try {
@@ -498,6 +499,7 @@ export default function FarmDashboardPage() {
                 farmId={farmId}
                 timeFilter={timeFilter}
                 onTimeFilterChange={isActive ? setTimeFilter : () => {}}
+                onDateRangeChange={setDateRange}
                 timeFilters={timeFilters}
               />
             </div>
@@ -512,7 +514,11 @@ export default function FarmDashboardPage() {
           <div
             className={`mb-6 pb-4 ${!isActive ? "pointer-events-none" : ""}`}
           >
-            <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
+            <FarmAnalyticsSummary
+              farmId={farmId}
+              timeFilter={timeFilter}
+              dateRange={dateRange}
+            />
           </div>
 
           {/* Farm Team - Disabled when inactive */}
