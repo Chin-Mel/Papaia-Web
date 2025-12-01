@@ -13,7 +13,7 @@ import PhoneIcon from "../assets/phone-icon.png";
 import { Eye, EyeOff } from "lucide-react";
 
 import MainBackground from "../assets/MainBackground.png";
-import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
 
 import CreateUserIcon from "../assets/create-user.png";
 

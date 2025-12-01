@@ -5,7 +5,7 @@ import HeaderStart from "../components/Header/HeaderStart";
 import Alert from "../components/Alert";
 import MainBackground from "../assets/MainBackground.png";
 
-import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
 import UserIcon from "../assets/user-icon.png";
 import LockIcon from "../assets/lock-icon.png";
 import EyeIcon from "../assets/eye-icon.png";
