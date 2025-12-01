@@ -117,7 +117,7 @@ export default function HeaderStart() {
                   ${
                     activeNav === item.id
                       ? "text-white font-medium"
-                      : "text-green-600 hover:text-green-700"
+                      : "text-black hover:text-green-700"
                   }`}
               >
                 {item.label}

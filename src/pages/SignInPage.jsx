@@ -29,7 +29,7 @@ export default function SignInPage() {
 
   useEffect(() => {
     const images = [
-      PapayaLogo,
+      papaiaLogo,
       UserIcon,
       LockIcon,
       EyeIcon,

@@ -84,6 +84,7 @@ export default function SignUpPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -114,7 +115,7 @@ export default function SignUpPage() {
   });
 
   useEffect(() => {
-    const images = [MainBackground, PapayaLogo, CreateUserIcon];
+    const images = [MainBackground, papaiaLogo, CreateUserIcon];
     images.forEach((src) => {
       const img = new Image();
       img.src = src;
