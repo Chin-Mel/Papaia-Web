@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Leaf } from "lucide-react";
-import ScanDetailModal from "./ScanDetailModal";
+import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 // Simple cache for faster subsequent loads
 const scanCache = {

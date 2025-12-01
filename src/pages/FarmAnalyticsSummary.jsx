@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChartBarIncreasing, AlertCircle, CheckCircle } from "lucide-react";
-import ScanDetailModal from "./ScanDetailModal";
+import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 // Simple in-memory cache
 const cache = {
