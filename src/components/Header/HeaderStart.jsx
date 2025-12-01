@@ -126,7 +126,7 @@ export default function HeaderStart() {
           </nav>
 
           <button
-            className="lg:hidden text-green-600"
+            className="lg:hidden text-black hover:text-white transition"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -145,7 +145,7 @@ export default function HeaderStart() {
                 className={`w-full text-center px-4 py-2 rounded-md transition ${
                   activeNav === item.id
                     ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
-                    : "text-green-600 hover:bg-gray-100"
+                    : "text-black hover:bg-gray-100"
                 }`}
               >
                 {item.label}
