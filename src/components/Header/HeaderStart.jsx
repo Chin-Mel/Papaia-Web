@@ -84,7 +84,7 @@ export default function HeaderStart() {
       >
         <div className="w-full px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-16 rounded-full bg-gradient-to-r from-orange-400 to-orange-500 flex items-center justify-center">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 md:w-13 md:h-16 flex items-center justify-center">
               <Link to="/">
                 <img
                   src={PapaiaLogo}
