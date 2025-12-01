@@ -35,25 +35,22 @@ export default function UserRoleModal({ isOpen, onSelect }) {
     return (
       <div className="fixed inset-0 z-50 pt-16 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-          <div className="relative mb-4 flex items-center">
-            <div className="flex-1 h-1 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg sm:text-xl font-bold text-[#2D5016]">
+              Install our App
+            </h2>
             <button
               onClick={() => setShowAppModal(false)}
-              className="ml-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
           </div>
 
-          <div className="mb-2">
-            <h2 className="text-xl sm:text-2xl font-bold text-[#2D5016] mb-1">
-              Install our App
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              To start using Papaia and access all farmer features, install the
-              Papaia mobile app. Scan the QR code or use the join link below.
-            </p>
-          </div>
+          <p className="text-xs sm:text-sm text-gray-600 leading-relaxed mb-3">
+            To start using Papaia and access all farmer features, install the
+            Papaia mobile app. Scan the QR code or use the join link below.
+          </p>
 
           <div className="bg-gray-100 rounded-xl p-4 mb-3 flex flex-col items-center">
             <div className="bg-white p-3 rounded-lg shadow-sm mb-2">
