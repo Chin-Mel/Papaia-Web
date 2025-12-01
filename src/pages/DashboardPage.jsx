@@ -74,30 +74,30 @@ const getHealthStatus = (healthPercentage) => {
   const health = parseFloat(healthPercentage);
   if (health >= 80)
     return {
-      status: "Excellent Health",
+      status: "Excellent",
       bgColor: "bg-emerald-500",
       textColor: "text-emerald-600",
     };
   if (health >= 60)
     return {
-      status: "Good Health",
+      status: "Good",
       bgColor: "bg-amber-500",
       textColor: "text-amber-600",
     };
   if (health >= 40)
     return {
-      status: "Fair Health",
+      status: "Fair",
       bgColor: "bg-orange-500",
       textColor: "text-orange-600",
     };
   if (health >= 20)
     return {
-      status: "Poor Health",
+      status: "Poor",
       bgColor: "bg-rose-500",
       textColor: "text-rose-600",
     };
   return {
-    status: "Critical Health",
+    status: "Critical",
     bgColor: "bg-slate-500",
     textColor: "text-slate-600",
   };
@@ -154,6 +154,11 @@ const FarmCard = ({ farm, isMobile }) => {
         >
           {healthStatus.status}
         </span>
+        {!farm.isActive && (
+          <span className="absolute top-3 left-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg bg-slate-500 text-white">
+            Inactive
+          </span>
+        )}
       </div>
       <div className={`${isMobile ? "p-3 sm:p-4" : "p-4"}`}>
         <h3
@@ -310,13 +315,11 @@ export default function DashboardPage() {
         setFarms(sortedFarms);
         setLoading(false);
 
-        sortedFarms.forEach(async (farm, idx) => {
+        sortedFarms.forEach(async (farm) => {
           const health = await fetchFarmHealth(farm.id);
-          setFarms((prev) => {
-            const updated = [...prev];
-            if (updated[idx]) updated[idx] = { ...updated[idx], health };
-            return updated;
-          });
+          setFarms((prev) =>
+            prev.map((f) => (f.id === farm.id ? { ...f, health } : f))
+          );
         });
       } else {
         setFarms([]);
