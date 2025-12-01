@@ -210,9 +210,7 @@ export default function HeaderMain() {
             {/* Welcome Message */}
             <span className="hidden md:block text-[#4A7C59] font-medium truncate max-w-[180px]">
               {userData
-                ? `Welcome, ${
-                    userData.firstName || userData.username || "User"
-                  }!`
+                ? `Welcome, ${userData.username || "User"}!`
                 : "Loading..."}
             </span>
 
