@@ -21,9 +21,6 @@ export default function HeaderStart() {
   };
 
   const [activeNav, setActiveNav] = useState(getInitialActiveNav);
-  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
-  const navRefs = useRef({});
-  const updateTimeoutRef = useRef(null);
 
   useEffect(() => {
     const currentPath = location.pathname;
@@ -31,45 +28,6 @@ export default function HeaderStart() {
     if (currentNav) setActiveNav(currentNav.id);
     else setActiveNav("");
   }, [location.pathname]);
-
-  useEffect(() => {
-    const updateIndicator = () => {
-      const el = navRefs.current[activeNav];
-      if (el) {
-        setIndicatorStyle({
-          width: el.offsetWidth,
-          left: el.offsetLeft,
-        });
-      } else {
-        setIndicatorStyle({ width: 0, left: 0 });
-      }
-    };
-
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
-
-    updateIndicator();
-
-    requestAnimationFrame(updateIndicator);
-
-    updateTimeoutRef.current = setTimeout(updateIndicator, 100);
-
-    const handleLoad = () => {
-      updateIndicator();
-    };
-
-    window.addEventListener("load", handleLoad);
-    window.addEventListener("resize", updateIndicator);
-
-    return () => {
-      window.removeEventListener("load", handleLoad);
-      window.removeEventListener("resize", updateIndicator);
-      if (updateTimeoutRef.current) {
-        clearTimeout(updateTimeoutRef.current);
-      }
-    };
-  }, [activeNav]);
 
   const handleNavClick = () => setIsMenuOpen(false);
 
@@ -97,27 +55,19 @@ export default function HeaderStart() {
               Papaia
             </span>
           </div>
-          <nav className="hidden lg:flex items-center gap-5 relative">
-            <div
-              className="absolute top-0 h-full bg-gradient-to-r from-[#4A7C59] to-[#2D5016] rounded-full transition-all duration-300 ease-out"
-              style={{
-                width: indicatorStyle.width,
-                left: indicatorStyle.left,
-                opacity: indicatorStyle.width > 0 ? 1 : 0,
-              }}
-            />
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex gap-5">
             {navItems.map((item) => (
               <Link
                 key={item.id}
                 to={item.href}
-                ref={(el) => (navRefs.current[item.id] = el)}
                 onClick={handleNavClick}
-                className={`relative z-10 px-3 py-1.5 rounded-full 
-                  transition-colors text-sm sm:text-base whitespace-nowrap
+                className={`px-3 py-1.5 rounded-full font-medium text-sm sm:text-base whitespace-nowrap transition-all duration-200
                   ${
                     activeNav === item.id
-                      ? "text-white font-medium"
-                      : "text-black hover:text-green-700"
+                      ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
+                      : "text-black hover:text-white hover:bg-gradient-to-r hover:from-[#4A7C59] hover:to-[#2D5016]"
                   }`}
               >
                 {item.label}
@@ -125,8 +75,9 @@ export default function HeaderStart() {
             ))}
           </nav>
 
+          {/* Mobile Burger Menu */}
           <button
-            className="lg:hidden text-black hover:text-white transition"
+            className="lg:hidden text-black hover:text-white hover:bg-gradient-to-r hover:from-[#4A7C59] hover:to-[#2D5016] rounded-md p-1.5 transition-all duration-200"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -134,6 +85,8 @@ export default function HeaderStart() {
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-14 sm:top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200">
           <nav className="flex flex-col items-center py-4 gap-3">
@@ -142,10 +95,10 @@ export default function HeaderStart() {
                 key={item.id}
                 to={item.href}
                 onClick={handleNavClick}
-                className={`w-full text-center px-4 py-2 rounded-md transition ${
+                className={`w-full text-center px-4 py-2 rounded-md font-medium transition-all duration-200 ${
                   activeNav === item.id
                     ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
-                    : "text-black hover:bg-gray-100"
+                    : "text-black hover:text-white hover:bg-gradient-to-r hover:from-[#4A7C59] hover:to-[#2D5016]"
                 }`}
               >
                 {item.label}
