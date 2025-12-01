@@ -11,33 +11,25 @@ import FarmsCount from "../assets/ic_all_farms.png";
 import FarmAddedSuccessModal from "../components/Popups/FarmAddedSuccessModal";
 import MainBackground from "../assets/MainBackground.png";
 
-// ============ IN-MEMORY CACHE ============
+// ============ CACHE & FETCH ============
 const cache = {
   data: {},
   timestamps: {},
-
   set(key, value, ttl = 180000) {
     this.data[key] = value;
     this.timestamps[key] = Date.now() + ttl;
   },
-
   get(key) {
-    if (this.data[key] && Date.now() < this.timestamps[key]) {
+    if (this.data[key] && Date.now() < this.timestamps[key])
       return this.data[key];
-    }
     delete this.data[key];
     delete this.timestamps[key];
     return null;
   },
-
   clear(key) {
-    if (key) {
-      delete this.data[key];
-      delete this.timestamps[key];
-    } else {
-      this.data = {};
-      this.timestamps = {};
-    }
+    key
+      ? (delete this.data[key], delete this.timestamps[key])
+      : ((this.data = {}), (this.timestamps = {}));
   },
 };
 
@@ -46,7 +38,6 @@ window.clearFarmCache = () => {
   cache.clear("farm_count");
 };
 
-// ============ CACHED FETCH FUNCTION ============
 const cachedFetch = async (
   url,
   options = {},
@@ -60,19 +51,160 @@ const cachedFetch = async (
   const token = localStorage.getItem("token");
   const response = await fetch(url, {
     ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
+    headers: { Authorization: `Bearer ${token}`, ...options.headers },
   });
 
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
   const data = await response.json();
   cache.set(key, data, ttl);
   return data;
 };
 
+// ============ UTILITY FUNCTIONS ============
+const isToday = (timestampStr) => {
+  const today = new Date().toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
+  return timestampStr.includes(today);
+};
+
+const getHealthStatus = (healthPercentage) => {
+  const health = parseFloat(healthPercentage);
+  if (health >= 80)
+    return {
+      status: "Excellent",
+      bgColor: "bg-emerald-500",
+      textColor: "text-emerald-600",
+    };
+  if (health >= 60)
+    return {
+      status: "Good",
+      bgColor: "bg-amber-500",
+      textColor: "text-amber-600",
+    };
+  if (health >= 40)
+    return {
+      status: "Fair",
+      bgColor: "bg-orange-500",
+      textColor: "text-orange-600",
+    };
+  if (health >= 20)
+    return {
+      status: "Poor",
+      bgColor: "bg-rose-500",
+      textColor: "text-rose-600",
+    };
+  return {
+    status: "Critical",
+    bgColor: "bg-slate-500",
+    textColor: "text-slate-600",
+  };
+};
+
+const formatHealthDisplay = (health) =>
+  health === 0 || health === "0.00" ? "0.00%" : `${health}`;
+
+// ============ STAT CARD COMPONENT ============
+const StatCard = ({ title, value, icon, bgColor }) => (
+  <div className="p-4 sm:p-5 lg:p-6 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
+    <div>
+      <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
+        {title}
+      </p>
+      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">
+        {value.toLocaleString()}
+      </h3>
+    </div>
+    <div
+      className={`w-14 h-14 lg:w-16 lg:h-16 rounded-full ${bgColor} flex items-center justify-center`}
+    >
+      <img
+        src={icon}
+        alt={title}
+        className="w-8 h-8 lg:w-9 lg:h-9 object-contain"
+        loading="eager"
+      />
+    </div>
+  </div>
+);
+
+// ============ FARM CARD COMPONENT ============
+const FarmCard = ({ farm, isMobile }) => {
+  const healthStatus = getHealthStatus(farm.health);
+  return (
+    <Link
+      to={`/farm-dashboard/${farm.id}`}
+      className={`backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
+        farm.isActive ? "bg-white/80" : "bg-slate-200/50"
+      }`}
+    >
+      <div className="relative">
+        <img
+          src={farm.img}
+          alt={farm.name}
+          className={`w-full ${
+            isMobile ? "h-32 sm:h-40" : "h-48"
+          } object-cover ${!farm.isActive ? "opacity-50 grayscale" : ""}`}
+          loading="eager"
+        />
+        <span
+          className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
+        >
+          {healthStatus.status}
+        </span>
+        {!farm.isActive && (
+          <span className="absolute top-3 left-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg bg-slate-500 text-white">
+            Inactive
+          </span>
+        )}
+      </div>
+      <div className={`${isMobile ? "p-3 sm:p-4" : "p-4"}`}>
+        <h3
+          className={`font-bold ${
+            isMobile ? "text-xs sm:text-base" : "text-lg"
+          } text-slate-900 mb-1`}
+        >
+          {farm.name}
+        </h3>
+        <p
+          className={`${
+            isMobile ? "text-xs sm:text-sm" : "text-sm"
+          } text-slate-600 mb-2 line-clamp-2`}
+        >
+          {farm.desc}
+        </p>
+        <div className="flex items-center justify-between gap-2">
+          <div
+            className={`flex items-center gap-1.5 ${
+              isMobile ? "text-[10px] sm:text-xs" : "text-xs"
+            } text-slate-500 flex-1 min-w-0`}
+          >
+            <MapPin
+              size={12}
+              className="flex-shrink-0 fill-slate-500"
+              fill="currentColor"
+            />
+            <span className="truncate">{farm.location}</span>
+          </div>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Leaf size={12} className="text-emerald-500" />
+            <span
+              className={`${
+                isMobile ? "text-[10px] sm:text-xs" : "text-xs"
+              } font-semibold whitespace-nowrap ${healthStatus.textColor}`}
+            >
+              {formatHealthDisplay(farm.health)} Health
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
+// ============ MAIN COMPONENT ============
 export default function DashboardPage() {
   const location = useLocation();
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
@@ -87,16 +219,13 @@ export default function DashboardPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [addedFarmData, setAddedFarmData] = useState(null);
 
-  // Preload images
   useEffect(() => {
-    const images = [ScansCount, FarmersCount, FarmsCount];
-    images.forEach((src) => {
+    [ScansCount, FarmersCount, FarmsCount].forEach((src) => {
       const img = new Image();
       img.src = src;
     });
   }, []);
 
-  // Listen for navigation state to refresh farms
   useEffect(() => {
     if (location.state?.refreshFarms) {
       cache.clear("owner_farms");
@@ -107,21 +236,9 @@ export default function DashboardPage() {
     }
   }, [location]);
 
-  const isToday = (timestampStr) => {
-    const today = new Date();
-    const todayStr = today.toLocaleDateString("en-US", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
-    return timestampStr.includes(todayStr);
-  };
-
-  // ============ OPTIMIZED FETCH WITH CACHING ============
   const fetchDashboardStats = async () => {
     try {
       const API_BASE = "https://papaiaapi.onrender.com/api/owner";
-
       const [farmCountData, farmerCountData, identificationData] =
         await Promise.all([
           cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000),
@@ -143,9 +260,7 @@ export default function DashboardPage() {
         totalFarms: farmCountData.farmCount || 0,
         todayScans: todayScansCount,
       });
-    } catch (err) {
-      // Silent error handling
-    }
+    } catch (err) {}
   };
 
   const fetchFarmHealth = async (farmId) => {
@@ -156,7 +271,6 @@ export default function DashboardPage() {
         `farm_health_${farmId}`,
         120000
       ).catch(() => ({ healthPercentage: "0.00" }));
-
       return data.healthPercentage || "0.00";
     } catch {
       return "0.00";
@@ -166,7 +280,6 @@ export default function DashboardPage() {
   const fetchFarms = async () => {
     try {
       setLoading(true);
-
       const data = await cachedFetch(
         "https://papaiaapi.onrender.com/api/owner/farms",
         {},
@@ -182,7 +295,6 @@ export default function DashboardPage() {
             const img = new Image();
             img.src = farmImage;
           }
-
           return {
             id: f.id,
             name: f.farmName,
@@ -190,15 +302,16 @@ export default function DashboardPage() {
             location: f.location,
             health: "0.00",
             img: farmImage,
+            isActive: f.status === "active",
           };
         });
 
         const sortedFarms = mappedFarms.sort((a, b) => {
-          const healthA = parseFloat(a.health);
-          const healthB = parseFloat(b.health);
-          return healthB - healthA;
+          // Sort active farms first, then by health
+          if (a.isActive && !b.isActive) return -1;
+          if (!a.isActive && b.isActive) return 1;
+          return parseFloat(b.health) - parseFloat(a.health);
         });
-
         setFarms(sortedFarms);
         setLoading(false);
 
@@ -206,9 +319,7 @@ export default function DashboardPage() {
           const health = await fetchFarmHealth(farm.id);
           setFarms((prev) => {
             const updated = [...prev];
-            if (updated[idx]) {
-              updated[idx] = { ...updated[idx], health };
-            }
+            if (updated[idx]) updated[idx] = { ...updated[idx], health };
             return updated;
           });
         });
@@ -233,7 +344,6 @@ export default function DashboardPage() {
   const handleAddFarm = async (farmData) => {
     try {
       setLoading(true);
-
       const formData = new FormData();
       formData.append("farmName", farmData.name);
       formData.append("location", farmData.location);
@@ -241,102 +351,55 @@ export default function DashboardPage() {
         "description",
         farmData.description || "No description provided"
       );
-
-      if (farmData.farmImage) {
-        formData.append("farmImage", farmData.farmImage);
-      }
+      if (farmData.farmImage) formData.append("farmImage", farmData.farmImage);
 
       const token = localStorage.getItem("token");
       const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       const data = await res.json();
-
       if (data.status === "success") {
         cache.clear("owner_farms");
         cache.clear("farm_count");
         await Promise.all([fetchFarms(), fetchDashboardStats()]);
-
-        if (window.refreshActivities) {
-          window.refreshActivities();
-        }
-
+        if (window.refreshActivities) window.refreshActivities();
         setAddedFarmData(farmData);
         setShowAddFarmModal(false);
         setShowSuccessModal(true);
       }
     } catch (err) {
-      // Silent error handling
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCloseModal = () => setShowAddFarmModal(false);
-
-  const handleViewDashboard = () => {
-    setShowSuccessModal(false);
-  };
-
-  const handleAddAnother = () => {
-    setShowSuccessModal(false);
-    setAddedFarmData(null);
-    setShowAddFarmModal(true);
-  };
-
-  const handleCloseSuccessModal = () => {
-    setShowSuccessModal(false);
-    setAddedFarmData(null);
-  };
-
-  const getHealthStatus = (healthPercentage) => {
-    const health = parseFloat(healthPercentage);
-    if (health >= 80)
-      return {
-        status: "Excellent",
-        bgColor: "bg-emerald-500",
-        textColor: "text-emerald-600",
-      };
-    else if (health >= 60)
-      return {
-        status: "Good",
-        bgColor: "bg-amber-500",
-        textColor: "text-amber-600",
-      };
-    else if (health >= 40)
-      return {
-        status: "Fair",
-        bgColor: "bg-orange-500",
-        textColor: "text-orange-600",
-      };
-    else if (health >= 20)
-      return {
-        status: "Poor",
-        bgColor: "bg-rose-500",
-        textColor: "text-rose-600",
-      };
-    else
-      return {
-        status: "Critical",
-        bgColor: "bg-slate-500",
-        textColor: "text-slate-600",
-      };
-  };
-
-  const formatHealthDisplay = (health) => {
-    if (health === 0 || health === "0.00") return "0.00%";
-    return `${health}`;
-  };
+  const stats = [
+    {
+      title: "All Farmers",
+      value: dashboardStats.totalFarmers,
+      icon: FarmersCount,
+      bgColor: "bg-[#DCFCE7]",
+    },
+    {
+      title: "All Farms",
+      value: dashboardStats.totalFarms,
+      icon: FarmsCount,
+      bgColor: "bg-[#FEF9C3]",
+    },
+    {
+      title: "Today's Scans",
+      value: dashboardStats.todayScans,
+      icon: ScansCount,
+      bgColor: "bg-[#DBEAFE]",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <HeaderMain />
-
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
           {/* Mobile Layout */}
@@ -346,72 +409,19 @@ export default function DashboardPage() {
                 Dashboard Overview
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
-                {/* All Farmers */}
-                <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
-                  <div>
-                    <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
-                      All Farmers
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      {dashboardStats.totalFarmers.toLocaleString()}
-                    </h3>
+                {stats.map((stat, idx) => (
+                  <div
+                    key={stat.title}
+                    className={idx === 2 ? "sm:col-span-2" : ""}
+                  >
+                    <StatCard {...stat} />
                   </div>
-                  <div className="w-14 h-14 rounded-full bg-[#DCFCE7] flex items-center justify-center">
-                    <img
-                      src={FarmersCount}
-                      alt="Farmers"
-                      className="w-8 h-8 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
-
-                {/* All Farms */}
-                <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
-                  <div>
-                    <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
-                      All Farms
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      {dashboardStats.totalFarms.toLocaleString()}
-                    </h3>
-                  </div>
-                  <div className="w-14 h-14 rounded-full bg-[#FEF9C3] flex items-center justify-center">
-                    <img
-                      src={FarmsCount}
-                      alt="Farms"
-                      className="w-8 h-8 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
-
-                {/* Today's Scans */}
-                <div className="p-4 sm:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300 sm:col-span-2">
-                  <div>
-                    <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
-                      Today's Scans
-                    </p>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
-                      {dashboardStats.todayScans.toLocaleString()}
-                    </h3>
-                  </div>
-                  <div className="w-14 h-14 rounded-full bg-[#DBEAFE] flex items-center justify-center">
-                    <img
-                      src={ScansCount}
-                      alt="Scans"
-                      className="w-8 h-8 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
-
             <div className="mb-6">
               <RecentActivities limit={5} />
             </div>
-
             <div>
               <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
                 <h2 className="text-base sm:text-lg font-bold text-slate-800">
@@ -426,7 +436,6 @@ export default function DashboardPage() {
                   {loading ? "Loading..." : "Add Farm"}
                 </button>
               </div>
-
               {loading && farms.length === 0 ? (
                 <div className="flex justify-center items-center py-12">
                   <div className="animate-spin rounded-full h-10 w-10 border-3 border-slate-200 border-t-slate-600"></div>
@@ -446,58 +455,9 @@ export default function DashboardPage() {
                       </p>
                     </div>
                   ) : (
-                    farms.map((farm) => {
-                      const healthStatus = getHealthStatus(farm.health);
-                      return (
-                        <Link
-                          key={farm.id}
-                          to={`/farm-dashboard/${farm.id}`}
-                          className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer"
-                        >
-                          <div className="relative">
-                            <img
-                              src={farm.img}
-                              alt={farm.name}
-                              className="w-full h-32 sm:h-40 object-cover"
-                              loading="eager"
-                            />
-                            <span
-                              className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
-                            >
-                              {healthStatus.status}
-                            </span>
-                          </div>
-                          <div className="p-3 sm:p-4">
-                            <h3 className="font-bold text-xs sm:text-base text-slate-900 mb-1">
-                              {farm.name}
-                            </h3>
-                            <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">
-                              {farm.desc}
-                            </p>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-slate-500 flex-1 min-w-0">
-                                <MapPin
-                                  size={12}
-                                  className="flex-shrink-0 fill-slate-500"
-                                  fill="currentColor"
-                                />
-                                <span className="truncate">
-                                  {farm.location}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
-                                <Leaf size={12} className="text-emerald-500" />
-                                <span
-                                  className={`text-[10px] sm:text-xs font-semibold whitespace-nowrap ${healthStatus.textColor}`}
-                                >
-                                  {formatHealthDisplay(farm.health)} Health
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })
+                    farms.map((farm) => (
+                      <FarmCard key={farm.id} farm={farm} isMobile />
+                    ))
                   )}
                 </div>
               )}
@@ -509,70 +469,15 @@ export default function DashboardPage() {
             <div className="w-[330px] flex-shrink-0">
               <RecentActivities limit={5} />
             </div>
-
             <div className="flex-1">
               <h2 className="text-lg font-bold text-slate-800 mb-4">
                 Dashboard Overview
               </h2>
               <div className="grid grid-cols-3 gap-5 mb-8">
-                <div className="p-6 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
-                  <div>
-                    <p className="text-base text-slate-600 mb-2 font-medium">
-                      All Farmers
-                    </p>
-                    <h3 className="text-3xl font-bold text-slate-900">
-                      {dashboardStats.totalFarmers.toLocaleString()}
-                    </h3>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-[#DCFCE7] flex items-center justify-center">
-                    <img
-                      src={FarmersCount}
-                      alt="Farmers"
-                      className="w-9 h-9 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-6 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
-                  <div>
-                    <p className="text-base text-slate-600 mb-2 font-medium">
-                      All Farms
-                    </p>
-                    <h3 className="text-3xl font-bold text-slate-900">
-                      {dashboardStats.totalFarms.toLocaleString()}
-                    </h3>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-[#FEF9C3] flex items-center justify-center">
-                    <img
-                      src={FarmsCount}
-                      alt="Farms"
-                      className="w-9 h-9 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
-
-                <div className="p-6 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
-                  <div>
-                    <p className="text-base text-slate-600 mb-2 font-medium">
-                      Today's Scans
-                    </p>
-                    <h3 className="text-3xl font-bold text-slate-900">
-                      {dashboardStats.todayScans.toLocaleString()}
-                    </h3>
-                  </div>
-                  <div className="w-16 h-16 rounded-full bg-[#DBEAFE] flex items-center justify-center">
-                    <img
-                      src={ScansCount}
-                      alt="Scans"
-                      className="w-9 h-9 object-contain"
-                      loading="eager"
-                    />
-                  </div>
-                </div>
+                {stats.map((stat) => (
+                  <StatCard key={stat.title} {...stat} />
+                ))}
               </div>
-
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-bold text-slate-800">My Farms</h2>
@@ -585,7 +490,6 @@ export default function DashboardPage() {
                     {loading ? "Loading..." : "Add Farm"}
                   </button>
                 </div>
-
                 {loading && farms.length === 0 ? (
                   <div className="flex justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-3 border-slate-200 border-t-slate-600"></div>
@@ -605,61 +509,9 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     ) : (
-                      farms.map((farm) => {
-                        const healthStatus = getHealthStatus(farm.health);
-                        return (
-                          <Link
-                            key={farm.id}
-                            to={`/farm-dashboard/${farm.id}`}
-                            className="bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer"
-                          >
-                            <div className="relative">
-                              <img
-                                src={farm.img}
-                                alt={farm.name}
-                                className="w-full h-48 object-cover"
-                                loading="eager"
-                              />
-                              <span
-                                className={`absolute top-3 right-3 px-3 py-1.5 text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
-                              >
-                                {healthStatus.status}
-                              </span>
-                            </div>
-                            <div className="p-4">
-                              <h3 className="font-bold text-lg text-slate-900 mb-1">
-                                {farm.name}
-                              </h3>
-                              <p className="text-sm text-slate-600 mb-2 line-clamp-2">
-                                {farm.desc}
-                              </p>
-                              <div className="flex items-center justify-between gap-2">
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 flex-1 min-w-0">
-                                  <MapPin
-                                    size={12}
-                                    className="flex-shrink-0 fill-slate-500"
-                                    fill="currentColor"
-                                  />
-                                  <span className="truncate">
-                                    {farm.location}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1.5 flex-shrink-0">
-                                  <Leaf
-                                    size={12}
-                                    className="text-emerald-500"
-                                  />
-                                  <span
-                                    className={`text-xs font-semibold whitespace-nowrap ${healthStatus.textColor}`}
-                                  >
-                                    {formatHealthDisplay(farm.health)} Health
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })
+                      farms.map((farm) => (
+                        <FarmCard key={farm.id} farm={farm} isMobile={false} />
+                      ))
                     )}
                   </div>
                 )}
@@ -672,16 +524,22 @@ export default function DashboardPage() {
       {showAddFarmModal && (
         <AddFarmModal
           isOpen={showAddFarmModal}
-          onClose={handleCloseModal}
+          onClose={() => setShowAddFarmModal(false)}
           onSubmit={handleAddFarm}
         />
       )}
-
       {showSuccessModal && (
         <FarmAddedSuccessModal
-          onClose={handleCloseSuccessModal}
-          onViewDashboard={handleViewDashboard}
-          onAddAnother={handleAddAnother}
+          onClose={() => {
+            setShowSuccessModal(false);
+            setAddedFarmData(null);
+          }}
+          onViewDashboard={() => setShowSuccessModal(false)}
+          onAddAnother={() => {
+            setShowSuccessModal(false);
+            setAddedFarmData(null);
+            setShowAddFarmModal(true);
+          }}
           farmData={addedFarmData}
         />
       )}
