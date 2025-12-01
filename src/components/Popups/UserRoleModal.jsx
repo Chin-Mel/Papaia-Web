@@ -33,74 +33,65 @@ export default function UserRoleModal({ isOpen, onSelect }) {
   // App Installation Modal
   if (showAppModal) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative">
-          <div className="p-6">
-            {/* Orange Line and Close Button */}
-            <div className="relative mb-6 flex items-center">
-              <div className="flex-1 h-1 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full"></div>
-              <button
-                onClick={() => setShowAppModal(false)}
-                className="ml-4 text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Header */}
-            <div className="mb-4">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#2D5016] mb-2">
-                Install our App
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                To start using Papaia and access all farmer features, please
-                install the Papaia mobile application. Scan the QR code or enter
-                the join link to proceed.
-              </p>
-            </div>
-
-            {/* QR Code Section */}
-            <div className="bg-gray-100 rounded-xl p-4 mb-3 flex flex-col items-center">
-              <div className="bg-white p-3 rounded-lg shadow-sm mb-2">
-                {/* Placeholder QR Code */}
-                <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white border-4 border-black flex items-center justify-center">
-                  <div className="text-xs text-center font-mono">QR CODE</div>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600">Papaia App's QR Code</p>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-4 my-3">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="text-xs text-gray-500">or</span>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Link Section */}
-            <div className="bg-gray-100 rounded-xl p-3 mb-4">
-              <p className="text-xs text-gray-600 mb-2">Papaia App Link</p>
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-white px-3 py-2 rounded-lg text-xs text-gray-700 border border-gray-200">
-                  papaia.app/farm/abc123xyz
-                </div>
-                <button
-                  onClick={handleCopyLink}
-                  className="px-3 py-2 bg-white border-2 border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-all duration-200 text-xs whitespace-nowrap"
-                >
-                  Copy Link
-                </button>
-              </div>
-            </div>
-
-            {/* Back Button */}
+      <div className="fixed inset-0 z-50 pt-16 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative p-6">
+          <div className="relative mb-6 flex items-center">
+            <div className="flex-1 h-1 bg-gradient-to-r from-orange-400 to-orange-500 rounded-full" />
             <button
-              onClick={handleBack}
-              className="w-full text-center text-gray-600 hover:text-gray-800 font-medium transition-colors text-sm"
+              onClick={() => setShowAppModal(false)}
+              className="ml-4 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              Back
+              <X className="w-6 h-6" />
             </button>
           </div>
+
+          <div className="mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-[#2D5016] mb-2">
+              Install our App
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              To start using Papaia and access all farmer features, please
+              install the Papaia mobile application. Scan the QR code or enter
+              the join link to proceed.
+            </p>
+          </div>
+
+          <div className="bg-gray-100 rounded-xl p-4 mb-3 flex flex-col items-center">
+            <div className="bg-white p-3 rounded-lg shadow-sm mb-2">
+              <div className="w-28 h-28 sm:w-32 sm:h-32 bg-white border-4 border-black flex items-center justify-center">
+                <div className="text-xs text-center font-mono">QR CODE</div>
+              </div>
+            </div>
+            <p className="text-xs text-gray-600">Papaia App's QR Code</p>
+          </div>
+
+          <div className="flex items-center gap-4 my-3">
+            <div className="flex-1 h-px bg-gray-300" />
+            <span className="text-xs text-gray-500">or</span>
+            <div className="flex-1 h-px bg-gray-300" />
+          </div>
+
+          <div className="bg-gray-100 rounded-xl p-3 mb-4">
+            <p className="text-xs text-gray-600 mb-2">Papaia App Link</p>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-white px-3 py-2 rounded-lg text-xs text-gray-700 border border-gray-200">
+                papaia.app/farm/abc123xyz
+              </div>
+              <button
+                onClick={handleCopyLink}
+                className="px-3 py-2 bg-white border-2 border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 transition-all duration-200 text-xs"
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <button
+            onClick={handleBack}
+            className="w-full text-center text-gray-600 hover:text-gray-800 font-medium transition-colors text-sm"
+          >
+            Back
+          </button>
         </div>
       </div>
     );
@@ -108,7 +99,7 @@ export default function UserRoleModal({ isOpen, onSelect }) {
 
   // Role Selection Modal
   return (
-    <div className="fixed inset-0 z-50 flex items-center bg-black/50 justify-center p-4">
+    <div className="fixed inset-0 z-40 pt-16 flex items-center bg-black/50 justify-center p-4">
       <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-3xl shadow-2xl w-full max-w-3xl p-6 sm:p-8 relative">
         {/* Back Button - Top Left */}
         <button

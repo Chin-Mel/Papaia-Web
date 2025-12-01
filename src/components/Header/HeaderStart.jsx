@@ -67,7 +67,7 @@ export default function HeaderStart() {
                   ${
                     activeNav === item.id
                       ? "bg-gradient-to-r from-[#4A7C59] to-[#2D5016] text-white"
-                      : "text-black hover:bg-gray-100"
+                      : "text-black hover:text-gray-400"
                   }`}
               >
                 {item.label}
