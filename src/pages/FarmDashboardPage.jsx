@@ -480,38 +480,18 @@ export default function FarmDashboardPage() {
           )}
 
           {/* Farm Description */}
-          <div className={`mb-4 ${!isActive ? "opacity-50" : ""}`}>
+          <div className="mb-4">
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               {farmData.description || "No description available"}
             </p>
           </div>
 
-          {/* Analytics + Recent Scans - Disabled overlay when inactive */}
+          {/* Analytics + Recent Scans - Disabled when inactive */}
           <div
-            className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 relative ${
-              !isActive ? "opacity-40 pointer-events-none select-none" : ""
+            className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 ${
+              !isActive ? "pointer-events-none" : ""
             }`}
           >
-            {!isActive && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center backdrop-blur-[1px]">
-                <div className="bg-white/98 backdrop-blur-md px-8 py-5 rounded-2xl shadow-2xl border border-gray-200">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gray-100 rounded-xl">
-                      <Lock className="w-6 h-6 text-gray-600" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900 text-base mb-0.5">
-                        Farm Inactive
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Activate to view analytics
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Farm Analytics - 2/3 width */}
             <div className="lg:col-span-2 pb-4">
               <FarmAnalytics
@@ -530,43 +510,13 @@ export default function FarmDashboardPage() {
 
           {/* Farm Analytics Summary - Disabled when inactive */}
           <div
-            className={`relative mb-6 pb-4 ${
-              !isActive ? "opacity-40 pointer-events-none select-none" : ""
-            }`}
+            className={`mb-6 pb-4 ${!isActive ? "pointer-events-none" : ""}`}
           >
-            {!isActive && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
-                <div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-xl shadow-lg border-2 border-gray-300">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-gray-500" />
-                    <p className="font-medium text-gray-700 text-sm">
-                      Summary Locked
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
             <FarmAnalyticsSummary farmId={farmId} timeFilter={timeFilter} />
           </div>
 
           {/* Farm Team - Disabled when inactive */}
-          <div
-            className={`relative pb-4 ${
-              !isActive ? "opacity-40 pointer-events-none select-none" : ""
-            }`}
-          >
-            {!isActive && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
-                <div className="bg-white/95 backdrop-blur-sm px-5 py-3 rounded-xl shadow-lg border-2 border-gray-300">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-gray-500" />
-                    <p className="font-medium text-gray-700 text-sm">
-                      Team Management Locked
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+          <div className={`pb-4 ${!isActive ? "pointer-events-none" : ""}`}>
             <FarmTeams
               farmId={farmId}
               onAddFarmer={handleAddFarmer}
