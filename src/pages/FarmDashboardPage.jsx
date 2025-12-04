@@ -20,6 +20,7 @@ import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 import RestoreFarmerModal from "../components/Popups/RestoreFarmerModal";
 import ReactivateFarmerModal from "../components/Popups/ReactivateFarmerModal";
+import Alert from "../components/ReactivateFarmerModal";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
@@ -34,7 +35,7 @@ const refreshActivities = () => {
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
   const navigate = useNavigate();
-
+  const [alert, setAlert] = useState({ type: "", message: "" });
   // Farm data state
   const [farmData, setFarmData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -114,11 +115,11 @@ export default function FarmDashboardPage() {
       }
 
       setIsRestoreFarmerModalOpen(false);
-      alert("Farmer restored successfully!");
+      setAlert({ type: "success", message: "Farmer restored successfully!" });
       window.location.reload();
     } catch (error) {
       console.error("Error restoring farmer:", error);
-      alert(error.message);
+      setAlert({ type: "error", message: error.message });
     }
   };
   // Fetch farm data
@@ -248,7 +249,7 @@ export default function FarmDashboardPage() {
       }, 2000);
     } catch (error) {
       //console.error("Error deactivating farmer:", error);
-      alert(error.message);
+      setAlert({ type: "error", message: error.message });
     }
   };
 
@@ -297,13 +298,16 @@ export default function FarmDashboardPage() {
       setIsReactivateFarmerModalOpen(false);
 
       // Show success message
-      alert("Farmer reactivated successfully!");
+      setAlert({
+        type: "success",
+        message: "Farmer reactivated successfully!",
+      });
 
       // Refresh the page
       window.location.reload();
     } catch (error) {
       //console.error("Error reactivating farmer:", error);
-      alert(error.message);
+      setAlert({ type: "error", message: error.message });
     }
   };
 
@@ -383,7 +387,11 @@ export default function FarmDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
-
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ type: "", message: "" })}
+      />
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
           {/* Top Header Section */}

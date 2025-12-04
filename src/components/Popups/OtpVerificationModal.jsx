@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { FaSignInAlt } from "react-icons/fa";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import { FiInfo } from "react-icons/fi";
+import Alert from "../Alert";
 
 export default function OtpVerificationModal({ email, onSuccess }) {
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -10,6 +11,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   const [isResending, setIsResending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const inputRefs = useRef([]);
+  const [alert, setAlert] = useState({ type: "", message: "" });
 
   useEffect(() => {
     if (countdown > 0) {
@@ -57,8 +59,13 @@ export default function OtpVerificationModal({ email, onSuccess }) {
       const data = await response.json();
 
       if (response.ok) {
-        alert("OTP verified successfully!");
-        onSuccess(data.userId);
+        setAlert({
+          type: "success",
+          message: "OTP verified successfully!",
+        });
+        setTimeout(() => {
+          onSuccess(data.userId);
+        }, 1500);
       } else {
         setError(data.message || "Invalid or expired OTP. Please try again.");
       }
@@ -87,7 +94,10 @@ export default function OtpVerificationModal({ email, onSuccess }) {
       const data = await response.json();
 
       if (response.ok) {
-        alert("A new OTP has been sent to your email.");
+        setAlert({
+          type: "success",
+          message: "A new OTP has been sent to your email.",
+        });
         setCountdown(60);
         setOtp(["", "", "", ""]);
       } else {
@@ -107,112 +117,119 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div
-        className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
-        style={{ minHeight: "450px" }}
-      >
-        {/* Header with gradient background */}
+    <>
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ type: "", message: "" })}
+      />
+      <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
         <div
-          className="flex flex-col items-center justify-center text-white p-4"
-          style={{
-            backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
-          }}
+          className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+          style={{ minHeight: "450px" }}
         >
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-            <img
-              src={PapayaLogo}
-              alt="Papaia Logo"
-              className="w-7 h-9"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
-          <h2 className="text-base sm:text-lg md:text-xl font-bold text-center">
-            Email Authentication
-          </h2>
-          <p className="text-[9px] sm:text-xs md:text-sm text-center opacity-90 mt-1">
-            A one-time password has been sent to
-          </p>
-          <p className="text-xs sm:text-sm md:text-base font-semibold text-white">
-            {email}
-          </p>
-        </div>
-
-        {/* Content - Scrollable */}
-        <div className="bg-white p-6 overflow-y-auto">
-          <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
-            Enter the 4 digit code to continue
-          </p>
-
-          {/* OTP Inputs */}
-          <div className="flex justify-center gap-3 sm:gap-4 mb-6">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                type="text"
-                maxLength="1"
-                value={digit}
-                onChange={(e) => handleChange(e.target.value, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                ref={(el) => (inputRefs.current[index] = el)}
-                className="w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-semibold border-2 border-[#8B4513] focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg transition-all"
-              />
-            ))}
-          </div>
-
-          {/* Error */}
-          {error && (
-            <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
-          )}
-
-          {/* Countdown/Resend */}
-          <div className="mb-6 text-center">
-            {countdown > 0 ? (
-              <p className="text-gray-600 text-sm">
-                Resend code in{" "}
-                <span className="font-semibold">{formatTime(countdown)}</span>
-              </p>
-            ) : (
-              <p className="text-sm text-gray-600">
-                Didn't receive the code?{" "}
-                <button
-                  onClick={handleResend}
-                  disabled={isResending}
-                  className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
-                >
-                  Try Again
-                </button>
-              </p>
-            )}
-          </div>
-
-          {/* Verify Button */}
-          <button
-            onClick={handleVerify}
-            disabled={isLoading || isResending}
-            className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 text-sm mb-6 ${
-              isLoading || isResending
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:shadow-xl active:scale-[0.98]"
-            }`}
+          {/* Header with gradient background */}
+          <div
+            className="flex flex-col items-center justify-center text-white p-4"
+            style={{
+              backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
+            }}
           >
-            <FaSignInAlt className="w-5 h-5" />
-            {isLoading ? "Verifying..." : "Verify"}
-          </button>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+              <img
+                src={PapayaLogo}
+                alt="Papaia Logo"
+                className="w-7 h-9"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-center">
+              Email Authentication
+            </h2>
+            <p className="text-[9px] sm:text-xs md:text-sm text-center opacity-90 mt-1">
+              A one-time password has been sent to
+            </p>
+            <p className="text-xs sm:text-sm md:text-base font-semibold text-white">
+              {email}
+            </p>
+          </div>
 
-          {/* Security Reminder */}
-          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-start gap-3">
-            <FiInfo className="mt-0.5 flex-shrink-0 w-5 h-5 text-blue-600" />
-            <div className="text-sm">
-              <p className="font-bold mb-1">Security Reminder</p>
-              <p className="text-blue-700">
-                Never share your OTP codes with anyone.
-              </p>
+          {/* Content - Scrollable */}
+          <div className="bg-white p-6 overflow-y-auto">
+            <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
+              Enter the 4 digit code to continue
+            </p>
+
+            {/* OTP Inputs */}
+            <div className="flex justify-center gap-3 sm:gap-4 mb-6">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  type="text"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handleChange(e.target.value, index)}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  ref={(el) => (inputRefs.current[index] = el)}
+                  className="w-14 h-14 sm:w-16 sm:h-16 text-center text-2xl font-semibold border-2 border-[#8B4513] focus:outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200 rounded-lg transition-all"
+                />
+              ))}
+            </div>
+
+            {/* Error */}
+            {error && (
+              <p className="text-red-500 text-sm mb-4 text-center">{error}</p>
+            )}
+
+            {/* Countdown/Resend */}
+            <div className="mb-6 text-center">
+              {countdown > 0 ? (
+                <p className="text-gray-600 text-sm">
+                  Resend code in{" "}
+                  <span className="font-semibold">{formatTime(countdown)}</span>
+                </p>
+              ) : (
+                <p className="text-sm text-gray-600">
+                  Didn't receive the code?{" "}
+                  <button
+                    onClick={handleResend}
+                    disabled={isResending}
+                    className="text-orange-500 font-semibold hover:text-orange-600 transition-colors"
+                  >
+                    Try Again
+                  </button>
+                </p>
+              )}
+            </div>
+
+            {/* Verify Button */}
+            <button
+              onClick={handleVerify}
+              disabled={isLoading || isResending}
+              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 text-sm mb-6 ${
+                isLoading || isResending
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:shadow-xl active:scale-[0.98]"
+              }`}
+            >
+              <FaSignInAlt className="w-5 h-5" />
+              {isLoading ? "Verifying..." : "Verify"}
+            </button>
+
+            {/* Security Reminder */}
+            <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-start gap-3">
+              <FiInfo className="mt-0.5 flex-shrink-0 w-5 h-5 text-blue-600" />
+              <div className="text-sm">
+                <p className="font-bold mb-1">Security Reminder</p>
+                <p className="text-blue-700">
+                  Never share your OTP codes with anyone.
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

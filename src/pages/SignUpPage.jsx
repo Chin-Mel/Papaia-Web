@@ -11,7 +11,7 @@ import LockIcon from "../assets/lock-icon.png";
 import MailIcon from "../assets/mail-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
 import { Eye, EyeOff } from "lucide-react";
-
+import Alert from "../components/Alert";
 import MainBackground from "../assets/MainBackground.png";
 import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
 
@@ -91,6 +91,7 @@ export default function SignUpPage() {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   const [showRoleModal, setShowRoleModal] = useState(true); // show on page load
   const [farmerMessage, setFarmerMessage] = useState("");
+  const [alert, setAlert] = useState({ type: "", message: "" });
 
   const handleRoleSelect = (role) => {
     if (role === "farmer") {
@@ -295,9 +296,15 @@ export default function SignUpPage() {
       const successMessage =
         result.message ||
         "Account created successfully! Please check your email to verify your account.";
-      alert(successMessage);
 
-      window.location.href = "/sign-in";
+      setAlert({
+        type: "success",
+        message: successMessage,
+      });
+
+      setTimeout(() => {
+        window.location.href = "/sign-in";
+      }, 2000);
     } catch (error) {
       if (
         error.message.includes("Email already exists") ||
@@ -335,7 +342,11 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
-
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ type: "", message: "" })}
+      />
       <main className="flex-1 relative flex justify-center py-12 px-4">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"

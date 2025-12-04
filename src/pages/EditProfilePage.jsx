@@ -19,6 +19,7 @@ import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
 import defaultUserPic from "../assets/default-user.png";
 import { getLoggedInUser } from "../utils/security";
+import Alert from "../components/Alert";
 
 export default function EditProfilePage() {
   const [userData, setUserData] = useState(null);
@@ -30,7 +31,7 @@ export default function EditProfilePage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const navigate = useNavigate();
-
+  const [alert, setAlert] = useState({ type: "", message: "" });
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
     useState(false);
@@ -145,12 +146,12 @@ export default function EditProfilePage() {
     }
 
     if (file.size > 10485760) {
-      alert("File size exceeds 10MB limit");
+      setAlert({ type: "error", message: "File size exceeds 10MB limit" });
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      alert("Please select a valid image file");
+      setAlert({ type: "error", message: "Please select a valid image file" });
       return;
     }
 
@@ -169,27 +170,42 @@ export default function EditProfilePage() {
 
   const handleSaveChanges = async () => {
     if (!formValues.firstName?.trim()) {
-      alert("First name is required and cannot be empty");
+      setAlert({
+        type: "error",
+        message: "First name is required and cannot be empty",
+      });
       return;
     }
 
     if (!formValues.lastName?.trim()) {
-      alert("Last name is required and cannot be empty");
+      setAlert({
+        type: "error",
+        message: "Last name is required and cannot be empty",
+      });
       return;
     }
 
     if (!formValues.username?.trim()) {
-      alert("Username is required and cannot be empty");
+      setAlert({
+        type: "error",
+        message: "Username is required and cannot be empty",
+      });
       return;
     }
 
     if (!formValues.email?.trim()) {
-      alert("Email is required and cannot be empty");
+      setAlert({
+        type: "error",
+        message: "Email is required and cannot be empty",
+      });
       return;
     }
 
     if (!formValues.contactNumber?.trim()) {
-      alert("Contact number is required and cannot be empty");
+      setAlert({
+        type: "error",
+        message: "Contact number is required and cannot be empty",
+      });
       return;
     }
 
@@ -224,7 +240,10 @@ export default function EditProfilePage() {
             throw new Error("Failed to upload profile picture");
           }
         } catch (err) {
-          alert(`Error uploading profile picture: ${err.message}`);
+          setAlert({
+            type: "error",
+            message: `Error uploading profile picture: ${err.message}`,
+          });
           setLoading(false);
           return;
         }
@@ -249,7 +268,7 @@ export default function EditProfilePage() {
       });
 
       if (Object.keys(updatedData).length === 0 && !selectedImage) {
-        alert("No changes detected");
+        setAlert({ type: "info", message: "No changes detected" });
         setLoading(false);
         return;
       }
@@ -305,10 +324,13 @@ export default function EditProfilePage() {
 
       window.dispatchEvent(new Event("userUpdated"));
 
-      alert("Profile updated successfully!");
+      setAlert({ type: "success", message: "Profile updated successfully!" });
       navigate("/profile");
     } catch (err) {
-      alert(err.message || "Error updating profile. Please try again.");
+      setAlert({
+        type: "error",
+        message: err.message || "Error updating profile. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -357,6 +379,11 @@ export default function EditProfilePage() {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
         <HeaderMain />
+        <Alert
+          type={alert.type}
+          message={alert.message}
+          onClose={() => setAlert({ type: "", message: "" })}
+        />
         <main className="flex-1 flex items-center justify-center p-4">
           <div className="max-w-lg w-full bg-red-50 border-2 border-red-200 rounded-lg p-6">
             <div className="flex items-start gap-3 mb-4">

@@ -5,6 +5,7 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef(null);
+  const [alert, setAlert] = useState({ type: "", message: "" });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -22,7 +23,10 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
     e.preventDefault();
 
     if (!farmerId.trim()) {
-      alert("Please enter a valid farmer ID number.");
+      setAlert({
+        type: "error",
+        message: "Please enter a valid farmer ID number.",
+      });
       return;
     }
 
@@ -44,7 +48,10 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
         );
 
         if (existingFarmer) {
-          alert("This farmer is already added to this farm.");
+          setAlert({
+            type: "error",
+            message: "This farmer is already added to this farm.",
+          });
           setIsLoading(false);
           return;
         }
@@ -122,7 +129,10 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
       onClose();
     } catch (err) {
       // console.error("Error adding farmer:", err);
-      alert("Error adding farmer: " + err.message);
+      setAlert({
+        type: "error",
+        message: "Error adding farmer: " + err.message,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -134,278 +144,80 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div
-        ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
-      >
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between rounded-t-2xl relative">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-              <UserPlus className="w-6 h-6 text-green-600" />
+    <>
+      <Alert
+        type={alert.type}
+        message={alert.message}
+        onClose={() => setAlert({ type: "", message: "" })}
+      />
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div
+          ref={modalRef}
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
+        >
+          {/* Header */}
+          <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between rounded-t-2xl relative">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
+                <UserPlus className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Add Farmer</h2>
+                <p className="text-white/90 text-sm">Add Farmer to the farm</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Add Farmer</h2>
-              <p className="text-white/90 text-sm">Add Farmer to the farm</p>
-            </div>
-          </div>
-          <button
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Farmer ID
-            </label>
-            <input
-              type="text"
-              value={farmerId}
-              onChange={(e) => setFarmerId(e.target.value)}
-              required
-              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none focus:border-transparent transition-all"
-              placeholder="Enter Farmer ID (e.g., FMR-123456)"
-              disabled={isLoading}
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              Enter the farmer's ID to add them to this farm.
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
-              type="button"
               onClick={handleClose}
-              disabled={isLoading}
-              className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading || !farmerId.trim()}
-              className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
-            >
-              <UserPlus className="w-4 h-4" />
-              {isLoading ? "Adding..." : "Add Farmer"}
+              <X className="w-5 h-5" />
             </button>
           </div>
-        </form>
+
+          {/* Body */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-5">
+            <div>
+              <label className="block text-gray-700 font-semibold mb-2">
+                Farmer ID
+              </label>
+              <input
+                type="text"
+                value={farmerId}
+                onChange={(e) => setFarmerId(e.target.value)}
+                required
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none focus:border-transparent transition-all"
+                placeholder="Enter Farmer ID (e.g., FMR-123456)"
+                disabled={isLoading}
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                Enter the farmer's ID to add them to this farm.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={isLoading}
+                className="flex-1 px-6 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading || !farmerId.trim()}
+                className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl font-bold hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-4 h-4" />
+                {isLoading ? "Adding..." : "Add Farmer"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 export default AddFarmerModal;
-
-// import { X } from "lucide-react";
-// import { useState, useEffect } from "react";
-
-// function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
-//   const [farmerId, setFarmerId] = useState("");
-//   const [isLoading, setIsLoading] = useState(false);
-
-//   // Close on Escape
-//   useEffect(() => {
-//     const handleEsc = (e) => {
-//       if (e.key === "Escape") {
-//         onClose();
-//       }
-//     };
-//     document.addEventListener("keydown", handleEsc);
-//     return () => document.removeEventListener("keydown", handleEsc);
-//   }, [onClose]);
-
-//   if (!isOpen) return null;
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-
-//     if (!farmerId.trim()) {
-//       alert("Please enter a valid farmer ID number.");
-//       return;
-//     }
-
-//     setIsLoading(true);
-//     try {
-//       const token = localStorage.getItem("token");
-
-//       // First, check if farmer already exists in this farm
-//       const existingFarmersRes = await fetch(
-//         `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-
-//       if (existingFarmersRes.ok) {
-//         const existingData = await existingFarmersRes.json();
-//         const existingFarmer = existingData.farmers?.find(
-//           (farmer) => farmer.idNumber === farmerId.trim()
-//         );
-
-//         if (existingFarmer) {
-//           alert("This farmer is already added to this farm.");
-//           setIsLoading(false);
-//           return;
-//         }
-//       }
-
-//       console.log("Adding farmer with data:", { idNumber: farmerId, farmId });
-
-//       const response = await fetch(
-//         `https://papaiaapi.onrender.com/api/owner/farmer`,
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${token}`,
-//           },
-//           body: JSON.stringify({
-//             idNumber: farmerId.trim(),
-//             farmId: farmId,
-//           }),
-//         }
-//       );
-
-//       if (!response.ok) {
-//         const errorData = await response.json();
-//         console.error("Server error:", errorData);
-//         throw new Error(
-//           errorData.message || `Failed to add farmer (${response.status})`
-//         );
-//       }
-
-//       const data = await response.json();
-//       console.log("Farmer added response:", data);
-
-//       // Fetch the complete farmer details using the new endpoint
-//       const farmerDetailsRes = await fetch(
-//         `https://papaiaapi.onrender.com/api/owner/farmer/${
-//           data.farmer?.id || farmerId
-//         }`,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-
-//       let farmerDetails = null;
-//       if (farmerDetailsRes.ok) {
-//         const detailsData = await farmerDetailsRes.json();
-//         if (detailsData.status === "success") {
-//           farmerDetails = detailsData.farmer;
-//         }
-//       }
-
-//       // Create farmer data object to pass back
-//       const farmerData = {
-//         idNumber: farmerId,
-//         ...farmerDetails,
-//         ...data.farmer,
-//       };
-
-//       // Refresh the farmers list directly
-//       const refreshedFarmersRes = await fetch(
-//         `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-//         {
-//           headers: { Authorization: `Bearer ${token}` },
-//         }
-//       );
-
-//       // Call the parent handler with both farmer data and refreshed list
-//       let refreshedFarmers = [];
-//       if (refreshedFarmersRes.ok) {
-//         const refreshedData = await refreshedFarmersRes.json();
-//         if (refreshedData.status === "success") {
-//           refreshedFarmers = refreshedData.farmers || [];
-//         }
-//       }
-
-//       onFarmerAdded(farmerData, refreshedFarmers);
-
-//       if (onRefresh) {
-//         onRefresh();
-//       }
-
-//       // Reset form and close modal
-//       setFarmerId("");
-//       onClose();
-//     } catch (err) {
-//       console.error("Error adding farmer:", err);
-//       alert("Error adding farmer: " + err.message);
-//     } finally {
-//       setIsLoading(false);
-//     }
-//   };
-
-//   const handleClose = () => {
-//     setFarmerId("");
-//     onClose();
-//   };
-
-//   return (
-//     <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-//       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-//         {/* Header */}
-//         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between">
-//           <h2 className="text-xl font-bold text-white">Add Farmer by ID</h2>
-//           <button
-//             onClick={handleClose}
-//             className="text-white hover:text-gray-200 transition-colors"
-//           >
-//             <X className="w-6 h-6" />
-//           </button>
-//         </div>
-
-//         {/* Body */}
-//         <form onSubmit={handleSubmit} className="p-6">
-//           <div className="mb-4">
-//             <label className="block text-gray-700 font-medium mb-2">
-//               Farmer ID Number
-//             </label>
-//             <input
-//               type="text"
-//               value={farmerId}
-//               onChange={(e) => setFarmerId(e.target.value)}
-//               required
-//               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-400 focus:outline-none focus:border-transparent"
-//               placeholder="Enter Farmer ID (e.g., FMR-123456)"
-//               disabled={isLoading}
-//             />
-//             <p className="text-sm text-gray-500 mt-1">
-//               Enter the unique ID number of the farmer to add to this farm.
-//             </p>
-//           </div>
-
-//           {/* Actions */}
-//           <div className="flex justify-end gap-3">
-//             <button
-//               type="button"
-//               onClick={handleClose}
-//               disabled={isLoading}
-//               className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-//             >
-//               Cancel
-//             </button>
-//             <button
-//               type="submit"
-//               disabled={isLoading || !farmerId.trim()}
-//               className="px-6 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-lg font-semibold hover:from-orange-500 hover:to-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-//             >
-//               {isLoading ? "Adding..." : "Add Farmer"}
-//             </button>
-//           </div>
-//         </form>
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default AddFarmerModal;
