@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Shield, X, Eye, EyeOff } from "lucide-react";
-import Alert from "../compoenents/";
+import Alert from "../../components/Alert";
 
 export default function ChangePasswordModal({ isOpen, onClose }) {
   const [currentPassword, setCurrentPassword] = useState("");

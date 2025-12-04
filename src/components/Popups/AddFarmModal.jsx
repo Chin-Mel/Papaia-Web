@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, MapPin, Camera, Plus } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
-import Alert from "../components/Alert";
+import Alert from "../../components/Alert";
 
 export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({

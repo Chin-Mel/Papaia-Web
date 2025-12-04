@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, X } from "lucide-react";
-import Alert from "../components/Alert";
+import Alert from "../../components/Alert";
 
 export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [reason, setReason] = useState("");
