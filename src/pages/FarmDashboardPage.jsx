@@ -20,7 +20,7 @@ import EditFarmModal from "../components/Popups/EditFarmModal";
 import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 import RestoreFarmerModal from "../components/Popups/RestoreFarmerModal";
 import ReactivateFarmerModal from "../components/Popups/ReactivateFarmerModal";
-import Alert from "../components/ReactivateFarmerModal";
+import Alert from "../components/Alert";
 
 // Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
