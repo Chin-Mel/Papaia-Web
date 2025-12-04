@@ -514,7 +514,11 @@ export default function FarmDashboardPage() {
 
             {/* Recent Scans - 1/3 width */}
             <div className="lg:col-span-1 pb-4">
-              <RecentScans farmId={farmId} />
+              <RecentScans
+                farmId={farmId}
+                timeFilter={timeFilter}
+                dateRange={dateRange}
+              />
             </div>
           </div>
 

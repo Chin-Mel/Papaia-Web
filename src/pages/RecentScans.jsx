@@ -39,13 +39,87 @@ const scanCache = {
   },
 };
 
-export default function RecentScans({ farmId }) {
+export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
   const [farmers, setFarmers] = useState([]);
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const abortControllerRef = useRef(null);
+
+  // Helper function to get number of periods based on date range
+  const getPeriodsFromRange = (range, filter) => {
+    switch (filter) {
+      case "Daily":
+        if (range === "Last 7 days") return 7;
+        if (range === "Last 11 days") return 11;
+        if (range === "Last 14 days") return 14;
+        return 11;
+      case "Weekly":
+        if (range === "Last 4 weeks") return 4;
+        if (range === "Last 9 weeks") return 9;
+        if (range === "Last 12 weeks") return 12;
+        return 9;
+      case "Monthly":
+        if (range === "Last 3 months") return 3;
+        if (range === "Last 6 months") return 6;
+        if (range === "Last 12 months") return 12;
+        return 12;
+      case "Yearly":
+        if (range === "Last 3 years") return 3;
+        if (range === "Last 5 years") return 5;
+        if (range === "Last 7 years") return 7;
+        return 7;
+      default:
+        return 11;
+    }
+  };
+
+  // Filter scans based on date range
+  const filterScansByDateRange = useCallback((allScans, filter, range) => {
+    const periods = getPeriodsFromRange(range, filter);
+    const now = new Date();
+    let startDate;
+
+    switch (filter) {
+      case "Daily":
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - periods + 1);
+        break;
+      case "Weekly":
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - periods * 7);
+        break;
+      case "Monthly":
+        startDate = new Date(now);
+        startDate.setMonth(startDate.getMonth() - periods);
+        break;
+      case "Yearly":
+        startDate = new Date(now);
+        startDate.setFullYear(startDate.getFullYear() - periods);
+        break;
+      default:
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 11);
+    }
+
+    startDate.setHours(0, 0, 0, 0);
+
+    return allScans.filter((scan) => {
+      try {
+        const [datePart, timePart, period] = scan.timestamp.split(/\s+/);
+        const [month, day, year] = datePart.split("/");
+        const [hours, minutes] = timePart.split(":");
+        let hour24 = parseInt(hours);
+        if (period === "PM" && hour24 !== 12) hour24 += 12;
+        if (period === "AM" && hour24 === 12) hour24 = 0;
+        const scanDate = new Date(year, month - 1, day, hour24, minutes);
+        return scanDate >= startDate && scanDate <= now;
+      } catch {
+        return false;
+      }
+    });
+  }, []);
 
   useEffect(() => {
     if (!farmId) return;
@@ -59,7 +133,7 @@ export default function RecentScans({ farmId }) {
     abortControllerRef.current = controller;
 
     const fetchData = async () => {
-      const cacheKey = `scans-${farmId}`;
+      const cacheKey = `scans-${farmId}-${timeFilter}-${dateRange}`;
       const cached = scanCache.get(cacheKey);
 
       // Show cached data immediately
@@ -103,8 +177,8 @@ export default function RecentScans({ farmId }) {
           // Get farmer ID numbers
           const farmerIdNumbers = farmersList.map((f) => f.idNumber);
 
-          // Filter scans from active farmers only and sort by most recent first
-          const filteredScans = (scansData || [])
+          // Filter scans from active farmers only
+          const activeFarmerScans = (scansData || [])
             .filter((scan) => {
               const farmer = farmersList.find(
                 (f) => f.idNumber === scan.idNumber
@@ -134,6 +208,13 @@ export default function RecentScans({ farmId }) {
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             });
 
+          // Filter by date range based on analytics selection
+          const filteredScans = filterScansByDateRange(
+            activeFarmerScans,
+            timeFilter,
+            dateRange
+          );
+
           setRecentScans(filteredScans);
 
           // Cache the results
@@ -161,7 +242,7 @@ export default function RecentScans({ farmId }) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId]);
+  }, [farmId, timeFilter, dateRange, filterScansByDateRange]);
 
   // Get card styling based on disease type
   const getCardStyle = useCallback((prediction) => {
@@ -276,7 +357,7 @@ export default function RecentScans({ farmId }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans
+          Recent Scans ({dateRange})
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -292,17 +373,17 @@ export default function RecentScans({ farmId }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans
+          Recent Scans ({dateRange})
         </h2>
 
         {recentScans.length === 0 ? (
           <div className="text-center py-6 sm:py-8 flex-1 flex flex-col items-center justify-center">
             <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
             <p className="text-sm sm:text-base text-gray-500">
-              No recent scans available
+              No scans in selected range
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              Scans will appear when assigned farmers make predictions
+              Scans from {dateRange.toLowerCase()} will appear here
             </p>
           </div>
         ) : (
@@ -360,8 +441,8 @@ export default function RecentScans({ farmId }) {
                 {recentScans.length > 0
                   ? `Showing ${recentScans.length} ${
                       recentScans.length === 1 ? "scan" : "scans"
-                    }`
-                  : "No scans from assigned farmers yet"}
+                    } from ${dateRange.toLowerCase()}`
+                  : "No scans in selected range"}
               </p>
             </div>
           </div>

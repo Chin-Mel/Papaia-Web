@@ -74,6 +74,70 @@ export default function FarmAnalyticsSummary({
   const [showDetailModal, setShowDetailModal] = useState(false);
   const abortControllerRef = useRef(null);
 
+  // Map timeFilter and dateRange to API endpoints
+  const getApiEndpoints = (filter, range) => {
+    const endpoints = {
+      Daily: {
+        "Last 7 days": {
+          summary: "seven-days-summary",
+          disease: "seven-days-common-diseases",
+        },
+        "Last 11 days": {
+          summary: "eleven-days-summary",
+          disease: "eleven-days-common-diseases",
+        },
+        "Last 14 days": {
+          summary: "fourteen-days-summary",
+          disease: "fourteen-days-common-diseases",
+        },
+      },
+      Weekly: {
+        "Last 4 weeks": {
+          summary: "four-week-summary",
+          disease: "three-weeks-common-diseases",
+        },
+        "Last 9 weeks": {
+          summary: "nine-week-summary",
+          disease: "nine-weeks-common-diseases",
+        },
+        "Last 12 weeks": {
+          summary: "twelve-week-summary",
+          disease: "twelve-weeks-common-diseases",
+        },
+      },
+      Monthly: {
+        "Last 3 months": {
+          summary: "three-month-summary",
+          disease: "three-month-common-diseases",
+        },
+        "Last 6 months": {
+          summary: "six-month-summary",
+          disease: "six-month-common-diseases",
+        },
+        "Last 12 months": {
+          summary: "twelve-month-summary",
+          disease: "twelve-month-common-diseases",
+        },
+      },
+      Yearly: {
+        "Last 3 years": {
+          summary: "three-year-summary",
+          disease: "three-year-common-diseases",
+        },
+        "Last 5 years": {
+          summary: "five-year-summary",
+          disease: "five-year-common-diseases",
+        },
+        "Last 7 years": {
+          summary: "seven-year-summary",
+          disease: "seven-year-common-diseases",
+        },
+      },
+    };
+
+    return endpoints[filter]?.[range] || endpoints.Daily["Last 11 days"];
+  };
+
   // Helper function to get number of periods based on date range
   const getPeriodsFromRange = (range, filter) => {
     switch (filter) {
@@ -229,29 +293,21 @@ export default function FarmAnalyticsSummary({
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const endpointMap = {
-        Daily: "daily-summary",
-        Weekly: "weekly-summary",
-        Monthly: "monthly-summary",
-        Yearly: "yearly-summary",
-      };
-
-      const endpoint = endpointMap[timeFilter] || "daily-summary";
-      const summaryCacheKey = `summary-${farmId}-${endpoint}`;
-      const diseaseCacheKey = `disease-${farmId}`;
+      const endpoints = getApiEndpoints(timeFilter, dateRange);
+      const summaryCacheKey = `summary-${farmId}-${endpoints.summary}`;
+      const diseaseCacheKey = `disease-${farmId}-${endpoints.disease}`;
 
       const cachedSummary = cache.get(summaryCacheKey);
       const cachedDisease = cache.get(diseaseCacheKey);
 
       if (cachedSummary) {
         setSummaryData(cachedSummary);
-        setLoading(false);
       }
       if (cachedDisease) {
         setCommonDiseaseData(cachedDisease);
       }
 
-      if (cachedSummary || cachedDisease) {
+      if (cachedSummary && cachedDisease) {
         setLoading(false);
       } else {
         setLoading(true);
@@ -266,11 +322,11 @@ export default function FarmAnalyticsSummary({
           scansResponse,
         ] = await Promise.all([
           fetch(
-            `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+            `https://papaiaapi.onrender.com/api/owner/${endpoints.summary}/${farmId}`,
             { headers, signal: abortController.signal }
           ),
           fetch(
-            `https://papaiaapi.onrender.com/api/owner/common-diseases/${farmId}`,
+            `https://papaiaapi.onrender.com/api/owner/${endpoints.disease}/${farmId}`,
             { headers, signal: abortController.signal }
           ),
           fetch(`https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`, {
@@ -394,7 +450,7 @@ export default function FarmAnalyticsSummary({
         <div className="flex items-center gap-2 mb-4">
           <ChartBarIncreasing className="w-5 h-5 text-green-700" />
           <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Summary
+            Summary ({dateRange})
           </h2>
         </div>
 
@@ -441,6 +497,38 @@ export default function FarmAnalyticsSummary({
                       </span>
                     </div>
                   )}
+
+                  {/* Disease Breakdown */}
+                  {commonDiseaseData.allDiseases &&
+                    commonDiseaseData.allDiseases.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="text-xs font-semibold text-gray-700 mb-2">
+                          Disease Breakdown in Range:
+                        </h4>
+                        <div className="space-y-1">
+                          {commonDiseaseData.allDiseases.map(
+                            (disease, index) => (
+                              <div
+                                key={index}
+                                className="flex justify-between items-center text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded"
+                              >
+                                <span className="font-medium">
+                                  {disease.disease}
+                                </span>
+                                <div className="flex gap-2">
+                                  <span className="text-amber-700 font-semibold">
+                                    {disease.count} cases
+                                  </span>
+                                  <span className="text-amber-600">
+                                    ({disease.percentage})
+                                  </span>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             </div>

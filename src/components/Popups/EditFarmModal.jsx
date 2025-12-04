@@ -214,8 +214,14 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           className="bg-gray-50 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
         >
           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative flex items-center gap-3">
-            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <Save className="w-5 h-5 text-green-600" />
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+              <img
+                src={PapayaLogo}
+                alt="Papaia Logo"
+                className="w-5 h-7"
+                loading="eager"
+                decoding="async"
+              />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">
