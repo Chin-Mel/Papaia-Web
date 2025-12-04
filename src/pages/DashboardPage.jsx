@@ -88,22 +88,14 @@ const isToday = (timestampStr) => {
 };
 
 const getHealthStatus = (healthPercentage, hasScans) => {
-  // If no scans yet, show "No Data"
+  // If no scans yet, return null to hide the status badge
   if (!hasScans) {
-    return {
-      status: "No Data",
-      bgColor: "bg-slate-400",
-      textColor: "text-slate-600",
-    };
+    return null;
   }
 
   const health = parseFloat(healthPercentage);
   if (isNaN(health)) {
-    return {
-      status: "No Data",
-      bgColor: "bg-slate-400",
-      textColor: "text-slate-600",
-    };
+    return null;
   }
 
   // Three status levels only
@@ -129,7 +121,6 @@ const getHealthStatus = (healthPercentage, hasScans) => {
 };
 
 const formatHealthDisplay = (health, hasScans) => {
-  if (!hasScans) return "N/A";
   if (!health || health === 0 || health === "0.00") return "0.00%";
   return `${health}`;
 };
@@ -180,11 +171,13 @@ const FarmCard = ({ farm, isMobile }) => {
           loading="lazy"
           onError={() => setImageError(true)}
         />
-        <span
-          className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
-        >
-          {healthStatus.status}
-        </span>
+        {healthStatus && (
+          <span
+            className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
+          >
+            {healthStatus.status}
+          </span>
+        )}
       </div>
       <div className={`${isMobile ? "p-3 sm:p-4" : "p-4"}`}>
         <h3
@@ -219,7 +212,9 @@ const FarmCard = ({ farm, isMobile }) => {
             <span
               className={`${
                 isMobile ? "text-[10px] sm:text-xs" : "text-xs"
-              } font-semibold whitespace-nowrap ${healthStatus.textColor}`}
+              } font-semibold whitespace-nowrap ${
+                healthStatus ? healthStatus.textColor : "text-slate-600"
+              }`}
             >
               {formatHealthDisplay(farm.health, farm.hasScans)} Health
             </span>
@@ -306,16 +301,16 @@ export default function DashboardPage() {
         120000
       );
 
-      // Check if farm has scans by looking at the API response
-      const hasScans = data.totalScans > 0 || data.healthPercentage > 0;
+      // Check if farm has predictions
+      const hasScans = data.totalPredictions > 0;
 
       return {
-        health: data.healthPercentage || "0.00",
+        health: data.healthPercentage || "0.00%",
         hasScans: hasScans,
       };
     } catch {
       return {
-        health: "0.00",
+        health: "0.00%",
         hasScans: false,
       };
     }
@@ -346,7 +341,7 @@ export default function DashboardPage() {
               f.description ||
               `Farm located in ${f.location || "Unknown location"}`,
             location: f.location || "Unknown",
-            health: "0.00",
+            health: "0.00%",
             hasScans: false,
             img: farmImage,
             isActive: f.status === "active",
