@@ -323,59 +323,6 @@ export default function FarmAnalyticsSummary({
             </div>
           </div>
         )}
-
-        {/* Scans in Range Section */}
-        {scansInRange.length > 0 && (
-          <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">
-              Scans in Selected Range ({scansInRange.length})
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-2">
-              {scansInRange.map((scan, index) => {
-                const cardStyle = getCardStyle(scan.prediction);
-                return (
-                  <div
-                    key={`${scan.id || scan.timestamp}-${index}`}
-                    onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 cursor-pointer hover:shadow-md transition-all duration-200 hover:scale-[1.02]`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={scan.imageUrl}
-                        alt="Scan"
-                        className="w-12 h-12 rounded-lg object-cover border border-gray-200 flex-shrink-0"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                        }}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`font-bold text-xs mb-0.5 ${cardStyle.text}`}
-                        >
-                          {scan.prediction}
-                        </p>
-                        <p className="text-xs text-slate-600 mb-0.5 truncate">
-                          {formatScanDate(scan.timestamp)}
-                        </p>
-                        <p className="text-xs text-slate-500 truncate">
-                          By: {getFarmerName(scan.idNumber)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {scansInRange.length === 0 && (
-          <div className="text-center py-4">
-            <p className="text-sm text-gray-500">
-              No scans found in the selected date range
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );
