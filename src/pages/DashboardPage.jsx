@@ -87,47 +87,49 @@ const isToday = (timestampStr) => {
   }
 };
 
-const getHealthStatus = (healthPercentage) => {
-  const health = parseFloat(healthPercentage);
-  if (isNaN(health)) {
+const getHealthStatus = (healthPercentage, hasScans) => {
+  // If no scans yet, show "No Data"
+  if (!hasScans) {
     return {
-      status: "Unknown",
-      bgColor: "bg-slate-500",
+      status: "No Data",
+      bgColor: "bg-slate-400",
       textColor: "text-slate-600",
     };
   }
-  if (health >= 80)
+
+  const health = parseFloat(healthPercentage);
+  if (isNaN(health)) {
     return {
-      status: "Excellent Health",
+      status: "No Data",
+      bgColor: "bg-slate-400",
+      textColor: "text-slate-600",
+    };
+  }
+
+  // Three status levels only
+  if (health >= 60) {
+    return {
+      status: "Healthy",
       bgColor: "bg-emerald-500",
       textColor: "text-emerald-600",
     };
-  if (health >= 60)
+  }
+  if (health >= 30) {
     return {
-      status: "Good Health",
+      status: "Moderate",
       bgColor: "bg-amber-500",
       textColor: "text-amber-600",
     };
-  if (health >= 40)
-    return {
-      status: "Fair Health",
-      bgColor: "bg-orange-500",
-      textColor: "text-orange-600",
-    };
-  if (health >= 20)
-    return {
-      status: "Poor Health",
-      bgColor: "bg-rose-500",
-      textColor: "text-rose-600",
-    };
+  }
   return {
-    status: "Critical Health",
-    bgColor: "bg-red-600",
-    textColor: "text-red-600",
+    status: "Unhealthy",
+    bgColor: "bg-rose-500",
+    textColor: "text-rose-600",
   };
 };
 
-const formatHealthDisplay = (health) => {
+const formatHealthDisplay = (health, hasScans) => {
+  if (!hasScans) return "N/A";
   if (!health || health === 0 || health === "0.00") return "0.00%";
   return `${health}`;
 };
@@ -158,7 +160,7 @@ const StatCard = ({ title, value, icon, bgColor }) => (
 
 // ============ FARM CARD COMPONENT ============
 const FarmCard = ({ farm, isMobile }) => {
-  const healthStatus = getHealthStatus(farm.health);
+  const healthStatus = getHealthStatus(farm.health, farm.hasScans);
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -219,7 +221,7 @@ const FarmCard = ({ farm, isMobile }) => {
                 isMobile ? "text-[10px] sm:text-xs" : "text-xs"
               } font-semibold whitespace-nowrap ${healthStatus.textColor}`}
             >
-              {formatHealthDisplay(farm.health)} Health
+              {formatHealthDisplay(farm.health, farm.hasScans)} Health
             </span>
           </div>
         </div>
@@ -303,9 +305,19 @@ export default function DashboardPage() {
         `farm_health_${farmId}`,
         120000
       );
-      return data.healthPercentage || "0.00";
+
+      // Check if farm has scans by looking at the API response
+      const hasScans = data.totalScans > 0 || data.healthPercentage > 0;
+
+      return {
+        health: data.healthPercentage || "0.00",
+        hasScans: hasScans,
+      };
     } catch {
-      return "0.00";
+      return {
+        health: "0.00",
+        hasScans: false,
+      };
     }
   };
 
@@ -335,6 +347,7 @@ export default function DashboardPage() {
               `Farm located in ${f.location || "Unknown location"}`,
             location: f.location || "Unknown",
             health: "0.00",
+            hasScans: false,
             img: farmImage,
             isActive: f.status === "active",
           };
@@ -349,10 +362,19 @@ export default function DashboardPage() {
         setFarms(sortedFarms);
         setLoading(false);
 
+        // Fetch health for each farm
         sortedFarms.forEach(async (farm) => {
-          const health = await fetchFarmHealth(farm.id);
+          const healthData = await fetchFarmHealth(farm.id);
           setFarms((prev) =>
-            prev.map((f) => (f.id === farm.id ? { ...f, health } : f))
+            prev.map((f) =>
+              f.id === farm.id
+                ? {
+                    ...f,
+                    health: healthData.health,
+                    hasScans: healthData.hasScans,
+                  }
+                : f
+            )
           );
         });
       } else {
@@ -361,10 +383,6 @@ export default function DashboardPage() {
       }
     } catch (err) {
       console.error("Error fetching farms:", err);
-      setAlert({
-        type: "error",
-        message: "Failed to load farms. Please refresh the page.",
-      });
       setFarms([]);
       setLoading(false);
     }
@@ -405,18 +423,9 @@ export default function DashboardPage() {
         if (window.refreshActivities) window.refreshActivities();
         setShowAddFarmModal(false);
         setAlert({ type: "success", message: "Farm added successfully!" });
-      } else {
-        setAlert({
-          type: "error",
-          message: data.message || "Failed to add farm.",
-        });
       }
     } catch (err) {
       console.error("Error adding farm:", err);
-      setAlert({
-        type: "error",
-        message: "Failed to add farm. Please try again.",
-      });
     } finally {
       setLoading(false);
     }
