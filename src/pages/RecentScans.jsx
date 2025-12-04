@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Leaf } from "lucide-react";
-import ScanDetailModal from "../components/Popups/ScanDetailModal";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
 // Simple cache for faster subsequent loads
 const scanCache = {
@@ -46,6 +53,14 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const abortControllerRef = useRef(null);
+
+  // Disease colors mapping
+  const diseaseColors = {
+    Healthy: "#10b981",
+    "Ring Spot Virus": "#ea580c",
+    Anthracnose: "#f43f5e",
+    "Powdery Mildew": "#3b82f6",
+  };
 
   // Helper function to get number of periods based on date range
   const getPeriodsFromRange = (range, filter) => {
@@ -119,6 +134,45 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         return false;
       }
     });
+  }, []);
+
+  // Calculate disease distribution for pie chart
+  const calculateDiseaseDistribution = useCallback((scans) => {
+    const allDiseases = [
+      "Healthy",
+      "Ring Spot Virus",
+      "Anthracnose",
+      "Powdery Mildew",
+    ];
+    const counts = {};
+
+    // Initialize all diseases with 0
+    allDiseases.forEach((disease) => {
+      counts[disease] = 0;
+    });
+
+    // Count occurrences
+    scans.forEach((scan) => {
+      if (counts.hasOwnProperty(scan.prediction)) {
+        counts[scan.prediction]++;
+      }
+    });
+
+    // Convert to array format for pie chart, filter out zero values for chart
+    const chartData = allDiseases
+      .filter((disease) => counts[disease] > 0)
+      .map((disease) => ({
+        name: disease,
+        value: counts[disease],
+        color: diseaseColors[disease],
+      }));
+
+    // Create list of diseases with zero cases
+    const zeroCases = allDiseases
+      .filter((disease) => counts[disease] === 0)
+      .map((disease) => disease);
+
+    return { chartData, zeroCases, counts };
   }, []);
 
   useEffect(() => {
@@ -350,6 +404,10 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   // Updated to match FarmAnalytics height
   const FIXED_HEIGHT = "580px";
 
+  const { chartData, zeroCases, counts } =
+    calculateDiseaseDistribution(recentScans);
+  const totalScans = recentScans.length;
+
   if (loading && !recentScans.length) {
     return (
       <div
@@ -357,7 +415,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans ({dateRange})
+          Scans ({dateRange})
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -388,7 +446,74 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Scrollable container */}
+            {/* Pie Chart Section */}
+            <div className="mb-4 pb-4 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                Disease Distribution
+              </h3>
+              {chartData.length > 0 ? (
+                <>
+                  <ResponsiveContainer width="100%" height={180}>
+                    <PieChart>
+                      <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
+                        outerRadius={60}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {chartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value) => [`${value} cases`, "Count"]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+
+                  {/* Cases Summary */}
+                  <div className="mt-2 space-y-1">
+                    {Object.entries(counts).map(([disease, count]) => (
+                      <div
+                        key={disease}
+                        className="flex justify-between items-center text-xs px-2 py-1 rounded bg-gray-50"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: diseaseColors[disease] }}
+                          />
+                          <span className="font-medium text-gray-700">
+                            {disease}
+                          </span>
+                        </div>
+                        <span className="text-gray-600 font-semibold">
+                          {count} {count === 1 ? "case" : "cases"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {zeroCases.length > 0 && (
+                    <p className="text-xs text-gray-500 mt-2 italic">
+                      No cases: {zeroCases.join(", ")}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-gray-500 text-center py-4">
+                  No data to display
+                </p>
+              )}
+            </div>
+
+            {/* Scrollable Scans List */}
             <div
               className="flex-1 overflow-y-auto pr-2 space-y-3"
               style={{ scrollbarWidth: "thin" }}
@@ -448,14 +573,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         )}
       </div>
-
-      {/* Scan Detail Modal */}
-      <ScanDetailModal
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        scan={selectedScan}
-        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
-      />
     </>
   );
 }
