@@ -458,18 +458,59 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                 </h3>
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={180}>
+                    <ResponsiveContainer width="100%" height={240}>
                       <PieChart>
                         <Pie
                           data={chartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
-                          label={({ percent }) =>
-                            `${(percent * 100).toFixed(0)}%`
-                          }
-                          outerRadius={60}
-                          innerRadius={20}
+                          label={({
+                            name,
+                            percent,
+                            value,
+                            cx,
+                            cy,
+                            midAngle,
+                            innerRadius,
+                            outerRadius,
+                          }) => {
+                            const RADIAN = Math.PI / 180;
+                            const radius =
+                              innerRadius + (outerRadius - innerRadius) * 0.5;
+                            const x =
+                              cx + radius * Math.cos(-midAngle * RADIAN);
+                            const y =
+                              cy + radius * Math.sin(-midAngle * RADIAN);
+
+                            return (
+                              <text
+                                x={x}
+                                y={y}
+                                fill="white"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                className="text-xs font-bold"
+                                style={{ fontSize: "12px", fontWeight: "bold" }}
+                              >
+                                <tspan x={x} dy="-0.6em">
+                                  {name}
+                                </tspan>
+                                <tspan x={x} dy="1.2em">{`${(
+                                  percent * 100
+                                ).toFixed(0)}%`}</tspan>
+                                <tspan
+                                  x={x}
+                                  dy="1.2em"
+                                  style={{ fontSize: "11px" }}
+                                >{`${value} ${
+                                  value === 1 ? "case" : "cases"
+                                }`}</tspan>
+                              </text>
+                            );
+                          }}
+                          outerRadius={85}
+                          innerRadius={35}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -479,7 +520,10 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                         </Pie>
                         <Tooltip
                           formatter={(value, name, props) => [
-                            `${value} cases`,
+                            `${value} cases (${(
+                              (value / totalScans) *
+                              100
+                            ).toFixed(1)}%)`,
                             props.payload.name,
                           ]}
                         />
