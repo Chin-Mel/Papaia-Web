@@ -13,11 +13,10 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [fieldErrors, setFieldErrors] = useState({});
   const modalRef = useRef(null);
   const [alert, setAlert] = useState({ type: "", message: "" });
 
-  // Close modal when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -28,7 +27,6 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Load farm data when modal opens
   useEffect(() => {
     if (farmData && isOpen) {
       setFormData({
@@ -47,14 +45,14 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       }
 
       setSelectedImage(null);
-      setErrors({});
+      setFieldErrors({});
     }
   }, [farmData, isOpen]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: false }));
     }
   };
 
@@ -63,35 +61,55 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setErrors((prev) => ({
-        ...prev,
-        farmImage: "Please select a valid image file",
-      }));
+      setAlert({
+        type: "error",
+        message: "Please select a valid image file",
+      });
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors((prev) => ({
-        ...prev,
-        farmImage: "Image size must be less than 5MB",
-      }));
+    if (file.size > 10 * 1024 * 1024) {
+      setAlert({
+        type: "error",
+        message: "Image size must be less than 10MB",
+      });
       return;
     }
 
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
-    setErrors((prev) => ({ ...prev, farmImage: "" }));
   };
 
   const handleSave = async () => {
-    setErrors({});
+    const errors = {};
 
-    if (!farmData?.id) {
-      setErrors({ general: "Farm ID is missing. Please try again." });
+    if (!formData.farmName.trim()) {
+      errors.farmName = true;
+    }
+    if (!formData.location.trim()) {
+      errors.location = true;
+    }
+    if (!formData.description.trim()) {
+      errors.description = true;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setAlert({
+        type: "error",
+        message: "Please fill in all required fields",
+      });
       return;
     }
 
-    // Determine which fields have changed
+    if (!farmData?.id) {
+      setAlert({
+        type: "error",
+        message: "Farm ID is missing. Please try again.",
+      });
+      return;
+    }
+
     const trimmedData = {
       farmName: formData.farmName.trim(),
       location: formData.location.trim(),
@@ -109,7 +127,6 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
       return;
     }
 
-    // Build FormData
     const formDataToSend = new FormData();
     if (trimmedData.farmName !== (farmData.farmName || "").trim())
       formDataToSend.append("farmName", trimmedData.farmName);
@@ -148,16 +165,18 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
       if (data.status === "success") {
         if (onFarmUpdated) {
-          // Pass updated farm to parent
           onFarmUpdated(data.farm || { ...farmData, ...trimmedData });
         }
-        handleClose();
         setAlert({ type: "success", message: "Farm updated successfully!" });
+        handleClose();
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
     } catch (error) {
-      setErrors({ general: `Failed to update farm: ${error.message}` });
+      setAlert({
+        type: "error",
+        message: `Failed to update farm: ${error.message}`,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -170,13 +189,12 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     setSelectedImage(null);
     setFormData({ farmName: "", location: "", description: "" });
     setImagePreview("");
-    setErrors({});
+    setFieldErrors({});
     onClose();
   };
 
   if (!isOpen) return null;
 
-  // Check if changes exist to enable Save button
   const saveEnabled =
     selectedImage ||
     formData.farmName.trim() !== (farmData?.farmName || "").trim() ||
@@ -197,13 +215,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
         >
           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-              <img
-                src={PapayaLogo}
-                alt="Papaia Logo"
-                className="w-5 h-7"
-                loading="eager"
-                decoding="async"
-              />
+              <Save className="w-5 h-5 text-green-600" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">
@@ -223,13 +235,6 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           </div>
 
           <div className="p-6 space-y-6">
-            {errors.general && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                {errors.general}
-              </div>
-            )}
-
-            {/* Image */}
             <div>
               <label className="block text-gray-800 font-medium mb-3">
                 Farm Image{" "}
@@ -263,17 +268,12 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
                   />
                 </label>
               </div>
-              {errors.farmImage && (
-                <p className="text-red-500 text-sm mt-2">{errors.farmImage}</p>
-              )}
             </div>
 
-            {/* Form fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-gray-800 font-medium mb-2">
-                  Farm Name{" "}
-                  <span className="text-gray-500 text-sm">(Optional)</span>
+                  Farm Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -281,7 +281,11 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
                   onChange={(e) =>
                     handleInputChange("farmName", e.target.value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white transition-all ${
+                    fieldErrors.farmName
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:border-transparent"
+                  }`}
                   placeholder="Enter farm name"
                   disabled={isLoading}
                 />
@@ -289,8 +293,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
               <div>
                 <label className="block text-gray-800 font-medium mb-2">
-                  Location{" "}
-                  <span className="text-gray-500 text-sm">(Optional)</span>
+                  Location <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -298,7 +301,11 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
                   }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white"
+                  className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white transition-all ${
+                    fieldErrors.location
+                      ? "border-red-500 focus:border-red-500"
+                      : "border-gray-300 focus:border-transparent"
+                  }`}
                   placeholder="Enter location"
                   disabled={isLoading}
                 />
@@ -307,8 +314,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
             <div>
               <label className="block text-gray-800 font-medium mb-2">
-                Farm Description{" "}
-                <span className="text-gray-500 text-sm">(Optional)</span>
+                Farm Description <span className="text-red-500">*</span>
               </label>
               <textarea
                 value={formData.description}
@@ -316,7 +322,11 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
                   handleInputChange("description", e.target.value)
                 }
                 rows={6}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] focus:border-transparent bg-white resize-none"
+                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white resize-none transition-all ${
+                  fieldErrors.description
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-300 focus:border-transparent"
+                }`}
                 placeholder="Enter farm description..."
                 disabled={isLoading}
               />

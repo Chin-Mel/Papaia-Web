@@ -5,6 +5,7 @@ import Alert from "../../components/Alert";
 function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
   const modalRef = useRef(null);
   const [alert, setAlert] = useState({ type: "", message: "" });
 
@@ -18,20 +19,44 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setFarmerId("");
+      setHasError(false);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  const validateFarmerId = (id) => {
+    const pattern = /^FMR-\d+$/;
+    return pattern.test(id.trim());
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!farmerId.trim()) {
+      setHasError(true);
       setAlert({
         type: "error",
-        message: "Please enter a valid farmer ID number.",
+        message: "Please enter a farmer ID.",
       });
       return;
     }
 
+    if (!validateFarmerId(farmerId)) {
+      setHasError(true);
+      setAlert({
+        type: "error",
+        message: "Invalid format. Farmer ID must be in format: FMR-123456",
+      });
+      return;
+    }
+
+    setHasError(false);
     setIsLoading(true);
+
     try {
       const token = localStorage.getItem("token");
 
@@ -75,6 +100,14 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
 
       if (!response.ok) {
         const errorData = await response.json();
+
+        if (
+          errorData.message?.includes("already added") ||
+          errorData.message?.includes("another farm")
+        ) {
+          throw new Error("This farmer is already added to another farm.");
+        }
+
         throw new Error(
           errorData.message || `Failed to add farmer (${response.status})`
         );
@@ -126,13 +159,18 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
         onRefresh();
       }
 
+      setAlert({
+        type: "success",
+        message: "Farmer added successfully!",
+      });
+
       setFarmerId("");
+      setHasError(false);
       onClose();
     } catch (err) {
-      // console.error("Error adding farmer:", err);
       setAlert({
         type: "error",
-        message: "Error adding farmer: " + err.message,
+        message: err.message,
       });
     } finally {
       setIsLoading(false);
@@ -141,6 +179,7 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
 
   const handleClose = () => {
     setFarmerId("");
+    setHasError(false);
     onClose();
   };
 
@@ -156,7 +195,6 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
           ref={modalRef}
           className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden"
         >
-          {/* Header */}
           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 flex items-center justify-between rounded-t-2xl relative">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
@@ -175,27 +213,32 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
             </button>
           </div>
 
-          {/* Body */}
           <form onSubmit={handleSubmit} className="p-6 space-y-5">
             <div>
               <label className="block text-gray-700 font-semibold mb-2">
-                Farmer ID
+                Farmer ID <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={farmerId}
-                onChange={(e) => setFarmerId(e.target.value)}
+                onChange={(e) => {
+                  setFarmerId(e.target.value);
+                  setHasError(false);
+                }}
                 required
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none focus:border-transparent transition-all"
+                className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:outline-none transition-all ${
+                  hasError
+                    ? "border-red-500 focus:border-red-500"
+                    : "border-gray-200 focus:border-transparent"
+                }`}
                 placeholder="Enter Farmer ID (e.g., FMR-123456)"
                 disabled={isLoading}
               />
               <p className="text-sm text-gray-500 mt-2">
-                Enter the farmer's ID to add them to this farm.
+                Format: FMR-123456 (FMR- followed by numbers)
               </p>
             </div>
 
-            {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <button
                 type="button"
@@ -220,5 +263,4 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
     </>
   );
 }
-
 export default AddFarmerModal;

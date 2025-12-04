@@ -12,6 +12,10 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [touched, setTouched] = useState({
+    farmName: false,
+    location: false,
+  });
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
 
@@ -32,6 +36,10 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     setError("");
   };
 
+  const handleBlur = (field) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+  };
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -50,6 +58,12 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   };
 
   const handleSubmit = async () => {
+    // Mark all required fields as touched
+    setTouched({
+      farmName: true,
+      location: true,
+    });
+
     // Validation
     if (!formData.farmName.trim()) {
       setError("Farm name is required");
@@ -80,6 +94,10 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         farmImage: null,
       });
       setImagePreview(null);
+      setTouched({
+        farmName: false,
+        location: false,
+      });
     } catch (error) {
       // Error handling is done in parent component
     } finally {
@@ -92,6 +110,18 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
       e.preventDefault();
       handleSubmit();
     }
+  };
+
+  // Validation helper functions
+  const isFieldInvalid = (field) => {
+    return touched[field] && !formData[field].trim();
+  };
+
+  const getInputBorderClass = (field) => {
+    if (isFieldInvalid(field)) {
+      return "border-red-500 focus:ring-red-400";
+    }
+    return "border-gray-300 focus:ring-orange-400";
   };
 
   if (!isOpen) return null;
@@ -147,11 +177,19 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 type="text"
                 value={formData.farmName}
                 onChange={(e) => handleInputChange("farmName", e.target.value)}
+                onBlur={() => handleBlur("farmName")}
                 onKeyPress={handleKeyPress}
                 placeholder="Enter your farm name"
                 disabled={loading}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
+                className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                  "farmName"
+                )}`}
               />
+              {isFieldInvalid("farmName") && (
+                <p className="text-xs text-red-500 mt-1">
+                  Farm name is required
+                </p>
+              )}
             </div>
 
             {/* Location */}
@@ -168,12 +206,20 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
                   }
+                  onBlur={() => handleBlur("location")}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter farm address or location"
                   disabled={loading}
-                  className="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
+                  className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                    "location"
+                  )}`}
                 />
               </div>
+              {isFieldInvalid("location") && (
+                <p className="text-xs text-red-500 mt-1">
+                  Location is required
+                </p>
+              )}
             </div>
 
             {/* Farm Image */}

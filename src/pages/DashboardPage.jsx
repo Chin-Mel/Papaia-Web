@@ -99,7 +99,7 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   }
 
   // Three status levels only
-  if (health >= 60) {
+  if (health >= 70) {
     return {
       status: "Healthy",
       bgColor: "bg-emerald-500",
@@ -108,13 +108,13 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   }
   if (health >= 30) {
     return {
-      status: "Moderate",
+      status: "At Risk",
       bgColor: "bg-amber-500",
       textColor: "text-amber-600",
     };
   }
   return {
-    status: "Unhealthy",
+    status: "Critical",
     bgColor: "bg-rose-500",
     textColor: "text-rose-600",
   };
