@@ -458,7 +458,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                 </h3>
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={240}>
+                    <ResponsiveContainer width="100%" height={380}>
                       <PieChart>
                         <Pie
                           data={chartData}
@@ -491,7 +491,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                                 textAnchor="middle"
                                 dominantBaseline="central"
                                 className="text-xs font-bold"
-                                style={{ fontSize: "12px", fontWeight: "bold" }}
+                                style={{ fontSize: "15px", fontWeight: "bold" }}
                               >
                                 <tspan x={x} dy="-0.6em">
                                   {name}
@@ -502,15 +502,15 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                                 <tspan
                                   x={x}
                                   dy="1.2em"
-                                  style={{ fontSize: "11px" }}
+                                  style={{ fontSize: "14px" }}
                                 >{`${value} ${
                                   value === 1 ? "case" : "cases"
                                 }`}</tspan>
                               </text>
                             );
                           }}
-                          outerRadius={85}
-                          innerRadius={35}
+                          outerRadius={150}
+                          innerRadius={60}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -531,7 +531,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                     </ResponsiveContainer>
 
                     {zeroCases.length > 0 && (
-                      <p className="text-xs text-gray-500 mt-2 italic">
+                      <p className="text-xs text-black mt-2 italic font-medium text-center">
                         No cases: {zeroCases.join(", ")}
                       </p>
                     )}
