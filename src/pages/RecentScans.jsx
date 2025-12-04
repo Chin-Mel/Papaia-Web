@@ -446,119 +446,131 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         ) : (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Pie Chart Section */}
-            <div className="mb-4 pb-4 border-b border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                Disease Distribution
-              </h3>
-              {chartData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <PieChart>
-                      <Pie
-                        data={chartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) =>
-                          `${name}: ${(percent * 100).toFixed(0)}%`
-                        }
-                        outerRadius={60}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value) => [`${value} cases`, "Count"]}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-
-                  {/* Cases Summary */}
-                  <div className="mt-2 space-y-1">
-                    {Object.entries(counts).map(([disease, count]) => (
-                      <div
-                        key={disease}
-                        className="flex justify-between items-center text-xs px-2 py-1 rounded bg-gray-50"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: diseaseColors[disease] }}
-                          />
-                          <span className="font-medium text-gray-700">
-                            {disease}
-                          </span>
-                        </div>
-                        <span className="text-gray-600 font-semibold">
-                          {count} {count === 1 ? "case" : "cases"}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-
-                  {zeroCases.length > 0 && (
-                    <p className="text-xs text-gray-500 mt-2 italic">
-                      No cases: {zeroCases.join(", ")}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-xs text-gray-500 text-center py-4">
-                  No data to display
-                </p>
-              )}
-            </div>
-
-            {/* Scrollable Scans List */}
+            {/* Scrollable Container for Both Pie Chart and Scans */}
             <div
-              className="flex-1 overflow-y-auto pr-2 space-y-3"
+              className="flex-1 overflow-y-auto pr-2 space-y-4"
               style={{ scrollbarWidth: "thin" }}
             >
-              {recentScans.map((scan, index) => {
-                const cardStyle = getCardStyle(scan.prediction);
-                return (
-                  <div
-                    key={`${scan.id || scan.timestamp}-${index}`}
-                    onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={scan.imageUrl}
-                          alt="Scan"
-                          className="w-14 h-14 rounded-lg object-cover border border-gray-200"
-                          onError={handleImageError}
-                        />
-                        <div
-                          className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                          style={{ display: "none" }}
+              {/* Pie Chart Section */}
+              <div className="pb-4 border-b border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                  Disease Distribution
+                </h3>
+                {chartData.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ percent }) =>
+                            `${(percent * 100).toFixed(0)}%`
+                          }
+                          outerRadius={60}
+                          innerRadius={20}
+                          fill="#8884d8"
+                          dataKey="value"
                         >
-                          No Image
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          formatter={(value, name, props) => [
+                            `${value} cases`,
+                            props.payload.name,
+                          ]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+
+                    {/* Cases Summary */}
+                    <div className="mt-2 space-y-1">
+                      {Object.entries(counts).map(([disease, count]) => (
+                        <div
+                          key={disease}
+                          className="flex justify-between items-center text-xs px-2 py-1 rounded bg-gray-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{
+                                backgroundColor: diseaseColors[disease],
+                              }}
+                            />
+                            <span className="font-medium text-gray-700">
+                              {disease}
+                            </span>
+                          </div>
+                          <span className="text-gray-600 font-semibold">
+                            {count} {count === 1 ? "case" : "cases"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {zeroCases.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-2 italic">
+                        No cases: {zeroCases.join(", ")}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-500 text-center py-4">
+                    No data to display
+                  </p>
+                )}
+              </div>
+
+              {/* Scans List */}
+              <div className="space-y-3">
+                {/* Scans List */}
+                <div className="space-y-3">
+                  {recentScans.map((scan, index) => {
+                    const cardStyle = getCardStyle(scan.prediction);
+                    return (
+                      <div
+                        key={`${scan.id || scan.timestamp}-${index}`}
+                        onClick={() => handleScanClick(scan)}
+                        className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={scan.imageUrl}
+                              alt="Scan"
+                              className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                              onError={handleImageError}
+                            />
+                            <div
+                              className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                              style={{ display: "none" }}
+                            >
+                              No Image
+                            </div>
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
+                            >
+                              {scan.prediction}
+                            </p>
+                            <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
+                              {formatDateTime(scan.timestamp)}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              By: {getFarmerName(scan)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p
-                          className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
-                        >
-                          {scan.prediction}
-                        </p>
-                        <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
-                          {formatDateTime(scan.timestamp)}
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          By: {getFarmerName(scan)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div className="mt-3 pt-3 border-t border-gray-200 text-center flex-shrink-0">
