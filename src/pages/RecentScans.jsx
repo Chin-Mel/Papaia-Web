@@ -233,9 +233,14 @@ export default function RecentScans({ farmId }) {
   }, []);
 
   const getFarmerName = useCallback(
-    (idNumber) => {
-      const farmer = farmers.find((f) => f.idNumber === idNumber);
-      if (!farmer) return `Farmer ${idNumber}`;
+    (scan) => {
+      // Use farmerName from scan API first, then fall back to lookup
+      if (scan.farmerName) {
+        return scan.farmerName;
+      }
+
+      const farmer = farmers.find((f) => f.idNumber === scan.idNumber);
+      if (!farmer) return `Farmer ${scan.idNumber}`;
 
       // Build full name
       let fullName = "";
@@ -244,7 +249,7 @@ export default function RecentScans({ farmId }) {
       if (farmer.lastname) fullName += ` ${farmer.lastname}`;
       if (farmer.suffix) fullName += ` ${farmer.suffix}`;
 
-      return fullName.trim() || farmer.fullName || `Farmer ${idNumber}`;
+      return fullName.trim() || farmer.fullName || `Farmer ${scan.idNumber}`;
     },
     [farmers]
   );
@@ -341,7 +346,7 @@ export default function RecentScans({ farmId }) {
                           {formatDateTime(scan.timestamp)}
                         </p>
                         <p className="text-xs text-slate-500">
-                          By: {getFarmerName(scan.idNumber)}
+                          By: {getFarmerName(scan)}
                         </p>
                       </div>
                     </div>
@@ -368,7 +373,7 @@ export default function RecentScans({ farmId }) {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         scan={selectedScan}
-        farmerName={selectedScan ? getFarmerName(selectedScan.idNumber) : ""}
+        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
       />
     </>
   );

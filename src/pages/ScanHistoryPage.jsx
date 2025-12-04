@@ -281,6 +281,7 @@ export default function ScanHistoryPage() {
                 description: predictionValue || "Unknown",
                 idNumber: scan.idNumber || "Unknown Farmer",
                 farmerName:
+                  scan.farmerName || // USE THIS FIRST - comes from API
                   farmersData[scan.idNumber] ||
                   scan.idNumber ||
                   "Unknown Farmer",
