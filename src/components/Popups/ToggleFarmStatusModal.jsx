@@ -10,6 +10,7 @@ import {
   XCircle,
   AlertTriangle,
 } from "lucide-react";
+import Alert from "../../components/Alert";
 
 function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
   const [isLoading, setIsLoading] = useState(false);
