@@ -530,6 +530,31 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                       </PieChart>
                     </ResponsiveContainer>
 
+                    {/* Cases Summary */}
+                    <div className="mt-2 space-y-1">
+                      {Object.entries(counts).map(([disease, count]) => (
+                        <div
+                          key={disease}
+                          className="flex justify-between items-center text-xs px-2 py-1 rounded bg-gray-50"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{
+                                backgroundColor: diseaseColors[disease],
+                              }}
+                            />
+                            <span className="font-medium text-gray-700">
+                              {disease}
+                            </span>
+                          </div>
+                          <span className="text-gray-600 font-semibold">
+                            {count} {count === 1 ? "case" : "cases"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
                     {zeroCases.length > 0 && (
                       <p className="text-xs text-gray-500 mt-2 italic">
                         No cases: {zeroCases.join(", ")}
