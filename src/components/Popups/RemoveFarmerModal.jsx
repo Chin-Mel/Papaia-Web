@@ -8,6 +8,7 @@ import {
   Database,
 } from "lucide-react";
 import defaultUserPic from "../../assets/default-user.png";
+import Alert from "../../components/Alert";
 
 // Remove Farmer Modal
 function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {

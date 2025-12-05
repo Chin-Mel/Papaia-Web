@@ -2,6 +2,7 @@ import { CheckCircle, X, UserPlus, Loader2 } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import React from "react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import Alert from "../../components/Alert";
 
 export default function RestoreFarmerModal({
   isOpen,
