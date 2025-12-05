@@ -222,51 +222,40 @@ export default function ScanDetailsPage() {
     try {
       if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
 
-      const [datePart, timePart, period] = timestamp.split(/\s+/);
-      if (datePart && timePart && period) {
-        const [month, day, year] = datePart.split("/");
-        const [hours, minutes] = timePart.split(":");
+      const parts = timestamp.trim().split(/\s+/);
+      if (parts.length !== 3) return { date: timestamp, time: "" };
 
-        const monthNames = [
-          "January",
-          "February",
-          "March",
-          "April",
-          "May",
-          "June",
-          "July",
-          "August",
-          "September",
-          "October",
-          "November",
-          "December",
-        ];
+      const datePart = parts[0];
+      const timePart = parts[1];
+      const period = parts[2];
 
-        const monthIndex = parseInt(month) - 1;
-        const monthName = monthNames[monthIndex] || month;
+      const [month, day, year] = datePart.split("/");
+      if (!month || !day || !year) return { date: timestamp, time: "" };
 
-        return {
-          date: `${monthName} ${parseInt(day)}, ${year}`,
-          time: `${hours}:${minutes} ${period}`,
-        };
-      }
+      const [hours, minutes] = timePart.split(":");
+      if (!hours || !minutes) return { date: timestamp, time: "" };
 
-      const date = new Date(timestamp);
-      if (isNaN(date.getTime())) {
-        return { date: "Unknown Date", time: "Unknown Time" };
-      }
+      const monthNames = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+
+      const monthIndex = parseInt(month) - 1;
+      const monthName = monthNames[monthIndex] || month;
 
       return {
-        date: date.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-        time: date.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }),
+        date: `${monthName} ${parseInt(day)}, ${year}`,
+        time: `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")} ${period}`,
       };
     } catch (error) {
       return { date: "Unknown Date", time: "Unknown Time" };
