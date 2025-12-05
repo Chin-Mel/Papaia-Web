@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import FooterMain from "../components/Footer/Footer";
-import HeaderMain from "../components/Header/HeaderMain";
-import { ArrowLeft } from "lucide-react";
 
 // Simple cache for faster subsequent loads
 const detailsCache = {
@@ -66,7 +63,6 @@ export default function ScanDetailsPage() {
           return;
         }
 
-        // Add timeout for slow connections
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         const historyRes = await fetch(
@@ -217,7 +213,6 @@ export default function ScanDetailsPage() {
     };
   };
 
-  // Update the formatDateTime function (around line 161) to format the date properly:
   const formatDateTime = (timestamp) => {
     try {
       if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
@@ -253,9 +248,15 @@ export default function ScanDetailsPage() {
       const monthIndex = parseInt(month) - 1;
       const monthName = monthNames[monthIndex] || month;
 
+      // Format exactly like scan history: padded hours and minutes
+      const formattedTime = `${hours.padStart(2, "0")}:${minutes.padStart(
+        2,
+        "0"
+      )} ${period}`;
+
       return {
         date: `${monthName} ${parseInt(day)}, ${year}`,
-        time: `${hours.padStart(2, "0")}:${minutes.padStart(2, "0")} ${period}`,
+        time: formattedTime,
       };
     } catch (error) {
       return { date: "Unknown Date", time: "Unknown Time" };
@@ -335,35 +336,27 @@ export default function ScanDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <div className="text-gray-500">Loading scan details...</div>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <div className="text-gray-500">Loading scan details...</div>
         </div>
-        <FooterMain />
       </div>
     );
   }
 
   if (!scanDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center space-y-4">
-            <div className="text-gray-500 text-lg">Scan not found</div>
-            <button
-              onClick={() => navigate("/scan-history")}
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Back to Scan History
-            </button>
-          </div>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="text-gray-500 text-lg">Scan not found</div>
+          <button
+            onClick={() => navigate("/scan-history")}
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Back to Scan History
+          </button>
         </div>
-        <FooterMain />
       </div>
     );
   }
@@ -378,17 +371,27 @@ export default function ScanDetailsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <HeaderMain />
-
-      <main className="flex-1 w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
+    <div className="min-h-screen bg-gray-50 p-4">
+      <div className="max-w-7xl mx-auto">
         {/* Header with Back Button */}
         <div className="mb-6">
           <button
             onClick={() => navigate("/scan-history")}
             className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-2 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
             <span className="font-bold text-xl">Scan Results</span>
           </button>
           <p className="text-sm text-gray-500 ml-7">
@@ -413,7 +416,6 @@ export default function ScanDetailsPage() {
                   }
                   alt="Scan"
                   className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
-                  loading="lazy"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/400x300?text=No+Image";
@@ -445,7 +447,9 @@ export default function ScanDetailsPage() {
                 <h2 className="text-base font-semibold text-gray-900">
                   Scan Status
                 </h2>
-                <div className="flex items-center gap-2 px-3 py-1 rounded-md bg-red-50">
+                <div
+                  className={`flex items-center gap-2 px-3 py-1 rounded-md ${statusInfo.badgeBg}`}
+                >
                   <svg
                     className="w-4 h-4 text-red-500"
                     fill="currentColor"
@@ -457,7 +461,9 @@ export default function ScanDetailsPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-sm font-medium text-red-600">
+                  <span
+                    className={`text-sm font-medium ${statusInfo.badgeText}`}
+                  >
                     {statusInfo.label}
                   </span>
                 </div>
@@ -503,7 +509,6 @@ export default function ScanDetailsPage() {
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Column 1: Farmer Info */}
                     <div className="flex items-start gap-3">
                       {scanDetails.profilePicture ? (
                         <img
@@ -548,7 +553,6 @@ export default function ScanDetailsPage() {
                       </div>
                     </div>
 
-                    {/* Column 2: Farm Name */}
                     <div>
                       <div className="text-sm text-gray-600 mb-1">
                         Farm Name
@@ -609,9 +613,7 @@ export default function ScanDetailsPage() {
             </div>
           </div>
         </div>
-      </main>
-
-      <FooterMain />
+      </div>
     </div>
   );
 }
