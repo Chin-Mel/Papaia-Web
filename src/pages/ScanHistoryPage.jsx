@@ -426,10 +426,7 @@ export default function ScanHistoryPage() {
       return `${month.padStart(2, "0")}/${day.padStart(
         2,
         "0"
-      )}/${shortYear} ${hours.padStart(2, "0")}:${minutes.padStart(
-        2,
-        "0"
-      )} ${period}`;
+      )}/${shortYear} ${timePart} ${period}`;
     } catch (error) {
       return timestamp;
     }
