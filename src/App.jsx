@@ -2,7 +2,6 @@ import React from "react";
 import { Routes, Route } from "react-router-dom"; // Removed BrowserRouter
 import ProtectedRoute from "./ProtectedRoute";
 import { Navigate } from "react-router-dom";
-import { AlertProvider } from "./AlertContext";
 import GlobalAlert from "./components/GlobalAlert";
 
 import LandingPage from "./pages/LandingPage";
@@ -26,7 +25,7 @@ import ManageBillingPage from "./pages/ManageBillingPage";
 function App() {
   return (
     //<AuthProvider>
-    <AlertProvider>
+    <>
       <GlobalAlert />
       <Routes>
         {/* Public Routes */}
@@ -125,7 +124,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </AlertProvider>
+    </>
   );
 }
 
