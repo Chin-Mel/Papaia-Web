@@ -171,48 +171,9 @@ export default function FarmDashboardPage() {
   };
 
   // Update the handleViewFarmer function to accept isArchived parameter
-  const handleViewFarmer = async (farmerId, isArchived = false) => {
-    try {
-      if (isArchived) {
-        // Fetch from archived farmers
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await response.json();
-
-        if (data.status === "success") {
-          const archivedFarmer = data.removedFarmers.find(
-            (f) => f.id === farmerId
-          );
-          if (archivedFarmer) {
-            setSelectedFarmer({ ...archivedFarmer, isArchived: true });
-            setIsFarmerDetailModalOpen(true);
-          }
-        }
-      } else {
-        // Fetch from active farmers (existing code)
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await response.json();
-        if (data.status === "success") {
-          setSelectedFarmer({ ...data.farmer, isArchived: false });
-          setIsFarmerDetailModalOpen(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching farmer details:", error);
-    }
+  const handleViewFarmer = (farmer) => {
+    setSelectedFarmer(farmer);
+    setIsFarmerDetailModalOpen(true);
   };
 
   const handleRemoveFarmerFromDetail = () => {

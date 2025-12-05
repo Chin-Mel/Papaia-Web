@@ -17,6 +17,26 @@ function FarmerDetailModal({
   onRemoveFarmer,
   farmer,
 }) {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen || !farmer) return null;
 
   const fullName = [
@@ -31,61 +51,45 @@ function FarmerDetailModal({
   const isArchived =
     farmer.isArchived || farmer.status?.toLowerCase() === "archived";
 
-  const modalRef = useRef(null);
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
         <div
-          className={`rounded-t-2xl p-6 relative ${
+          className={`p-4 relative ${
             isArchived
               ? "bg-gradient-to-r from-gray-500 to-gray-600"
-              : "bg-gradient-to-r from-[#00712D] to-[#F97316]"
+              : "bg-gradient-to-r from-green-600 to-orange-500"
           }`}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
-              <User
-                className={`w-6 h-6 ${
-                  isArchived ? "text-gray-600" : "text-green-600"
-                }`}
-              />
-            </div>
-            <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-md">
+                <User
+                  className={`w-5 h-5 ${
+                    isArchived ? "text-gray-600" : "text-green-600"
+                  }`}
+                />
+              </div>
               <h2 className="text-xl font-bold text-white">
-                {isArchived ? "Archived Farmer Details" : "Farmer Details"}
+                {isArchived ? "Archived Farmer" : "Farmer Details"}
               </h2>
-              <p className="text-white/90 text-sm">
-                {isArchived
-                  ? "This farmer has been archived"
-                  : "Complete farmer profile information"}
-              </p>
             </div>
+            <button
+              onClick={onClose}
+              className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-2"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Archived Banner */}
         {isArchived && (
-          <div className="bg-red-50 border-b-2 border-red-200 p-4">
+          <div className="bg-red-50 border-b-2 border-red-200 p-3">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               <p className="text-sm font-semibold text-red-900">
@@ -95,9 +99,10 @@ function FarmerDetailModal({
           </div>
         )}
 
-        {/* Profile Section */}
-        <div className="p-6">
-          <div className="flex items-start gap-4 mb-6">
+        {/* Body - Scrollable */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {/* Profile Section */}
+          <div className="flex items-start gap-4 mb-6 pb-6 border-b border-gray-200">
             <div className="relative">
               <img
                 src={farmer.profilePicture || defaultUserPic}
@@ -159,7 +164,7 @@ function FarmerDetailModal({
             </div>
           </div>
 
-          {/* Personal Info */}
+          {/* Personal Info Grid */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
               <User
@@ -176,10 +181,10 @@ function FarmerDetailModal({
               </h4>
             </div>
 
-            {/* First Name and Middle Name */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Row 1: First Name, Middle Name, Last Name */}
+            <div className="grid grid-cols-3 gap-3">
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -193,7 +198,7 @@ function FarmerDetailModal({
                   First Name
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
@@ -201,7 +206,7 @@ function FarmerDetailModal({
                 </p>
               </div>
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -215,19 +220,15 @@ function FarmerDetailModal({
                   Middle Name
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
                   {farmer.middlename || farmer.middleName || "N/A"}
                 </p>
               </div>
-            </div>
-
-            {/* Last Name and Suffix */}
-            <div className="grid grid-cols-2 gap-3">
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -241,15 +242,19 @@ function FarmerDetailModal({
                   Last Name
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
                   {farmer.lastname || farmer.lastName || "N/A"}
                 </p>
               </div>
+            </div>
+
+            {/* Row 2: Suffix, Contact Number, Birth Date */}
+            <div className="grid grid-cols-3 gap-3">
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -263,19 +268,15 @@ function FarmerDetailModal({
                   Suffix
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
                   {farmer.suffix || "N/A"}
                 </p>
               </div>
-            </div>
-
-            {/* Contact Number and Birth Date */}
-            <div className="grid grid-cols-2 gap-3">
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -287,10 +288,10 @@ function FarmerDetailModal({
                   }`}
                 >
                   <Phone className="w-3 h-3" />
-                  Contact Number
+                  Contact
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
@@ -298,7 +299,7 @@ function FarmerDetailModal({
                 </p>
               </div>
               <div
-                className={`p-3 rounded-xl border ${
+                className={`p-3 rounded-lg border ${
                   isArchived
                     ? "bg-gray-100 border-gray-300"
                     : "bg-gray-50 border-gray-200"
@@ -313,7 +314,7 @@ function FarmerDetailModal({
                   Birth Date
                 </p>
                 <p
-                  className={`font-semibold ${
+                  className={`font-semibold text-sm ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
@@ -324,7 +325,7 @@ function FarmerDetailModal({
 
             {/* Address - Full width */}
             <div
-              className={`p-3 rounded-xl border ${
+              className={`p-3 rounded-lg border ${
                 isArchived
                   ? "bg-gray-100 border-gray-300"
                   : "bg-gray-50 border-gray-200"
@@ -338,7 +339,7 @@ function FarmerDetailModal({
                 Address
               </p>
               <p
-                className={`font-semibold ${
+                className={`font-semibold text-sm ${
                   isArchived ? "text-gray-600" : "text-gray-900"
                 }`}
               >
@@ -359,7 +360,7 @@ function FarmerDetailModal({
             </div>
           </div>
 
-          {/* Action Button - Restore for archived, Remove for active */}
+          {/* Action Button */}
           <div className="mt-6">
             {isArchived ? (
               <button

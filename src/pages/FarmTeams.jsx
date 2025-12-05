@@ -501,7 +501,7 @@ export default function FarmTeams({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewFarmer(farmer.id, isArchived);
+                        onViewFarmer(farmer);
                       }}
                       className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                     >
@@ -601,7 +601,7 @@ export default function FarmTeams({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        onViewFarmer(farmer.id, isArchived);
+                        onViewFarmer(farmer);
                       }}
                       className="text-green-600 hover:text-green-700 font-medium text-sm transition-all duration-150 active:scale-95 hover:underline cursor-pointer"
                     >
