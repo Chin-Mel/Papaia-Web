@@ -527,8 +527,8 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                               </text>
                             );
                           }}
-                          outerRadius={180}
-                          innerRadius={50}
+                          outerRadius={170}
+                          innerRadius={0}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -549,7 +549,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                     </ResponsiveContainer>
 
                     {zeroCases.length > 0 && (
-                      <p className="text-xs text-black mb-3 italic font-medium text-center">
+                      <p className="text-xs text-black mb-3 mt-3 italic font-medium text-center">
                         No cases: {zeroCases.join(", ")}
                       </p>
                     )}
