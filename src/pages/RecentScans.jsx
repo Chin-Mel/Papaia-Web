@@ -468,7 +468,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               <div className="border-b border-gray-200 style={{ paddingTop: 0, paddingBottom: 0 }}">
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={350}>
+                    <ResponsiveContainer width="100%" height={330}>
                       <PieChart>
                         <Pie
                           data={chartData}
@@ -527,7 +527,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                               </text>
                             );
                           }}
-                          outerRadius={170}
+                          outerRadius={150}
                           innerRadius={0}
                           fill="#8884d8"
                           dataKey="value"
