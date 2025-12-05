@@ -57,8 +57,8 @@ export default function RestoreFarmerModal({
 
       // Check if farmer is already added to another farm
       if (
-        error.message?.includes("already added") ||
-        error.message?.includes("another farm")
+        error?.message?.includes("already added") ||
+        error?.message?.includes("another farm")
       ) {
         setAlert({
           type: "error",

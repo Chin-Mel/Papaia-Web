@@ -102,8 +102,8 @@ function AddFarmerModal({ isOpen, onClose, onFarmerAdded, farmId, onRefresh }) {
         const errorData = await response.json();
 
         if (
-          errorData.message?.includes("already added") ||
-          errorData.message?.includes("another farm")
+          errorData?.message?.includes("already added") ||
+          errorData?.message?.includes("another farm")
         ) {
           throw new Error("This farmer is already added to another farm.");
         }

@@ -252,17 +252,17 @@ export default function FarmTeams({
       `${street} ${barangay} ${municipality} ${province}`.trim();
 
     const matchesSearch =
-      firstName.includes(searchLower) ||
-      middleName.includes(searchLower) ||
-      lastName.includes(searchLower) ||
-      suffix.includes(searchLower) ||
-      fullName.includes(searchLower) ||
-      idNumber.includes(searchLower) ||
-      street.includes(searchLower) ||
-      barangay.includes(searchLower) ||
-      municipality.includes(searchLower) ||
-      province.includes(searchLower) ||
-      fullAddress.includes(searchLower);
+      (firstName || "").toLowerCase().includes(searchLower) ||
+      (middleName || "").toLowerCase().includes(searchLower) ||
+      (lastName || "").toLowerCase().includes(searchLower) ||
+      (suffix || "").toLowerCase().includes(searchLower) ||
+      (fullName || "").toLowerCase().includes(searchLower) ||
+      (idNumber || "").toLowerCase().includes(searchLower) ||
+      (street || "").toLowerCase().includes(searchLower) ||
+      (barangay || "").toLowerCase().includes(searchLower) ||
+      (municipality || "").toLowerCase().includes(searchLower) ||
+      (province || "").toLowerCase().includes(searchLower) ||
+      (fullAddress || "").toLowerCase().includes(searchLower);
 
     return matchesSearch && matchesStatus;
   });

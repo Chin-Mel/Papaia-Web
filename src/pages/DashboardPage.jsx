@@ -76,12 +76,15 @@ const cachedFetch = async (
 // ============ UTILITY FUNCTIONS ============
 const isToday = (timestampStr) => {
   try {
+    if (!timestampStr) return false; // handle undefined/null
+
     const today = new Date().toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
       year: "numeric",
     });
-    return timestampStr.includes(today);
+
+    return String(timestampStr).includes(today);
   } catch {
     return false;
   }

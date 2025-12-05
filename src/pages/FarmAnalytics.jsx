@@ -317,12 +317,16 @@ export default function FarmAnalytics({
           let period =
             apiItem.day || apiItem.week || apiItem.month || apiItem.year;
 
-          const defaultIndex = defaultData.findIndex(
-            (item) =>
-              item.period === period ||
-              item.period.includes(period) ||
-              period.includes(item.period)
-          );
+          const defaultIndex = defaultData.findIndex((item) => {
+            const itemPeriod = item?.period || "";
+            const targetPeriod = period || "";
+
+            return (
+              itemPeriod === targetPeriod ||
+              itemPeriod.includes(targetPeriod) ||
+              targetPeriod.includes(itemPeriod)
+            );
+          });
 
           if (defaultIndex !== -1) {
             const totalPredictions = Object.values(predictions).reduce(

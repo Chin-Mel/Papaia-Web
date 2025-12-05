@@ -169,8 +169,8 @@ export default function SignInPage() {
         const errorData = await loginResponse.json().catch(() => ({}));
 
         if (
-          errorData.message?.toLowerCase().includes("verify") ||
-          errorData.message?.toLowerCase().includes("verified")
+          errorData?.message?.toLowerCase().includes("verify") ||
+          errorData?.message?.toLowerCase().includes("verified")
         ) {
           setAlert({
             type: "error",

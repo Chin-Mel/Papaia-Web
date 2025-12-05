@@ -60,8 +60,8 @@ export default function ForgotPasswordPage() {
       } else {
         // Check for farmer email
         if (
-          data.message?.toLowerCase().includes("farmer") ||
-          data.role === "farmer"
+          data?.message?.toLowerCase().includes("farmer") ||
+          data?.role === "farmer"
         ) {
           setAlert({
             type: "error",
@@ -69,8 +69,8 @@ export default function ForgotPasswordPage() {
               "This email is registered as a farmer account. Please use the farmer mobile app.",
           });
         } else if (
-          data.message?.toLowerCase().includes("not found") ||
-          data.message?.toLowerCase().includes("does not exist")
+          data?.message?.toLowerCase().includes("not found") ||
+          data?.message?.toLowerCase().includes("does not exist")
         ) {
           setAlert({ type: "error", message: "Email does not exist." });
         } else {

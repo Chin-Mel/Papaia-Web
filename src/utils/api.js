@@ -56,7 +56,7 @@
 // }
 
 // export function handleApiError(error) {
-//   if (error.name === "TypeError" && error.message.includes("fetch")) {
+//   if (error.name === "TypeError" && error.message?.includes("fetch")) {
 //     return {
 //       message: "Network error. Please check your connection.",
 //       type: "network",

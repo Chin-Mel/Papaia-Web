@@ -204,7 +204,7 @@ export default function SignUpPage() {
       if (error.name === "AbortError") {
         throw new Error("Request timeout. Please try again.");
       }
-      if (error.message.includes("fetch")) {
+      if (error.message?.includes("fetch")) {
         throw new Error("Network error. Please check your connection.");
       }
       throw error;
@@ -307,19 +307,19 @@ export default function SignUpPage() {
       }, 2000);
     } catch (error) {
       if (
-        error.message.includes("Email already exists") ||
-        error.message.includes("Username already exists")
+        error.message?.includes("Email already exists") ||
+        error.message?.includes("Username already exists")
       ) {
         setError(error.message);
-      } else if (error.message.includes("Server error")) {
+      } else if (error.message?.includes("Server error")) {
         setError(
           "The server is experiencing issues. Please try again in a few minutes."
         );
-      } else if (error.message.includes("Network error")) {
+      } else if (error.message?.includes("Network error")) {
         setError(
           "Connection problem. Please check your internet and try again."
         );
-      } else if (error.message.includes("provide all required fields")) {
+      } else if (error.message?.includes("provide all required fields")) {
         setError("Please fill in all required fields.");
       } else {
         setError(error.message || "Registration failed. Please try again.");

@@ -383,9 +383,9 @@ export default function ScanHistoryPage() {
     }
 
     if (filters.farmerName) {
-      const query = filters.farmerName.toLowerCase();
+      const query = filters.farmerName.trim().toLowerCase();
       filtered = filtered.filter((s) =>
-        s.farmerName?.toLowerCase().includes(query)
+        s.farmerName?.trim().toLowerCase().includes(query)
       );
     }
 

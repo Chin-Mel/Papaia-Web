@@ -346,11 +346,12 @@ export default function EditProfilePage() {
       return previewUrl;
     }
 
-    if (userData?.profilePicture) {
-      return `${userData.profilePicture}${
-        userData.profilePicture.includes("?") ? "&" : "?"
-      }t=${Date.now()}`;
+    const pic = userData?.profilePicture;
+
+    if (pic && typeof pic === "string") {
+      return `${pic}${pic.includes("?") ? "&" : "?"}t=${Date.now()}`;
     }
+
     return defaultUserPic;
   };
 

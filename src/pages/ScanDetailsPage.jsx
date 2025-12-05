@@ -285,49 +285,51 @@ export default function ScanDetailsPage() {
     return fullName.trim() || farmer.fullName || farmer.name || null;
   };
 
+  const treatmentMap = {
+    healthy: [
+      "Continue regular monitoring of plant health",
+      "Maintain proper watering schedule",
+      "Ensure adequate sunlight and air circulation",
+      "Apply balanced fertilizer as needed",
+    ],
+    "ring spot": [
+      "Apply copper-based fungicide (Copper sulfate) immediately",
+      "Remove and destroy all infected plant parts",
+      "Improve air circulation between plants",
+      "Reduce overhead watering to minimize moisture",
+    ],
+    anthracnose: [
+      "Apply copper-based fungicide immediately",
+      "Remove and destroy all infected plant parts",
+      "Improve air circulation between plants",
+      "Reduce overhead watering to minimize moisture",
+      "Apply preventive fungicide sprays during wet seasons",
+    ],
+    "powdery mildew": [
+      "Apply sulfur-based or potassium bicarbonate fungicide",
+      "Improve air circulation around plants",
+      "Avoid overhead watering",
+      "Remove infected leaves and dispose properly",
+      "Apply preventive treatments during favorable conditions",
+    ],
+  };
+
   const getTreatmentSuggestions = (prediction) => {
     if (!prediction) return [];
 
     const predLower = prediction.toLowerCase();
 
-    if (predLower === "healthy") {
-      return [
-        "Continue regular monitoring of plant health",
-        "Maintain proper watering schedule",
-        "Ensure adequate sunlight and air circulation",
-        "Apply balanced fertilizer as needed",
-      ];
+    // Return healthy instructions if exactly healthy
+    if (predLower === "healthy") return treatmentMap.healthy;
+
+    // Check for any matching keyword in the mapping
+    for (const key in treatmentMap) {
+      if (key !== "healthy" && predLower.includes(key)) {
+        return treatmentMap[key];
+      }
     }
 
-    if (predLower.includes("ring spot") || predLower.includes("virus")) {
-      return [
-        "Apply copper-based fungicide (Copper sulfate) immediately",
-        "Remove and destroy all infected plant parts",
-        "Improve air circulation between plants",
-        "Reduce overhead watering to minimize moisture",
-      ];
-    }
-
-    if (predLower.includes("anthracnose")) {
-      return [
-        "Apply copper-based fungicide immediately",
-        "Remove and destroy all infected plant parts",
-        "Improve air circulation between plants",
-        "Reduce overhead watering to minimize moisture",
-        "Apply preventive fungicide sprays during wet seasons",
-      ];
-    }
-
-    if (predLower.includes("powdery mildew")) {
-      return [
-        "Apply sulfur-based or potassium bicarbonate fungicide",
-        "Improve air circulation around plants",
-        "Avoid overhead watering",
-        "Remove infected leaves and dispose properly",
-        "Apply preventive treatments during favorable conditions",
-      ];
-    }
-
+    // Default fallback if no match
     return [
       "Consult with agricultural extension officer for specific treatment",
       "Remove and destroy infected plant parts",
