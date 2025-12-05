@@ -40,7 +40,7 @@ export default function Alert({
 
   return (
     <div
-      className={`fixed top-20 right-5 max-w-xs w-full border-l-4 p-4 rounded shadow-md ${colors[type]} z-50 transition-all duration-300 ease-out`}
+      className={`fixed top-20 right-5 max-w-xs w-full border-l-4 p-4 rounded shadow-md ${colors[type]} z-[99999] transition-all duration-300 ease-out`}
       style={{
         transform: isVisible
           ? "translateX(0)"

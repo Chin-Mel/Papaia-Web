@@ -56,25 +56,26 @@ export default function RestoreFarmerModal({
     } catch (error) {
       setIsRestoring(false);
 
-      // Check if farmer is already added to another farm
+      let errorMessage =
+        error?.message || "Failed to restore farmer. Please try again.";
+
+      // Specific case: farmer assigned to another farm
       if (
         error?.message?.includes("already added") ||
         error?.message?.includes("another farm") ||
         error?.message?.toLowerCase().includes("already exists")
       ) {
-        setAlert({
-          type: "error",
-          message:
-            error.message ||
-            "This farmer is already added to another farm and cannot be restored.",
-        });
-      } else {
-        setAlert({
-          type: "error",
-          message:
-            error.message || "Failed to restore farmer. Please try again.",
-        });
+        errorMessage =
+          error?.message ||
+          "This farmer is already added to another farm and cannot be restored.";
       }
+
+      setAlert({ type: "error", message: errorMessage });
+
+      // ⛔ AUTO-CLOSE THE MODAL AFTER ERROR
+      setTimeout(() => {
+        onClose();
+      }, 600); // allow alert animation to appear
     }
   };
 
