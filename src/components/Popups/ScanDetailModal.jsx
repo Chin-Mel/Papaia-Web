@@ -61,15 +61,8 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
         className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div
-          className={`bg-gradient-to-r ${cardStyle.bg} p-6 flex items-center justify-between`}
-        >
-          <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white mb-1">Scan Details</h2>
-            <p className="text-white/90 text-sm">
-              Complete information about this prediction
-            </p>
-          </div>
+        <div className="bg-gradient-to-r from-green-600 to-orange-500 p-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-white">Scan Details</h2>
           <button
             onClick={onClose}
             className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-2"
@@ -95,34 +88,33 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
             />
           </div>
 
-          {/* Prediction Badge */}
+          {/* Prediction Badge and Confidence */}
           <div className="mb-6">
             <label className="text-sm font-semibold text-gray-700 mb-2 block">
-              Prediction Result
+              Disease Detected
             </label>
-            <span
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg ${cardStyle.badge}`}
-            >
-              <AlertCircle className="w-5 h-5" />
-              {scan.prediction}
-            </span>
-          </div>
-
-          {/* Confidence */}
-          <div className="mb-6">
-            <label className="text-sm font-semibold text-gray-700 mb-2 block">
-              Confidence Level
-            </label>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-gray-200 rounded-full h-3">
-                <div
-                  className={`h-3 rounded-full bg-gradient-to-r ${cardStyle.bg}`}
-                  style={{ width: `${(scan.confidence * 100).toFixed(0)}%` }}
-                />
-              </div>
-              <span className="text-lg font-bold text-gray-700">
-                {(scan.confidence * 100).toFixed(0)}%
+            <div className="flex items-center gap-4 flex-wrap">
+              <span
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg ${cardStyle.badge}`}
+              >
+                <AlertCircle className="w-5 h-5" />
+                {scan.prediction}
               </span>
+              <div className="flex items-center gap-3 flex-1 min-w-[200px]">
+                <div className="flex-1 bg-gray-200 rounded-full h-3">
+                  <div
+                    className={`h-3 rounded-full ${
+                      scan.prediction === "Healthy"
+                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                        : "bg-gradient-to-r from-red-500 to-red-600"
+                    }`}
+                    style={{ width: `${(scan.confidence * 100).toFixed(0)}%` }}
+                  />
+                </div>
+                <span className="text-lg font-bold text-gray-700">
+                  {(scan.confidence * 100).toFixed(0)}%
+                </span>
+              </div>
             </div>
           </div>
 
@@ -148,7 +140,11 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                 </label>
               </div>
               <p className="text-sm font-medium text-gray-800">
-                {scan.timestamp}
+                {new Date(scan.timestamp).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
               </p>
             </div>
           </div>
@@ -187,16 +183,6 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
               </div>
             </div>
           )}
-        </div>
-
-        {/* Footer */}
-        <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50">
-          <button
-            onClick={onClose}
-            className="w-full px-6 py-3 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white rounded-lg transition-all font-semibold shadow-md hover:shadow-lg"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>
