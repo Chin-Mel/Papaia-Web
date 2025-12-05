@@ -154,14 +154,30 @@ export default function FarmDashboardPage() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Specific error: farmer already in another farm
+        if (
+          data.message?.includes("already added") ||
+          data.message?.includes("another farm") ||
+          data.message?.toLowerCase().includes("already exists")
+        ) {
+          // Stop restoring and close modal
+          setRestoreAlert({
+            type: "error",
+            message:
+              "This farmer is already added to another farm and cannot be restored.",
+          });
+          setIsRestoreFarmerModalOpen(false);
+          return;
+        }
+
         throw new Error(data.message || "Failed to restore farmer");
       }
 
+      // Success
       setRestoreAlert({
         type: "success",
         message: "Farmer restored successfully!",
       });
-
       setTimeout(() => {
         setIsRestoreFarmerModalOpen(false);
         window.location.reload();
@@ -170,6 +186,7 @@ export default function FarmDashboardPage() {
       setRestoreAlert({ type: "error", message: err.message });
     }
   };
+
   // Fetch farm data
   const fetchFarmData = async () => {
     if (!farmId) return;

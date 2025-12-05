@@ -7,6 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
+import { useAlert } from "../AlertContext";
 
 const NotificationContext = createContext(null);
 
@@ -33,6 +34,7 @@ export function showToast(message, type = "success") {
 
 // Notification Provider Component
 export function NotificationProvider({ children }) {
+  const { showAlert } = useAlert();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -40,94 +42,93 @@ export function NotificationProvider({ children }) {
   const previousCountRef = useRef(0);
   const isMountedRef = useRef(true);
 
-  const fetchNotifications = useCallback(async (silent = false) => {
-    try {
-      if (!silent) {
-        setLoading(true);
-      }
-      setError(null);
-
-      const token = localStorage.getItem("token");
-      if (!token) {
-        //console.error("[DEBUG] No token found in localStorage");
-        if (!silent) setLoading(false);
-        setError("No authentication token found");
-        setNotifications([]);
-        setUnreadCount(0);
-        return;
-      }
-
-      const response = await fetch(
-        "https://papaiaapi.onrender.com/api/owner/notifications",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
+  const fetchNotifications = useCallback(
+    async (silent = false) => {
+      try {
+        if (!silent) {
+          setLoading(true);
         }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-
-        if (response.status === 404) {
-          setNotifications([]);
-          setUnreadCount(0);
-          if (!silent) setLoading(false);
-          return;
-        }
-
-        if (response.status === 401) {
-          //console.error("[DEBUG] Unauthorized - token may be invalid");
-          setError("Unauthorized - please log in again");
-          setNotifications([]);
-          setUnreadCount(0);
-          if (!silent) setLoading(false);
-          return;
-        }
-
-        throw new Error(errorData.error || `API Error: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const notificationsArray = Array.isArray(data) ? data : [];
-
-      // Normalize the read status
-      const normalizedNotifications = notificationsArray.map((notif) => ({
-        ...notif,
-        read: notif.read === true || notif.isRead === true,
-      }));
-
-      // Only update if component is still mounted
-      if (isMountedRef.current) {
-        setNotifications(normalizedNotifications);
         setError(null);
 
-        // Count unread notifications
-        const unread = normalizedNotifications.filter((n) => !n.read).length;
+        const token = localStorage.getItem("token");
+        if (!token) {
+          //console.error("[DEBUG] No token found in localStorage");
+          if (!silent) setLoading(false);
+          setError("No authentication token found");
+          setNotifications([]);
+          setUnreadCount(0);
+          return;
+        }
 
-        // Update count reference for tracking
-        previousCountRef.current = unread;
-        setUnreadCount(unread);
+        const response = await fetch(
+          "https://papaiaapi.onrender.com/api/owner/notifications",
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        // console.log(
-        //   `[DEBUG] Total: ${normalizedNotifications.length} notifications, ${unread} unread`
-        // );
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+
+          if (response.status === 404) {
+            setNotifications([]);
+            setUnreadCount(0);
+            if (!silent) setLoading(false);
+            return;
+          }
+
+          if (response.status === 401) {
+            //console.error("[DEBUG] Unauthorized - token may be invalid");
+            setError("Unauthorized - please log in again");
+            setNotifications([]);
+            setUnreadCount(0);
+            if (!silent) setLoading(false);
+            return;
+          }
+
+          throw new Error(errorData.error || `API Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const notificationsArray = Array.isArray(data) ? data : [];
+
+        // Normalize the read status
+        const normalizedNotifications = notificationsArray.map((notif) => ({
+          ...notif,
+          read: notif.read === true || notif.isRead === true,
+        }));
+
+        // Only update if component is still mounted
+        if (isMountedRef.current) {
+          // Compare old vs new unread notifications
+          const oldUnreadIds = notifications
+            .filter((n) => !n.read)
+            .map((n) => n.id);
+          const newUnread = normalized.filter(
+            (n) => !n.read && !oldUnreadIds.includes(n.id)
+          );
+
+          // Show alert for new notifications
+          newUnread.forEach((n) => {
+            showAlert(`New notification: ${n.disease} detected!`, "info", 4000);
+          });
+
+          setNotifications(normalized);
+          const unread = normalized.filter((n) => !n.read).length;
+          setUnreadCount(unread);
+          previousCountRef.current = unread;
+        }
+      } catch (error) {
+      } finally {
+        if (!silent && isMountedRef.current) setLoading(false);
       }
-    } catch (error) {
-      //console.error("[DEBUG] Error fetching notifications:", error);
-      if (isMountedRef.current) {
-        setError(error.message);
-        setNotifications([]);
-        setUnreadCount(0);
-      }
-    } finally {
-      if (!silent && isMountedRef.current) {
-        setLoading(false);
-      }
-    }
-  }, []);
+    },
+    [notifications, showAlert]
+  );
 
   useEffect(() => {
     isMountedRef.current = true;
