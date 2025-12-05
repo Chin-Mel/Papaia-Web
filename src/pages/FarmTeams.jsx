@@ -228,7 +228,7 @@ export default function FarmTeams({
       return matchesStatus;
     }
 
-    // Search filter
+    // Search filter - FIXED: Added safety checks for undefined values
     const firstName = (
       farmer.firstname ||
       farmer.firstName ||
@@ -437,8 +437,7 @@ export default function FarmTeams({
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
                         onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/150/cccccc/666666?text=User";
+                          e.target.src = defaultUserPic;
                         }}
                       />
                       <div
@@ -526,8 +525,7 @@ export default function FarmTeams({
                             : "border-gray-200 group-hover:border-green-300"
                         } transition-colors`}
                         onError={(e) => {
-                          e.target.src =
-                            "https://via.placeholder.com/150/cccccc/666666?text=User";
+                          e.target.src = defaultUserPic;
                         }}
                       />
                       <div
