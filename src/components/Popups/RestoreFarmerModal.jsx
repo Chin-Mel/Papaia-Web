@@ -52,23 +52,27 @@ export default function RestoreFarmerModal({
         type: "success",
         message: "Farmer restored successfully!",
       });
+      // Don't close modal here - let parent handle it
     } catch (error) {
       setIsRestoring(false);
 
       // Check if farmer is already added to another farm
       if (
         error?.message?.includes("already added") ||
-        error?.message?.includes("another farm")
+        error?.message?.includes("another farm") ||
+        error?.message?.toLowerCase().includes("already exists")
       ) {
         setAlert({
           type: "error",
           message:
+            error.message ||
             "This farmer is already added to another farm and cannot be restored.",
         });
       } else {
         setAlert({
           type: "error",
-          message: "Failed to restore farmer. Please try again.",
+          message:
+            error.message || "Failed to restore farmer. Please try again.",
         });
       }
     }

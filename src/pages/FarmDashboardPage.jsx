@@ -109,9 +109,10 @@ export default function FarmDashboardPage() {
         }
       );
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to restore farmer");
+        throw new Error(responseData.message || "Failed to restore farmer");
       }
 
       setIsRestoreFarmerModalOpen(false);
@@ -119,7 +120,9 @@ export default function FarmDashboardPage() {
       window.location.reload();
     } catch (error) {
       console.error("Error restoring farmer:", error);
-      setAlert({ type: "error", message: error.message });
+      // Don't close modal on error - let RestoreFarmerModal handle it
+      // Pass the error to the modal by not closing it here
+      throw error; // Re-throw to let the modal catch it
     }
   };
   // Fetch farm data
