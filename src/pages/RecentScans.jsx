@@ -468,8 +468,12 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               <div className="border-b border-gray-200">
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={420}>
-                      <PieChart margin={{ top: 0, bottom: 0 }}>
+                    <ResponsiveContainer
+                      width="100%"
+                      height={420}
+                      padding={{ top: 0, bottom: 0 }}
+                    >
+                      <PieChart>
                         <Pie
                           data={chartData}
                           cx="50%"
