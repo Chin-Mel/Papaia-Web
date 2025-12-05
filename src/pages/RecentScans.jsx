@@ -238,17 +238,12 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           // Get farmer ID numbers
           const farmerIdNumbers = farmersList.map((f) => f.idNumber);
 
-          // Filter scans from active farmers only
-          const activeFarmerScans = (scansData || [])
+          // CHANGED: Show ALL scans from farmers that belong to this farm
+          // Don't filter by active status - show scans even from archived/inactive farmers
+          const farmScans = (scansData || [])
             .filter((scan) => {
-              const farmer = farmersList.find(
-                (f) => f.idNumber === scan.idNumber
-              );
-              const isActive =
-                farmer &&
-                farmer.status !== "deactivate" &&
-                farmer.status !== "inactive";
-              return farmerIdNumbers.includes(scan.idNumber) && isActive;
+              // Only check if the farmer belongs to this farm, not their status
+              return farmerIdNumbers.includes(scan.idNumber);
             })
             .sort((a, b) => {
               const parseTimestamp = (timestamp) => {
@@ -271,8 +266,8 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
           // Only filter by date range if user has actively selected a range
           const filteredScans = filterActive
-            ? filterScansByDateRange(activeFarmerScans, timeFilter, dateRange)
-            : activeFarmerScans;
+            ? filterScansByDateRange(farmScans, timeFilter, dateRange)
+            : farmScans;
 
           setRecentScans(filteredScans);
 
@@ -465,7 +460,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               style={{ scrollbarWidth: "thin" }}
             >
               {/* Pie Chart Section */}
-              <div className="border-b border-gray-200 style={{ paddingTop: 0, paddingBottom: 0 }}">
+              <div className="border-b border-gray-200 pb-4">
                 {chartData.length > 0 ? (
                   <>
                     <ResponsiveContainer width="100%" height={330}>
