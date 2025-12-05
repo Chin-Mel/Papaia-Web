@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   X,
+  User,
   UserMinus,
   AlertTriangle,
   Loader2,
