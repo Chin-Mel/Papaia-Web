@@ -7,7 +7,7 @@ import {
   useCallback,
   useRef,
 } from "react";
-import { useAlert } from "../AlertContext";
+import { useAlert } from "./AlertContext";
 
 const NotificationContext = createContext(null);
 
