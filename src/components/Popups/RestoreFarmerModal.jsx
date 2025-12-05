@@ -242,11 +242,6 @@ export default function RestoreFarmerModal({
       await onConfirm(); // parent handles alerts now
     } catch (error) {
       setIsRestoring(false);
-
-      // Auto-close the modal after failed restore
-      setTimeout(() => {
-        onClose();
-      }, 600);
     }
   };
 

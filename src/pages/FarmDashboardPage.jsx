@@ -115,8 +115,15 @@ export default function FarmDashboardPage() {
         throw new Error(responseData.message || "Failed to restore farmer");
       }
 
-      setIsRestoreFarmerModalOpen(false);
+      // 1. Trigger alert FIRST
       setAlert({ type: "success", message: "Farmer restored successfully!" });
+
+      // 2. Close modal AFTER 3 seconds (same time your alert auto-hides)
+      setTimeout(() => {
+        setIsRestoreFarmerModalOpen(false);
+        window.location.reload();
+      }, 3000);
+
       window.location.reload();
     } catch (error) {
       console.error("Error restoring farmer:", error);
