@@ -125,6 +125,23 @@ export default function FarmDashboardPage() {
       throw error; // Re-throw to let the modal catch it
     }
   };
+
+  const [restoreAlert, setRestoreAlert] = useState({ type: "", message: "" });
+
+  const handleRestore = async () => {
+    try {
+      await restoreFarmer(); // your API call
+      setRestoreAlert({
+        type: "success",
+        message: "Farmer restored successfully!",
+      });
+    } catch (err) {
+      setRestoreAlert({
+        type: "error",
+        message: err.message || "Failed to restore farmer",
+      });
+    }
+  };
   // Fetch farm data
   const fetchFarmData = async () => {
     if (!farmId) return;
@@ -584,10 +601,17 @@ export default function FarmDashboardPage() {
             farmer={selectedFarmer}
           />
 
+          <Alert
+            type={restoreAlert.type}
+            message={restoreAlert.message}
+            onClose={() => setRestoreAlert({ type: "", message: "" })}
+            duration={3000}
+          />
+
           <RestoreFarmerModal
-            isOpen={isRestoreFarmerModalOpen}
-            onClose={() => setIsRestoreFarmerModalOpen(false)}
-            onConfirm={handleConfirmRestore}
+            isOpen={isRestoreOpen}
+            onClose={closeRestore}
+            onConfirm={handleRestore}
             farmer={selectedFarmer}
           />
 

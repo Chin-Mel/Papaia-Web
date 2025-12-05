@@ -1,8 +1,201 @@
-import { CheckCircle, X, UserPlus, Loader2, RotateCcw } from "lucide-react";
+// import { CheckCircle, X, UserPlus, Loader2, RotateCcw } from "lucide-react";
+// import { useRef, useEffect, useState } from "react";
+// import React from "react";
+// import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
+// import Alert from "../../components/Alert";
+
+// export default function RestoreFarmerModal({
+//   isOpen,
+//   onClose,
+//   onConfirm,
+//   farmer,
+// }) {
+//   const modalRef = useRef(null);
+//   const [isRestoring, setIsRestoring] = useState(false);
+//   const [alert, setAlert] = useState({ type: "", message: "" });
+
+//   useEffect(() => {
+//     const handleClickOutside = (event) => {
+//       if (modalRef.current && !modalRef.current.contains(event.target)) {
+//         if (!isRestoring) {
+//           onClose();
+//         }
+//       }
+//     };
+//     document.addEventListener("mousedown", handleClickOutside);
+//     return () => document.removeEventListener("mousedown", handleClickOutside);
+//   }, [onClose, isRestoring]);
+
+//   useEffect(() => {
+//     if (!isOpen) {
+//       setIsRestoring(false);
+//     }
+//   }, [isOpen]);
+
+//   if (!isOpen) return null;
+
+//   const formatName = () => {
+//     if (!farmer) return "Unknown Farmer";
+//     const firstName = farmer.firstname || farmer.firstName || "";
+//     const middleName = farmer.middlename || farmer.middleName || "";
+//     const lastName = farmer.lastname || farmer.lastName || "";
+//     const suffix = farmer.suffix || "";
+//     const nameParts = [firstName, middleName, lastName, suffix].filter(Boolean);
+//     return nameParts.length > 0 ? nameParts.join(" ") : "Unknown Farmer";
+//   };
+
+//   const handleConfirm = async () => {
+//     setIsRestoring(true);
+//     try {
+//       await onConfirm();
+//       setAlert({
+//         type: "success",
+//         message: "Farmer restored successfully!",
+//       });
+//       // Don't close modal here - let parent handle it
+//     } catch (error) {
+//       setIsRestoring(false);
+
+//       let errorMessage =
+//         error?.message || "Failed to restore farmer. Please try again.";
+
+//       // Specific case: farmer assigned to another farm
+//       if (
+//         error?.message?.includes("already added") ||
+//         error?.message?.includes("another farm") ||
+//         error?.message?.toLowerCase().includes("already exists")
+//       ) {
+//         errorMessage =
+//           error?.message ||
+//           "This farmer is already added to another farm and cannot be restored.";
+//       }
+
+//       setAlert({ type: "error", message: errorMessage });
+
+//       // ⛔ AUTO-CLOSE THE MODAL AFTER ERROR
+//       setTimeout(() => {
+//         onClose();
+//       }, 600); // allow alert animation to appear
+//     }
+//   };
+
+//   return (
+//     <>
+//       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+//         <div
+//           ref={modalRef}
+//           className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+//         >
+//           <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
+//             <div className="flex justify-center mb-4">
+//               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+//                 <RotateCcw className="w-7 h-9 text-green-600" />
+//               </div>
+//             </div>
+//             <h2 className="text-xl sm:text-2xl font-bold text-white text-center">
+//               Restore Farmer?
+//             </h2>
+//             <button
+//               onClick={onClose}
+//               disabled={isRestoring}
+//               className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+//             >
+//               <X className="w-5 h-5" />
+//             </button>
+//           </div>
+
+//           <div className="overflow-y-auto flex-1">
+//             <div className="p-6 sm:p-8">
+//               <p className="text-sm sm:text-base text-gray-600 text-center mb-6">
+//                 This will restore{" "}
+//                 <span className="font-semibold text-gray-900">
+//                   {formatName()}
+//                 </span>{" "}
+//                 back to active status. Their future scans will be added to this
+//                 farm again.
+//               </p>
+
+//               <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 sm:p-5 mb-6 border border-green-200/50">
+//                 <div className="flex items-center gap-3 sm:gap-4">
+//                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+//                     <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+//                   </div>
+//                   <div className="flex-1 min-w-0">
+//                     <div className="flex items-center gap-2 mb-1">
+//                       <h3 className="font-bold text-base sm:text-lg text-slate-900 truncate">
+//                         {formatName()}
+//                       </h3>
+//                       <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
+//                         {isRestoring ? "Restoring..." : "Ready to Restore"}
+//                       </span>
+//                     </div>
+//                     <p className="text-xs sm:text-sm text-slate-600 font-mono">
+//                       ID: {farmer?.idNumber || "N/A"}
+//                     </p>
+//                   </div>
+//                 </div>
+//               </div>
+
+//               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+//                 <p className="text-sm text-blue-900 font-medium mb-2">
+//                   After restoration:
+//                 </p>
+//                 <ul className="text-xs text-blue-800 space-y-1.5">
+//                   <li className="flex items-start gap-2">
+//                     <span className="text-blue-500 mt-0.5">•</span>
+//                     <span>
+//                       Farmer status will change from "Archived" to "Active"
+//                     </span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <span className="text-blue-500 mt-0.5">•</span>
+//                     <span>New scans will be added to this farm</span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <span className="text-blue-500 mt-0.5">•</span>
+//                     <span>Full access to farm operations restored</span>
+//                   </li>
+//                   <li className="flex items-start gap-2">
+//                     <span className="text-blue-500 mt-0.5">•</span>
+//                     <span>Previous scans and data remain intact</span>
+//                   </li>
+//                 </ul>
+//               </div>
+
+//               <div className="flex gap-3">
+//                 <button
+//                   onClick={onClose}
+//                   disabled={isRestoring}
+//                   className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+//                 >
+//                   Cancel
+//                 </button>
+//                 <button
+//                   onClick={handleConfirm}
+//                   disabled={isRestoring}
+//                   className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:active:scale-100 flex items-center justify-center gap-2"
+//                 >
+//                   {isRestoring ? (
+//                     <>
+//                       <Loader2 className="w-4 h-4 animate-spin" />
+//                       Restoring...
+//                     </>
+//                   ) : (
+//                     "Restore Farmer"
+//                   )}
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+//     </>
+//   );
+// }
+
+import { X, UserPlus, Loader2, RotateCcw } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import React from "react";
-import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
-import Alert from "../../components/Alert";
 
 export default function RestoreFarmerModal({
   isOpen,
@@ -12,7 +205,6 @@ export default function RestoreFarmerModal({
 }) {
   const modalRef = useRef(null);
   const [isRestoring, setIsRestoring] = useState(false);
-  const [alert, setAlert] = useState({ type: "", message: "" });
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,153 +239,122 @@ export default function RestoreFarmerModal({
   const handleConfirm = async () => {
     setIsRestoring(true);
     try {
-      await onConfirm();
-      setAlert({
-        type: "success",
-        message: "Farmer restored successfully!",
-      });
-      // Don't close modal here - let parent handle it
+      await onConfirm(); // parent handles alerts now
     } catch (error) {
       setIsRestoring(false);
 
-      let errorMessage =
-        error?.message || "Failed to restore farmer. Please try again.";
-
-      // Specific case: farmer assigned to another farm
-      if (
-        error?.message?.includes("already added") ||
-        error?.message?.includes("another farm") ||
-        error?.message?.toLowerCase().includes("already exists")
-      ) {
-        errorMessage =
-          error?.message ||
-          "This farmer is already added to another farm and cannot be restored.";
-      }
-
-      setAlert({ type: "error", message: errorMessage });
-
-      // ⛔ AUTO-CLOSE THE MODAL AFTER ERROR
+      // Auto-close the modal after failed restore
       setTimeout(() => {
         onClose();
-      }, 600); // allow alert animation to appear
+      }, 600);
     }
   };
 
   return (
-    <>
-      <Alert
-        type={alert.type}
-        message={alert.message}
-        onClose={() => setAlert({ type: "", message: "" })}
-      />
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div
-          ref={modalRef}
-          className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
-        >
-          <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-                <RotateCcw className="w-7 h-9 text-green-600" />
-              </div>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div
+        ref={modalRef}
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+      >
+        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 sm:p-8 relative">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+              <RotateCcw className="w-7 h-9 text-green-600" />
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-white text-center">
-              Restore Farmer?
-            </h2>
-            <button
-              onClick={onClose}
-              disabled={isRestoring}
-              className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white text-center">
+            Restore Farmer?
+          </h2>
+          <button
+            onClick={onClose}
+            disabled={isRestoring}
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-          <div className="overflow-y-auto flex-1">
-            <div className="p-6 sm:p-8">
-              <p className="text-sm sm:text-base text-gray-600 text-center mb-6">
-                This will restore{" "}
-                <span className="font-semibold text-gray-900">
-                  {formatName()}
-                </span>{" "}
-                back to active status. Their future scans will be added to this
-                farm again.
-              </p>
+        <div className="overflow-y-auto flex-1">
+          <div className="p-6 sm:p-8">
+            <p className="text-sm sm:text-base text-gray-600 text-center mb-6">
+              This will restore{" "}
+              <span className="font-semibold text-gray-900">
+                {formatName()}
+              </span>{" "}
+              back to active status.
+            </p>
 
-              <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 sm:p-5 mb-6 border border-green-200/50">
-                <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
-                    <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 sm:p-5 mb-6 border border-green-200/50">
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md flex-shrink-0">
+                  <UserPlus className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-base sm:text-lg text-slate-900 truncate">
+                      {formatName()}
+                    </h3>
+                    <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
+                      {isRestoring ? "Restoring..." : "Ready to Restore"}
+                    </span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-base sm:text-lg text-slate-900 truncate">
-                        {formatName()}
-                      </h3>
-                      <span className="px-2 py-0.5 bg-green-500 text-white text-xs font-semibold rounded-full flex-shrink-0">
-                        {isRestoring ? "Restoring..." : "Ready to Restore"}
-                      </span>
-                    </div>
-                    <p className="text-xs sm:text-sm text-slate-600 font-mono">
-                      ID: {farmer?.idNumber || "N/A"}
-                    </p>
-                  </div>
+                  <p className="text-xs sm:text-sm text-slate-600 font-mono">
+                    ID: {farmer?.idNumber || "N/A"}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                <p className="text-sm text-blue-900 font-medium mb-2">
-                  After restoration:
-                </p>
-                <ul className="text-xs text-blue-800 space-y-1.5">
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>
-                      Farmer status will change from "Archived" to "Active"
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>New scans will be added to this farm</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>Full access to farm operations restored</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">•</span>
-                    <span>Previous scans and data remain intact</span>
-                  </li>
-                </ul>
-              </div>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-blue-900 font-medium mb-2">
+                After restoration:
+              </p>
+              <ul className="text-xs text-blue-800 space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Status will change to "Active"</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>New scans will be added to this farm</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Farm access restored</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-blue-500 mt-0.5">•</span>
+                  <span>Previous data remains intact</span>
+                </li>
+              </ul>
+            </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={onClose}
-                  disabled={isRestoring}
-                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleConfirm}
-                  disabled={isRestoring}
-                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:shadow-md disabled:active:scale-100 flex items-center justify-center gap-2"
-                >
-                  {isRestoring ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Restoring...
-                    </>
-                  ) : (
-                    "Restore Farmer"
-                  )}
-                </button>
-              </div>
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                disabled={isRestoring}
+                className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirm}
+                disabled={isRestoring}
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md hover:shadow-lg active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isRestoring ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Restoring...
+                  </>
+                ) : (
+                  "Restore Farmer"
+                )}
+              </button>
             </div>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
