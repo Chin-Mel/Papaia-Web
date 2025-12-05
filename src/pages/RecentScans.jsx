@@ -233,17 +233,19 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
         if (farmersData.status === "success") {
           const farmersList = farmersData.farmers || [];
+
           setFarmers(farmersList);
 
-          // Get farmer ID numbers
-          const farmerIdNumbers = farmersList.map((f) => f.idNumber);
+          // SAFE farmer ID extraction
+          const farmerIdNumbers = (farmersList || [])
+            .map((f) => f?.idNumber)
+            .filter(Boolean);
 
-          // CHANGED: Show ALL scans from farmers that belong to this farm
-          // Don't filter by active status - show scans even from archived/inactive farmers
           const farmScans = (scansData || [])
             .filter((scan) => {
-              // Only check if the farmer belongs to this farm, not their status
-              return farmerIdNumbers.includes(scan.idNumber);
+              // safe check
+              if (!scan?.idNumber) return false;
+              return farmerIdNumbers?.includes(scan.idNumber) === true;
             })
             .sort((a, b) => {
               const parseTimestamp = (timestamp) => {
@@ -260,7 +262,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                   return new Date(timestamp);
                 }
               };
-              // Sort descending (most recent first)
+
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             });
 
