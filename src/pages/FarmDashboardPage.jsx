@@ -116,11 +116,7 @@ export default function FarmDashboardPage() {
 
       setIsRestoreFarmerModalOpen(false);
       setAlert({ type: "success", message: "Farmer restored successfully!" });
-
-      // Refresh the page to show updated farmer list
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
+      window.location.reload();
     } catch (error) {
       console.error("Error restoring farmer:", error);
       setAlert({ type: "error", message: error.message });
@@ -175,9 +171,48 @@ export default function FarmDashboardPage() {
   };
 
   // Update the handleViewFarmer function to accept isArchived parameter
-  const handleViewFarmer = (farmer) => {
-    setSelectedFarmer(farmer);
-    setIsFarmerDetailModalOpen(true);
+  const handleViewFarmer = async (farmerId, isArchived = false) => {
+    try {
+      if (isArchived) {
+        // Fetch from archived farmers
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+
+        if (data.status === "success") {
+          const archivedFarmer = data.removedFarmers.find(
+            (f) => f.id === farmerId
+          );
+          if (archivedFarmer) {
+            setSelectedFarmer({ ...archivedFarmer, isArchived: true });
+            setIsFarmerDetailModalOpen(true);
+          }
+        }
+      } else {
+        // Fetch from active farmers (existing code)
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.status === "success") {
+          setSelectedFarmer({ ...data.farmer, isArchived: false });
+          setIsFarmerDetailModalOpen(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching farmer details:", error);
+    }
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -202,25 +237,18 @@ export default function FarmDashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to remove farmer");
+        throw new Error(errorData.message || "Failed to deactivate farmer");
       }
 
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
 
-      // Update the farmer's status locally to archived instead of reloading
-      setSelectedFarmer((prev) => ({
-        ...prev,
-        isArchived: true,
-        status: "archived",
-      }));
-
-      // Refresh the page after showing success modal
+      // Refresh the page to update farmer list
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      console.error("Error removing farmer:", error);
+      //console.error("Error deactivating farmer:", error);
       setAlert({ type: "error", message: error.message });
     }
   };
