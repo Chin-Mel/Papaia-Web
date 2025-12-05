@@ -465,19 +465,11 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               style={{ scrollbarWidth: "thin" }}
             >
               {/* Pie Chart Section */}
-              <div className="border-b border-gray-200">
+              <div className="border-b border-gray-200 style={{ paddingTop: 0, paddingBottom: 0 }}">
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer
-                      width="100%"
-                      height={420}
-                      padding={{ top: 0, bottom: 0 }}
-                      margin={{ top: 0, bottom: 0 }}
-                    >
-                      <PieChart
-                        padding={{ top: 0, bottom: 0 }}
-                        margin={{ top: 0, bottom: 0 }}
-                      >
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
                         <Pie
                           data={chartData}
                           cx="50%"
