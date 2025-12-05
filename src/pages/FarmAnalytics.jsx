@@ -121,7 +121,10 @@ export default function FarmAnalytics({
     const controller = new AbortController();
 
     const fetchAnalytics = async () => {
-      setLoading(true);
+      // Only show loading on initial load (when analyticsData is null)
+      if (!analyticsData) {
+        setLoading(true);
+      }
       setError(null);
 
       try {
