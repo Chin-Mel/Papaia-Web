@@ -527,8 +527,8 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                               </text>
                             );
                           }}
-                          outerRadius={170}
-                          innerRadius={70}
+                          outerRadius={190}
+                          innerRadius={90}
                           fill="#8884d8"
                           dataKey="value"
                         >
