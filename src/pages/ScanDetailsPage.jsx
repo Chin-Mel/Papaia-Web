@@ -220,14 +220,25 @@ export default function ScanDetailsPage() {
       if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
 
       const parts = timestamp.trim().split(/\s+/);
-      if (parts.length !== 3) return { date: timestamp, time: "" };
-
-      const datePart = parts[0];
-      const timePart = parts[1];
-      const period = parts[2];
-
-      const [month, day, year] = datePart.split("/");
-      if (!month || !day || !year) return { date: timestamp, time: "" };
+      if (parts.length !== 3) {
+        // Try parsing as ISO date (like the modal does)
+        const date = new Date(timestamp);
+        if (!isNaN(date)) {
+          return {
+            date: date.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }),
+            time: date.toLocaleTimeString("en-US", {
+              hour: "numeric",
+              minute: "2-digit",
+              hour12: true,
+            }),
+          };
+        }
+        return { date: timestamp, time: "" };
+      }
 
       const monthNames = [
         "January",
