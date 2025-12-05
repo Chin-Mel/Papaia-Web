@@ -132,21 +132,42 @@ export default function FarmDashboardPage() {
       throw error; // Re-throw to let the modal catch it
     }
   };
+  const handleCloseRestoreModal = () => setIsRestoreFarmerModalOpen(false);
 
   const [restoreAlert, setRestoreAlert] = useState({ type: "", message: "" });
 
   const handleRestore = async () => {
+    if (!selectedFarmer) return;
+
     try {
-      await restoreFarmer(); // your API call
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${selectedFarmer.id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to restore farmer");
+      }
+
       setRestoreAlert({
         type: "success",
         message: "Farmer restored successfully!",
       });
+
+      setTimeout(() => {
+        setIsRestoreFarmerModalOpen(false);
+        window.location.reload();
+      }, 3000);
     } catch (err) {
-      setRestoreAlert({
-        type: "error",
-        message: err.message || "Failed to restore farmer",
-      });
+      setRestoreAlert({ type: "error", message: err.message });
     }
   };
   // Fetch farm data
@@ -617,7 +638,7 @@ export default function FarmDashboardPage() {
 
           <RestoreFarmerModal
             isOpen={isRestoreFarmerModalOpen}
-            onClose={closeRestore}
+            onClose={handleCloseRestoreModal}
             onConfirm={handleRestore}
             farmer={selectedFarmer}
           />
