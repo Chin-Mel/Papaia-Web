@@ -1,22 +1,35 @@
-// components/Alert.jsx
-import React, { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export default function Alert({
   type = "info",
   message,
   onClose,
-  duration = 5000,
+  duration = 3000,
 }) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
   useEffect(() => {
-    if (!message) return;
+    if (!message) {
+      setShouldRender(false);
+      return;
+    }
+
+    setShouldRender(true);
+    setTimeout(() => setIsVisible(true), 10);
+
     const timer = setTimeout(() => {
-      onClose?.();
+      setIsVisible(false);
+      setTimeout(() => {
+        setShouldRender(false);
+        onClose?.();
+      }, 300);
     }, duration);
 
     return () => clearTimeout(timer);
   }, [message, duration, onClose]);
 
-  if (!message) return null;
+  if (!message || !shouldRender) return null;
 
   const colors = {
     success: "bg-green-100 border-green-400 text-green-700",
@@ -27,15 +40,15 @@ export default function Alert({
 
   return (
     <div
-      className={`fixed top-5 right-5 max-w-xs w-full border-l-4 p-4 rounded shadow-md ${colors[type]} flex items-start justify-between gap-3 z-50`}
+      className={`fixed top-20 right-5 max-w-xs w-full border-l-4 p-4 rounded shadow-md ${colors[type]} z-50 transition-all duration-300 ease-out`}
+      style={{
+        transform: isVisible
+          ? "translateX(0)"
+          : "translateX(calc(100% + 1.25rem))",
+        opacity: isVisible ? 1 : 0,
+      }}
     >
       <span className="flex-1 text-sm">{message}</span>
-      <button
-        onClick={onClose}
-        className="font-bold text-lg leading-none hover:text-opacity-80 transition"
-      >
-        ×
-      </button>
     </div>
   );
 }

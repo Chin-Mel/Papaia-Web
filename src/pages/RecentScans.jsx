@@ -242,11 +242,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
             .filter(Boolean);
 
           const farmScans = (scansData || [])
-            .filter((scan) => {
-              // safe check
-              if (!scan?.idNumber) return false;
-              return farmerIdNumbers?.includes(scan.idNumber) === true;
-            })
+            .filter((scan) => !!scan.idNumber)
             .sort((a, b) => {
               const parseTimestamp = (timestamp) => {
                 if (!timestamp) return new Date(0);
