@@ -4,39 +4,25 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 // Simple cache for faster subsequent loads
+// Simpler cache without user isolation
 const scanCache = {
   data: {},
 
-  getUserId() {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return null;
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const payload = JSON.parse(window.atob(base64));
-      return payload.userId || payload.id || payload.sub;
-    } catch {
-      return null;
-    }
-  },
-
   set(key, value, ttl = 30000) {
-    const userId = this.getUserId();
-    if (!userId) return;
-    const userKey = `${userId}:${key}`;
-    this.data[userKey] = { value, expires: Date.now() + ttl };
+    this.data[key] = { value, expires: Date.now() + ttl };
   },
 
   get(key) {
-    const userId = this.getUserId();
-    if (!userId) return null;
-    const userKey = `${userId}:${key}`;
-    const item = this.data[userKey];
+    const item = this.data[key];
     if (!item || Date.now() > item.expires) {
-      delete this.data[userKey];
+      delete this.data[key];
       return null;
     }
     return item.value;
+  },
+
+  invalidate(key) {
+    delete this.data[key];
   },
 };
 
@@ -49,6 +35,20 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
+
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    setFilterActive(true);
+    // Clear cache when filter changes to force fresh data
+    const userId = scanCache.getUserId();
+    if (userId) {
+      const cacheKey = `${userId}:scans-${farmId}-${timeFilter}-${dateRange}`;
+      delete scanCache.data[cacheKey];
+    }
+  }, [dateRange, farmId, timeFilter]);
 
   // Disease colors mapping
   const diseaseColors = {
