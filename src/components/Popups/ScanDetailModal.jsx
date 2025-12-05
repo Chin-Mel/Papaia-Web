@@ -1,5 +1,6 @@
 import { X, Calendar, User, MapPin, AlertCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
+import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
   const modalRef = useRef(null);
@@ -62,7 +63,18 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
       >
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-orange-500 p-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white">Scan Details</h2>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+              <img
+                src={PapayaLogo}
+                alt="Papaia Logo"
+                className="w-5 h-7"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            <h2 className="text-xl font-bold text-white">Scan Details</h2>
+          </div>
           <button
             onClick={onClose}
             className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-2"
@@ -90,30 +102,42 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
 
           {/* Prediction Badge and Confidence */}
           <div className="mb-6">
-            <label className="text-sm font-semibold text-gray-700 mb-2 block">
-              Disease Detected
-            </label>
-            <div className="flex items-center gap-4 flex-wrap">
-              <span
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-lg ${cardStyle.badge}`}
-              >
-                <AlertCircle className="w-5 h-5" />
-                {scan.prediction}
-              </span>
-              <div className="flex items-center gap-3 flex-1 min-w-[200px]">
-                <div className="flex-1 bg-gray-200 rounded-full h-3">
-                  <div
-                    className={`h-3 rounded-full ${
-                      scan.prediction === "Healthy"
-                        ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
-                        : "bg-gradient-to-r from-red-500 to-red-600"
-                    }`}
-                    style={{ width: `${(scan.confidence * 100).toFixed(0)}%` }}
-                  />
-                </div>
-                <span className="text-lg font-bold text-gray-700">
-                  {(scan.confidence * 100).toFixed(0)}%
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Disease Detected */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Disease Detected
+                </label>
+                <span
+                  className={`inline-flex items-center gap-2 px-4 py-2 rounded-full font-bold text-base ${cardStyle.badge}`}
+                >
+                  <AlertCircle className="w-4 h-4" />
+                  {scan.prediction}
                 </span>
+              </div>
+
+              {/* Confidence Level */}
+              <div>
+                <label className="text-sm font-semibold text-gray-700 mb-2 block">
+                  Confidence Level
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 bg-gray-200 rounded-full h-3 max-w-[200px]">
+                    <div
+                      className={`h-3 rounded-full ${
+                        scan.prediction === "Healthy"
+                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
+                          : "bg-gradient-to-r from-red-500 to-red-600"
+                      }`}
+                      style={{
+                        width: `${(scan.confidence * 100).toFixed(0)}%`,
+                      }}
+                    />
+                  </div>
+                  <span className="text-lg font-bold text-gray-700">
+                    {(scan.confidence * 100).toFixed(0)}%
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -144,6 +168,13 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
+                })}
+              </p>
+              <p className="text-sm font-medium text-gray-600 mt-1">
+                {new Date(scan.timestamp).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
                 })}
               </p>
             </div>
