@@ -1,13 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Leaf } from "lucide-react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 // Simple cache for faster subsequent loads
 const scanCache = {
@@ -54,6 +48,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
+  const initialLoadRef = useRef(true);
 
   // Disease colors mapping
   const diseaseColors = {
@@ -176,8 +171,12 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     return { chartData, zeroCases, counts };
   }, []);
 
-  // Track when user manually changes date range
+  // Track when user manually changes date range (skip initial load)
   useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
     setFilterActive(true);
   }, [dateRange]);
 
@@ -346,6 +345,9 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       if (parts.length !== 3) return timestamp;
 
       const datePart = parts[0];
+      const timePart = parts[1];
+      const period = parts[2];
+
       const [month, day, year] = datePart.split("/");
       if (!month || !day || !year) return timestamp;
 
@@ -367,9 +369,12 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       const monthIndex = parseInt(month) - 1;
       const monthName = monthNames[monthIndex] || month;
 
-      return `${monthName} ${parseInt(day)}, ${year}`;
+      return {
+        date: `${monthName} ${parseInt(day)}, ${year}`,
+        time: `${timePart} ${period}`,
+      };
     } catch (error) {
-      return timestamp;
+      return { date: timestamp, time: "" };
     }
   }, []);
 
@@ -421,7 +426,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans {filterActive ? `(${dateRange})` : "(All Scans)"}
+          Recent Scans{filterActive ? ` (${dateRange})` : ""}
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -437,7 +442,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans {filterActive ? `(${dateRange})` : "(All Scans)"}
+          Recent Scans{filterActive ? ` (${dateRange})` : ""}
         </h2>
 
         {recentScans.length === 0 ? (
@@ -460,10 +465,10 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               style={{ scrollbarWidth: "thin" }}
             >
               {/* Pie Chart Section */}
-              <div className="pb-4 border-b border-gray-200">
+              <div className="border-b border-gray-200">
                 {chartData.length > 0 ? (
                   <>
-                    <ResponsiveContainer width="100%" height={380}>
+                    <ResponsiveContainer width="100%" height={420}>
                       <PieChart>
                         <Pie
                           data={chartData}
@@ -495,15 +500,23 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                                 fill="white"
                                 textAnchor="middle"
                                 dominantBaseline="central"
-                                className="text-xs font-bold"
-                                style={{ fontSize: "15px", fontWeight: "bold" }}
+                                className="text-xs"
                               >
-                                <tspan x={x} dy="-0.6em">
+                                <tspan
+                                  x={x}
+                                  dy="-0.6em"
+                                  style={{ fontSize: "15px" }}
+                                >
                                   {name}
                                 </tspan>
-                                <tspan x={x} dy="1.2em">{`${(
-                                  percent * 100
-                                ).toFixed(0)}%`}</tspan>
+                                <tspan
+                                  x={x}
+                                  dy="1.2em"
+                                  style={{
+                                    fontSize: "15px",
+                                    fontWeight: "bold",
+                                  }}
+                                >{`${(percent * 100).toFixed(0)}%`}</tspan>
                                 <tspan
                                   x={x}
                                   dy="1.2em"
@@ -514,8 +527,8 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                               </text>
                             );
                           }}
-                          outerRadius={150}
-                          innerRadius={60}
+                          outerRadius={170}
+                          innerRadius={70}
                           fill="#8884d8"
                           dataKey="value"
                         >
@@ -536,7 +549,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                     </ResponsiveContainer>
 
                     {zeroCases.length > 0 && (
-                      <p className="text-xs text-black mt-2 italic font-medium text-center">
+                      <p className="text-xs text-black mb-4 italic font-medium text-center">
                         No cases: {zeroCases.join(", ")}
                       </p>
                     )}
@@ -552,6 +565,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               <div className="space-y-3">
                 {recentScans.map((scan, index) => {
                   const cardStyle = getCardStyle(scan.prediction);
+                  const { date, time } = formatDateTime(scan.timestamp);
                   return (
                     <div
                       key={`${scan.id || scan.timestamp}-${index}`}
@@ -574,18 +588,24 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                           </div>
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
-                          >
-                            {scan.prediction}
-                          </p>
-                          <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
-                            {formatDateTime(scan.timestamp)}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            By: {getFarmerName(scan)}
-                          </p>
+                        <div className="flex-1 min-w-0 flex justify-between items-start">
+                          <div className="flex-1">
+                            <p
+                              className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
+                            >
+                              {scan.prediction}
+                            </p>
+                            <p className="text-xs text-slate-500">
+                              By: {getFarmerName(scan)}
+                            </p>
+                          </div>
+
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-xs text-slate-700 font-medium break-words">
+                              {date}
+                            </p>
+                            <p className="text-xs text-slate-500">{time}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -610,6 +630,14 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         )}
       </div>
+
+      {/* Scan Detail Modal */}
+      <ScanDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        scan={selectedScan}
+        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
+      />
     </>
   );
 }
