@@ -15,7 +15,7 @@ export default function FarmAnalytics({
   farmId,
   timeFilter = "Daily",
   onTimeFilterChange,
-  onDateRangeChange, // ADD THIS
+  onDateRangeChange,
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
@@ -24,6 +24,10 @@ export default function FarmAnalytics({
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
+
+  // Separate state for farm health data
+  const [farmHealthData, setFarmHealthData] = useState(null);
+  const [healthLoading, setHealthLoading] = useState(false);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -76,6 +80,39 @@ export default function FarmAnalytics({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Fetch farm health data (independent of date range changes)
+  useEffect(() => {
+    if (!farmId) return;
+
+    const fetchFarmHealth = async () => {
+      setHealthLoading(true);
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setFarmHealthData(data);
+        } else {
+          setFarmHealthData(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch farm health:", error);
+        setFarmHealthData(null);
+      } finally {
+        setHealthLoading(false);
+      }
+    };
+
+    fetchFarmHealth();
+  }, [farmId]); // Only depends on farmId, not dateRange
 
   // Fetch analytics data with AbortController for cleanup
   useEffect(() => {
@@ -378,24 +415,27 @@ export default function FarmAnalytics({
     [getDiseaseColor]
   );
 
-  // Memoize summary stats
+  // Calculate summary stats from farm health API
   const summaryStats = useMemo(() => {
-    const totalScans = chartData.reduce(
-      (sum, item) => sum + item.totalPredictions,
-      0
-    );
-    const healthyScans = chartData.reduce(
-      (sum, item) => sum + (item.predictions?.Healthy || 0),
-      0
-    );
-    const healthScore =
-      totalScans > 0 ? ((healthyScans / totalScans) * 100).toFixed(1) : "0";
-    const diseaseScans = totalScans - healthyScans;
-    const diseaseScore =
-      totalScans > 0 ? ((diseaseScans / totalScans) * 100).toFixed(1) : "0";
+    if (farmHealthData) {
+      const totalScans = farmHealthData.totalPredictions || 0;
+      const healthyCount = farmHealthData.healthyCount || 0;
+      const healthScore = farmHealthData.healthPercentage
+        ? parseFloat(farmHealthData.healthPercentage.replace("%", ""))
+        : 0;
+      const diseaseScore =
+        totalScans > 0 ? (100 - healthScore).toFixed(1) : "0";
 
-    return { totalScans, healthScore, diseaseScore };
-  }, [chartData]);
+      return {
+        totalScans,
+        healthScore: healthScore.toFixed(1),
+        diseaseScore,
+      };
+    }
+
+    // Fallback to 0 if no data
+    return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
+  }, [farmHealthData]);
 
   const FIXED_HEIGHT = "580px";
 
@@ -551,24 +591,34 @@ export default function FarmAnalytics({
             className="grid grid-cols-3 gap-2 sm:gap-4"
             style={{ minHeight: "60px" }}
           >
-            <div className="text-center">
-              <p className="text-green-600 font-semibold text-base sm:text-xl">
-                {summaryStats.totalScans}
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
-            </div>
-            <div className="text-center">
-              <p className="text-blue-600 font-semibold text-base sm:text-xl">
-                {summaryStats.healthScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-            </div>
-            <div className="text-center">
-              <p className="text-orange-600 font-semibold text-base sm:text-xl">
-                {summaryStats.diseaseScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Diseases</p>
-            </div>
+            {healthLoading ? (
+              <div className="col-span-3 flex justify-center items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-700"></div>
+              </div>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="text-green-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.totalScans}
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">
+                    Total Scans
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-blue-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.healthScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-orange-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.diseaseScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
