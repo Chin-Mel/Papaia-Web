@@ -52,6 +52,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [farmers, setFarmers] = useState([]);
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
 
   // Disease colors mapping
@@ -175,6 +176,11 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     return { chartData, zeroCases, counts };
   }, []);
 
+  // Track when user manually changes date range
+  useEffect(() => {
+    setFilterActive(true);
+  }, [dateRange]);
+
   useEffect(() => {
     if (!farmId) return;
 
@@ -187,7 +193,9 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     abortControllerRef.current = controller;
 
     const fetchData = async () => {
-      const cacheKey = `scans-${farmId}-${timeFilter}-${dateRange}`;
+      const cacheKey = filterActive
+        ? `scans-${farmId}-${timeFilter}-${dateRange}`
+        : `scans-${farmId}-all`;
       const cached = scanCache.get(cacheKey);
 
       // Show cached data immediately
@@ -262,12 +270,10 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             });
 
-          // Filter by date range based on analytics selection
-          const filteredScans = filterScansByDateRange(
-            activeFarmerScans,
-            timeFilter,
-            dateRange
-          );
+          // Only filter by date range if user has actively selected a range
+          const filteredScans = filterActive
+            ? filterScansByDateRange(activeFarmerScans, timeFilter, dateRange)
+            : activeFarmerScans;
 
           setRecentScans(filteredScans);
 
@@ -296,7 +302,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId, timeFilter, dateRange, filterScansByDateRange]);
+  }, [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]);
 
   // Get card styling based on disease type
   const getCardStyle = useCallback((prediction) => {
@@ -415,7 +421,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Scans ({dateRange})
+          Recent Scans {filterActive ? `(${dateRange})` : "(All Scans)"}
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -431,7 +437,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans ({dateRange})
+          Recent Scans {filterActive ? `(${dateRange})` : "(All Scans)"}
         </h2>
 
         {recentScans.length === 0 ? (
@@ -441,7 +447,9 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
               No scans in selected range
             </p>
             <p className="text-xs text-gray-400 mt-1">
-              Scans from {dateRange.toLowerCase()} will appear here
+              {filterActive
+                ? `Scans from ${dateRange.toLowerCase()} will appear here`
+                : "Scans from assigned farmers will appear here"}
             </p>
           </div>
         ) : (
@@ -453,9 +461,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
             >
               {/* Pie Chart Section */}
               <div className="pb-4 border-b border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2">
-                  Disease Distribution
-                </h3>
                 {chartData.length > 0 ? (
                   <>
                     <ResponsiveContainer width="100%" height={380}>
@@ -545,59 +550,60 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
               {/* Scans List */}
               <div className="space-y-3">
-                {/* Scans List */}
-                <div className="space-y-3">
-                  {recentScans.map((scan, index) => {
-                    const cardStyle = getCardStyle(scan.prediction);
-                    return (
-                      <div
-                        key={`${scan.id || scan.timestamp}-${index}`}
-                        onClick={() => handleScanClick(scan)}
-                        className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="relative flex-shrink-0">
-                            <img
-                              src={scan.imageUrl}
-                              alt="Scan"
-                              className="w-14 h-14 rounded-lg object-cover border border-gray-200"
-                              onError={handleImageError}
-                            />
-                            <div
-                              className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                              style={{ display: "none" }}
-                            >
-                              No Image
-                            </div>
-                          </div>
-
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
-                            >
-                              {scan.prediction}
-                            </p>
-                            <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
-                              {formatDateTime(scan.timestamp)}
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              By: {getFarmerName(scan)}
-                            </p>
+                {recentScans.map((scan, index) => {
+                  const cardStyle = getCardStyle(scan.prediction);
+                  return (
+                    <div
+                      key={`${scan.id || scan.timestamp}-${index}`}
+                      onClick={() => handleScanClick(scan)}
+                      className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="relative flex-shrink-0">
+                          <img
+                            src={scan.imageUrl}
+                            alt="Scan"
+                            className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                            onError={handleImageError}
+                          />
+                          <div
+                            className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                            style={{ display: "none" }}
+                          >
+                            No Image
                           </div>
                         </div>
+
+                        <div className="flex-1 min-w-0">
+                          <p
+                            className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
+                          >
+                            {scan.prediction}
+                          </p>
+                          <p className="text-xs text-slate-700 font-medium mb-0.5 break-words">
+                            {formatDateTime(scan.timestamp)}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            By: {getFarmerName(scan)}
+                          </p>
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
             <div className="mt-3 pt-3 border-t border-gray-200 text-center flex-shrink-0">
               <p className="text-xs text-gray-500">
                 {recentScans.length > 0
-                  ? `Showing ${recentScans.length} ${
-                      recentScans.length === 1 ? "scan" : "scans"
-                    } from ${dateRange.toLowerCase()}`
+                  ? filterActive
+                    ? `Showing ${recentScans.length} ${
+                        recentScans.length === 1 ? "scan" : "scans"
+                      } from ${dateRange.toLowerCase()}`
+                    : `Showing all ${recentScans.length} ${
+                        recentScans.length === 1 ? "scan" : "scans"
+                      }`
                   : "No scans in selected range"}
               </p>
             </div>
