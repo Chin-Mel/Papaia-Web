@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import FooterMain from "../components/Footer/Footer";
+import HeaderMain from "../components/Header/HeaderMain";
 
 // Simple cache for faster subsequent loads
 const detailsCache = {
@@ -227,9 +229,6 @@ export default function ScanDetailsPage() {
       const [month, day, year] = datePart.split("/");
       if (!month || !day || !year) return { date: timestamp, time: "" };
 
-      const [hours, minutes] = timePart.split(":");
-      if (!hours || !minutes) return { date: timestamp, time: "" };
-
       const monthNames = [
         "January",
         "February",
@@ -248,7 +247,7 @@ export default function ScanDetailsPage() {
       const monthIndex = parseInt(month) - 1;
       const monthName = monthNames[monthIndex] || month;
 
-      // Format exactly like scan history: padded hours and minutes
+      // Display time exactly as returned from API
       const formattedTime = `${timePart} ${period}`;
 
       return {
@@ -333,27 +332,35 @@ export default function ScanDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <div className="text-gray-500">Loading scan details...</div>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <div className="text-gray-500">Loading scan details...</div>
+          </div>
         </div>
+        <FooterMain />
       </div>
     );
   }
 
   if (!scanDetails) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <div className="text-gray-500 text-lg">Scan not found</div>
-          <button
-            onClick={() => navigate("/scan-history")}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-          >
-            Back to Scan History
-          </button>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="text-center space-y-4">
+            <div className="text-gray-500 text-lg">Scan not found</div>
+            <button
+              onClick={() => navigate("/scan-history")}
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Back to Scan History
+            </button>
+          </div>
         </div>
+        <FooterMain />
       </div>
     );
   }
@@ -368,249 +375,258 @@ export default function ScanDetailsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto">
-        {/* Header with Back Button */}
-        <div className="mb-6">
-          <button
-            onClick={() => navigate("/scan-history")}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-2 transition-colors"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <HeaderMain />
+      <main className="flex-1 px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Header with Back Button */}
+          <div className="mb-6">
+            <button
+              onClick={() => navigate("/scan-history")}
+              className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-2 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            <span className="font-bold text-xl">Scan Results</span>
-          </button>
-          <p className="text-sm text-gray-500 ml-7">
-            Detailed analysis of your crop health assessment
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT COLUMN - Scanned Image */}
-          <div className="lg:col-span-1 space-y-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-100">
-                <h2 className="text-base font-semibold text-gray-900">
-                  Scanned Image
-                </h2>
-              </div>
-              <div className="p-6">
-                <img
-                  src={
-                    scanDetails.imageUrl ||
-                    "https://via.placeholder.com/400x300?text=No+Image"
-                  }
-                  alt="Scan"
-                  className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/400x300?text=No+Image";
-                  }}
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
                 />
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Scan Date:</span>
-                    <span className="text-sm text-gray-900 font-medium">
-                      {dateTime.date}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Scan Time:</span>
-                    <span className="text-sm text-gray-900 font-medium">
-                      {dateTime.time}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+              </svg>
+              <span className="font-bold text-xl">Scan Results</span>
+            </button>
+            <p className="text-sm text-gray-500 ml-7">
+              Detailed analysis of your crop health assessment
+            </p>
           </div>
 
-          {/* RIGHT COLUMN - All other cards */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Scan Status Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
-                <h2 className="text-base font-semibold text-gray-900">
-                  Scan Status
-                </h2>
-                <div
-                  className={`flex items-center gap-2 px-3 py-1 rounded-md ${statusInfo.badgeBg}`}
-                >
-                  <svg
-                    className="w-4 h-4 text-red-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span
-                    className={`text-sm font-medium ${statusInfo.badgeText}`}
-                  >
-                    {statusInfo.label}
-                  </span>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-8">
-                  <div className="flex-1">
-                    <div className="text-sm text-gray-500 mb-2">
-                      Disease Identified
-                    </div>
-                    <div
-                      className={`text-xl font-semibold ${statusInfo.color}`}
-                    >
-                      {scanDetails.prediction}
-                    </div>
-                  </div>
-
-                  <div className="flex-1">
-                    <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="text-gray-500">Confidence Level</span>
-                      <span className="font-semibold text-gray-900">
-                        {confidencePercentage}%
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                      <div
-                        className="h-2 rounded-full transition-all duration-500 bg-red-500"
-                        style={{ width: `${confidencePercentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Farm Information Card */}
-            {farmDetails && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* LEFT COLUMN - Scanned Image */}
+            <div className="lg:col-span-1 space-y-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 bg-white border-b border-gray-100">
                   <h2 className="text-base font-semibold text-gray-900">
-                    Farm Information
+                    Scanned Image
                   </h2>
                 </div>
                 <div className="p-6">
-                  <div className="grid grid-cols-2 gap-8">
-                    <div className="flex items-start gap-3">
-                      {scanDetails.profilePicture ? (
-                        <img
-                          src={scanDetails.profilePicture}
-                          alt="Farmer"
-                          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "flex";
-                          }}
-                        />
-                      ) : null}
-                      <div
-                        className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"
-                        style={{
-                          display: scanDetails.profilePicture ? "none" : "flex",
-                        }}
-                      >
-                        <svg
-                          className="w-6 h-6 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
+                  <img
+                    src={
+                      scanDetails.imageUrl ||
+                      "https://via.placeholder.com/400x300?text=No+Image"
+                    }
+                    alt="Scan"
+                    className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/400x300?text=No+Image";
+                    }}
+                  />
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Scan Date:</span>
+                      <span className="text-sm text-gray-900 font-medium">
+                        {dateTime.date}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Scan Time:</span>
+                      <span className="text-sm text-gray-900 font-medium">
+                        {dateTime.time}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN - All other cards */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Scan Status Card */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Scan Status
+                  </h2>
+                  <div
+                    className={`flex items-center gap-2 px-3 py-1 rounded-md ${statusInfo.badgeBg}`}
+                  >
+                    <svg
+                      className="w-4 h-4 text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span
+                      className={`text-sm font-medium ${statusInfo.badgeText}`}
+                    >
+                      {statusInfo.label}
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-8">
+                    <div className="flex-1">
+                      <div className="text-sm text-gray-500 mb-2">
+                        Disease Identified
                       </div>
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-900">
-                          {scanDetails.farmerName ||
-                            (farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : null) ||
-                            scanDetails.idNumber}
-                        </div>
-                        <div className="text-sm text-gray-600">Farmer</div>
+                      <div
+                        className={`text-xl font-semibold ${statusInfo.color}`}
+                      >
+                        {scanDetails.prediction}
                       </div>
                     </div>
 
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">
-                        Farm Name
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center text-sm mb-2">
+                        <span className="text-gray-500">Confidence Level</span>
+                        <span className="font-semibold text-gray-900">
+                          {confidencePercentage}%
+                        </span>
                       </div>
-                      <div className="font-semibold text-gray-900">
-                        {farmDetails.farmName}
+                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className="h-2 rounded-full transition-all duration-500 bg-red-500"
+                          style={{ width: `${confidencePercentage}%` }}
+                        ></div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            )}
 
-            {/* Suggested Treatment Card */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 bg-white border-b border-gray-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-1 h-4 bg-green-500 rounded-sm"></div>
-                  <h2 className="text-base font-semibold text-gray-900">
-                    Suggested Treatment
-                  </h2>
-                </div>
-              </div>
-              <div className="p-6">
-                <div className="bg-green-50 rounded-lg p-5">
-                  <h3 className="font-semibold text-gray-900 mb-3 text-sm">
-                    Immediate Action Required
-                  </h3>
-                  <ul className="space-y-2">
-                    {(apiSuggestions.length > 0
-                      ? apiSuggestions
-                      : treatmentSuggestions
-                    ).map((suggestion, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-sm">
-                        <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              {/* Farm Information Card */}
+              {farmDetails && (
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="px-6 py-4 bg-white border-b border-gray-100">
+                    <h2 className="text-base font-semibold text-gray-900">
+                      Farm Information
+                    </h2>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-8">
+                      <div className="flex items-start gap-3">
+                        {scanDetails.profilePicture ? (
+                          <img
+                            src={scanDetails.profilePicture}
+                            alt="Farmer"
+                            className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "flex";
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"
+                          style={{
+                            display: scanDetails.profilePicture
+                              ? "none"
+                              : "flex",
+                          }}
+                        >
                           <svg
-                            className="w-2.5 h-2.5 text-white"
+                            className="w-6 h-6 text-gray-600"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
-                            strokeWidth={3}
                           >
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              d="M5 13l4 4L19 7"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                             />
                           </svg>
                         </div>
-                        <span className="text-gray-700 leading-relaxed flex-1">
-                          {suggestion}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
+                        <div className="flex-1">
+                          <div className="font-semibold text-gray-900">
+                            {scanDetails.farmerName ||
+                              (farmerDetails
+                                ? getFarmerFullName(farmerDetails)
+                                : null) ||
+                              scanDetails.idNumber}
+                          </div>
+                          <div className="text-sm text-gray-600">Farmer</div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="text-sm text-gray-600 mb-1">
+                          Farm Name
+                        </div>
+                        <div className="font-semibold text-gray-900">
+                          {farmDetails.farmName}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Suggested Treatment Card */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-6 py-4 bg-white border-b border-gray-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-4 bg-green-500 rounded-sm"></div>
+                    <h2 className="text-base font-semibold text-gray-900">
+                      Suggested Treatment
+                    </h2>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="bg-green-50 rounded-lg p-5">
+                    <h3 className="font-semibold text-gray-900 mb-3 text-sm">
+                      Immediate Action Required
+                    </h3>
+                    <ul className="space-y-2">
+                      {(apiSuggestions.length > 0
+                        ? apiSuggestions
+                        : treatmentSuggestions
+                      ).map((suggestion, idx) => (
+                        <li
+                          key={idx}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <svg
+                              className="w-2.5 h-2.5 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              strokeWidth={3}
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </div>
+                          <span className="text-gray-700 leading-relaxed flex-1">
+                            {suggestion}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </main>
+      <FooterMain />
     </div>
   );
 }
