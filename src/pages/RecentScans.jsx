@@ -472,8 +472,12 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                       width="100%"
                       height={420}
                       padding={{ top: 0, bottom: 0 }}
+                      margin={{ top: 0, bottom: 0 }}
                     >
-                      <PieChart>
+                      <PieChart
+                        padding={{ top: 0, bottom: 0 }}
+                        margin={{ top: 0, bottom: 0 }}
+                      >
                         <Pie
                           data={chartData}
                           cx="50%"
