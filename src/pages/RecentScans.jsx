@@ -469,7 +469,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                 {chartData.length > 0 ? (
                   <>
                     <ResponsiveContainer width="100%" height={420}>
-                      <PieChart>
+                      <PieChart margin={{ top: 0, bottom: 0 }}>
                         <Pie
                           data={chartData}
                           cx="50%"
@@ -549,7 +549,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                     </ResponsiveContainer>
 
                     {zeroCases.length > 0 && (
-                      <p className="text-xs text-black mb-4 italic font-medium text-center">
+                      <p className="text-xs text-black mb-3 italic font-medium text-center">
                         No cases: {zeroCases.join(", ")}
                       </p>
                     )}
