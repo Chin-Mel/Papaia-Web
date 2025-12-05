@@ -8,7 +8,7 @@ import {
   Database,
 } from "lucide-react";
 import defaultUserPic from "../../assets/default-user.png";
-
+import Alert from "../../components/Alert";
 // Remove Farmer Modal
 function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
   const [confirmationText, setConfirmationText] = useState("");
@@ -117,8 +117,12 @@ function RemoveFarmerModal({ isOpen, onClose, onConfirmRemove, farmer }) {
             <div className="p-6 space-y-5">
               <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
-                    <User className="w-7 h-7 text-green-600" />
+                  <div className="w-12 h-12 bg-white rounded-full overflow-hidden flex items-center justify-center">
+                    <img
+                      src={farmer.profilePicture || defaultUserPic}
+                      alt="Farmer"
+                      className="w-full h-full object-cover"
+                    />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-gray-900 text-lg">

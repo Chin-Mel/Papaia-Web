@@ -116,7 +116,11 @@ export default function FarmDashboardPage() {
 
       setIsRestoreFarmerModalOpen(false);
       setAlert({ type: "success", message: "Farmer restored successfully!" });
-      window.location.reload();
+
+      // Refresh the page to show updated farmer list
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
       console.error("Error restoring farmer:", error);
       setAlert({ type: "error", message: error.message });
@@ -198,18 +202,25 @@ export default function FarmDashboardPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to deactivate farmer");
+        throw new Error(errorData.message || "Failed to remove farmer");
       }
 
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
 
-      // Refresh the page to update farmer list
+      // Update the farmer's status locally to archived instead of reloading
+      setSelectedFarmer((prev) => ({
+        ...prev,
+        isArchived: true,
+        status: "archived",
+      }));
+
+      // Refresh the page after showing success modal
       setTimeout(() => {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      //console.error("Error deactivating farmer:", error);
+      console.error("Error removing farmer:", error);
       setAlert({ type: "error", message: error.message });
     }
   };
