@@ -168,14 +168,15 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                   year: "numeric",
                   month: "long",
                   day: "numeric",
-                })}
-              </p>
-              <p className="text-sm font-medium text-gray-600 mt-1">
-                {new Date(scan.timestamp).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                })}
+                })}{" "}
+                <span className="text-gray-600">
+                  at{" "}
+                  {new Date(scan.timestamp).toLocaleTimeString("en-US", {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true,
+                  })}
+                </span>
               </p>
             </div>
           </div>
