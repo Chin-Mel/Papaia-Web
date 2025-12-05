@@ -616,7 +616,7 @@ export default function FarmDashboardPage() {
           />
 
           <RestoreFarmerModal
-            isOpen={isRestoreOpen}
+            isOpen={isRestoreFarmerModalOpen}
             onClose={closeRestore}
             onConfirm={handleRestore}
             farmer={selectedFarmer}
