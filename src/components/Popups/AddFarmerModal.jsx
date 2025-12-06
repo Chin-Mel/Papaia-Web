@@ -1,6 +1,5 @@
-import { X, UserPlus } from "lucide-react";
+import { X, UserPlus, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import Alert from "../../components/Alert";
 
 export default function AddFarmerModal({
   isOpen,
@@ -8,9 +7,9 @@ export default function AddFarmerModal({
   onFarmerAdded,
   farmId,
 }) {
-  const { showAlert } = useAlert();
   const [farmerId, setFarmerId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -26,6 +25,7 @@ export default function AddFarmerModal({
   useEffect(() => {
     if (!isOpen) {
       setFarmerId("");
+      setAlert({ type: "", message: "" });
     }
   }, [isOpen]);
 
@@ -38,15 +38,15 @@ export default function AddFarmerModal({
 
   const handleSubmit = async () => {
     if (!farmerId.trim()) {
-      showAlert("Please enter a farmer ID.", "error");
+      setAlert({ type: "error", message: "Please enter a farmer ID." });
       return;
     }
 
     if (!validateFarmerId(farmerId)) {
-      showAlert(
-        "Invalid format. Farmer ID must be in format: FMR-123456",
-        "error"
-      );
+      setAlert({
+        type: "error",
+        message: "Invalid format. Farmer ID must be in format: FMR-123456",
+      });
       return;
     }
 
@@ -54,7 +54,6 @@ export default function AddFarmerModal({
 
     try {
       const token = localStorage.getItem("token");
-
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farmer`,
         {
@@ -82,19 +81,19 @@ export default function AddFarmerModal({
         throw new Error(data.message || "Failed to add farmer");
       }
 
-      showAlert("Farmer added successfully!", "success");
+      setAlert({ type: "success", message: "Farmer added successfully!" });
       setFarmerId("");
-      onClose();
 
       if (onFarmerAdded) {
         onFarmerAdded(data.farmer);
       }
 
       setTimeout(() => {
+        onClose();
         window.location.reload();
-      }, 1000);
+      }, 800);
     } catch (err) {
-      showAlert(err.message, "error");
+      setAlert({ type: "error", message: err.message });
     } finally {
       setIsLoading(false);
     }
@@ -102,6 +101,7 @@ export default function AddFarmerModal({
 
   const handleClose = () => {
     setFarmerId("");
+    setAlert({ type: "", message: "" });
     onClose();
   };
 
@@ -130,6 +130,18 @@ export default function AddFarmerModal({
         </div>
 
         <div className="p-6 space-y-5">
+          {alert.message && (
+            <div
+              className={`p-3 rounded-lg ${
+                alert.type === "error"
+                  ? "bg-red-50 text-red-800"
+                  : "bg-green-50 text-green-800"
+              }`}
+            >
+              <p className="text-sm font-medium">{alert.message}</p>
+            </div>
+          )}
+
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Farmer ID <span className="text-red-500">*</span>

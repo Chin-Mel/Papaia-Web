@@ -19,7 +19,7 @@ import {
 const activityCache = {
   data: null,
   timestamp: 0,
-  ttl: 300000,
+  ttl: 30000,
 
   set(value) {
     this.data = value;
@@ -253,8 +253,9 @@ export default function RecentActivities({ limit = 5 }) {
               id: act.id,
             }));
             if (mountedRef.current) {
+              const fallback = getFallbackActivity();
               setActivities(
-                processed.length ? processed : getFallbackActivity()
+                processed.length ? [...processed, ...fallback] : fallback
               );
               setLoading(false);
             }
@@ -283,14 +284,11 @@ export default function RecentActivities({ limit = 5 }) {
         );
 
         if (!res.ok) {
-          if (res.status === 404) {
-            if (mountedRef.current) {
-              setActivities(getFallbackActivity());
-              setLoading(false);
-            }
-            return;
+          if (mountedRef.current) {
+            setActivities(getFallbackActivity());
+            setLoading(false);
           }
-          throw new Error(`API Error: ${res.status}`);
+          return;
         }
 
         const data = await res.json();
@@ -310,7 +308,10 @@ export default function RecentActivities({ limit = 5 }) {
             id: act.id,
           }));
           if (mountedRef.current) {
-            setActivities(processed.length ? processed : getFallbackActivity());
+            const fallback = getFallbackActivity();
+            setActivities(
+              processed.length ? [...processed, ...fallback] : fallback
+            );
           }
         } else {
           if (mountedRef.current) {

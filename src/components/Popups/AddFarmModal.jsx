@@ -11,7 +11,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   });
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [touched, setTouched] = useState({
     farmName: false,
     location: false,
@@ -33,7 +32,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    setError("");
   };
 
   const handleBlur = (field) => {
@@ -44,7 +42,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        setError("Image size must not exceed 10MB");
         return;
       }
 
@@ -52,7 +49,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
       const reader = new FileReader();
       reader.onload = (e) => setImagePreview(e.target.result);
       reader.readAsDataURL(file);
-      setError("");
     }
   };
 
@@ -62,17 +58,11 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
       location: true,
     });
 
-    if (!formData.farmName.trim()) {
-      setError("Farm name is required");
-      return;
-    }
-    if (!formData.location.trim()) {
-      setError("Location is required");
+    if (!formData.farmName.trim() || !formData.location.trim()) {
       return;
     }
 
     setLoading(true);
-    setError("");
 
     const farmData = {
       name: formData.farmName,
@@ -149,12 +139,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {error && (
-          <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">
-            <p className="text-sm text-rose-800 font-medium">{error}</p>
-          </div>
-        )}
 
         <div className="overflow-y-auto flex-1">
           <div className="p-6 space-y-5">

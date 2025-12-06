@@ -4,6 +4,7 @@ import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 import { ArrowLeft } from "lucide-react";
 
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const detailsCache = new Map();
 
 export default function ScanDetailsPage() {
@@ -51,18 +52,15 @@ export default function ScanDetailsPage() {
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         const [historyRes, farmsRes] = await Promise.all([
-          fetch(
-            `https://papaiaapi.onrender.com/api/owner/predictions-history/${farmId}/${scanId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              signal: controller.signal,
-            }
-          ),
+          fetch(`${API_BASE}/predictions-history/${farmId}/${scanId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          }),
           farmId
-            ? fetch("https://papaiaapi.onrender.com/api/owner/farms", {
+            ? fetch(`${API_BASE}/farms`, {
                 headers: {
                   Authorization: `Bearer ${token}`,
                   "Content-Type": "application/json",
@@ -115,16 +113,13 @@ export default function ScanDetailsPage() {
         let farmer = null;
         if (normalizedScan.idNumber && farmId) {
           try {
-            const farmersRes = await fetch(
-              `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-                signal: controller.signal,
-              }
-            );
+            const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              signal: controller.signal,
+            });
 
             if (farmersRes.ok) {
               const farmersData = await farmersRes.json();
@@ -455,14 +450,16 @@ export default function ScanDetailsPage() {
 
                   <div className="flex-1">
                     <div className="flex justify-between items-center text-sm mb-2">
-                      <span className="text-gray-500">Confidence Level</span>
-                      <span className="font-semibold text-gray-900">
+                      <span className="text-blue-600 font-semibold">
+                        AI Verified
+                      </span>
+                      <span className="font-semibold text-blue-600">
                         {confidencePercentage}%
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-2 rounded-full transition-all duration-500 bg-red-500"
+                        className="h-2 rounded-full transition-all duration-500 bg-blue-500"
                         style={{ width: `${confidencePercentage}%` }}
                       ></div>
                     </div>

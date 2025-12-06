@@ -1,15 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  X,
-  User,
-  UserMinus,
-  AlertTriangle,
-  Loader2,
-  XCircle,
-  Database,
-} from "lucide-react";
 import defaultUserPic from "../../assets/default-user.png";
-import Alert from "../../components/Alert";
+import { X, User, UserMinus, Loader2 } from "lucide-react";
 
 export default function RemoveFarmerModal({
   isOpen,
@@ -17,9 +8,9 @@ export default function RemoveFarmerModal({
   onConfirmRemove,
   farmer,
 }) {
-  const { showAlert } = useAlert();
   const [confirmationText, setConfirmationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -36,6 +27,7 @@ export default function RemoveFarmerModal({
     if (!isOpen) {
       setConfirmationText("");
       setIsLoading(false);
+      setAlert({ type: "", message: "" });
     }
   }, [isOpen]);
 
@@ -57,20 +49,23 @@ export default function RemoveFarmerModal({
 
   const handleConfirmRemove = async () => {
     if (confirmationText !== "REMOVE") {
-      showAlert('Please type "REMOVE" in capital letters to confirm', "error");
+      setAlert({
+        type: "error",
+        message: 'Please type "REMOVE" in capital letters to confirm',
+      });
       return;
     }
 
     setIsLoading(true);
     try {
       await onConfirmRemove();
-      showAlert("Farmer removed successfully!", "success");
+      setAlert({ type: "success", message: "Farmer removed successfully!" });
       setTimeout(() => {
         onClose();
         window.location.reload();
-      }, 1000);
+      }, 800);
     } catch (error) {
-      showAlert("Failed to remove farmer", "error");
+      setAlert({ type: "error", message: "Failed to remove farmer" });
     } finally {
       setIsLoading(false);
     }
@@ -103,6 +98,18 @@ export default function RemoveFarmerModal({
         </div>
 
         <div className="p-6 space-y-5">
+          {alert.message && (
+            <div
+              className={`p-3 rounded-lg ${
+                alert.type === "error"
+                  ? "bg-red-50 text-red-800"
+                  : "bg-green-50 text-green-800"
+              }`}
+            >
+              <p className="text-sm font-medium">{alert.message}</p>
+            </div>
+          )}
+
           <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">

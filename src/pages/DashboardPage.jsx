@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
@@ -11,19 +11,12 @@ import FarmersCount from "../assets/ic_all_farmers.png";
 import FarmsCount from "../assets/ic_all_farms.png";
 import MainBackground from "../assets/MainBackground.png";
 
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const cache = new Map();
 
-const cachedFetch = async (
-  url,
-  options = {},
-  cacheKey = null,
-  ttl = 180000
-) => {
-  const key = cacheKey || url;
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < ttl) {
-    return cached.data;
-  }
+const cachedFetch = async (url, cacheKey, ttl = 180000) => {
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < ttl) return cached.data;
 
   const token = localStorage.getItem("token");
   const controller = new AbortController();
@@ -31,16 +24,13 @@ const cachedFetch = async (
 
   try {
     const response = await fetch(url, {
-      ...options,
-      headers: { Authorization: `Bearer ${token}`, ...options.headers },
+      headers: { Authorization: `Bearer ${token}` },
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    cache.set(key, { data, timestamp: Date.now() });
+    cache.set(cacheKey, { data, timestamp: Date.now() });
     return data;
   } catch (error) {
     clearTimeout(timeoutId);
@@ -49,8 +39,8 @@ const cachedFetch = async (
 };
 
 const isToday = (timestampStr) => {
+  if (!timestampStr) return false;
   try {
-    if (!timestampStr) return false;
     const today = new Date().toLocaleDateString("en-US", {
       month: "2-digit",
       day: "2-digit",
@@ -66,21 +56,18 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   if (!hasScans) return null;
   const health = parseFloat(healthPercentage);
   if (isNaN(health)) return null;
-
-  if (health >= 70) {
+  if (health >= 70)
     return {
       status: "Healthy",
       bgColor: "bg-emerald-500",
       textColor: "text-emerald-600",
     };
-  }
-  if (health >= 30) {
+  if (health >= 30)
     return {
       status: "At Risk",
       bgColor: "bg-amber-500",
       textColor: "text-amber-600",
     };
-  }
   return {
     status: "Critical",
     bgColor: "bg-red-500",
@@ -88,28 +75,23 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   };
 };
 
-const formatHealthDisplay = (health, hasScans) => {
-  if (!health || health === 0 || health === "0.00") return "0.00%";
-  return `${health}`;
-};
-
 const StatCard = ({ title, value, icon, bgColor }) => (
-  <div className="p-4 sm:p-5 lg:p-6 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-2xl flex justify-between items-center shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-200/60 transition-all duration-300">
+  <div className="p-3 sm:p-4 lg:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg transition-all duration-300">
     <div>
-      <p className="text-sm sm:text-base text-slate-600 mb-2 font-medium">
+      <p className="text-xs sm:text-sm text-slate-600 mb-1 font-medium">
         {title}
       </p>
-      <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-900">
+      <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">
         {value.toLocaleString()}
       </h3>
     </div>
     <div
-      className={`w-14 h-14 lg:w-16 lg:h-16 rounded-full ${bgColor} flex items-center justify-center`}
+      className={`w-12 h-12 lg:w-14 lg:h-14 rounded-full ${bgColor} flex items-center justify-center`}
     >
       <img
         src={icon}
         alt={title}
-        className="w-8 h-8 lg:w-9 lg:h-9 object-contain"
+        className="w-6 h-6 lg:w-7 lg:h-7 object-contain"
         loading="lazy"
       />
     </div>
@@ -123,7 +105,7 @@ const FarmCard = ({ farm, isMobile }) => {
   return (
     <Link
       to={`/farm-dashboard/${farm.id}`}
-      className={`backdrop-blur-sm border border-slate-200/60 rounded-2xl overflow-hidden shadow-lg shadow-slate-200/50 hover:shadow-xl hover:shadow-slate-300/60 transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
+      className={`backdrop-blur-sm border border-slate-200/60 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
         farm.isActive ? "bg-white/80" : "bg-slate-200/50"
       }`}
     >
@@ -132,38 +114,38 @@ const FarmCard = ({ farm, isMobile }) => {
           src={imageError ? MainBackground : farm.img}
           alt={farm.name}
           className={`w-full ${
-            isMobile ? "h-32 sm:h-40" : "h-48"
+            isMobile ? "h-28 sm:h-36" : "h-40"
           } object-cover ${!farm.isActive ? "opacity-50 grayscale" : ""}`}
           loading="lazy"
           onError={() => setImageError(true)}
         />
         {healthStatus && (
           <span
-            className={`absolute top-3 right-3 px-3 py-1.5 text-[10px] sm:text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
+            className={`absolute top-2 right-2 px-2 py-1 text-xs rounded-full font-semibold shadow-lg ${healthStatus.bgColor} text-white`}
           >
             {healthStatus.status}
           </span>
         )}
       </div>
-      <div className={`${isMobile ? "p-3 sm:p-4" : "p-4"}`}>
+      <div className={`${isMobile ? "p-2 sm:p-3" : "p-3"}`}>
         <h3
           className={`font-bold ${
-            isMobile ? "text-xs sm:text-base" : "text-lg"
-          } text-slate-900 mb-1`}
+            isMobile ? "text-xs sm:text-sm" : "text-base"
+          } text-slate-900 mb-1 truncate`}
         >
           {farm.name}
         </h3>
         <p
           className={`${
-            isMobile ? "text-xs sm:text-sm" : "text-sm"
+            isMobile ? "text-xs" : "text-sm"
           } text-slate-600 mb-2 line-clamp-2`}
         >
           {farm.desc}
         </p>
         <div className="flex items-center justify-between gap-2">
           <div
-            className={`flex items-center gap-1.5 ${
-              isMobile ? "text-[10px] sm:text-xs" : "text-xs"
+            className={`flex items-center gap-1 ${
+              isMobile ? "text-xs" : "text-xs"
             } text-slate-500 flex-1 min-w-0`}
           >
             <MapPin
@@ -173,16 +155,16 @@ const FarmCard = ({ farm, isMobile }) => {
             />
             <span className="truncate">{farm.location}</span>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1 flex-shrink-0">
             <Leaf size={12} className="text-emerald-500" />
             <span
               className={`${
-                isMobile ? "text-[10px] sm:text-xs" : "text-xs"
+                isMobile ? "text-xs" : "text-xs"
               } font-semibold whitespace-nowrap ${
                 healthStatus ? healthStatus.textColor : "text-slate-600"
               }`}
             >
-              {formatHealthDisplay(farm.health, farm.hasScans)} Health
+              {farm.health || "0.00%"}
             </span>
           </div>
         </div>
@@ -202,44 +184,23 @@ export default function DashboardPage() {
     totalFarms: 0,
     todayScans: 0,
   });
-  const mountedRef = useRef(false);
+  const wsRef = useRef(null);
+  const pollIntervalRef = useRef(null);
 
-  useEffect(() => {
-    [ScansCount, FarmersCount, FarmsCount].forEach((src) => {
-      const img = new Image();
-      img.src = src;
-    });
-  }, []);
-
-  useEffect(() => {
-    if (location.state?.refreshFarms) {
-      cache.delete("owner_farms");
-      cache.delete("farm_count");
-      fetchFarms();
-      fetchDashboardStats();
-      window.history.replaceState({}, document.title);
-    }
-  }, [location]);
-
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = useCallback(async () => {
     try {
-      const API_BASE = "https://papaiaapi.onrender.com/api/owner";
       const [farmCountData, farmerCountData, identificationData] =
         await Promise.all([
-          cachedFetch(`${API_BASE}/count-farms`, {}, "farm_count", 60000).catch(
+          cachedFetch(`${API_BASE}/count-farms`, "farm_count", 60000).catch(
+            () => ({})
+          ),
+          cachedFetch(`${API_BASE}/count-farmers`, "farmer_count", 60000).catch(
             () => ({})
           ),
           cachedFetch(
-            `${API_BASE}/count-farmers`,
-            {},
-            "farmer_count",
-            60000
-          ).catch(() => ({})),
-          cachedFetch(
             `${API_BASE}/identification-history`,
-            {},
             "id_history",
-            120000
+            30000
           ).catch(() => []),
         ]);
 
@@ -253,58 +214,45 @@ export default function DashboardPage() {
         todayScans: todayScansCount,
       });
     } catch {}
-  };
+  }, []);
 
-  const fetchFarmHealth = async (farmId) => {
+  const fetchFarmHealth = useCallback(async (farmId) => {
     try {
       const data = await cachedFetch(
-        `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-        {},
+        `${API_BASE}/farm-health/${farmId}`,
         `farm_health_${farmId}`,
-        120000
+        60000
       );
-
-      const hasScans = data.totalPredictions > 0;
       return {
         health: data.healthPercentage || "0.00%",
-        hasScans: hasScans,
+        hasScans: data.totalPredictions > 0,
       };
     } catch {
       return { health: "0.00%", hasScans: false };
     }
-  };
+  }, []);
 
-  const fetchFarms = async () => {
+  const fetchFarms = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await cachedFetch(
-        "https://papaiaapi.onrender.com/api/owner/farms",
-        {},
-        "owner_farms",
-        180000
-      );
+      const data = await cachedFetch(`${API_BASE}/farms`, "owner_farms", 30000);
 
       if (data.status === "success" && Array.isArray(data.farms)) {
-        const mappedFarms = data.farms.map((f) => {
-          let farmImage = MainBackground;
-          if (f.farmImage && f.farmImage.startsWith("http")) {
-            farmImage = f.farmImage;
-            const img = new Image();
-            img.src = farmImage;
-          }
-          return {
-            id: f.id,
-            name: f.farmName || "Unnamed Farm",
-            desc:
-              f.description ||
-              `Farm located in ${f.location || "Unknown location"}`,
-            location: f.location || "Unknown",
-            health: "0.00%",
-            hasScans: false,
-            img: farmImage,
-            isActive: f.status === "active",
-          };
-        });
+        const mappedFarms = data.farms.map((f) => ({
+          id: f.id,
+          name: f.farmName || "Unnamed Farm",
+          desc:
+            f.description ||
+            `Farm located in ${f.location || "Unknown location"}`,
+          location: f.location || "Unknown",
+          health: "0.00%",
+          hasScans: false,
+          img:
+            f.farmImage && f.farmImage.startsWith("http")
+              ? f.farmImage
+              : MainBackground,
+          isActive: f.status === "active",
+        }));
 
         const sortedFarms = mappedFarms.sort((a, b) => {
           if (a.isActive && !b.isActive) return -1;
@@ -313,7 +261,6 @@ export default function DashboardPage() {
         });
 
         setFarms(sortedFarms);
-        setLoading(false);
 
         sortedFarms.forEach(async (farm) => {
           const healthData = await fetchFarmHealth(farm.id);
@@ -331,21 +278,39 @@ export default function DashboardPage() {
         });
       } else {
         setFarms([]);
-        setLoading(false);
       }
     } catch {
       setFarms([]);
+    } finally {
       setLoading(false);
     }
-  };
+  }, [fetchFarmHealth]);
 
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true;
+    if (location.state?.refreshFarms) {
+      cache.delete("owner_farms");
+      cache.delete("farm_count");
       fetchFarms();
       fetchDashboardStats();
+      window.history.replaceState({}, document.title);
     }
-  }, []);
+  }, [location, fetchFarms, fetchDashboardStats]);
+
+  useEffect(() => {
+    fetchFarms();
+    fetchDashboardStats();
+
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        cache.delete("id_history");
+        fetchDashboardStats();
+      }
+    }, 30000);
+
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, [fetchFarms, fetchDashboardStats]);
 
   const handleAddFarm = async (farmData) => {
     try {
@@ -360,7 +325,7 @@ export default function DashboardPage() {
       if (farmData.farmImage) formData.append("farmImage", farmData.farmImage);
 
       const token = localStorage.getItem("token");
-      const res = await fetch("https://papaiaapi.onrender.com/api/owner/farm", {
+      const res = await fetch(`${API_BASE}/farm`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -408,11 +373,11 @@ export default function DashboardPage() {
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
           <div className="block lg:hidden">
-            <div className="mb-6">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800 mb-4">
+            <div className="mb-4">
+              <h2 className="text-base sm:text-lg font-bold text-slate-800 mb-3">
                 Dashboard Overview
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {stats.map((stat, idx) => (
                   <div
                     key={stat.title}
@@ -423,18 +388,18 @@ export default function DashboardPage() {
                 ))}
               </div>
             </div>
-            <div className="mb-6">
+            <div className="mb-4">
               <RecentActivities limit={5} />
             </div>
             <div>
-              <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-3">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-3 gap-2">
                 <h2 className="text-base sm:text-lg font-bold text-slate-800">
                   My Farms
                 </h2>
                 <button
                   onClick={() => setShowAddFarmModal(true)}
                   disabled={loading}
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 sm:px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
                 >
                   <Plus size={16} />
                   {loading ? "Loading..." : "Add Farm"}
@@ -445,14 +410,12 @@ export default function DashboardPage() {
                   <div className="animate-spin rounded-full h-10 w-10 border-3 border-slate-200 border-t-slate-600"></div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {farms.length === 0 ? (
-                    <div className="col-span-1 sm:col-span-2 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
-                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                        <Leaf className="w-8 h-8 text-slate-400" />
-                      </div>
+                    <div className="col-span-1 sm:col-span-2 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                      <Leaf className="w-12 h-12 text-slate-400 mx-auto mb-3" />
                       <p className="text-slate-600 font-medium">No farms yet</p>
-                      <p className="text-sm text-slate-500 mt-2">
+                      <p className="text-sm text-slate-500 mt-1">
                         Click "Add Farm" to get started!
                       </p>
                     </div>
@@ -474,7 +437,7 @@ export default function DashboardPage() {
               <h2 className="text-lg font-bold text-slate-800 mb-4">
                 Dashboard Overview
               </h2>
-              <div className="grid grid-cols-3 gap-5 mb-8">
+              <div className="grid grid-cols-3 gap-5 mb-6">
                 {stats.map((stat) => (
                   <StatCard key={stat.title} {...stat} />
                 ))}
@@ -485,7 +448,7 @@ export default function DashboardPage() {
                   <button
                     onClick={() => setShowAddFarmModal(true)}
                     disabled={loading}
-                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-base font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all duration-300 active:scale-95 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Plus size={16} />
                     {loading ? "Loading..." : "Add Farm"}
@@ -498,10 +461,8 @@ export default function DashboardPage() {
                 ) : (
                   <div className="grid grid-cols-3 gap-4">
                     {farms.length === 0 ? (
-                      <div className="col-span-3 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-2xl p-16 text-center">
-                        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
-                          <Leaf className="w-10 h-10 text-slate-400" />
-                        </div>
+                      <div className="col-span-3 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
+                        <Leaf className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                         <p className="text-lg text-slate-600 font-medium">
                           No farms yet
                         </p>
@@ -521,7 +482,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </main>
-
       {showAddFarmModal && (
         <AddFarmModal
           isOpen={showAddFarmModal}

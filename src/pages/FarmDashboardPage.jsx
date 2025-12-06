@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   FileText,
@@ -21,29 +21,21 @@ import ToggleFarmStatusModal from "../components/Popups/ToggleFarmStatusModal";
 import RestoreFarmerModal from "../components/Popups/RestoreFarmerModal";
 import ReactivateFarmerModal from "../components/Popups/ReactivateFarmerModal";
 import Alert from "../components/Alert";
-
-// Import our separate components
 import FarmAnalytics from "./FarmAnalytics";
 import RecentScans from "./RecentScans";
 import FarmTeams from "./FarmTeams";
 import FarmAnalyticsSummary from "./FarmAnalyticsSummary";
-
-const refreshActivities = () => {
-  fetchFarmData();
-};
+import ScansBreakdown from "./ScansBreakdown";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
   const navigate = useNavigate();
   const [alert, setAlert] = useState({ type: "", message: "" });
-  // Farm data state
   const [farmData, setFarmData] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Time filter for analytics
   const [timeFilter, setTimeFilter] = useState("Daily");
+  const [dateRange, setDateRange] = useState("Last 11 days");
 
-  // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
   const [isFarmerAddedSuccessModalOpen, setIsFarmerAddedSuccessModalOpen] =
     useState(false);
@@ -54,137 +46,19 @@ export default function FarmDashboardPage() {
   const [isToggleFarmStatusModalOpen, setIsToggleFarmStatusModalOpen] =
     useState(false);
   const [isEditFarmModalOpen, setIsEditFarmModalOpen] = useState(false);
-
-  // Selected farmer states
-  const [selectedFarmer, setSelectedFarmer] = useState(null);
-  const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
-
-  const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
-
   const [isReactivateFarmerModalOpen, setIsReactivateFarmerModalOpen] =
     useState(false);
-  const [farmerToReactivate, setFarmerToReactivate] = useState(null);
-
   const [isRestoreFarmerModalOpen, setIsRestoreFarmerModalOpen] =
     useState(false);
+
+  const [selectedFarmer, setSelectedFarmer] = useState(null);
+  const [newlyAddedFarmer, setNewlyAddedFarmer] = useState(null);
+  const [farmerToReactivate, setFarmerToReactivate] = useState(null);
   const [farmerToRestore, setFarmerToRestore] = useState(null);
-  const [dateRange, setDateRange] = useState("Last 11 days");
 
-  const handleRestoreFarmer = async (farmerId) => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      const data = await response.json();
-
-      if (data.status === "success") {
-        const archivedFarmer = data.removedFarmers.find(
-          (f) => f.id === farmerId
-        );
-        if (archivedFarmer) {
-          setFarmerToRestore(archivedFarmer);
-          setIsRestoreFarmerModalOpen(true);
-        }
-      }
-    } catch (error) {}
-  };
-
-  const handleConfirmRestore = async () => {
-    if (!selectedFarmer) return;
-
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${selectedFarmer.id}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || "Failed to restore farmer");
-      }
-
-      // 1. Trigger alert FIRST
-      setAlert({ type: "success", message: "Farmer restored successfully!" });
-
-      // 2. Close modal AFTER 3 seconds (same time your alert auto-hides)
-      setTimeout(() => {
-        setIsRestoreFarmerModalOpen(false);
-        window.location.reload();
-      }, 3000);
-
-      window.location.reload();
-    } catch (error) {
-      // Don't close modal on error - let RestoreFarmerModal handle it
-      // Pass the error to the modal by not closing it here
-      throw error; // Re-throw to let the modal catch it
-    }
-  };
-  const handleCloseRestoreModal = () => setIsRestoreFarmerModalOpen(false);
-
+  const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
   const [restoreAlert, setRestoreAlert] = useState({ type: "", message: "" });
 
-  const handleRestore = async () => {
-    if (!selectedFarmer) return;
-
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${selectedFarmer.id}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Specific error: farmer already in another farm
-        if (
-          data.message?.includes("already added") ||
-          data.message?.includes("another farm") ||
-          data.message?.toLowerCase().includes("already exists")
-        ) {
-          // Stop restoring and close modal
-          setRestoreAlert({
-            type: "error",
-            message:
-              "This farmer is already added to another farm and cannot be restored.",
-          });
-          setIsRestoreFarmerModalOpen(false);
-          return;
-        }
-
-        throw new Error(data.message || "Failed to restore farmer");
-      }
-
-      // Success
-      setRestoreAlert({
-        type: "success",
-        message: "Farmer restored successfully!",
-      });
-      setTimeout(() => {
-        setIsRestoreFarmerModalOpen(false);
-        window.location.reload();
-      }, 3000);
-    } catch (err) {
-      setRestoreAlert({ type: "error", message: err.message });
-    }
-  };
-
-  // Fetch farm data
   const fetchFarmData = async () => {
     if (!farmId) return;
     setLoading(true);
@@ -192,9 +66,7 @@ export default function FarmDashboardPage() {
       const response = await fetch(
         "https://papaiaapi.onrender.com/api/owner/farms",
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
       const data = await response.json();
@@ -211,10 +83,8 @@ export default function FarmDashboardPage() {
     fetchFarmData();
   }, [farmId]);
 
-  // Check if farm is active
   const isActive = farmData?.status === "active";
 
-  // Handlers - with inactive farm checks
   const handleAddFarmer = () => {
     if (!isActive) return;
     setIsAddFarmerModalOpen(true);
@@ -229,11 +99,9 @@ export default function FarmDashboardPage() {
     } catch (error) {}
   };
 
-  // Update the handleViewFarmer function to accept isArchived parameter
   const handleViewFarmer = async (farmerId, isArchived = false) => {
     try {
       if (isArchived) {
-        // Fetch from archived farmers
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
           {
@@ -243,7 +111,6 @@ export default function FarmDashboardPage() {
           }
         );
         const data = await response.json();
-
         if (data.status === "success") {
           const archivedFarmer = data.removedFarmers.find(
             (f) => f.id === farmerId
@@ -254,7 +121,6 @@ export default function FarmDashboardPage() {
           }
         }
       } else {
-        // Fetch from active farmers (existing code)
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
           {
@@ -286,9 +152,7 @@ export default function FarmDashboardPage() {
         `https://papaiaapi.onrender.com/api/owner/farmer/${selectedFarmer.id}`,
         {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
 
@@ -300,7 +164,6 @@ export default function FarmDashboardPage() {
       setIsRemoveFarmerModalOpen(false);
       setIsFarmerRemovedSuccessModalOpen(true);
 
-      // Refresh the page to update farmer list
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -338,9 +201,7 @@ export default function FarmDashboardPage() {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            farmerId: farmerToReactivate.id,
-          }),
+          body: JSON.stringify({ farmerId: farmerToReactivate.id }),
         }
       );
 
@@ -350,14 +211,10 @@ export default function FarmDashboardPage() {
       }
 
       setIsReactivateFarmerModalOpen(false);
-
-      // Show success message
       setAlert({
         type: "success",
         message: "Farmer reactivated successfully!",
       });
-
-      // Refresh the page
       window.location.reload();
     } catch (error) {
       setAlert({ type: "error", message: error.message });
@@ -369,11 +226,9 @@ export default function FarmDashboardPage() {
     setIsFarmerDetailModalOpen(true);
   };
 
-  // Add handler for restoring from detail modal
   const handleRestoreFarmerFromDetail = () => {
     setIsFarmerDetailModalOpen(false);
     setIsRestoreFarmerModalOpen(true);
-    // Use selectedFarmer directly - no need to fetch again since we already have the data
   };
 
   const handleSuccessModalClose = () => {
@@ -384,21 +239,67 @@ export default function FarmDashboardPage() {
   };
 
   const handleCloseEditFarmModal = () => setIsEditFarmModalOpen(false);
-
   const handleFarmUpdated = () => {
-    fetchFarmData(); // Refresh farm data after successful update
+    fetchFarmData();
   };
 
   const handleStatusToggled = (newStatus) => {
-    // Update local farm data
     setFarmData((prev) => ({ ...prev, status: newStatus }));
-
-    // Navigate to dashboard with refresh flag
     navigate("/dashboard", { state: { refreshFarms: true } });
   };
 
   const goBack = () =>
     navigate("/dashboard", { state: { refreshFarms: false } });
+
+  const handleRestore = async () => {
+    if (!selectedFarmer) return;
+
+    try {
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/restore-farmer/${selectedFarmer.id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (
+          data.message?.includes("already added") ||
+          data.message?.includes("another farm") ||
+          data.message?.toLowerCase().includes("already exists")
+        ) {
+          setRestoreAlert({
+            type: "error",
+            message:
+              "This farmer is already added to another farm and cannot be restored.",
+          });
+          setIsRestoreFarmerModalOpen(false);
+          return;
+        }
+
+        throw new Error(data.message || "Failed to restore farmer");
+      }
+
+      setRestoreAlert({
+        type: "success",
+        message: "Farmer restored successfully!",
+      });
+      setTimeout(() => {
+        setIsRestoreFarmerModalOpen(false);
+        window.location.reload();
+      }, 3000);
+    } catch (err) {
+      setRestoreAlert({ type: "error", message: err.message });
+    }
+  };
+
+  const handleCloseRestoreModal = () => setIsRestoreFarmerModalOpen(false);
 
   if (loading) {
     return (
@@ -447,7 +348,6 @@ export default function FarmDashboardPage() {
       />
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
-          {/* Top Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-2 sm:gap-3 mb-2">
@@ -520,7 +420,6 @@ export default function FarmDashboardPage() {
             </div>
           </div>
 
-          {/* Inactive Farm Warning Banner */}
           {!isActive && (
             <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-4 sm:p-5 rounded-xl mb-4 shadow-sm">
               <div className="flex items-start gap-3">
@@ -541,20 +440,17 @@ export default function FarmDashboardPage() {
             </div>
           )}
 
-          {/* Farm Description */}
           <div className="mb-4">
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               {farmData.description || "No description available"}
             </p>
           </div>
 
-          {/* Analytics + Recent Scans - Disabled when inactive */}
           <div
             className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 ${
               !isActive ? "pointer-events-none" : ""
             }`}
           >
-            {/* Farm Analytics - 2/3 width */}
             <div className="lg:col-span-2 pb-4">
               <FarmAnalytics
                 farmId={farmId}
@@ -565,8 +461,29 @@ export default function FarmDashboardPage() {
               />
             </div>
 
-            {/* Recent Scans - 1/3 width */}
             <div className="lg:col-span-1 pb-4">
+              <ScansBreakdown
+                farmId={farmId}
+                timeFilter={timeFilter}
+                dateRange={dateRange}
+              />
+            </div>
+          </div>
+
+          <div
+            className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 pb-4 ${
+              !isActive ? "pointer-events-none" : ""
+            }`}
+          >
+            <div className="lg:col-span-2">
+              <FarmAnalyticsSummary
+                farmId={farmId}
+                timeFilter={timeFilter}
+                dateRange={dateRange}
+              />
+            </div>
+
+            <div className="lg:col-span-1">
               <RecentScans
                 farmId={farmId}
                 timeFilter={timeFilter}
@@ -575,18 +492,6 @@ export default function FarmDashboardPage() {
             </div>
           </div>
 
-          {/* Farm Analytics Summary - Disabled when inactive */}
-          <div
-            className={`mb-6 pb-4 ${!isActive ? "pointer-events-none" : ""}`}
-          >
-            <FarmAnalyticsSummary
-              farmId={farmId}
-              timeFilter={timeFilter}
-              dateRange={dateRange}
-            />
-          </div>
-
-          {/* Farm Team - Disabled when inactive */}
           <div className={`pb-4 ${!isActive ? "pointer-events-none" : ""}`}>
             <FarmTeams
               farmId={farmId}
@@ -600,7 +505,6 @@ export default function FarmDashboardPage() {
 
       <Footer />
 
-      {/* Modals - Only work when farm is active */}
       {isActive && (
         <>
           <AddFarmerModal
@@ -608,7 +512,6 @@ export default function FarmDashboardPage() {
             onClose={() => setIsAddFarmerModalOpen(false)}
             onFarmerAdded={handleFarmerAdded}
             farmId={farmId}
-            onRefresh={refreshActivities}
           />
 
           <EditFarmModal

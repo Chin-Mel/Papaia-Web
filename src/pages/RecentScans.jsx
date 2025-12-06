@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Leaf } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
 import ScanDetailModal from "../components/Popups/ScanDetailModal.jsx";
 
 export default function RecentScans({ farmId, timeFilter, dateRange }) {
@@ -9,18 +8,11 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [filterActive, setFilterActive] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
+  const SCANS_PER_PAGE = 4;
 
-  // Disease colors mapping
-  const diseaseColors = {
-    Healthy: "#10b981",
-    "Ring Spot Virus": "#ea580c",
-    Anthracnose: "#f43f5e",
-    "Powdery Mildew": "#3b82f6",
-  };
-
-  // Helper function to get number of periods based on date range
   const getPeriodsFromRange = (range, filter) => {
     switch (filter) {
       case "Daily":
@@ -48,7 +40,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     }
   };
 
-  // Filter scans based on date range
   const filterScansByDateRange = useCallback((allScans, filter, range) => {
     const periods = getPeriodsFromRange(range, filter);
     const now = new Date();
@@ -94,58 +85,18 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     });
   }, []);
 
-  // Calculate disease distribution for pie chart
-  const calculateDiseaseDistribution = useCallback((scans) => {
-    const allDiseases = [
-      "Healthy",
-      "Ring Spot Virus",
-      "Anthracnose",
-      "Powdery Mildew",
-    ];
-    const counts = {};
-
-    // Initialize all diseases with 0
-    allDiseases.forEach((disease) => {
-      counts[disease] = 0;
-    });
-
-    // Count occurrences
-    scans.forEach((scan) => {
-      if (counts.hasOwnProperty(scan.prediction)) {
-        counts[scan.prediction]++;
-      }
-    });
-
-    // Convert to array format for pie chart, filter out zero values for chart
-    const chartData = allDiseases
-      .filter((disease) => counts[disease] > 0)
-      .map((disease) => ({
-        name: disease,
-        value: counts[disease],
-        color: diseaseColors[disease],
-      }));
-
-    // Create list of diseases with zero cases
-    const zeroCases = allDiseases
-      .filter((disease) => counts[disease] === 0)
-      .map((disease) => disease);
-
-    return { chartData, zeroCases, counts };
-  }, []);
-
-  // Track when user manually changes date range (skip initial load)
   useEffect(() => {
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
       return;
     }
     setFilterActive(true);
+    setCurrentPage(1);
   }, [dateRange]);
 
   useEffect(() => {
     if (!farmId) return;
 
-    // Cancel previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -167,14 +118,11 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch scans");
-        }
+        if (!response.ok) throw new Error("Failed to fetch scans");
 
         const scansData = await response.json();
         const allScans = Array.isArray(scansData) ? scansData : [];
 
-        // Only filter by date range if user has actively selected a range
         const filteredScans = filterActive
           ? filterScansByDateRange(allScans, timeFilter, dateRange)
           : allScans;
@@ -198,7 +146,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     };
   }, [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]);
 
-  // Get card styling based on disease type
   const getCardStyle = useCallback((prediction) => {
     const styles = {
       Healthy: {
@@ -274,12 +221,9 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   }, []);
 
   const getFarmerName = useCallback((scan) => {
-    // Use farmerName from API if available
     if (scan.farmerName) {
       return scan.farmerName;
     }
-
-    // Fallback to ID number if no name
     return `Farmer ${scan.idNumber}`;
   }, []);
 
@@ -295,11 +239,16 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     setShowDetailModal(true);
   }, []);
 
-  const FIXED_HEIGHT = "580px";
+  const totalPages = Math.ceil(recentScans.length / SCANS_PER_PAGE);
+  const startIndex = (currentPage - 1) * SCANS_PER_PAGE;
+  const endIndex = startIndex + SCANS_PER_PAGE;
+  const currentScans = recentScans.slice(startIndex, endIndex);
 
-  const { chartData, zeroCases, counts } =
-    calculateDiseaseDistribution(recentScans);
-  const totalScans = recentScans.length;
+  const goToPage = (page) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  const FIXED_HEIGHT = "580px";
 
   if (loading && !recentScans.length) {
     return (
@@ -340,160 +289,85 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Scrollable Container for Both Pie Chart and Scans */}
           <div
-            className="flex-1 overflow-y-auto pr-2 space-y-4"
+            className="flex-1 overflow-y-auto pr-2 space-y-3"
             style={{ scrollbarWidth: "thin" }}
           >
-            {/* Pie Chart Section */}
-            <div className="border-b border-gray-200 pb-4">
-              {chartData.length > 0 ? (
-                <>
-                  <ResponsiveContainer width="100%" height={330}>
-                    <PieChart>
-                      <Pie
-                        data={chartData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({
-                          name,
-                          percent,
-                          value,
-                          cx,
-                          cy,
-                          midAngle,
-                          innerRadius,
-                          outerRadius,
-                        }) => {
-                          const RADIAN = Math.PI / 180;
-                          const radius =
-                            innerRadius + (outerRadius - innerRadius) * 0.5;
-                          const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                          const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-                          return (
-                            <text
-                              x={x}
-                              y={y}
-                              fill="white"
-                              textAnchor="middle"
-                              dominantBaseline="central"
-                              className="text-xs"
-                            >
-                              <tspan
-                                x={x}
-                                dy="-0.6em"
-                                style={{ fontSize: "15px" }}
-                              >
-                                {name}
-                              </tspan>
-                              <tspan
-                                x={x}
-                                dy="1.2em"
-                                style={{
-                                  fontSize: "15px",
-                                  fontWeight: "bold",
-                                }}
-                              >{`${(percent * 100).toFixed(0)}%`}</tspan>
-                              <tspan
-                                x={x}
-                                dy="1.2em"
-                                style={{ fontSize: "14px" }}
-                              >{`${value} ${
-                                value === 1 ? "case" : "cases"
-                              }`}</tspan>
-                            </text>
-                          );
-                        }}
-                        outerRadius={150}
-                        innerRadius={0}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        formatter={(value, name, props) => [
-                          `${value} cases (${(
-                            (value / totalScans) *
-                            100
-                          ).toFixed(1)}%)`,
-                          props.payload.name,
-                        ]}
+            {currentScans.map((scan, index) => {
+              const cardStyle = getCardStyle(scan.prediction);
+              const { date, time } = formatDateTime(scan.timestamp);
+              return (
+                <div
+                  key={`${scan.id || scan.timestamp}-${index}`}
+                  onClick={() => handleScanClick(scan)}
+                  className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="relative flex-shrink-0">
+                      <img
+                        src={scan.imageUrl}
+                        alt="Scan"
+                        className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                        onError={handleImageError}
                       />
-                    </PieChart>
-                  </ResponsiveContainer>
+                      <div
+                        className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
+                        style={{ display: "none" }}
+                      >
+                        No Image
+                      </div>
+                    </div>
 
-                  {zeroCases.length > 0 && (
-                    <p className="text-xs text-black mb-3 mt-3 italic font-medium text-center">
-                      No cases: {zeroCases.join(", ")}
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-xs text-gray-500 text-center py-4 mt-3">
-                  No data to display
-                </p>
-              )}
-            </div>
-
-            {/* Scans List */}
-            <div className="space-y-3">
-              {recentScans.map((scan, index) => {
-                const cardStyle = getCardStyle(scan.prediction);
-                const { date, time } = formatDateTime(scan.timestamp);
-                return (
-                  <div
-                    key={`${scan.id || scan.timestamp}-${index}`}
-                    onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={scan.imageUrl}
-                          alt="Scan"
-                          className="w-14 h-14 rounded-lg object-cover border border-gray-200"
-                          onError={handleImageError}
-                        />
-                        <div
-                          className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                          style={{ display: "none" }}
+                    <div className="flex-1 min-w-0 flex justify-between items-start">
+                      <div className="flex-1">
+                        <p
+                          className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
                         >
-                          No Image
-                        </div>
+                          {scan.prediction}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          By: {getFarmerName(scan)}
+                        </p>
                       </div>
 
-                      <div className="flex-1 min-w-0 flex justify-between items-start">
-                        <div className="flex-1">
-                          <p
-                            className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
-                          >
-                            {scan.prediction}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            By: {getFarmerName(scan)}
-                          </p>
-                        </div>
-
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-xs text-slate-700 font-medium break-words">
-                            {date}
-                          </p>
-                          <p className="text-xs text-slate-500">{time}</p>
-                        </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs text-slate-700 font-medium break-words">
+                          {date}
+                        </p>
+                        <p className="text-xs text-slate-500">{time}</p>
                       </div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
 
-          <div className="mt-3 pt-3 border-t border-gray-200 text-center flex-shrink-0">
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 flex-shrink-0">
+              <div className="text-xs text-gray-600">
+                Page {currentPage} of {totalPages}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-2 text-center flex-shrink-0">
             <p className="text-xs text-gray-500">
               {recentScans.length > 0
                 ? filterActive

@@ -8,8 +8,8 @@ export default function RestoreFarmerModal({
   onConfirm,
   farmer,
 }) {
-  const { showAlert } = useAlert();
   const [isRestoring, setIsRestoring] = useState(false);
+  const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -23,7 +23,10 @@ export default function RestoreFarmerModal({
   }, [onClose, isRestoring]);
 
   useEffect(() => {
-    if (!isOpen) setIsRestoring(false);
+    if (!isOpen) {
+      setIsRestoring(false);
+      setAlert({ type: "", message: "" });
+    }
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -42,17 +45,25 @@ export default function RestoreFarmerModal({
     setIsRestoring(true);
     try {
       await onConfirm();
-      showAlert("Farmer restored successfully!", "success");
+      setAlert({ type: "success", message: "Farmer restored successfully!" });
       setTimeout(() => {
         onClose();
         window.location.reload();
-      }, 1000);
+      }, 800);
     } catch (error) {
       if (
         error.message?.includes("already added") ||
         error.message?.includes("another farm")
       ) {
-        showAlert("This farmer is already added to another farm.", "error");
+        setAlert({
+          type: "error",
+          message: "This farmer is already added to another farm.",
+        });
+      } else {
+        setAlert({
+          type: "error",
+          message: error.message || "Failed to restore farmer",
+        });
       }
       setIsRestoring(false);
     }
@@ -83,6 +94,18 @@ export default function RestoreFarmerModal({
         </div>
 
         <div className="p-6">
+          {alert.message && (
+            <div
+              className={`p-3 rounded-lg mb-4 ${
+                alert.type === "error"
+                  ? "bg-red-50 text-red-800"
+                  : "bg-green-50 text-green-800"
+              }`}
+            >
+              <p className="text-sm font-medium">{alert.message}</p>
+            </div>
+          )}
+
           <p className="text-sm text-gray-600 text-center mb-6">
             This will restore{" "}
             <span className="font-semibold text-gray-900">{formatName()}</span>{" "}

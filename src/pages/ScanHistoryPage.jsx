@@ -9,6 +9,7 @@ import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
 
 const RESULTS_PER_PAGE = 5;
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
 const DISEASE_CONFIG = {
   Healthy: { color: "#22C55E", bgColor: "#22C55E" },
@@ -121,25 +122,37 @@ export default function ScanHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [scanData, setScanData] = useState([]);
   const [farms, setFarms] = useState([]);
+  const [allFarmers, setAllFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allScans, setAllScans] = useState([]);
   const [filters, setFilters] = useState({
     dateRange: "All Time",
     status: "All Status",
+    diseaseType: "",
     farmId: "all",
-    farmerName: "",
+    farmerId: "all",
   });
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
 
   useEffect(() => {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
-  useEffect(() => {
-    if (!token) return;
+  const fetchData = useCallback(async () => {
+    const cacheKey = "scan_history_data";
+    const cached = dataCache.get(cacheKey);
+
+    if (cached && Date.now() - cached.timestamp < 30000) {
+      setFarms(cached.farms);
+      setAllScans(cached.scans);
+      setAllFarmers(cached.farmers);
+      setLoading(false);
+      return;
+    }
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -148,162 +161,172 @@ export default function ScanHistoryPage() {
     const controller = new AbortController();
     abortControllerRef.current = controller;
 
-    const fetchData = async () => {
-      const cacheKey = "scan_history_data";
-      const cached = dataCache.get(cacheKey);
+    try {
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      if (cached && Date.now() - cached.timestamp < 60000) {
-        setFarms(cached.farms);
-        setAllScans(cached.scans);
-        setLoading(false);
-        return;
-      }
+      const [farmsRes, scansRes] = await Promise.all([
+        fetch(`${API_BASE}/farms`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        }),
+        fetch(`${API_BASE}/identification-history`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        }),
+      ]);
 
-      try {
-        const timeoutId = setTimeout(() => controller.abort(), 15000);
+      clearTimeout(timeoutId);
 
-        const [farmsRes, scansRes] = await Promise.all([
-          fetch("https://papaiaapi.onrender.com/api/owner/farms", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          }),
-          fetch(
-            "https://papaiaapi.onrender.com/api/owner/identification-history",
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              signal: controller.signal,
-            }
-          ),
-        ]);
+      const [farmsData, scansArray] = await Promise.all([
+        farmsRes.ok ? farmsRes.json() : { status: "error", farms: [] },
+        scansRes.ok ? scansRes.json() : [],
+      ]);
 
-        clearTimeout(timeoutId);
+      const farmsList =
+        farmsData.status === "success" ? farmsData.farms || [] : [];
 
-        const [farmsData, scansArray] = await Promise.all([
-          farmsRes.ok ? farmsRes.json() : { status: "error", farms: [] },
-          scansRes.ok ? scansRes.json() : [],
-        ]);
+      if (Array.isArray(scansArray) && farmsList.length > 0) {
+        const farmMap = Object.fromEntries(
+          farmsList.map((f) => [f.id, f.farmName])
+        );
+        const farmersData = {};
+        const allFarmersSet = new Set();
 
-        const farmsList =
-          farmsData.status === "success" ? farmsData.farms || [] : [];
+        await Promise.all(
+          farmsList.map(async (farm) => {
+            try {
+              const farmersRes = await fetch(`${API_BASE}/farmers/${farm.id}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                signal: controller.signal,
+              });
 
-        if (Array.isArray(scansArray) && farmsList.length > 0) {
-          const farmMap = Object.fromEntries(
-            farmsList.map((f) => [f.id, f.farmName])
-          );
-          const farmersData = {};
+              if (farmersRes.ok) {
+                const data = await farmersRes.json();
+                if (data.status === "success" && data.farmers) {
+                  data.farmers.forEach((farmer) => {
+                    let fullName = "";
+                    if (farmer.firstname) fullName += farmer.firstname;
+                    if (farmer.middlename) fullName += ` ${farmer.middlename}`;
+                    if (farmer.lastname) fullName += ` ${farmer.lastname}`;
+                    if (farmer.suffix) fullName += ` ${farmer.suffix}`;
+                    const name = fullName.trim() || farmer.idNumber;
+                    farmersData[farmer.idNumber] = name;
+                    allFarmersSet.add(
+                      JSON.stringify({
+                        id: farmer.idNumber,
+                        name: name,
+                      })
+                    );
+                  });
+                }
+              }
+            } catch {}
+          })
+        );
 
-          await Promise.all(
-            farmsList.map(async (farm) => {
+        const uniqueFarmers = Array.from(allFarmersSet).map((f) =>
+          JSON.parse(f)
+        );
+
+        const processed = scansArray
+          .map((scan) => {
+            const predictionValue = scan.result || scan.prediction;
+            const status = getStatus(predictionValue);
+            return {
+              ...scan,
+              prediction: predictionValue,
+              farmName: farmMap[scan.farmId] || "Unknown Farm",
+              status,
+              description: predictionValue || "Unknown",
+              idNumber: scan.idNumber || "Unknown Farmer",
+              farmerName:
+                scan.farmerName ||
+                farmersData[scan.idNumber] ||
+                scan.idNumber ||
+                "Unknown Farmer",
+            };
+          })
+          .sort((a, b) => {
+            const parseTimestamp = (timestamp) => {
+              if (!timestamp) return new Date(0);
               try {
-                const farmersRes = await fetch(
-                  `https://papaiaapi.onrender.com/api/owner/farmers/${farm.id}`,
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      "Content-Type": "application/json",
-                    },
-                    signal: controller.signal,
-                  }
-                );
-
-                if (farmersRes.ok) {
-                  const data = await farmersRes.json();
-                  if (data.status === "success" && data.farmers) {
-                    data.farmers.forEach((farmer) => {
-                      let fullName = "";
-                      if (farmer.firstname) fullName += farmer.firstname;
-                      if (farmer.middlename)
-                        fullName += ` ${farmer.middlename}`;
-                      if (farmer.lastname) fullName += ` ${farmer.lastname}`;
-                      if (farmer.suffix) fullName += ` ${farmer.suffix}`;
-                      farmersData[farmer.idNumber] =
-                        fullName.trim() || farmer.idNumber;
-                    });
-                  }
-                }
-              } catch {}
-            })
-          );
-
-          const processed = scansArray
-            .map((scan) => {
-              const predictionValue = scan.result || scan.prediction;
-              const status = getStatus(predictionValue);
-              return {
-                ...scan,
-                prediction: predictionValue,
-                farmName: farmMap[scan.farmId] || "Unknown Farm",
-                status,
-                description: predictionValue || "Unknown",
-                idNumber: scan.idNumber || "Unknown Farmer",
-                farmerName:
-                  scan.farmerName ||
-                  farmersData[scan.idNumber] ||
-                  scan.idNumber ||
-                  "Unknown Farmer",
-              };
-            })
-            .sort((a, b) => {
-              const parseTimestamp = (timestamp) => {
-                if (!timestamp) return new Date(0);
-                try {
-                  const [datePart, timePart, period] = timestamp.split(/\s+/);
-                  const [month, day, year] = datePart.split("/");
-                  const [hours, minutes] = timePart.split(":");
-                  let hour24 = parseInt(hours);
-                  if (period === "PM" && hour24 !== 12) hour24 += 12;
-                  if (period === "AM" && hour24 === 12) hour24 = 0;
-                  return new Date(year, month - 1, day, hour24, minutes);
-                } catch {
-                  return new Date(timestamp);
-                }
-              };
-              return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
-            });
-
-          setFarms(farmsList);
-          setAllScans(processed);
-          dataCache.set(cacheKey, {
-            farms: farmsList,
-            scans: processed,
-            timestamp: Date.now(),
+                const [datePart, timePart, period] = timestamp.split(/\s+/);
+                const [month, day, year] = datePart.split("/");
+                const [hours, minutes] = timePart.split(":");
+                let hour24 = parseInt(hours);
+                if (period === "PM" && hour24 !== 12) hour24 += 12;
+                if (period === "AM" && hour24 === 12) hour24 = 0;
+                return new Date(year, month - 1, day, hour24, minutes);
+              } catch {
+                return new Date(timestamp);
+              }
+            };
+            return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
           });
-        } else if (farmsList.length > 0) {
-          setFarms(farmsList);
-          setAllScans([]);
-          dataCache.set(cacheKey, {
-            farms: farmsList,
-            scans: [],
-            timestamp: Date.now(),
-          });
-        } else {
-          setFarms([]);
-          setAllScans([]);
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setFarms([]);
-          setAllScans([]);
-        }
-      } finally {
-        setLoading(false);
+
+        setFarms(farmsList);
+        setAllScans(processed);
+        setAllFarmers(uniqueFarmers);
+        dataCache.set(cacheKey, {
+          farms: farmsList,
+          scans: processed,
+          farmers: uniqueFarmers,
+          timestamp: Date.now(),
+        });
+      } else if (farmsList.length > 0) {
+        setFarms(farmsList);
+        setAllScans([]);
+        setAllFarmers([]);
+        dataCache.set(cacheKey, {
+          farms: farmsList,
+          scans: [],
+          farmers: [],
+          timestamp: Date.now(),
+        });
+      } else {
+        setFarms([]);
+        setAllScans([]);
+        setAllFarmers([]);
       }
-    };
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        setFarms([]);
+        setAllScans([]);
+        setAllFarmers([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
 
+  useEffect(() => {
     fetchData();
+
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        dataCache.delete("scan_history_data");
+        fetchData();
+      }
+    }, 30000);
 
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
     };
-  }, [token, navigate]);
+  }, [fetchData]);
 
   const filteredScans = useMemo(() => {
     let filtered = allScans;
@@ -336,22 +359,30 @@ export default function ScanHistoryPage() {
     }
 
     if (filters.status !== "All Status") {
-      filtered = filtered.filter((s) => {
-        const pred = s.prediction?.toLowerCase();
-        const filterStatus = filters.status.toLowerCase();
-        return pred === filterStatus || (filterStatus === "all" && pred);
-      });
+      if (filters.status === "Healthy") {
+        filtered = filtered.filter(
+          (s) => s.prediction?.toLowerCase() === "healthy"
+        );
+      } else if (filters.status === "Disease Detected") {
+        filtered = filtered.filter((s) => {
+          const pred = s.prediction?.toLowerCase();
+          return pred && pred !== "healthy";
+        });
+
+        if (filters.diseaseType && filters.diseaseType !== "All Diseases") {
+          filtered = filtered.filter(
+            (s) => s.prediction === filters.diseaseType
+          );
+        }
+      }
     }
 
     if (filters.farmId !== "all") {
       filtered = filtered.filter((s) => s.farmId === filters.farmId);
     }
 
-    if (filters.farmerName?.trim()) {
-      const query = filters.farmerName.trim().toLowerCase();
-      filtered = filtered.filter(
-        (s) => s.farmerName && s.farmerName.toLowerCase().includes(query)
-      );
+    if (filters.farmerId !== "all") {
+      filtered = filtered.filter((s) => s.idNumber === filters.farmerId);
     }
 
     return filtered;
@@ -365,7 +396,13 @@ export default function ScanHistoryPage() {
   const totalPages = Math.ceil(filteredScans.length / RESULTS_PER_PAGE);
 
   const handleFilterChange = useCallback((type, value) => {
-    setFilters((prev) => ({ ...prev, [type]: value }));
+    setFilters((prev) => {
+      const newFilters = { ...prev, [type]: value };
+      if (type === "status" && value !== "Disease Detected") {
+        newFilters.diseaseType = "";
+      }
+      return newFilters;
+    });
     setCurrentPage(1);
   }, []);
 
@@ -450,33 +487,160 @@ export default function ScanHistoryPage() {
                 options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
               />
 
-              <FilterDropdown
-                label="Status"
-                value={filters.status}
-                onChange={(v) => handleFilterChange("status", v)}
-                options={[
-                  "All Status",
-                  "Healthy",
-                  "Powdery Mildew",
-                  "Anthracnose",
-                  "Ring Spot Virus",
-                ]}
-              />
-
               <div className="flex flex-col space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-gray-700">
-                  Farmer Name
+                  Status
                 </label>
-                <input
-                  type="text"
-                  placeholder="Search farmer name..."
-                  value={filters.farmerName}
-                  onChange={(e) =>
-                    handleFilterChange("farmerName", e.target.value)
-                  }
-                  className="h-9 sm:h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="status-all"
+                      name="status"
+                      checked={filters.status === "All Status"}
+                      onChange={() =>
+                        handleFilterChange("status", "All Status")
+                      }
+                      className="w-4 h-4"
+                    />
+                    <label htmlFor="status-all" className="text-xs sm:text-sm">
+                      All Status
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      id="status-healthy"
+                      name="status"
+                      checked={filters.status === "Healthy"}
+                      onChange={() => handleFilterChange("status", "Healthy")}
+                      className="w-4 h-4"
+                    />
+                    <label
+                      htmlFor="status-healthy"
+                      className="text-xs sm:text-sm"
+                    >
+                      Healthy
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id="status-disease"
+                        name="status"
+                        checked={filters.status === "Disease Detected"}
+                        onChange={() =>
+                          handleFilterChange("status", "Disease Detected")
+                        }
+                        className="w-4 h-4"
+                      />
+                      <label
+                        htmlFor="status-disease"
+                        className="text-xs sm:text-sm"
+                      >
+                        Disease Detected
+                      </label>
+                    </div>
+                    {filters.status === "Disease Detected" && (
+                      <div className="ml-6 space-y-2">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="disease-all"
+                            checked={!filters.diseaseType}
+                            onChange={() =>
+                              handleFilterChange("diseaseType", "")
+                            }
+                            className="w-4 h-4"
+                          />
+                          <label
+                            htmlFor="disease-all"
+                            className="text-xs sm:text-sm"
+                          >
+                            All Diseases
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="disease-anthracnose"
+                            checked={filters.diseaseType === "Anthracnose"}
+                            onChange={(e) =>
+                              handleFilterChange(
+                                "diseaseType",
+                                e.target.checked ? "Anthracnose" : ""
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                          <label
+                            htmlFor="disease-anthracnose"
+                            className="text-xs sm:text-sm"
+                          >
+                            Anthracnose
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="disease-mildew"
+                            checked={filters.diseaseType === "Powdery Mildew"}
+                            onChange={(e) =>
+                              handleFilterChange(
+                                "diseaseType",
+                                e.target.checked ? "Powdery Mildew" : ""
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                          <label
+                            htmlFor="disease-mildew"
+                            className="text-xs sm:text-sm"
+                          >
+                            Powdery Mildew
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id="disease-ring"
+                            checked={filters.diseaseType === "Ring Spot Virus"}
+                            onChange={(e) =>
+                              handleFilterChange(
+                                "diseaseType",
+                                e.target.checked ? "Ring Spot Virus" : ""
+                              )
+                            }
+                            className="w-4 h-4"
+                          />
+                          <label
+                            htmlFor="disease-ring"
+                            className="text-xs sm:text-sm"
+                          >
+                            Ring Spot Virus
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+
+              <FilterDropdown
+                label="Farmer Name"
+                value={
+                  filters.farmerId === "all"
+                    ? "All Farmers"
+                    : allFarmers.find((f) => f.id === filters.farmerId)?.name ||
+                      "All Farmers"
+                }
+                onChange={(v) => {
+                  const farmer = allFarmers.find((f) => f.name === v);
+                  handleFilterChange("farmerId", farmer?.id || "all");
+                }}
+                options={["All Farmers", ...allFarmers.map((f) => f.name)]}
+              />
 
               <FilterDropdown
                 label="Farm"
