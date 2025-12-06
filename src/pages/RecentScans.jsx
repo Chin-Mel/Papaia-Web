@@ -182,7 +182,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         setRecentScans(filteredScans);
       } catch (error) {
         if (error.name !== "AbortError") {
-          console.error("Error fetching data:", error);
           setRecentScans([]);
         }
       } finally {

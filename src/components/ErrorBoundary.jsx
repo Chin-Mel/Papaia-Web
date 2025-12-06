@@ -12,14 +12,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    // Log error to monitoring service (e.g., Sentry)
-    // console.error("Error caught by boundary:", error, errorInfo);
-
-    // Don't expose sensitive error details to users
-    // Only log to monitoring service, not to console in production
     if (process.env.NODE_ENV === "production") {
-      // Send to error monitoring service
-      // errorMonitoringService.captureException(error, errorInfo);
     }
   }
 

@@ -117,7 +117,6 @@ export default function FarmTeams({
       }
       return [];
     } catch (error) {
-      console.error("Error fetching active farmers:", error);
       return [];
     }
   };
@@ -145,7 +144,6 @@ export default function FarmTeams({
       }
       return [];
     } catch (error) {
-      console.error("Error fetching archived farmers:", error);
       return [];
     }
   };

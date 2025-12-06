@@ -1,17 +1,13 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
-
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
-
-// PNG ICON IMPORTS
 import EyeIcon from "../assets/eye-icon.png";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
 
-// Constants
 const RESULTS_PER_PAGE = 5;
 
 const DISEASE_CONFIG = {
@@ -34,21 +30,7 @@ const STATUS_CONFIG = {
   },
 };
 
-// Simple cache for faster subsequent loads
-const dataCache = {
-  data: {},
-  set(key, value, ttl = 60000) {
-    this.data[key] = { value, expires: Date.now() + ttl };
-  },
-  get(key) {
-    const item = this.data[key];
-    if (!item || Date.now() > item.expires) {
-      delete this.data[key];
-      return null;
-    }
-    return item.value;
-  },
-};
+const dataCache = new Map();
 
 const getStatus = (prediction) => {
   if (!prediction) return "healthy";
@@ -57,7 +39,6 @@ const getStatus = (prediction) => {
   return "disease-detected";
 };
 
-// Memoized Dropdown Component
 const FilterDropdown = ({ label, value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -106,7 +87,6 @@ const FilterDropdown = ({ label, value, onChange, options }) => {
   );
 };
 
-// Optimized Status Badge
 const StatusBadge = ({ status, prediction }) => {
   const actualStatus = status || getStatus(prediction);
   const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
@@ -121,7 +101,6 @@ const StatusBadge = ({ status, prediction }) => {
   );
 };
 
-// Optimized View Button
 const ViewDetailsButton = ({ status, prediction, scanId, farmId }) => {
   const actualStatus = status || getStatus(prediction);
   const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
@@ -154,14 +133,11 @@ export default function ScanHistoryPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const abortControllerRef = useRef(null);
-  const [farmersMap, setFarmersMap] = useState({});
 
-  // Auth check
   useEffect(() => {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
-  // Optimized: Fetch farms and scans in parallel with caching
   useEffect(() => {
     if (!token) return;
 
@@ -173,24 +149,15 @@ export default function ScanHistoryPage() {
     abortControllerRef.current = controller;
 
     const fetchData = async () => {
-      const cachedFarms = dataCache.get("farms");
-      const cachedScans = dataCache.get("scans");
-      const cachedFarmers = dataCache.get("farmers");
+      const cacheKey = "scan_history_data";
+      const cached = dataCache.get(cacheKey);
 
-      if (cachedFarms && cachedScans && cachedFarmers) {
-        setFarms(cachedFarms);
-        setAllScans(cachedScans);
-        setFarmersMap(cachedFarmers);
+      if (cached && Date.now() - cached.timestamp < 60000) {
+        setFarms(cached.farms);
+        setAllScans(cached.scans);
         setLoading(false);
         return;
       }
-
-      if (cachedFarms) setFarms(cachedFarms);
-      if (cachedScans) {
-        setAllScans(cachedScans);
-        setLoading(false);
-      }
-      if (cachedFarmers) setFarmersMap(cachedFarmers);
 
       try {
         const timeoutId = setTimeout(() => controller.abort(), 15000);
@@ -229,9 +196,8 @@ export default function ScanHistoryPage() {
           const farmMap = Object.fromEntries(
             farmsList.map((f) => [f.id, f.farmName])
           );
-
-          // Fetch farmers for all farms
           const farmersData = {};
+
           await Promise.all(
             farmsList.map(async (farm) => {
               try {
@@ -250,22 +216,18 @@ export default function ScanHistoryPage() {
                   const data = await farmersRes.json();
                   if (data.status === "success" && data.farmers) {
                     data.farmers.forEach((farmer) => {
-                      // Build full name
                       let fullName = "";
                       if (farmer.firstname) fullName += farmer.firstname;
                       if (farmer.middlename)
                         fullName += ` ${farmer.middlename}`;
                       if (farmer.lastname) fullName += ` ${farmer.lastname}`;
                       if (farmer.suffix) fullName += ` ${farmer.suffix}`;
-
                       farmersData[farmer.idNumber] =
                         fullName.trim() || farmer.idNumber;
                     });
                   }
                 }
-              } catch (err) {
-                // Silent error for individual farm farmer fetch
-              }
+              } catch {}
             })
           );
 
@@ -281,7 +243,7 @@ export default function ScanHistoryPage() {
                 description: predictionValue || "Unknown",
                 idNumber: scan.idNumber || "Unknown Farmer",
                 farmerName:
-                  scan.farmerName || // USE THIS FIRST - comes from API
+                  scan.farmerName ||
                   farmersData[scan.idNumber] ||
                   scan.idNumber ||
                   "Unknown Farmer",
@@ -307,20 +269,27 @@ export default function ScanHistoryPage() {
 
           setFarms(farmsList);
           setAllScans(processed);
-          setFarmersMap(farmersData);
-
-          dataCache.set("farms", farmsList);
-          dataCache.set("scans", processed);
-          dataCache.set("farmers", farmersData);
+          dataCache.set(cacheKey, {
+            farms: farmsList,
+            scans: processed,
+            timestamp: Date.now(),
+          });
         } else if (farmsList.length > 0) {
           setFarms(farmsList);
-          dataCache.set("farms", farmsList);
+          setAllScans([]);
+          dataCache.set(cacheKey, {
+            farms: farmsList,
+            scans: [],
+            timestamp: Date.now(),
+          });
+        } else {
+          setFarms([]);
+          setAllScans([]);
         }
       } catch (err) {
         if (err.name !== "AbortError") {
-          if (!cachedFarms) setFarms([]);
-          if (!cachedScans) setAllScans([]);
-          if (!cachedFarmers) setFarmersMap({});
+          setFarms([]);
+          setAllScans([]);
         }
       } finally {
         setLoading(false);
@@ -336,29 +305,26 @@ export default function ScanHistoryPage() {
     };
   }, [token, navigate]);
 
-  // Memoized filter logic
   const filteredScans = useMemo(() => {
     let filtered = allScans;
 
     if (filters.dateRange !== "All Time") {
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
       const cutoff =
         filters.dateRange === "Today"
           ? today
           : filters.dateRange === "Last 7 days"
-          ? new Date(today - 7 * 86400000)
-          : new Date(today - 30 * 86400000);
+          ? new Date(today.getTime() - 7 * 86400000)
+          : new Date(today.getTime() - 30 * 86400000);
 
       filtered = filtered.filter((s) => {
+        if (!s.timestamp) return false;
         try {
-          const timestamp = s.timestamp;
-          if (!timestamp) return false;
-          const [datePart, timePart, period] = timestamp.split(/\s+/);
+          const [datePart, timePart, period] = s.timestamp.split(/\s+/);
           const [month, day, year] = datePart.split("/");
           const [hours, minutes] = timePart.split(":");
-          let hour24 = parseInt(hours);
+          let hour24 = parseInt(hours, 10);
           if (period === "PM" && hour24 !== 12) hour24 += 12;
           if (period === "AM" && hour24 === 12) hour24 = 0;
           const scanDate = new Date(year, month - 1, day, hour24, minutes);
@@ -370,29 +336,27 @@ export default function ScanHistoryPage() {
     }
 
     if (filters.status !== "All Status") {
-      const statusMap = {
-        Healthy: "healthy",
-        "Disease Detected": "disease-detected",
-      };
-      const targetStatus = statusMap[filters.status];
-      filtered = filtered.filter((s) => s.status === targetStatus);
+      filtered = filtered.filter((s) => {
+        const pred = s.prediction?.toLowerCase();
+        const filterStatus = filters.status.toLowerCase();
+        return pred === filterStatus || (filterStatus === "all" && pred);
+      });
     }
 
     if (filters.farmId !== "all") {
       filtered = filtered.filter((s) => s.farmId === filters.farmId);
     }
 
-    if (filters.farmerName) {
+    if (filters.farmerName?.trim()) {
       const query = filters.farmerName.trim().toLowerCase();
-      filtered = filtered.filter((s) =>
-        s.farmerName?.trim().toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (s) => s.farmerName && s.farmerName.toLowerCase().includes(query)
       );
     }
 
     return filtered;
   }, [allScans, filters]);
 
-  // Paginated data
   const paginatedScans = useMemo(() => {
     const start = (currentPage - 1) * RESULTS_PER_PAGE;
     return filteredScans.slice(start, start + RESULTS_PER_PAGE);
@@ -405,40 +369,11 @@ export default function ScanHistoryPage() {
     setCurrentPage(1);
   }, []);
 
-  const formatDateTime = useCallback((timestamp) => {
-    try {
-      if (!timestamp) return "";
-
-      const parts = timestamp.trim().split(/\s+/);
-      if (parts.length !== 3) return timestamp;
-
-      const datePart = parts[0];
-      const timePart = parts[1];
-      const period = parts[2];
-
-      const [month, day, year] = datePart.split("/");
-      if (!month || !day || !year) return timestamp;
-
-      const [hours, minutes] = timePart.split(":");
-      if (!hours || !minutes) return timestamp;
-
-      const shortYear = year.slice(-2);
-      return `${month.padStart(2, "0")}/${day.padStart(
-        2,
-        "0"
-      )}/${shortYear} ${timePart} ${period}`;
-    } catch (error) {
-      return timestamp;
-    }
-  }, []);
-
   const formatDate = useCallback((timestamp) => {
     try {
       if (!timestamp) return "";
-
       const parts = timestamp.trim().split(/\s+/);
       if (parts.length !== 3) return timestamp;
-
       const datePart = parts[0];
       const [month, day, year] = datePart.split("/");
       if (!month || !day || !year) return timestamp;
@@ -460,21 +395,22 @@ export default function ScanHistoryPage() {
 
       const monthIndex = parseInt(month) - 1;
       const monthName = monthNames[monthIndex] || month;
-
       return `${monthName} ${parseInt(day)}, ${year}`;
-    } catch (error) {
+    } catch {
       return timestamp;
     }
   }, []);
 
-  const formatTime = useCallback(
-    (timestamp) => {
-      const formatted = formatDateTime(timestamp);
-      const parts = formatted.split(" ");
-      return parts[1] && parts[2] ? `${parts[1]} ${parts[2]}` : "";
-    },
-    [formatDateTime]
-  );
+  const formatTime = useCallback((timestamp) => {
+    try {
+      if (!timestamp) return "";
+      const parts = timestamp.trim().split(/\s+/);
+      if (parts.length !== 3) return timestamp;
+      return `${parts[1]} ${parts[2]}`;
+    } catch {
+      return timestamp;
+    }
+  }, []);
 
   const startResult = Math.min(
     (currentPage - 1) * RESULTS_PER_PAGE + 1,
@@ -494,7 +430,6 @@ export default function ScanHistoryPage() {
       <HeaderMain />
       <main className="flex-1 px-3 sm:px-6 lg:px-12 xl:px-16 py-4 sm:py-6 lg:py-8">
         <div className="max-w-[1800px] mx-auto">
-          {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">
@@ -506,7 +441,6 @@ export default function ScanHistoryPage() {
             </div>
           </div>
 
-          {/* Filters */}
           <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 mb-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
               <FilterDropdown
@@ -520,7 +454,13 @@ export default function ScanHistoryPage() {
                 label="Status"
                 value={filters.status}
                 onChange={(v) => handleFilterChange("status", v)}
-                options={["All Status", "Healthy", "Disease Detected"]}
+                options={[
+                  "All Status",
+                  "Healthy",
+                  "Powdery Mildew",
+                  "Anthracnose",
+                  "Ring Spot Virus",
+                ]}
               />
 
               <div className="flex flex-col space-y-2">
@@ -555,7 +495,6 @@ export default function ScanHistoryPage() {
             </div>
           </div>
 
-          {/* Scan History List */}
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-200">
               {loading ? (
@@ -565,7 +504,9 @@ export default function ScanHistoryPage() {
                 </div>
               ) : scanData.length === 0 ? (
                 <div className="text-center py-12">
-                  <div className="text-gray-500 text-sm">No scans found</div>
+                  <div className="text-gray-500 text-sm">
+                    {allScans.length === 0 ? "No scans yet" : "No scans found"}
+                  </div>
                 </div>
               ) : (
                 scanData.map((record) => (
@@ -663,7 +604,6 @@ export default function ScanHistoryPage() {
               )}
             </div>
 
-            {/* Pagination */}
             {filteredScans.length > RESULTS_PER_PAGE && (
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 lg:p-6 border-t border-gray-200">
                 <div className="text-xs sm:text-sm text-gray-700">
@@ -718,14 +658,11 @@ export default function ScanHistoryPage() {
 // import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 // import { Link, useNavigate } from "react-router-dom";
 // import { ChevronDown } from "lucide-react";
-// import jsPDF from "jspdf";
-// import html2canvas from "html2canvas";
 
 // import FooterMain from "../components/Footer/Footer";
 // import HeaderMain from "../components/Header/HeaderMain";
 
 // // PNG ICON IMPORTS
-// import DownloadIcon from "../assets/download-icon.png";
 // import EyeIcon from "../assets/eye-icon.png";
 // import UserIcon from "../assets/sh-user-icon.png";
 // import CalendarIcon from "../assets/sh-calendar-icon.png";
@@ -770,7 +707,6 @@ export default function ScanHistoryPage() {
 //   },
 // };
 
-// // Updated helper function - only healthy or disease-detected
 // const getStatus = (prediction) => {
 //   if (!prediction) return "healthy";
 //   const p = prediction.toLowerCase();
@@ -872,10 +808,10 @@ export default function ScanHistoryPage() {
 //     farmerName: "",
 //   });
 
-//   const reportRef = useRef(null);
 //   const navigate = useNavigate();
 //   const token = localStorage.getItem("token");
 //   const abortControllerRef = useRef(null);
+//   const [farmersMap, setFarmersMap] = useState({});
 
 //   // Auth check
 //   useEffect(() => {
@@ -886,7 +822,6 @@ export default function ScanHistoryPage() {
 //   useEffect(() => {
 //     if (!token) return;
 
-//     // Cancel previous request
 //     if (abortControllerRef.current) {
 //       abortControllerRef.current.abort();
 //     }
@@ -895,26 +830,28 @@ export default function ScanHistoryPage() {
 //     abortControllerRef.current = controller;
 
 //     const fetchData = async () => {
-//       // Check cache first
 //       const cachedFarms = dataCache.get("farms");
 //       const cachedScans = dataCache.get("scans");
+//       const cachedFarmers = dataCache.get("farmers");
 
-//       if (cachedFarms && cachedScans) {
+//       if (cachedFarms && cachedScans && cachedFarmers) {
 //         setFarms(cachedFarms);
 //         setAllScans(cachedScans);
+//         setFarmersMap(cachedFarmers);
 //         setLoading(false);
 //         return;
 //       }
 
-//       // Show cached data immediately while fetching fresh data
 //       if (cachedFarms) setFarms(cachedFarms);
 //       if (cachedScans) {
 //         setAllScans(cachedScans);
 //         setLoading(false);
 //       }
+//       if (cachedFarmers) setFarmersMap(cachedFarmers);
 
 //       try {
-//         // Fetch both in parallel for faster loading
+//         const timeoutId = setTimeout(() => controller.abort(), 15000);
+
 //         const [farmsRes, scansRes] = await Promise.all([
 //           fetch("https://papaiaapi.onrender.com/api/owner/farms", {
 //             headers: {
@@ -935,6 +872,8 @@ export default function ScanHistoryPage() {
 //           ),
 //         ]);
 
+//         clearTimeout(timeoutId);
+
 //         const [farmsData, scansArray] = await Promise.all([
 //           farmsRes.ok ? farmsRes.json() : { status: "error", farms: [] },
 //           scansRes.ok ? scansRes.json() : [],
@@ -944,28 +883,68 @@ export default function ScanHistoryPage() {
 //           farmsData.status === "success" ? farmsData.farms || [] : [];
 
 //         if (Array.isArray(scansArray) && farmsList.length > 0) {
-//           // Create farm lookup map for O(1) access
 //           const farmMap = Object.fromEntries(
 //             farmsList.map((f) => [f.id, f.farmName])
 //           );
 
-//           // Process all scans at once with optimized operations
+//           // Fetch farmers for all farms
+//           const farmersData = {};
+//           await Promise.all(
+//             farmsList.map(async (farm) => {
+//               try {
+//                 const farmersRes = await fetch(
+//                   `https://papaiaapi.onrender.com/api/owner/farmers/${farm.id}`,
+//                   {
+//                     headers: {
+//                       Authorization: `Bearer ${token}`,
+//                       "Content-Type": "application/json",
+//                     },
+//                     signal: controller.signal,
+//                   }
+//                 );
+
+//                 if (farmersRes.ok) {
+//                   const data = await farmersRes.json();
+//                   if (data.status === "success" && data.farmers) {
+//                     data.farmers.forEach((farmer) => {
+//                       // Build full name
+//                       let fullName = "";
+//                       if (farmer.firstname) fullName += farmer.firstname;
+//                       if (farmer.middlename)
+//                         fullName += ` ${farmer.middlename}`;
+//                       if (farmer.lastname) fullName += ` ${farmer.lastname}`;
+//                       if (farmer.suffix) fullName += ` ${farmer.suffix}`;
+
+//                       farmersData[farmer.idNumber] =
+//                         fullName.trim() || farmer.idNumber;
+//                     });
+//                   }
+//                 }
+//               } catch (err) {
+//                 // Silent error for individual farm farmer fetch
+//               }
+//             })
+//           );
+
 //           const processed = scansArray
 //             .map((scan) => {
-//               // Use 'result' field for scan history API, fallback to 'prediction'
 //               const predictionValue = scan.result || scan.prediction;
 //               const status = getStatus(predictionValue);
 //               return {
 //                 ...scan,
-//                 prediction: predictionValue, // Normalize to 'prediction'
+//                 prediction: predictionValue,
 //                 farmName: farmMap[scan.farmId] || "Unknown Farm",
 //                 status,
 //                 description: predictionValue || "Unknown",
 //                 idNumber: scan.idNumber || "Unknown Farmer",
+//                 farmerName:
+//                   scan.farmerName || // USE THIS FIRST - comes from API
+//                   farmersData[scan.idNumber] ||
+//                   scan.idNumber ||
+//                   "Unknown Farmer",
 //               };
 //             })
 //             .sort((a, b) => {
-//               // Parse timestamps for sorting
 //               const parseTimestamp = (timestamp) => {
 //                 if (!timestamp) return new Date(0);
 //                 try {
@@ -985,10 +964,11 @@ export default function ScanHistoryPage() {
 
 //           setFarms(farmsList);
 //           setAllScans(processed);
+//           setFarmersMap(farmersData);
 
-//           // Cache the results
 //           dataCache.set("farms", farmsList);
 //           dataCache.set("scans", processed);
+//           dataCache.set("farmers", farmersData);
 //         } else if (farmsList.length > 0) {
 //           setFarms(farmsList);
 //           dataCache.set("farms", farmsList);
@@ -997,6 +977,7 @@ export default function ScanHistoryPage() {
 //         if (err.name !== "AbortError") {
 //           if (!cachedFarms) setFarms([]);
 //           if (!cachedScans) setAllScans([]);
+//           if (!cachedFarmers) setFarmersMap({});
 //         }
 //       } finally {
 //         setLoading(false);
@@ -1016,27 +997,24 @@ export default function ScanHistoryPage() {
 //   const filteredScans = useMemo(() => {
 //     let filtered = allScans;
 
-//     // Date filter
+//     // Date Range Filter
 //     if (filters.dateRange !== "All Time") {
 //       const now = new Date();
 //       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
 //       const cutoff =
 //         filters.dateRange === "Today"
 //           ? today
 //           : filters.dateRange === "Last 7 days"
-//           ? new Date(today - 7 * 86400000)
-//           : new Date(today - 30 * 86400000);
+//           ? new Date(today.getTime() - 7 * 86400000)
+//           : new Date(today.getTime() - 30 * 86400000);
 
 //       filtered = filtered.filter((s) => {
-//         // Parse timestamp for date filtering
+//         if (!s.timestamp) return false;
 //         try {
-//           const timestamp = s.timestamp;
-//           if (!timestamp) return false;
-//           const [datePart, timePart, period] = timestamp.split(/\s+/);
+//           const [datePart, timePart, period] = s.timestamp.split(/\s+/);
 //           const [month, day, year] = datePart.split("/");
 //           const [hours, minutes] = timePart.split(":");
-//           let hour24 = parseInt(hours);
+//           let hour24 = parseInt(hours, 10);
 //           if (period === "PM" && hour24 !== 12) hour24 += 12;
 //           if (period === "AM" && hour24 === 12) hour24 = 0;
 //           const scanDate = new Date(year, month - 1, day, hour24, minutes);
@@ -1047,26 +1025,26 @@ export default function ScanHistoryPage() {
 //       });
 //     }
 
-//     // Status filter - updated to only use healthy or disease-detected
-//     if (filters.status !== "All Status") {
-//       const statusMap = {
-//         Healthy: "healthy",
-//         "Disease Detected": "disease-detected",
-//       };
-//       const targetStatus = statusMap[filters.status];
-//       filtered = filtered.filter((s) => s.status === targetStatus);
+//     // Status Filter
+//     if (filters.status !== "All") {
+//       filtered = filtered.filter(
+//         (s) =>
+//           s.prediction?.toLowerCase() === filters.status.toLowerCase() ||
+//           (filters.status === "Healthy" &&
+//             s.prediction?.toLowerCase() === "healthy")
+//       );
 //     }
 
-//     // Farm filter
+//     // Farm Filter
 //     if (filters.farmId !== "all") {
 //       filtered = filtered.filter((s) => s.farmId === filters.farmId);
 //     }
 
-//     // Farmer filter
-//     if (filters.farmerName) {
-//       const query = filters.farmerName.toLowerCase();
-//       filtered = filtered.filter((s) =>
-//         s.idNumber?.toLowerCase().includes(query)
+//     // Farmer Name Filter
+//     if (filters.farmerName?.trim()) {
+//       const query = filters.farmerName.trim().toLowerCase();
+//       filtered = filtered.filter(
+//         (s) => s.farmerName && s.farmerName.toLowerCase().includes(query)
 //       );
 //     }
 
@@ -1081,13 +1059,11 @@ export default function ScanHistoryPage() {
 
 //   const totalPages = Math.ceil(filteredScans.length / RESULTS_PER_PAGE);
 
-//   // Optimized filter handler
 //   const handleFilterChange = useCallback((type, value) => {
 //     setFilters((prev) => ({ ...prev, [type]: value }));
 //     setCurrentPage(1);
 //   }, []);
 
-//   // Helper to format full date/time
 //   const formatDateTime = useCallback((timestamp) => {
 //     try {
 //       if (!timestamp) return "";
@@ -1109,30 +1085,52 @@ export default function ScanHistoryPage() {
 //       return `${month.padStart(2, "0")}/${day.padStart(
 //         2,
 //         "0"
-//       )}/${shortYear} ${hours.padStart(2, "0")}:${minutes.padStart(
-//         2,
-//         "0"
-//       )} ${period}`;
+//       )}/${shortYear} ${timePart} ${period}`;
 //     } catch (error) {
 //       return timestamp;
 //     }
 //   }, []);
 
-//   // Helper to extract just the date
-//   const formatDate = useCallback(
-//     (timestamp) => {
-//       const formatted = formatDateTime(timestamp);
-//       return formatted.split(" ")[0];
-//     },
-//     [formatDateTime]
-//   );
+//   const formatDate = useCallback((timestamp) => {
+//     try {
+//       if (!timestamp) return "";
 
-//   // Helper to extract just the time
+//       const parts = timestamp.trim().split(/\s+/);
+//       if (parts.length !== 3) return timestamp;
+
+//       const datePart = parts[0];
+//       const [month, day, year] = datePart.split("/");
+//       if (!month || !day || !year) return timestamp;
+
+//       const monthNames = [
+//         "January",
+//         "February",
+//         "March",
+//         "April",
+//         "May",
+//         "June",
+//         "July",
+//         "August",
+//         "September",
+//         "October",
+//         "November",
+//         "December",
+//       ];
+
+//       const monthIndex = parseInt(month) - 1;
+//       const monthName = monthNames[monthIndex] || month;
+
+//       return `${monthName} ${parseInt(day)}, ${year}`;
+//     } catch (error) {
+//       return timestamp;
+//     }
+//   }, []);
+
 //   const formatTime = useCallback(
 //     (timestamp) => {
 //       const formatted = formatDateTime(timestamp);
 //       const parts = formatted.split(" ");
-//       return `${parts[1]} ${parts[2]}`;
+//       return parts[1] && parts[2] ? `${parts[1]} ${parts[2]}` : "";
 //     },
 //     [formatDateTime]
 //   );
@@ -1181,16 +1179,22 @@ export default function ScanHistoryPage() {
 //                 label="Status"
 //                 value={filters.status}
 //                 onChange={(v) => handleFilterChange("status", v)}
-//                 options={["All Status", "Healthy", "Disease Detected"]}
+//                 options={[
+//                   "All",
+//                   "Healthy",
+//                   "Powdery Mildew",
+//                   "Anthracnose",
+//                   "Ring Spot Virus",
+//                 ]}
 //               />
 
 //               <div className="flex flex-col space-y-2">
 //                 <label className="text-xs sm:text-sm font-medium text-gray-700">
-//                   Farmer ID
+//                   Farmer Name
 //                 </label>
 //                 <input
 //                   type="text"
-//                   placeholder="Search farmer ID..."
+//                   placeholder="Search farmer name..."
 //                   value={filters.farmerName}
 //                   onChange={(e) =>
 //                     handleFilterChange("farmerName", e.target.value)
@@ -1217,10 +1221,7 @@ export default function ScanHistoryPage() {
 //           </div>
 
 //           {/* Scan History List */}
-//           <div
-//             ref={reportRef}
-//             className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
-//           >
+//           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 //             <div className="divide-y divide-gray-200">
 //               {loading ? (
 //                 <div className="text-center py-12">
@@ -1293,7 +1294,9 @@ export default function ScanHistoryPage() {
 //                               alt="User"
 //                               className="h-3 w-3"
 //                             />
-//                             <span className="truncate">{record.idNumber}</span>
+//                             <span className="truncate">
+//                               {record.farmerName}
+//                             </span>
 //                           </div>
 //                           <div className="flex items-center gap-1 text-gray-600">
 //                             <img

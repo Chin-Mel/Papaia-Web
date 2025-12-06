@@ -104,7 +104,6 @@ export default function FarmAnalytics({
           setFarmHealthData(null);
         }
       } catch (error) {
-        console.error("Failed to fetch farm health:", error);
         setFarmHealthData(null);
       } finally {
         setHealthLoading(false);

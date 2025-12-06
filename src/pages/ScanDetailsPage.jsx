@@ -4,31 +4,15 @@ import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 import { ArrowLeft } from "lucide-react";
 
-// Simple cache for faster subsequent loads
-const detailsCache = {
-  data: {},
-  set(key, value, ttl = 60000) {
-    this.data[key] = { value, expires: Date.now() + ttl };
-  },
-  get(key) {
-    const item = this.data[key];
-    if (!item || Date.now() > item.expires) {
-      delete this.data[key];
-      return null;
-    }
-    return item.value;
-  },
-};
+const detailsCache = new Map();
 
 export default function ScanDetailsPage() {
   const { farmId, scanId } = useParams();
   const navigate = useNavigate();
-
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
   const [farmerDetails, setFarmerDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -53,12 +37,10 @@ export default function ScanDetailsPage() {
 
     const fetchScanDetails = async () => {
       try {
-        setLoading(true);
-
         const cacheKey = `scan-${scanId}`;
         const cached = detailsCache.get(cacheKey);
 
-        if (cached) {
+        if (cached && Date.now() - cached.timestamp < 60000) {
           setScanDetails(cached.scan);
           setFarmDetails(cached.farm);
           setFarmerDetails(cached.farmer);
@@ -66,19 +48,29 @@ export default function ScanDetailsPage() {
           return;
         }
 
-        // Add timeout for slow connections
         const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-        const historyRes = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/predictions-history/${farmId}/${scanId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          }
-        );
+        const [historyRes, farmsRes] = await Promise.all([
+          fetch(
+            `https://papaiaapi.onrender.com/api/owner/predictions-history/${farmId}/${scanId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              signal: controller.signal,
+            }
+          ),
+          farmId
+            ? fetch("https://papaiaapi.onrender.com/api/owner/farms", {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                signal: controller.signal,
+              })
+            : Promise.resolve(null),
+        ]);
 
         clearTimeout(timeoutId);
 
@@ -112,28 +104,11 @@ export default function ScanDetailsPage() {
         setScanDetails(normalizedScan);
 
         let farm = null;
-        if (farmId) {
-          try {
-            const farmsRes = await fetch(
-              "https://papaiaapi.onrender.com/api/owner/farms",
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-                signal: controller.signal,
-              }
-            );
-
-            if (farmsRes.ok) {
-              const farmsData = await farmsRes.json();
-              if (farmsData.status === "success") {
-                farm = farmsData.farms.find((f) => f.id === farmId);
-                setFarmDetails(farm);
-              }
-            }
-          } catch (farmError) {
-            // Silent error handling
+        if (farmsRes && farmsRes.ok) {
+          const farmsData = await farmsRes.json();
+          if (farmsData.status === "success") {
+            farm = farmsData.farms.find((f) => f.id === farmId);
+            setFarmDetails(farm);
           }
         }
 
@@ -160,19 +135,17 @@ export default function ScanDetailsPage() {
                 setFarmerDetails(farmer);
               }
             }
-          } catch (farmerError) {
-            // Silent error handling
-          }
+          } catch {}
         }
 
         detailsCache.set(cacheKey, {
           scan: normalizedScan,
           farm,
           farmer,
+          timestamp: Date.now(),
         });
-      } catch (err) {
-        // Silent error handling
-      } finally {
+        setLoading(false);
+      } catch {
         setLoading(false);
       }
     };
@@ -217,7 +190,6 @@ export default function ScanDetailsPage() {
     };
   };
 
-  // Update the formatDateTime function (around line 161) to format the date properly:
   const formatDateTime = (timestamp) => {
     try {
       if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
@@ -268,7 +240,7 @@ export default function ScanDetailsPage() {
           hour12: true,
         }),
       };
-    } catch (error) {
+    } catch {
       return { date: "Unknown Date", time: "Unknown Time" };
     }
   };
@@ -319,17 +291,14 @@ export default function ScanDetailsPage() {
 
     const predLower = prediction.toLowerCase();
 
-    // Return healthy instructions if exactly healthy
     if (predLower === "healthy") return treatmentMap.healthy;
 
-    // Check for any matching keyword in the mapping
     for (const key in treatmentMap) {
       if (key !== "healthy" && predLower.includes(key)) {
         return treatmentMap[key];
       }
     }
 
-    // Default fallback if no match
     return [
       "Consult with agricultural extension officer for specific treatment",
       "Remove and destroy infected plant parts",
@@ -395,7 +364,6 @@ export default function ScanDetailsPage() {
       <HeaderMain />
 
       <main className="flex-1 w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
-        {/* Header with Back Button */}
         <div className="mb-6">
           <button
             onClick={() => navigate("/scan-history")}
@@ -410,7 +378,6 @@ export default function ScanDetailsPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* LEFT COLUMN - Scanned Image */}
           <div className="lg:col-span-1 space-y-6">
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 bg-white border-b border-gray-100">
@@ -450,9 +417,7 @@ export default function ScanDetailsPage() {
             </div>
           </div>
 
-          {/* RIGHT COLUMN - All other cards */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Scan Status Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center justify-between">
                 <h2 className="text-base font-semibold text-gray-900">
@@ -506,7 +471,6 @@ export default function ScanDetailsPage() {
               </div>
             </div>
 
-            {/* Farm Information Card */}
             {farmDetails && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 bg-white border-b border-gray-100">
@@ -516,7 +480,6 @@ export default function ScanDetailsPage() {
                 </div>
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-8">
-                    {/* Column 1: Farmer Info */}
                     <div className="flex items-start gap-3">
                       {scanDetails.profilePicture ? (
                         <img
@@ -561,7 +524,6 @@ export default function ScanDetailsPage() {
                       </div>
                     </div>
 
-                    {/* Column 2: Farm Name */}
                     <div>
                       <div className="text-sm text-gray-600 mb-1">
                         Farm Name
@@ -575,7 +537,6 @@ export default function ScanDetailsPage() {
               </div>
             )}
 
-            {/* Suggested Treatment Card */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 bg-white border-b border-gray-100">
                 <div className="flex items-center gap-2">
@@ -659,9 +620,7 @@ export default function ScanDetailsPage() {
 //   const [farmDetails, setFarmDetails] = useState(null);
 //   const [farmerDetails, setFarmerDetails] = useState(null);
 //   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState(null);
 
-//   const reportRef = useRef(null);
 //   const abortControllerRef = useRef(null);
 
 //   useEffect(() => {
@@ -673,7 +632,6 @@ export default function ScanDetailsPage() {
 //     }
 
 //     if (!scanId) {
-//       setError("Scan ID is required");
 //       setLoading(false);
 //       return;
 //     }
@@ -688,7 +646,6 @@ export default function ScanDetailsPage() {
 //     const fetchScanDetails = async () => {
 //       try {
 //         setLoading(true);
-//         setError(null);
 
 //         const cacheKey = `scan-${scanId}`;
 //         const cached = detailsCache.get(cacheKey);
@@ -701,6 +658,9 @@ export default function ScanDetailsPage() {
 //           return;
 //         }
 
+//         // Add timeout for slow connections
+//         const timeoutId = setTimeout(() => controller.abort(), 15000);
+
 //         const historyRes = await fetch(
 //           `https://papaiaapi.onrender.com/api/owner/predictions-history/${farmId}/${scanId}`,
 //           {
@@ -712,7 +672,12 @@ export default function ScanDetailsPage() {
 //           }
 //         );
 
-//         if (!historyRes.ok) throw new Error("Failed to fetch scan history");
+//         clearTimeout(timeoutId);
+
+//         if (!historyRes.ok) {
+//           setLoading(false);
+//           return;
+//         }
 
 //         const scanData = await historyRes.json();
 //         const specificScan = Array.isArray(scanData)
@@ -720,7 +685,6 @@ export default function ScanDetailsPage() {
 //           : scanData;
 
 //         if (!specificScan) {
-//           setError("Scan not found");
 //           setLoading(false);
 //           return;
 //         }
@@ -761,9 +725,7 @@ export default function ScanDetailsPage() {
 //               }
 //             }
 //           } catch (farmError) {
-//             if (farmError.name !== "AbortError") {
-//               //console.warn("Could not fetch farm details:", farmError);
-//             }
+//             // Silent error handling
 //           }
 //         }
 
@@ -791,9 +753,7 @@ export default function ScanDetailsPage() {
 //               }
 //             }
 //           } catch (farmerError) {
-//             if (farmerError.name !== "AbortError") {
-//               //console.warn("Could not fetch farmer details:", farmerError);
-//             }
+//             // Silent error handling
 //           }
 //         }
 
@@ -803,9 +763,7 @@ export default function ScanDetailsPage() {
 //           farmer,
 //         });
 //       } catch (err) {
-//         if (err.name !== "AbortError") {
-//           setError(err.message || "Failed to load scan details");
-//         }
+//         // Silent error handling
 //       } finally {
 //         setLoading(false);
 //       }
@@ -851,6 +809,7 @@ export default function ScanDetailsPage() {
 //     };
 //   };
 
+//   // Update the formatDateTime function (around line 161) to format the date properly:
 //   const formatDateTime = (timestamp) => {
 //     try {
 //       if (!timestamp) return { date: "Unknown Date", time: "Unknown Time" };
@@ -875,10 +834,11 @@ export default function ScanDetailsPage() {
 //           "December",
 //         ];
 
-//         const monthName = monthNames[parseInt(month) - 1] || month;
+//         const monthIndex = parseInt(month) - 1;
+//         const monthName = monthNames[monthIndex] || month;
 
 //         return {
-//           date: `${monthName} ${day}, ${year}`,
+//           date: `${monthName} ${parseInt(day)}, ${year}`,
 //           time: `${hours}:${minutes} ${period}`,
 //         };
 //       }
@@ -905,49 +865,63 @@ export default function ScanDetailsPage() {
 //     }
 //   };
 
+//   const getFarmerFullName = (farmer) => {
+//     if (!farmer) return null;
+
+//     let fullName = "";
+//     if (farmer.firstname) fullName += farmer.firstname;
+//     if (farmer.middlename) fullName += ` ${farmer.middlename}`;
+//     if (farmer.lastname) fullName += ` ${farmer.lastname}`;
+//     if (farmer.suffix) fullName += ` ${farmer.suffix}`;
+
+//     return fullName.trim() || farmer.fullName || farmer.name || null;
+//   };
+
+//   const treatmentMap = {
+//     healthy: [
+//       "Continue regular monitoring of plant health",
+//       "Maintain proper watering schedule",
+//       "Ensure adequate sunlight and air circulation",
+//       "Apply balanced fertilizer as needed",
+//     ],
+//     "ring spot": [
+//       "Apply copper-based fungicide (Copper sulfate) immediately",
+//       "Remove and destroy all infected plant parts",
+//       "Improve air circulation between plants",
+//       "Reduce overhead watering to minimize moisture",
+//     ],
+//     anthracnose: [
+//       "Apply copper-based fungicide immediately",
+//       "Remove and destroy all infected plant parts",
+//       "Improve air circulation between plants",
+//       "Reduce overhead watering to minimize moisture",
+//       "Apply preventive fungicide sprays during wet seasons",
+//     ],
+//     "powdery mildew": [
+//       "Apply sulfur-based or potassium bicarbonate fungicide",
+//       "Improve air circulation around plants",
+//       "Avoid overhead watering",
+//       "Remove infected leaves and dispose properly",
+//       "Apply preventive treatments during favorable conditions",
+//     ],
+//   };
+
 //   const getTreatmentSuggestions = (prediction) => {
 //     if (!prediction) return [];
 
 //     const predLower = prediction.toLowerCase();
 
-//     if (predLower === "healthy") {
-//       return [
-//         "Continue regular monitoring of plant health",
-//         "Maintain proper watering schedule",
-//         "Ensure adequate sunlight and air circulation",
-//         "Apply balanced fertilizer as needed",
-//       ];
+//     // Return healthy instructions if exactly healthy
+//     if (predLower === "healthy") return treatmentMap.healthy;
+
+//     // Check for any matching keyword in the mapping
+//     for (const key in treatmentMap) {
+//       if (key !== "healthy" && predLower.includes(key)) {
+//         return treatmentMap[key];
+//       }
 //     }
 
-//     if (predLower.includes("ring spot") || predLower.includes("virus")) {
-//       return [
-//         "Apply copper-based fungicide (Copper sulfate) immediately",
-//         "Remove and destroy all infected plant parts",
-//         "Improve air circulation between plants",
-//         "Reduce overhead watering to minimize moisture",
-//       ];
-//     }
-
-//     if (predLower.includes("anthracnose")) {
-//       return [
-//         "Apply copper-based fungicide immediately",
-//         "Remove and destroy all infected plant parts",
-//         "Improve air circulation between plants",
-//         "Reduce overhead watering to minimize moisture",
-//         "Apply preventive fungicide sprays during wet seasons",
-//       ];
-//     }
-
-//     if (predLower.includes("powdery mildew")) {
-//       return [
-//         "Apply sulfur-based or potassium bicarbonate fungicide",
-//         "Improve air circulation around plants",
-//         "Avoid overhead watering",
-//         "Remove infected leaves and dispose properly",
-//         "Apply preventive treatments during favorable conditions",
-//       ];
-//     }
-
+//     // Default fallback if no match
 //     return [
 //       "Consult with agricultural extension officer for specific treatment",
 //       "Remove and destroy infected plant parts",
@@ -979,15 +953,13 @@ export default function ScanDetailsPage() {
 //     );
 //   }
 
-//   if (error || !scanDetails) {
+//   if (!scanDetails) {
 //     return (
 //       <div className="min-h-screen bg-gray-50 flex flex-col">
 //         <HeaderMain />
 //         <div className="flex-1 flex items-center justify-center p-4">
 //           <div className="text-center space-y-4">
-//             <div className="text-red-500 text-lg font-semibold">
-//               {error || "Scan not found"}
-//             </div>
+//             <div className="text-gray-500 text-lg">Scan not found</div>
 //             <button
 //               onClick={() => navigate("/scan-history")}
 //               className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
@@ -1046,6 +1018,7 @@ export default function ScanDetailsPage() {
 //                   }
 //                   alt="Scan"
 //                   className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
+//                   loading="lazy"
 //                   onError={(e) => {
 //                     e.target.src =
 //                       "https://via.placeholder.com/400x300?text=No+Image";
@@ -1096,7 +1069,6 @@ export default function ScanDetailsPage() {
 //               </div>
 //               <div className="p-6">
 //                 <div className="flex items-start justify-between gap-8">
-//                   {/* Left side - Disease Identified */}
 //                   <div className="flex-1">
 //                     <div className="text-sm text-gray-500 mb-2">
 //                       Disease Identified
@@ -1108,7 +1080,6 @@ export default function ScanDetailsPage() {
 //                     </div>
 //                   </div>
 
-//                   {/* Right side - Confidence Level */}
 //                   <div className="flex-1">
 //                     <div className="flex justify-between items-center text-sm mb-2">
 //                       <span className="text-gray-500">Confidence Level</span>
@@ -1136,37 +1107,53 @@ export default function ScanDetailsPage() {
 //                   </h2>
 //                 </div>
 //                 <div className="p-6">
-//                   <div className="flex items-start gap-16">
-//                     {/* Farmer Info - Left Side */}
-//                     {(farmerDetails || scanDetails.idNumber) && (
-//                       <div className="flex items-start gap-3">
-//                         <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-//                           <svg
-//                             className="w-6 h-6 text-gray-600"
-//                             fill="none"
-//                             viewBox="0 0 24 24"
-//                             stroke="currentColor"
-//                           >
-//                             <path
-//                               strokeLinecap="round"
-//                               strokeLinejoin="round"
-//                               strokeWidth={2}
-//                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-//                             />
-//                           </svg>
-//                         </div>
-//                         <div className="flex-1">
-//                           <div className="font-semibold text-gray-900">
-//                             {farmerDetails?.fullName ||
-//                               farmerDetails?.name ||
-//                               scanDetails.idNumber}
-//                           </div>
-//                           <div className="text-sm text-gray-600">Farmer</div>
-//                         </div>
+//                   <div className="grid grid-cols-2 gap-8">
+//                     {/* Column 1: Farmer Info */}
+//                     <div className="flex items-start gap-3">
+//                       {scanDetails.profilePicture ? (
+//                         <img
+//                           src={scanDetails.profilePicture}
+//                           alt="Farmer"
+//                           className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+//                           onError={(e) => {
+//                             e.target.style.display = "none";
+//                             e.target.nextSibling.style.display = "flex";
+//                           }}
+//                         />
+//                       ) : null}
+//                       <div
+//                         className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"
+//                         style={{
+//                           display: scanDetails.profilePicture ? "none" : "flex",
+//                         }}
+//                       >
+//                         <svg
+//                           className="w-6 h-6 text-gray-600"
+//                           fill="none"
+//                           viewBox="0 0 24 24"
+//                           stroke="currentColor"
+//                         >
+//                           <path
+//                             strokeLinecap="round"
+//                             strokeLinejoin="round"
+//                             strokeWidth={2}
+//                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+//                           />
+//                         </svg>
 //                       </div>
-//                     )}
+//                       <div className="flex-1">
+//                         <div className="font-semibold text-gray-900">
+//                           {scanDetails.farmerName ||
+//                             (farmerDetails
+//                               ? getFarmerFullName(farmerDetails)
+//                               : null) ||
+//                             scanDetails.idNumber}
+//                         </div>
+//                         <div className="text-sm text-gray-600">Farmer</div>
+//                       </div>
+//                     </div>
 
-//                     {/* Farm Name */}
+//                     {/* Column 2: Farm Name */}
 //                     <div>
 //                       <div className="text-sm text-gray-600 mb-1">
 //                         Farm Name
@@ -1179,6 +1166,7 @@ export default function ScanDetailsPage() {
 //                 </div>
 //               </div>
 //             )}
+
 //             {/* Suggested Treatment Card */}
 //             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
 //               <div className="px-6 py-4 bg-white border-b border-gray-100">

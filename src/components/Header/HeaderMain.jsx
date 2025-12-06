@@ -82,23 +82,8 @@ export default function HeaderMain() {
   };
 
   // Get profile picture URL
-  // const getProfilePictureUrl = () => {
-  //   if (userData?.profilePicture) {
-  //     if (userData.profilePicture.startsWith("http")) {
-  //       return userData.profilePicture;
-  //     }
-  //     // Add /api/ to the path and cache-busting timestamp
-  //     return `https://papaiaapi.onrender.com/api/${
-  //       userData.profilePicture
-  //     }?t=${Date.now()}`;
-  //   }
-  //   return defaultUser;
-  // };
-
-  // Get profile picture URL
   const getProfilePictureUrl = () => {
     if (userData?.profilePicture) {
-      // Return the Firebase Storage URL directly without cache-busting
       return userData.profilePicture;
     }
     return defaultUser;

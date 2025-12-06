@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
 export default function HeaderStart() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const navItems = [
     { id: "home", label: "Home", href: "/" },
@@ -13,23 +14,22 @@ export default function HeaderStart() {
     { id: "signup", label: "Sign Up", href: "/sign-up" },
   ];
 
-  const location = useLocation();
-
-  const getInitialActiveNav = () => {
-    const currentNav = navItems.find((item) => item.href === location.pathname);
+  const getActiveNav = (pathname) => {
+    const currentNav = navItems.find((item) => item.href === pathname);
     return currentNav ? currentNav.id : "";
   };
 
-  const [activeNav, setActiveNav] = useState(getInitialActiveNav);
+  const [activeNav, setActiveNav] = useState(() =>
+    getActiveNav(location.pathname)
+  );
 
   useEffect(() => {
-    const currentPath = location.pathname;
-    const currentNav = navItems.find((item) => item.href === currentPath);
-    if (currentNav) setActiveNav(currentNav.id);
-    else setActiveNav("");
+    setActiveNav(getActiveNav(location.pathname));
   }, [location.pathname]);
 
-  const handleNavClick = () => setIsMenuOpen(false);
+  const handleNavClick = () => {
+    setIsMenuOpen(false);
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -56,7 +56,6 @@ export default function HeaderStart() {
             </span>
           </div>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex gap-5">
             {navItems.map((item) => (
               <Link
@@ -75,7 +74,6 @@ export default function HeaderStart() {
             ))}
           </nav>
 
-          {/* Mobile Burger Menu */}
           <button
             className="lg:hidden text-black hover:text-white hover:bg-gradient-to-r hover:from-[#4A7C59] hover:to-[#2D5016] rounded-md p-1.5 transition-all duration-200"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -86,7 +84,6 @@ export default function HeaderStart() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-14 sm:top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200">
           <nav className="flex flex-col items-center py-4 gap-3">

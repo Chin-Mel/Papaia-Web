@@ -1,4 +1,3 @@
-// Finished Fixing the About home page
 import Header from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/Footer";
 
@@ -51,7 +50,6 @@ export default function AboutPage() {
       <Header />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
           <div className="absolute inset-0">
             <img
@@ -62,11 +60,7 @@ export default function AboutPage() {
           </div>
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
             <div className="text-center">
-              <div
-                className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg 
-                  p-6 sm:p-8 md:p-12 
-                  mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8"
-              >
+              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                   About Papaia
                 </h1>
@@ -79,7 +73,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* App Overview */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
@@ -96,11 +89,9 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Vision & Mission */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
-              {/* Vision */}
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#94C522]/10 flex items-center justify-center">
@@ -121,7 +112,6 @@ export default function AboutPage() {
                 </p>
               </div>
 
-              {/* Mission */}
               <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
@@ -145,7 +135,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Key Features */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12 sm:mb-16">
@@ -196,8 +185,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/*How to Use the App Section*/}
-        {/* How to Use the App Section */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12 sm:mb-16">
@@ -210,58 +197,34 @@ export default function AboutPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
-              {/* Step 1 - Capture */}
-              <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">
-                    1
-                  </span>
+              {["Capture", "Analyze", "Treat"].map((step, index) => (
+                <div key={index} className="text-center">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                      {index + 1}
+                    </span>
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
+                    {step}
+                  </h3>
+                  <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
+                    {
+                      {
+                        Capture:
+                          "Take a clear photo of the affected plant or leaf using your smartphone camera",
+                        Analyze:
+                          "Our AI instantly analyzes the image and identifies potential diseases or issues",
+                        Treat:
+                          "Receive detailed treatment recommendations and track your crop's recovery progress",
+                      }[step]
+                    }
+                  </p>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
-                  Capture
-                </h3>
-                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
-                  Take a clear photo of the affected plant or leaf using your
-                  smartphone camera
-                </p>
-              </div>
-
-              {/* Step 2 - Analyze */}
-              <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">
-                    2
-                  </span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
-                  Analyze
-                </h3>
-                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
-                  Our AI instantly analyzes the image and identifies potential
-                  diseases or issues
-                </p>
-              </div>
-
-              {/* Step 3 - Treat */}
-              <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
-                  <span className="text-2xl sm:text-3xl font-bold text-white">
-                    3
-                  </span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
-                  Treat
-                </h3>
-                <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
-                  Receive detailed treatment recommendations and track your
-                  crop's recovery progress
-                </p>
-              </div>
+              ))}
             </div>
           </div>
         </section>
 
-        {/* Meet the Developers */}
         <section className="py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-20">
             <div className="text-center mb-16">

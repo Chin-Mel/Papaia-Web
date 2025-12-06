@@ -89,9 +89,7 @@ export default function FarmDashboardPage() {
           setIsRestoreFarmerModalOpen(true);
         }
       }
-    } catch (error) {
-      console.error("Error fetching archived farmer:", error);
-    }
+    } catch (error) {}
   };
 
   const handleConfirmRestore = async () => {
@@ -126,7 +124,6 @@ export default function FarmDashboardPage() {
 
       window.location.reload();
     } catch (error) {
-      console.error("Error restoring farmer:", error);
       // Don't close modal on error - let RestoreFarmerModal handle it
       // Pass the error to the modal by not closing it here
       throw error; // Re-throw to let the modal catch it
@@ -204,7 +201,6 @@ export default function FarmDashboardPage() {
       const farm = data.farms?.find((f) => f.id === farmId);
       setFarmData(farm || null);
     } catch (error) {
-      //console.error("Failed to fetch farm data:", error);
       setFarmData(null);
     } finally {
       setLoading(false);
@@ -230,9 +226,7 @@ export default function FarmDashboardPage() {
       setIsAddFarmerModalOpen(false);
       setNewlyAddedFarmer(farmerData);
       setIsFarmerAddedSuccessModalOpen(true);
-    } catch (error) {
-      //console.error("Error handling farmer addition:", error);
-    }
+    } catch (error) {}
   };
 
   // Update the handleViewFarmer function to accept isArchived parameter
@@ -275,9 +269,7 @@ export default function FarmDashboardPage() {
           setIsFarmerDetailModalOpen(true);
         }
       }
-    } catch (error) {
-      console.error("Error fetching farmer details:", error);
-    }
+    } catch (error) {}
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -313,7 +305,6 @@ export default function FarmDashboardPage() {
         window.location.reload();
       }, 2000);
     } catch (error) {
-      //console.error("Error deactivating farmer:", error);
       setAlert({ type: "error", message: error.message });
     }
   };
@@ -332,9 +323,7 @@ export default function FarmDashboardPage() {
         setFarmerToReactivate(data.farmer);
         setIsReactivateFarmerModalOpen(true);
       }
-    } catch (error) {
-      //console.error("Error fetching farmer details:", error);
-    }
+    } catch (error) {}
   };
 
   const handleConfirmReactivate = async () => {
@@ -371,7 +360,6 @@ export default function FarmDashboardPage() {
       // Refresh the page
       window.location.reload();
     } catch (error) {
-      //console.error("Error reactivating farmer:", error);
       setAlert({ type: "error", message: error.message });
     }
   };
