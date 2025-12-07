@@ -381,7 +381,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         scan={selectedScan}
-        farmerName={selectedSan ? getFarmerName(selectedScan) : ""}
+        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
       />
     </div>
   );

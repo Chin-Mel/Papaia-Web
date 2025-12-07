@@ -212,27 +212,8 @@ export default function FarmDashboardPage() {
   const goBack = () =>
     navigate("/dashboard", { state: { refreshFarms: false } });
 
-  // Loading state - minimal skeleton
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <main className="flex-1 px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
-          <div className="w-full max-w-8xl mx-auto">
-            <div className="h-20 bg-white rounded-lg animate-pulse mb-6"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-              <div className="lg:col-span-2 h-96 bg-white rounded-lg animate-pulse"></div>
-              <div className="h-96 bg-white rounded-lg animate-pulse"></div>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Not found state
-  if (!farmData) {
+  // Not found state (only show after loading completes)
+  if (!loading && !farmData) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
         <HeaderMain />
@@ -264,108 +245,113 @@ export default function FarmDashboardPage() {
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                <button
-                  onClick={goBack}
-                  className="transition-all duration-150 active:scale-95 flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base"
-                >
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                </button>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
-                  {farmData.farmName}
-                </h1>
-                <span
-                  className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full flex items-center gap-1.5 ${
-                    isActive
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      isActive ? "bg-green-500" : "bg-red-500"
-                    }`}
-                  />
-                  {isActive ? "Active" : "Inactive"}
-                </span>
-              </div>
-              <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 text-sm sm:text-base">
-                <MapPin
-                  size={12}
-                  className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 fill-slate-500"
-                  fill="currentColor"
-                />
-                {farmData.location || "No location specified"}
-              </p>
-            </div>
-
-            <div className="flex gap-2 sm:gap-3">
-              <button
-                onClick={() => isActive && setIsEditFarmModalOpen(true)}
-                disabled={!isActive}
-                className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                  !isActive
-                    ? "opacity-40 cursor-not-allowed"
-                    : "cursor-pointer hover:from-amber-600 hover:to-yellow-700"
-                }`}
-                title={!isActive ? "Farm must be active to edit" : ""}
-              >
-                <Edit3 className="w-4 h-4 transition-transform group-hover:rotate-12" />
-                <span className="hidden sm:inline">Edit Farm</span>
-                <span className="sm:hidden">Edit</span>
-              </button>
-              <button
-                onClick={() => setIsToggleFarmStatusModalOpen(true)}
-                className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                  isActive
-                    ? "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50"
-                    : "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
-                }`}
-              >
-                {isActive ? (
-                  <ToggleLeft className="w-4 h-4 transition-transform group-hover:scale-110" />
-                ) : (
-                  <ToggleRight className="w-4 h-4 transition-transform group-hover:scale-110" />
-                )}
-                <span className="hidden sm:inline">
-                  {isActive ? "Deactivate" : "Activate"}
-                </span>
-                <span className="sm:hidden">{isActive ? "Off" : "On"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Inactive Farm Banner */}
-          {!isActive && (
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-4 sm:p-5 rounded-xl mb-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Lock className="w-5 h-5 text-red-600 flex-shrink-0" />
-                </div>
+          {farmData && (
+            <>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div className="flex-1">
-                  <h3 className="text-red-900 font-bold text-sm sm:text-base mb-1">
-                    Farm Currently Inactive
-                  </h3>
-                  <p className="text-red-800 text-xs sm:text-sm leading-relaxed">
-                    This farm is in view-only mode. All management features are
-                    temporarily disabled. Activate the farm above to restore
-                    full functionality and team management capabilities.
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                    <button
+                      onClick={goBack}
+                      className="transition-all duration-150 active:scale-95 flex items-center gap-2 text-gray-600 hover:text-gray-800 text-sm sm:text-base"
+                    >
+                      <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+                    </button>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                      {farmData.farmName}
+                    </h1>
+                    <span
+                      className={`px-2 sm:px-3 py-0.5 sm:py-1 text-xs sm:text-sm font-medium rounded-full flex items-center gap-1.5 ${
+                        isActive
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          isActive ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      />
+                      {isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <p className="text-gray-600 flex items-center gap-1 sm:gap-2 ml-7 text-sm sm:text-base">
+                    <MapPin
+                      size={12}
+                      className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 fill-slate-500"
+                      fill="currentColor"
+                    />
+                    {farmData.location || "No location specified"}
                   </p>
                 </div>
+
+                <div className="flex gap-2 sm:gap-3">
+                  <button
+                    onClick={() => isActive && setIsEditFarmModalOpen(true)}
+                    disabled={!isActive}
+                    className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                      !isActive
+                        ? "opacity-40 cursor-not-allowed"
+                        : "cursor-pointer hover:from-amber-600 hover:to-yellow-700"
+                    }`}
+                    title={!isActive ? "Farm must be active to edit" : ""}
+                  >
+                    <Edit3 className="w-4 h-4 transition-transform group-hover:rotate-12" />
+                    <span className="hidden sm:inline">Edit Farm</span>
+                    <span className="sm:hidden">Edit</span>
+                  </button>
+                  <button
+                    onClick={() => setIsToggleFarmStatusModalOpen(true)}
+                    className={`group transition-all duration-200 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl flex items-center gap-2 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                      isActive
+                        ? "bg-white border-2 border-red-500 text-red-600 hover:bg-red-50"
+                        : "bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700"
+                    }`}
+                  >
+                    {isActive ? (
+                      <ToggleLeft className="w-4 h-4 transition-transform group-hover:scale-110" />
+                    ) : (
+                      <ToggleRight className="w-4 h-4 transition-transform group-hover:scale-110" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {isActive ? "Deactivate" : "Activate"}
+                    </span>
+                    <span className="sm:hidden">{isActive ? "Off" : "On"}</span>
+                  </button>
+                </div>
               </div>
-            </div>
+
+              {/* Inactive Farm Banner */}
+              {!isActive && (
+                <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-4 sm:p-5 rounded-xl mb-4 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-red-100 rounded-lg">
+                      <Lock className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-red-900 font-bold text-sm sm:text-base mb-1">
+                        Farm Currently Inactive
+                      </h3>
+                      <p className="text-red-800 text-xs sm:text-sm leading-relaxed">
+                        This farm is in view-only mode. All management features
+                        are temporarily disabled. Activate the farm above to
+                        restore full functionality and team management
+                        capabilities.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              <div className="mb-4">
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                  {farmData.description || "No description available"}
+                </p>
+              </div>
+            </>
           )}
 
-          {/* Description */}
-          <div className="mb-4">
-            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-              {farmData.description || "No description available"}
-            </p>
-          </div>
-
-          {/* Analytics & Breakdown */}
+          {/* Analytics & Breakdown - Always render, components handle their own loading */}
           <div
             className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 ${
               !isActive ? "pointer-events-none" : ""
@@ -425,7 +411,7 @@ export default function FarmDashboardPage() {
       <Footer />
 
       {/* Modals */}
-      {isActive && (
+      {farmData && isActive && (
         <>
           <AddFarmerModal
             isOpen={isAddFarmerModalOpen}
@@ -465,12 +451,14 @@ export default function FarmDashboardPage() {
         </>
       )}
 
-      <ToggleFarmStatusModal
-        isOpen={isToggleFarmStatusModalOpen}
-        onClose={() => setIsToggleFarmStatusModalOpen(false)}
-        farmData={farmData}
-        onStatusToggled={handleStatusToggled}
-      />
+      {farmData && (
+        <ToggleFarmStatusModal
+          isOpen={isToggleFarmStatusModalOpen}
+          onClose={() => setIsToggleFarmStatusModalOpen(false)}
+          farmData={farmData}
+          onStatusToggled={handleStatusToggled}
+        />
+      )}
     </div>
   );
 }
