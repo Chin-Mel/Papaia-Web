@@ -9,8 +9,7 @@ import { useAlert } from "../AlertContext";
 import ScansCount from "../assets/ic_todays_scan.png";
 import FarmersCount from "../assets/ic_all_farmers.png";
 import FarmsCount from "../assets/ic_all_farms.png";
-import MainBackground from "../assets/MainBackground.png";
-import DefaultFarmImage from "../assets/default-farm-image.png";
+import DefaultFarmImage from "../assets/MainBackground.png";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const cache = new Map();
