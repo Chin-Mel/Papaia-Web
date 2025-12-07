@@ -6,7 +6,6 @@ import HeaderMain from "../components/Header/HeaderMain";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
-import { realTimeSync } from "../utils/RealtimeSync";
 
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
@@ -175,23 +174,12 @@ export default function ScanHistoryPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
   const initialLoadRef = useRef(true);
 
   useEffect(() => {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
-
-  useEffect(() => {
-    const unsubscribeScans = realTimeSync.subscribe("scans", (newData) => {
-      console.log("New scan detected! Updating...");
-      dataCache.delete("scan_history_data");
-      fetchData();
-    });
-
-    return () => {
-      unsubscribeScans();
-    };
-  }, [fetchData]);
 
   const fetchData = useCallback(async () => {
     const cacheKey = "scan_history_data";
@@ -373,15 +361,48 @@ export default function ScanHistoryPage() {
     }
   }, [token]);
 
+  const checkForNewScans = useCallback(async () => {
+    if (document.hidden) return;
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+      const scansRes = await fetch(`${API_BASE}/identification-history`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (scansRes.ok) {
+        const scansArray = await scansRes.json();
+        if (Array.isArray(scansArray) && scansArray.length !== lastScanCount) {
+          dataCache.delete("scan_history_data");
+          fetchData();
+        }
+      }
+    } catch {}
+  }, [token, fetchData]);
+
   useEffect(() => {
     fetchData();
+
+    pollIntervalRef.current = setInterval(checkForNewScans, 10000);
 
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
     };
-  }, [fetchData]);
+  }, [fetchData, checkForNewScans]);
+
   const filteredScans = useMemo(() => {
     let filtered = allScans;
 
