@@ -6,7 +6,7 @@ import HeaderMain from "../components/Header/HeaderMain";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
-import realtimeSync from "../utils/RealTimeSync";
+import { realTimeSync } from "../utils/RealtimeSync";
 
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
@@ -182,7 +182,7 @@ export default function ScanHistoryPage() {
   }, [token, navigate]);
 
   useEffect(() => {
-    const unsubscribeScans = realtimeSync.subscribe("scans", (newData) => {
+    const unsubscribeScans = realTimeSync.subscribe("scans", (newData) => {
       console.log("New scan detected! Updating...");
       dataCache.delete("scan_history_data");
       fetchData();

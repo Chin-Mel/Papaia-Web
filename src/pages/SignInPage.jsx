@@ -11,7 +11,7 @@ import EyeIcon from "../assets/eye-icon.png";
 import EyeOffIcon from "../assets/eye-off-icon.png";
 import LoginIcon from "../assets/login-icon.png";
 import { useAlert } from "../AlertContext";
-import realTimeSync from "../utils/RealTimeSync";
+import { realTimeSync } from "../utils/RealtimeSync";
 
 const prefetchScanHistory = async (token) => {
   const API_BASE = "https://papaiaapi.onrender.com/api/owner";
