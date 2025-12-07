@@ -1,14 +1,52 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useMemo,
-  useCallback,
-} from "react";
-import { BarChart3 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { BarChart3, AlertCircle, CheckCircle } from "lucide-react";
 
-const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+// Simple in-memory cache
+const cache = {
+  data: {},
 
+  getUserId() {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return null;
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const payload = JSON.parse(window.atob(base64));
+      return payload.userId || payload.id || payload.sub;
+    } catch {
+      return null;
+    }
+  },
+
+  set(key, value, ttl = 60000) {
+    const userId = this.getUserId();
+    if (!userId) return;
+    const userKey = `${userId}:${key}`;
+    this.data[userKey] = {
+      value,
+      expires: Date.now() + ttl,
+    };
+  },
+
+  get(key) {
+    const userId = this.getUserId();
+    if (!userId) return null;
+    const userKey = `${userId}:${key}`;
+    const item = this.data[userKey];
+    if (!item) return null;
+    if (Date.now() > item.expires) {
+      delete this.data[userKey];
+      return null;
+    }
+    return item.value;
+  },
+
+  clear() {
+    this.data = {};
+  },
+};
+
+// Function to clean text - remove emojis and asterisks
 const cleanText = (text) => {
   if (!text) return "";
   return text
@@ -27,172 +65,180 @@ export default function FarmAnalyticsSummary({
   dateRange,
 }) {
   const [summaryData, setSummaryData] = useState(null);
+  const [commonDiseaseData, setCommonDiseaseData] = useState(null);
   const [loading, setLoading] = useState(true);
   const abortControllerRef = useRef(null);
-  const cacheRef = useRef(new Map());
-  const pollIntervalRef = useRef(null);
-  const lastHashRef = useRef(null);
 
-  const getApiEndpoint = useMemo(() => {
+  // Map timeFilter and dateRange to API endpoints
+  const getApiEndpoints = (filter, range) => {
     const endpoints = {
       Daily: {
-        "Last 7 days": "seven-days-summary",
-        "Last 11 days": "eleven-days-summary",
-        "Last 14 days": "fourteen-days-summary",
+        "Last 7 days": {
+          summary: "seven-days-summary",
+          disease: "seven-days-common-diseases",
+        },
+        "Last 11 days": {
+          summary: "eleven-days-summary",
+          disease: "eleven-days-common-diseases",
+        },
+        "Last 14 days": {
+          summary: "fourteen-days-summary",
+          disease: "fourteen-days-common-diseases",
+        },
       },
       Weekly: {
-        "Last 4 weeks": "four-week-summary",
-        "Last 9 weeks": "nine-week-summary",
-        "Last 12 weeks": "twelve-week-summary",
+        "Last 4 weeks": {
+          summary: "four-week-summary",
+          disease: "three-weeks-common-diseases",
+        },
+        "Last 9 weeks": {
+          summary: "nine-week-summary",
+          disease: "nine-weeks-common-diseases",
+        },
+        "Last 12 weeks": {
+          summary: "twelve-week-summary",
+          disease: "twelve-weeks-common-diseases",
+        },
       },
       Monthly: {
-        "Last 3 months": "three-month-summary",
-        "Last 6 months": "six-month-summary",
-        "Last 12 months": "twelve-month-summary",
+        "Last 3 months": {
+          summary: "three-month-summary",
+          disease: "three-month-common-diseases",
+        },
+        "Last 6 months": {
+          summary: "six-month-summary",
+          disease: "six-month-common-diseases",
+        },
+        "Last 12 months": {
+          summary: "twelve-month-summary",
+          disease: "twelve-month-common-diseases",
+        },
       },
       Yearly: {
-        "Last 3 years": "three-year-summary",
-        "Last 5 years": "five-year-summary",
-        "Last 7 years": "seven-year-summary",
+        "Last 3 years": {
+          summary: "three-year-summary",
+          disease: "three-year-common-diseases",
+        },
+        "Last 5 years": {
+          summary: "five-year-summary",
+          disease: "five-year-common-diseases",
+        },
+        "Last 7 years": {
+          summary: "seven-year-summary",
+          disease: "seven-year-common-diseases",
+        },
       },
     };
 
-    return endpoints[timeFilter]?.[dateRange] || "eleven-days-summary";
-  }, [timeFilter, dateRange]);
+    return endpoints[filter]?.[range] || endpoints.Daily["Last 11 days"];
+  };
 
-  // Hash function to detect data changes
-  const hashData = useCallback((data) => {
-    if (!data) return null;
-    const str = JSON.stringify(data);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash;
-  }, []);
-
-  // Fetch data function
-  const fetchData = useCallback(
-    async (silent = false) => {
+  useEffect(() => {
+    const fetchData = async () => {
       if (!farmId) return;
 
-      // Check cache first
-      const cacheKey = `${farmId}-${getApiEndpoint}`;
-      const cached = cacheRef.current.get(cacheKey);
-      const now = Date.now();
-
-      if (cached && now - cached.timestamp < 3000) {
-        // Use cached data if less than 3 seconds old
-        if (!summaryData) {
-          setSummaryData(cached.data);
-          setLoading(false);
-        }
-        return;
-      }
-
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
 
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const endpoints = getApiEndpoints(timeFilter, dateRange);
+      const summaryCacheKey = `summary-${farmId}-${endpoints.summary}`;
+      const diseaseCacheKey = `disease-${farmId}-${endpoints.disease}`;
+
+      const cachedSummary = cache.get(summaryCacheKey);
+      const cachedDisease = cache.get(diseaseCacheKey);
+
+      if (cachedSummary) {
+        setSummaryData(cachedSummary);
+      }
+      if (cachedDisease) {
+        setCommonDiseaseData(cachedDisease);
+      }
+
+      if (cachedSummary && cachedDisease) {
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
 
       try {
-        if (!silent && !summaryData) {
-          setLoading(true);
+        // Fetch summary and disease data in parallel
+        const [summaryResponse, diseaseResponse] = await Promise.all([
+          fetch(
+            `https://papaiaapi.onrender.com/api/owner/${endpoints.summary}/${farmId}`,
+            { headers, signal: abortController.signal }
+          ),
+          fetch(
+            `https://papaiaapi.onrender.com/api/owner/${endpoints.disease}/${farmId}`,
+            { headers, signal: abortController.signal }
+          ),
+        ]);
+
+        const [summaryResult, diseaseResult] = await Promise.all([
+          summaryResponse.ok ? summaryResponse.json() : null,
+          diseaseResponse.ok ? diseaseResponse.json() : null,
+        ]);
+
+        if (summaryResult) {
+          setSummaryData(summaryResult);
+          cache.set(summaryCacheKey, summaryResult, 30000);
         }
 
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(
-          `${API_BASE}/${getApiEndpoint}/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            signal: controller.signal,
-          }
-        );
-
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          const newHash = hashData(data);
-
-          // Only update if data changed
-          if (newHash !== lastHashRef.current) {
-            lastHashRef.current = newHash;
-            setSummaryData(data);
-
-            // Update cache
-            cacheRef.current.set(cacheKey, {
-              data,
-              timestamp: now,
-            });
-          }
+        if (diseaseResult) {
+          diseaseResult._fetchedAt = Date.now();
+          setCommonDiseaseData(diseaseResult);
+          cache.set(diseaseCacheKey, diseaseResult, 120000);
         }
       } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Summary fetch error:", error);
-        }
+        if (error.name === "AbortError") return;
+
+        if (!cachedSummary) setSummaryData(null);
+        if (!cachedDisease) setCommonDiseaseData(null);
       } finally {
-        if (!silent) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
-    },
-    [farmId, getApiEndpoint, summaryData, hashData]
-  );
-
-  // Initial fetch
-  useEffect(() => {
-    fetchData();
-  }, [farmId, getApiEndpoint]);
-
-  // Poll for changes silently
-  useEffect(() => {
-    if (!farmId) return;
-
-    const checkForUpdates = async () => {
-      if (document.hidden) return;
-      await fetchData(true);
     };
 
-    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
+    fetchData();
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId, getApiEndpoint, fetchData]);
-
-  const FIXED_HEIGHT = "340px";
+  }, [farmId, timeFilter, dateRange]);
 
   if (loading && !summaryData) {
     return (
-      <div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center justify-center flex-1">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <div className="flex items-center justify-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
       </div>
     );
   }
 
+  if (!summaryData && !commonDiseaseData) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+        <p className="text-gray-500 text-center text-sm sm:text-base">
+          No summary data available
+        </p>
+      </div>
+    );
+  }
+
+  const hasDisease = commonDiseaseData && commonDiseaseData.count > 0;
+
   return (
-    <div
-      className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-      style={{ height: FIXED_HEIGHT }}
-    >
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-5 h-5 text-green-700" />
         <h2 className="text-lg sm:text-xl font-bold text-gray-800">
@@ -200,16 +246,51 @@ export default function FarmAnalyticsSummary({
         </h2>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {summaryData?.summary ? (
-          <div className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {cleanText(summaryData.summary)}
-          </div>
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <p className="text-gray-500 text-sm sm:text-base">
-              No summary data available
+      {/* Summary Content */}
+      <div className="space-y-4">
+        {/* AI-Generated Summary */}
+        {summaryData?.summary && (
+          <div className="border-b border-gray-100 pb-4">
+            <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+              {cleanText(summaryData.summary)}
             </p>
+          </div>
+        )}
+
+        {/* Most Common Disease Section */}
+        {commonDiseaseData && (
+          <div className="pb-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5">
+                {hasDisease ? (
+                  <AlertCircle className="w-5 h-5 text-amber-600" />
+                ) : (
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                )}
+              </div>
+              <div className="flex-1">
+                <h3
+                  className={`font-semibold mb-1 text-sm sm:text-base ${
+                    hasDisease ? "text-amber-900" : "text-emerald-900"
+                  }`}
+                >
+                  {hasDisease ? "Most Common Disease" : "Farm Health Status"}
+                </h3>
+                <p className="text-sm sm:text-base text-gray-700">
+                  {cleanText(commonDiseaseData.message)}
+                </p>
+                {hasDisease && (
+                  <div className="mt-2 flex flex-wrap gap-2 text-xs sm:text-sm">
+                    <span className="px-2 py-1 bg-gray-50 rounded-md font-medium text-amber-800 border border-amber-100">
+                      {commonDiseaseData.count} cases
+                    </span>
+                    <span className="px-2 py-1 bg-gray-50 rounded-md font-medium text-amber-800 border border-amber-100">
+                      {commonDiseaseData.percentage}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
