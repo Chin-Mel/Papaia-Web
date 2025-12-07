@@ -4,21 +4,31 @@ import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
+// Generate hash for data comparison
+const generateHash = (data) => {
+  const str = JSON.stringify(data);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
+};
+
 export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const abortControllerRef = useRef(null);
-  const cacheRef = useRef({});
-  const lastScansHashRef = useRef(null);
-  const SCANS_PER_PAGE = 3;
 
-  const hashData = useCallback((data) => {
-    return JSON.stringify(data);
-  }, []);
+  const abortControllerRef = useRef(null);
+  const lastScansHashRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const initialLoadRef = useRef(true);
+
+  const SCANS_PER_PAGE = 3;
 
   const getEndpoint = useCallback((filter, range) => {
     const endpointMap = {
@@ -97,42 +107,47 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
-  const fetchData = useCallback(async () => {
-    if (!farmId) return;
+  const fetchData = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    const endpoint = getEndpoint(timeFilter, dateRange);
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    try {
-      if (isInitialLoad) {
-        setLoading(true);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      const response = await fetch(
-        `${API_BASE}/identification-history/${farmId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          signal: controller.signal,
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        if (!silent && initialLoadRef.current) {
+          setLoading(true);
         }
-      );
 
-      if (!response.ok) throw new Error("Failed to fetch scans");
+        const response = await fetch(
+          `${API_BASE}/identification-history/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            signal: controller.signal,
+          }
+        );
 
-      const allScans = await response.json();
-      const newHash = hashData(allScans);
+        if (!response.ok) throw new Error("Failed to fetch scans");
 
-      // Only update if data changed
-      if (newHash !== lastScansHashRef.current) {
+        const allScans = await response.json();
+
+        // Generate hash to check if data changed
+        const newHash = generateHash(allScans);
+
+        // Only update if hash changed
+        if (silent && lastScansHashRef.current === newHash) {
+          return; // No changes, skip update
+        }
+
         lastScansHashRef.current = newHash;
-        cacheRef.current[`all-scans-${farmId}`] = allScans;
+
+        const endpoint = getEndpoint(timeFilter, dateRange);
 
         if (!endpoint) {
           setRecentScans(Array.isArray(allScans) ? allScans : []);
@@ -144,39 +159,44 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           );
           setRecentScans(filtered);
         }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Recent scans fetch error:", error);
+        }
+      } finally {
+        if (!silent && initialLoadRef.current) {
+          setLoading(false);
+          initialLoadRef.current = false;
+        }
       }
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Recent scans fetch error:", error);
-      }
-    } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-        setIsInitialLoad(false);
-      }
-    }
-  }, [
-    farmId,
-    timeFilter,
-    dateRange,
-    getEndpoint,
-    filterScansByDateRange,
-    isInitialLoad,
-    hashData,
-  ]);
+    },
+    [farmId, timeFilter, dateRange, getEndpoint, filterScansByDateRange]
+  );
 
+  // Initial load
   useEffect(() => {
-    fetchData();
+    fetchData(false);
+  }, [farmId, timeFilter, dateRange]);
 
-    const interval = setInterval(fetchData, 30000);
+  // Silent polling for updates
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      if (!document.hidden && farmId) {
+        await fetchData(true);
+      }
+    };
+
+    pollIntervalRef.current = setInterval(checkForUpdates, 15000); // Poll every 15 seconds
 
     return () => {
-      clearInterval(interval);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchData]);
+  }, [farmId, fetchData]);
 
   const getCardStyle = useCallback((prediction) => {
     const styles = {
@@ -273,7 +293,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     setCurrentPage(1);
   }, [recentScans.length]);
 
-  const FIXED_HEIGHT = "460px";
+  const FIXED_HEIGHT = "420px";
 
   if (loading) {
     return (
@@ -300,7 +320,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         Scans ({dateRange})
       </h2>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {recentScans.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
@@ -309,7 +329,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         ) : (
           <>
-            <div className="flex-1 space-y-2 overflow-y-auto">
+            <div className="space-y-2.5 mb-3">
               {currentScans.map((scan, index) => {
                 const cardStyle = getCardStyle(scan.prediction);
                 const { date, time } = formatDateTime(scan.timestamp);
@@ -317,23 +337,23 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                   <div
                     key={`${scan.id || scan.timestamp}-${index}`}
                     onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-2.5 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
+                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
                   >
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-3">
                       <img
                         src={scan.imageUrl}
                         alt="Scan"
-                        className="w-12 h-12 rounded-lg object-cover border border-gray-200 flex-shrink-0"
+                        className="w-14 h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0"
                         onError={(e) => {
                           e.target.src =
-                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%23e5e7eb' width='48' height='48'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='9'%3ENo Image%3C/text%3E%3C/svg%3E";
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect fill='%23e5e7eb' width='56' height='56'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
                         }}
                       />
 
                       <div className="flex-1 min-w-0 flex justify-between items-start">
                         <div className="flex-1">
                           <p
-                            className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
+                            className={`font-bold text-sm mb-1 ${cardStyle.textColor}`}
                           >
                             {scan.prediction}
                           </p>
@@ -342,7 +362,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                           </p>
                         </div>
 
-                        <div className="text-right flex-shrink-0 ml-2">
+                        <div className="text-right flex-shrink-0 ml-3">
                           <p className="text-xs text-slate-700 font-medium">
                             {date}
                           </p>
@@ -356,7 +376,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                 <div className="text-xs text-gray-600">
                   Page {currentPage} of {totalPages}
                 </div>

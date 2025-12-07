@@ -44,6 +44,7 @@ export default function FarmAnalytics({
   const analyticsHashRef = useRef(null);
   const healthHashRef = useRef(null);
   const initialLoadRef = useRef(true);
+  const chartContainerRef = useRef(null);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -547,7 +548,6 @@ export default function FarmAnalytics({
                 onClick={() => {
                   onTimeFilterChange(filter);
                   analyticsHashRef.current = null; // Reset hash on filter change
-                  initialLoadRef.current = true;
                 }}
                 className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
                   timeFilter === filter
@@ -612,7 +612,7 @@ export default function FarmAnalytics({
         </div>
       ) : (
         <>
-          <div className="flex-1 w-full mb-4">
+          <div className="flex-1 w-full mb-4" ref={chartContainerRef}>
             <div style={{ width: "100%", height: "100%" }}>
               <ResponsiveContainer>
                 <LineChart
@@ -672,6 +672,7 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
+                      isAnimationActive={false}
                     />
                   ))}
                 </LineChart>

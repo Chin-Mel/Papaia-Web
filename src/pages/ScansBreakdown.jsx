@@ -10,20 +10,29 @@ import { BarChart3 } from "lucide-react";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
+// Generate hash for data comparison
+const generateHash = (data) => {
+  const str = JSON.stringify(data);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
+};
+
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [diseaseData, setDiseaseData] = useState(null);
   const [allScansData, setAllScansData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filterActive, setFilterActive] = useState(false);
+
   const abortControllerRef = useRef(null);
   const cacheRef = useRef({});
   const initialLoadRef = useRef(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const lastDataHashRef = useRef(null);
-
-  const hashData = useCallback((data) => {
-    return JSON.stringify(data);
-  }, []);
+  const pollIntervalRef = useRef(null);
 
   const diseaseColors = {
     Healthy: "#10b981",
@@ -59,7 +68,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     return endpointMap[filter]?.[range];
   }, []);
 
-  // Track when user manually changes date range (skip initial load)
+  // Track when user manually changes date range
   useEffect(() => {
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
@@ -69,131 +78,149 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   }, [dateRange]);
 
   // Fetch all scans (default view)
-  const fetchAllScans = useCallback(async () => {
-    if (!farmId) return null;
+  const fetchAllScans = useCallback(
+    async (silent = false) => {
+      if (!farmId) return null;
 
-    const cacheKey = `all-${farmId}`;
-    if (cacheRef.current[cacheKey]) {
-      return cacheRef.current[cacheKey];
-    }
+      const cacheKey = `all-${farmId}`;
 
-    try {
-      const response = await fetch(
-        `${API_BASE}/identification-history/${farmId}`,
-        {
+      try {
+        const response = await fetch(
+          `${API_BASE}/identification-history/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to fetch all scans");
+        const data = await response.json();
+
+        // Check if data changed using hash
+        const newHash = generateHash(data);
+        if (silent && lastDataHashRef.current === newHash) {
+          return null; // No changes
+        }
+
+        lastDataHashRef.current = newHash;
+        cacheRef.current[cacheKey] = data;
+        return data;
+      } catch (error) {
+        console.error("All scans fetch error:", error);
+        return null;
+      }
+    },
+    [farmId]
+  );
+
+  // Fetch disease data from API
+  const fetchDiseaseData = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
+
+      const endpoint = getEndpoint(timeFilter, dateRange);
+
+      // Fetch all scans if no specific endpoint or filter not active
+      if (!endpoint || !filterActive) {
+        if (!silent && loading) {
+          setLoading(true);
+        }
+
+        const allData = await fetchAllScans(silent);
+
+        if (allData !== null) {
+          setAllScansData(allData);
+          setDiseaseData(null);
+        }
+
+        if (!silent && loading) {
+          setLoading(false);
+        }
+        return;
+      }
+
+      // Abort previous request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      const cacheKey = `${endpoint}-${farmId}`;
+
+      try {
+        if (!silent && loading) {
+          setLoading(true);
+        }
+
+        const response = await fetch(`${API_BASE}/${endpoint}/${farmId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch disease data");
+
+        const data = await response.json();
+
+        // Check if data changed using hash
+        const newHash = generateHash(data);
+        if (silent && lastDataHashRef.current === newHash) {
+          return; // No changes
         }
-      );
 
-      if (!response.ok) throw new Error("Failed to fetch all scans");
-      const data = await response.json();
-      cacheRef.current[cacheKey] = data;
-      return data;
-    } catch (error) {
-      console.error("All scans fetch error:", error);
-      return null;
-    }
-  }, [farmId]);
-
-  // Fetch disease data from API
-  const fetchDiseaseData = useCallback(async () => {
-    if (!farmId) return;
-
-    const endpoint = getEndpoint(timeFilter, dateRange);
-
-    if (!endpoint || !filterActive) {
-      if (isInitialLoad) {
-        setLoading(true);
-      }
-      const allData = await fetchAllScans();
-      const newHash = hashData(allData);
-
-      // Only update if changed
-      if (newHash !== lastDataHashRef.current) {
-        lastDataHashRef.current = newHash;
-        setAllScansData(allData);
-        setDiseaseData(null);
-      }
-
-      if (isInitialLoad) {
-        setLoading(false);
-        setIsInitialLoad(false);
-      }
-      return;
-    }
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const cacheKey = `${endpoint}-${farmId}`;
-
-    try {
-      if (isInitialLoad) {
-        setLoading(true);
-      }
-
-      const response = await fetch(`${API_BASE}/${endpoint}/${farmId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch disease data");
-
-      const data = await response.json();
-      const newHash = hashData(data);
-
-      // Only update if changed
-      if (newHash !== lastDataHashRef.current) {
         lastDataHashRef.current = newHash;
         cacheRef.current[cacheKey] = data;
         setDiseaseData(data);
         setAllScansData(null);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Disease data fetch error:", error);
+        }
+      } finally {
+        if (!silent && loading) {
+          setLoading(false);
+        }
       }
-    } catch (error) {
-      if (error.name !== "AbortError") {
-        console.error("Disease data fetch error:", error);
-      }
-    } finally {
-      if (isInitialLoad) {
-        setLoading(false);
-        setIsInitialLoad(false);
-      }
-    }
-  }, [
-    farmId,
-    timeFilter,
-    dateRange,
-    getEndpoint,
-    fetchAllScans,
-    filterActive,
-    isInitialLoad,
-    hashData,
-  ]);
+    },
+    [
+      farmId,
+      timeFilter,
+      dateRange,
+      getEndpoint,
+      fetchAllScans,
+      filterActive,
+      loading,
+    ]
+  );
 
+  // Initial load
   useEffect(() => {
-    fetchDiseaseData();
+    fetchDiseaseData(false);
+  }, [farmId, timeFilter, dateRange, filterActive]);
 
-    // Poll every 30 seconds
-    const interval = setInterval(() => {
-      cacheRef.current = {}; // Clear cache for fresh data
-      fetchDiseaseData();
-    }, 30000);
+  // Silent polling for updates
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      if (!document.hidden && farmId) {
+        await fetchDiseaseData(true);
+      }
+    };
+
+    pollIntervalRef.current = setInterval(checkForUpdates, 15000); // Poll every 15 seconds
 
     return () => {
-      clearInterval(interval);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [fetchDiseaseData]);
+  }, [farmId, fetchDiseaseData]);
 
   const breakdown = useMemo(() => {
     const allDiseases = [
@@ -386,7 +413,10 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                       innerRadius={0}
                       fill="#8884d8"
                       dataKey="value"
-                      isAnimationActive={false}
+                      isAnimationActive={true}
+                      animationBegin={0}
+                      animationDuration={800}
+                      animationEasing="ease-out"
                     >
                       {breakdown.chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />

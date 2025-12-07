@@ -1,49 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { BarChart3 } from "lucide-react";
 
-// Simple in-memory cache
-const cache = {
-  data: {},
-
-  getUserId() {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return null;
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const payload = JSON.parse(window.atob(base64));
-      return payload.userId || payload.id || payload.sub;
-    } catch {
-      return null;
-    }
-  },
-
-  set(key, value, ttl = 60000) {
-    const userId = this.getUserId();
-    if (!userId) return;
-    const userKey = `${userId}:${key}`;
-    this.data[userKey] = {
-      value,
-      expires: Date.now() + ttl,
-    };
-  },
-
-  get(key) {
-    const userId = this.getUserId();
-    if (!userId) return null;
-    const userKey = `${userId}:${key}`;
-    const item = this.data[userKey];
-    if (!item) return null;
-    if (Date.now() > item.expires) {
-      delete this.data[userKey];
-      return null;
-    }
-    return item.value;
-  },
-
-  clear() {
-    this.data = {};
-  },
+// Generate hash for data comparison
+const generateHash = (data) => {
+  const str = JSON.stringify(data);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
 };
 
 // Function to clean text - remove emojis and asterisks
@@ -66,11 +33,14 @@ export default function FarmAnalyticsSummary({
 }) {
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
   const abortControllerRef = useRef(null);
+  const lastHashRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const initialLoadRef = useRef(true);
 
   // Map timeFilter and dateRange to API endpoints
-  const getApiEndpoints = (filter, range) => {
+  const getApiEndpoints = useCallback((filter, range) => {
     const endpoints = {
       Daily: {
         "Last 7 days": {
@@ -119,10 +89,10 @@ export default function FarmAnalyticsSummary({
     };
 
     return endpoints[filter]?.[range] || endpoints.Daily["Last 11 days"];
-  };
+  }, []);
 
-  useEffect(() => {
-    const fetchData = async (silent = false) => {
+  const fetchData = useCallback(
+    async (silent = false) => {
       if (!farmId) return;
 
       if (abortControllerRef.current) {
@@ -136,60 +106,78 @@ export default function FarmAnalyticsSummary({
       const headers = { Authorization: `Bearer ${token}` };
 
       const endpoints = getApiEndpoints(timeFilter, dateRange);
-      const summaryCacheKey = `summary-${farmId}-${endpoints.summary}`;
-
-      const cachedSummary = cache.get(summaryCacheKey);
-
-      if (cachedSummary) {
-        setSummaryData(cachedSummary);
-        if (isInitialLoad) {
-          setLoading(false);
-        }
-      } else if (!silent && isInitialLoad) {
-        setLoading(true);
-      }
 
       try {
+        if (!silent && initialLoadRef.current) {
+          setLoading(true);
+        }
+
         const summaryResponse = await fetch(
           `https://papaiaapi.onrender.com/api/owner/${endpoints.summary}/${farmId}`,
           { headers, signal: abortController.signal }
         );
 
-        const summaryResult = summaryResponse.ok
-          ? await summaryResponse.json()
-          : null;
-
-        if (summaryResult) {
-          setSummaryData(summaryResult);
-          cache.set(summaryCacheKey, summaryResult, 30000);
+        if (!summaryResponse.ok) {
+          if (!silent) {
+            setSummaryData(null);
+          }
+          return;
         }
+
+        const summaryResult = await summaryResponse.json();
+
+        // Generate hash to check if data changed
+        const newHash = generateHash(summaryResult);
+
+        // Only update if hash changed
+        if (silent && lastHashRef.current === newHash) {
+          return; // No changes, skip update
+        }
+
+        lastHashRef.current = newHash;
+        setSummaryData(summaryResult);
       } catch (error) {
         if (error.name === "AbortError") return;
 
-        if (!cachedSummary) setSummaryData(null);
-      } finally {
-        if (!silent && isInitialLoad) {
-          setLoading(false);
-          setIsInitialLoad(false);
+        if (!silent) {
+          setSummaryData(null);
         }
+      } finally {
+        if (!silent && initialLoadRef.current) {
+          setLoading(false);
+          initialLoadRef.current = false;
+        }
+      }
+    },
+    [farmId, timeFilter, dateRange, getApiEndpoints]
+  );
+
+  // Initial fetch
+  useEffect(() => {
+    fetchData(false);
+  }, [farmId, timeFilter, dateRange]);
+
+  // Silent polling for updates
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      if (!document.hidden && farmId) {
+        await fetchData(true);
       }
     };
 
-    // Initial fetch
-    fetchData();
-
-    // Poll every 30 seconds
-    const interval = setInterval(() => fetchData(true), 30000);
+    pollIntervalRef.current = setInterval(checkForUpdates, 15000); // Poll every 15 seconds
 
     return () => {
-      clearInterval(interval);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId, timeFilter, dateRange, isInitialLoad]);
+  }, [farmId, fetchData]);
 
-  const FIXED_HEIGHT = "460px";
+  const FIXED_HEIGHT = "420px";
 
   if (loading) {
     return (
