@@ -672,7 +672,9 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
-                      isAnimationActive={false}
+                      isAnimationActive={true}
+                      animationDuration={600}
+                      animationEasing="ease-in-out"
                     />
                   ))}
                 </LineChart>

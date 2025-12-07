@@ -415,8 +415,8 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                       dataKey="value"
                       isAnimationActive={true}
                       animationBegin={0}
-                      animationDuration={800}
-                      animationEasing="ease-out"
+                      animationDuration={600}
+                      animationEasing="ease-in-out"
                     >
                       {breakdown.chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
