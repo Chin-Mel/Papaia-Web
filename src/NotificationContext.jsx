@@ -17,6 +17,11 @@ export function NotificationProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const previousNotificationIdsRef = useRef(new Set());
   const isMountedRef = useRef(true);
+  const lastDataHashRef = useRef(null);
+
+  const hashData = useCallback((data) => {
+    return JSON.stringify(data);
+  }, []);
 
   const fetchNotifications = useCallback(
     async (silent = false) => {
@@ -45,37 +50,34 @@ export function NotificationProvider({ children }) {
         );
 
         if (!response.ok) {
-          if (response.status === 404) {
+          if (response.status === 404 || response.status === 401) {
             setNotifications([]);
             setUnreadCount(0);
             if (!silent) setLoading(false);
             return;
           }
-
-          if (response.status === 401) {
-            setNotifications([]);
-            setUnreadCount(0);
-            if (!silent) setLoading(false);
-            return;
-          }
-
           throw new Error(`API Error: ${response.status}`);
         }
 
         const data = await response.json();
         const notificationsArray = Array.isArray(data) ? data : [];
+        const newHash = hashData(notificationsArray);
 
-        if (isMountedRef.current) {
+        // Only update if data changed
+        if (newHash !== lastDataHashRef.current && isMountedRef.current) {
+          lastDataHashRef.current = newHash;
+
+          // Check for new notifications
           const newNotifications = notificationsArray.filter(
             (n) => !previousNotificationIdsRef.current.has(n.id) && !n.read
           );
 
-          if (newNotifications.length > 0) {
+          if (newNotifications.length > 0 && silent) {
             newNotifications.forEach((n) => {
+              const article = n.disease === "Anthracnose" ? "An" : "A";
               showAlert(
-                `${n.disease} detected on ${n.farmName}!`,
                 "info",
-                4000
+                `${article} ${n.disease} disease detected on ${n.farmName}!`
               );
             });
           }
@@ -89,6 +91,7 @@ export function NotificationProvider({ children }) {
           setUnreadCount(unread);
         }
       } catch (error) {
+        console.error("Notification fetch error:", error);
         if (!silent && isMountedRef.current) {
           setNotifications([]);
           setUnreadCount(0);
@@ -97,7 +100,7 @@ export function NotificationProvider({ children }) {
         if (!silent && isMountedRef.current) setLoading(false);
       }
     },
-    [showAlert]
+    [showAlert, hashData]
   );
 
   useEffect(() => {
@@ -107,7 +110,7 @@ export function NotificationProvider({ children }) {
 
     const interval = setInterval(() => {
       fetchNotifications(true);
-    }, 15000);
+    }, 10000);
 
     return () => {
       isMountedRef.current = false;
@@ -121,6 +124,7 @@ export function NotificationProvider({ children }) {
         const token = localStorage.getItem("token");
         if (!token) return;
 
+        // Optimistic update
         setNotifications((prev) =>
           prev.map((notif) =>
             notif.id === notificationId ? { ...notif, read: true } : notif
@@ -143,6 +147,7 @@ export function NotificationProvider({ children }) {
           await fetchNotifications(true);
         }
       } catch (error) {
+        console.error("Mark as read error:", error);
         await fetchNotifications(true);
       }
     },
@@ -160,6 +165,7 @@ export function NotificationProvider({ children }) {
         return;
       }
 
+      // Optimistic update
       setNotifications((prev) =>
         prev.map((notif) => ({ ...notif, read: true }))
       );
@@ -180,6 +186,7 @@ export function NotificationProvider({ children }) {
         await fetchNotifications(true);
       }
     } catch (error) {
+      console.error("Mark all as read error:", error);
       await fetchNotifications(true);
     }
   }, [notifications, fetchNotifications]);

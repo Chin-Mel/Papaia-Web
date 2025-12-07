@@ -17,6 +17,7 @@ export default function FarmAnalytics({
   onTimeFilterChange,
   onDateRangeChange,
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
+  refreshInterval = 10000,
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,12 +25,20 @@ export default function FarmAnalytics({
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastDataHashRef = useRef(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Separate state for farm health data
   const [farmHealthData, setFarmHealthData] = useState(null);
+  const [filteredHealthData, setFilteredHealthData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
 
-  // Dynamic date range options based on timeFilter
+  // Hash function to detect data changes
+  const hashData = useCallback((data) => {
+    if (!data) return null;
+    return JSON.stringify(data);
+  }, []);
+
   const dateRangeOptions = useMemo(() => {
     switch (timeFilter) {
       case "Daily":
@@ -45,7 +54,6 @@ export default function FarmAnalytics({
     }
   }, [timeFilter]);
 
-  // Reset date range when timeFilter changes to appropriate default
   useEffect(() => {
     let newRange;
     switch (timeFilter) {
@@ -70,7 +78,6 @@ export default function FarmAnalytics({
     }
   }, [timeFilter, onDateRangeChange]);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dateRangeRef.current && !dateRangeRef.current.contains(e.target)) {
@@ -81,12 +88,40 @@ export default function FarmAnalytics({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch farm health data (independent of date range changes)
+  // Map filters to API endpoints for filtered health data
+  const getHealthEndpoint = useCallback((filter, range) => {
+    const endpointMap = {
+      Daily: {
+        "Last 7 days": "seven-days-common-diseases",
+        "Last 11 days": "eleven-days-common-diseases",
+        "Last 14 days": "fourteen-days-common-diseases",
+      },
+      Weekly: {
+        "Last 4 weeks": "three-weeks-common-diseases",
+        "Last 9 weeks": "nine-weeks-common-diseases",
+        "Last 12 weeks": "twelve-weeks-common-diseases",
+      },
+      Monthly: {
+        "Last 3 months": "three-month-common-diseases",
+        "Last 6 months": "six-month-common-diseases",
+        "Last 12 months": "twelve-month-common-diseases",
+      },
+      Yearly: {
+        "Last 3 years": "three-year-common-diseases",
+        "Last 5 years": "five-year-common-diseases",
+        "Last 7 years": "seven-year-common-diseases",
+      },
+    };
+    return endpointMap[filter]?.[range];
+  }, []);
+
+  // Fetch overall farm health data (all-time) with polling
   useEffect(() => {
     if (!farmId) return;
 
-    const fetchFarmHealth = async () => {
-      setHealthLoading(true);
+    const fetchFarmHealth = async (silent = false) => {
+      if (!silent && isInitialLoad) setHealthLoading(true);
+
       try {
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
@@ -100,29 +135,72 @@ export default function FarmAnalytics({
         if (response.ok) {
           const data = await response.json();
           setFarmHealthData(data);
-        } else {
-          setFarmHealthData(null);
         }
       } catch (error) {
         console.error("Failed to fetch farm health:", error);
-        setFarmHealthData(null);
       } finally {
-        setHealthLoading(false);
+        if (!silent && isInitialLoad) {
+          setHealthLoading(false);
+        }
       }
     };
 
     fetchFarmHealth();
-  }, [farmId]); // Only depends on farmId, not dateRange
 
-  // Fetch analytics data with AbortController for cleanup
+    const healthInterval = setInterval(
+      () => fetchFarmHealth(true),
+      refreshInterval
+    );
+
+    return () => clearInterval(healthInterval);
+  }, [farmId, refreshInterval, isInitialLoad]);
+
+  // Fetch filtered health data based on date range
   useEffect(() => {
     if (!farmId) return;
 
-    const controller = new AbortController();
+    const fetchFilteredHealth = async (silent = false) => {
+      const endpoint = getHealthEndpoint(timeFilter, dateRange);
+      if (!endpoint) {
+        setFilteredHealthData(null);
+        return;
+      }
 
-    const fetchAnalytics = async () => {
-      // Only show loading on initial load (when analyticsData is null)
-      if (!analyticsData) {
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setFilteredHealthData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch filtered health:", error);
+      }
+    };
+
+    fetchFilteredHealth();
+
+    const filteredHealthInterval = setInterval(
+      () => fetchFilteredHealth(true),
+      refreshInterval
+    );
+
+    return () => clearInterval(filteredHealthInterval);
+  }, [farmId, timeFilter, dateRange, getHealthEndpoint, refreshInterval]);
+
+  // Fetch analytics data with polling
+  useEffect(() => {
+    if (!farmId) return;
+
+    const fetchAnalytics = async (silent = false) => {
+      if (!silent && !analyticsData && isInitialLoad) {
         setLoading(true);
       }
       setError(null);
@@ -141,75 +219,82 @@ export default function FarmAnalytics({
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            signal: controller.signal,
           }
         );
 
         if (response.ok) {
           const data = await response.json();
-          setAnalyticsData(data);
+          const newHash = hashData(data);
+
+          if (newHash !== lastDataHashRef.current) {
+            lastDataHashRef.current = newHash;
+            setAnalyticsData(data);
+          }
         } else {
           const errorData = await response.json().catch(() => ({}));
           setError(errorData.error || `HTTP ${response.status} error`);
           setAnalyticsData(null);
         }
       } catch (error) {
-        if (error.name !== "AbortError") {
-          setError("Failed to load analytics data");
-          setAnalyticsData(null);
-        }
+        setError("Failed to load analytics data");
+        setAnalyticsData(null);
       } finally {
-        setLoading(false);
+        if (!silent && isInitialLoad) {
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
       }
     };
 
     fetchAnalytics();
 
-    return () => controller.abort();
-  }, [farmId, timeFilter]);
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        fetchAnalytics(true);
+      }
+    }, refreshInterval);
 
-  // Helper function to get number of periods to show based on date range
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+    };
+  }, [
+    farmId,
+    timeFilter,
+    refreshInterval,
+    analyticsData,
+    hashData,
+    isInitialLoad,
+  ]);
+
   const getPeriodsToShow = useCallback((range, filter) => {
     switch (filter) {
       case "Daily":
         if (range === "Last 7 days") return 7;
         if (range === "Last 11 days") return 11;
         if (range === "Last 14 days") return 14;
-        if (range === "Last 30 days") return 30;
-        if (range === "Last 60 days") return 60;
-        if (range === "Last 90 days") return 90;
         return 11;
-
       case "Weekly":
         if (range === "Last 4 weeks") return 4;
         if (range === "Last 9 weeks") return 9;
         if (range === "Last 12 weeks") return 12;
-        if (range === "Last 26 weeks") return 26;
-        if (range === "Last 52 weeks") return 52;
         return 9;
-
       case "Monthly":
         if (range === "Last 3 months") return 3;
         if (range === "Last 6 months") return 6;
         if (range === "Last 12 months") return 12;
-        if (range === "Last 24 months") return 24;
-        if (range === "Last 36 months") return 36;
         return 12;
-
       case "Yearly":
         if (range === "Last 3 years") return 3;
         if (range === "Last 5 years") return 5;
         if (range === "Last 7 years") return 7;
-        if (range === "Last 10 years") return 10;
-        if (range === "Last 15 years") return 15;
         return 7;
-
       default:
         return 11;
     }
   }, []);
 
-  // Memoize default data generation - now based on date range
   const generateDefaultData = useCallback(() => {
     const now = new Date();
     let data = [];
@@ -303,7 +388,6 @@ export default function FarmAnalytics({
     return data;
   }, [timeFilter, dateRange, getPeriodsToShow]);
 
-  // Memoize processed chart data
   const chartData = useMemo(() => {
     let defaultData = generateDefaultData();
 
@@ -348,7 +432,6 @@ export default function FarmAnalytics({
     return defaultData;
   }, [analyticsData, timeFilter, generateDefaultData]);
 
-  // Memoize disease types
   const diseaseTypes = useMemo(() => {
     const diseases = new Set([
       "Healthy",
@@ -379,7 +462,6 @@ export default function FarmAnalytics({
     return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
   }, []);
 
-  // Memoize CustomTooltip
   const CustomTooltip = useCallback(
     ({ active, payload, label }) => {
       if (active && payload && payload.length) {
@@ -422,13 +504,14 @@ export default function FarmAnalytics({
     [getDiseaseColor]
   );
 
-  // Calculate summary stats from farm health API
+  // Calculate summary stats: use filtered data if available, otherwise use all-time data
   const summaryStats = useMemo(() => {
-    if (farmHealthData) {
-      const totalScans = farmHealthData.totalPredictions || 0;
-      const healthyCount = farmHealthData.healthyCount || 0;
-      const healthScore = farmHealthData.healthPercentage
-        ? parseFloat(farmHealthData.healthPercentage.replace("%", ""))
+    const dataToUse = filteredHealthData || farmHealthData;
+
+    if (dataToUse) {
+      const totalScans = dataToUse.totalPredictions || 0;
+      const healthScore = dataToUse.healthPercentage
+        ? parseFloat(dataToUse.healthPercentage.replace("%", ""))
         : 0;
       const diseaseScore =
         totalScans > 0 ? (100 - healthScore).toFixed(1) : "0";
@@ -440,9 +523,8 @@ export default function FarmAnalytics({
       };
     }
 
-    // Fallback to 0 if no data
     return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
-  }, [farmHealthData]);
+  }, [filteredHealthData, farmHealthData]);
 
   const FIXED_HEIGHT = "580px";
 
@@ -451,14 +533,12 @@ export default function FarmAnalytics({
       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
       style={{ height: FIXED_HEIGHT }}
     >
-      {/* Header with inline filters */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
 
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-          {/* Time Filter Buttons */}
           <div className="flex gap-2 flex-wrap">
             {timeFilters.map((filter) => (
               <button
@@ -475,7 +555,6 @@ export default function FarmAnalytics({
             ))}
           </div>
 
-          {/* Date Range Dropdown */}
           <div className="relative min-w-[150px]" ref={dateRangeRef}>
             <button
               onClick={() => setIsDateRangeOpen(!isDateRangeOpen)}
@@ -598,40 +677,31 @@ export default function FarmAnalytics({
             className="grid grid-cols-3 gap-2 sm:gap-4"
             style={{ minHeight: "60px" }}
           >
-            {healthLoading ? (
-              <div className="col-span-3 flex justify-center items-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-700"></div>
-              </div>
-            ) : (
-              <>
-                <div className="text-center">
-                  <p className="text-green-600 font-semibold text-base sm:text-xl">
-                    {summaryStats.totalScans}
-                  </p>
-                  <p className="text-xs sm:text-base text-gray-600">
-                    Total Scans
-                  </p>
-                </div>
-                <div className="text-center">
-                  <p className="text-blue-600 font-semibold text-base sm:text-xl">
-                    {summaryStats.healthScore}%
-                  </p>
-                  <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-orange-600 font-semibold text-base sm:text-xl">
-                    {summaryStats.diseaseScore}%
-                  </p>
-                  <p className="text-xs sm:text-base text-gray-600">Diseases</p>
-                </div>
-              </>
-            )}
+            <div className="text-center">
+              <p className="text-green-600 font-semibold text-base sm:text-xl">
+                {summaryStats.totalScans}
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
+            </div>
+            <div className="text-center">
+              <p className="text-blue-600 font-semibold text-base sm:text-xl">
+                {summaryStats.healthScore}%
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+            </div>
+            <div className="text-center">
+              <p className="text-orange-600 font-semibold text-base sm:text-xl">
+                {summaryStats.diseaseScore}%
+              </p>
+              <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+            </div>
           </div>
         </>
       )}
     </div>
   );
 }
+
 // import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 // import {
 //   LineChart,
@@ -651,6 +721,7 @@ export default function FarmAnalytics({
 //   onTimeFilterChange,
 //   onDateRangeChange,
 //   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
+//   refreshInterval = 10000, // Poll every 10 seconds
 // }) {
 //   const [analyticsData, setAnalyticsData] = useState(null);
 //   const [loading, setLoading] = useState(false);
@@ -658,12 +729,18 @@ export default function FarmAnalytics({
 //   const [dateRange, setDateRange] = useState("Last 11 days");
 //   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
 //   const dateRangeRef = useRef(null);
+//   const pollIntervalRef = useRef(null);
+//   const lastDataHashRef = useRef(null);
 
-//   // Separate state for farm health data
 //   const [farmHealthData, setFarmHealthData] = useState(null);
 //   const [healthLoading, setHealthLoading] = useState(false);
 
-//   // Dynamic date range options based on timeFilter
+//   // Hash function to detect data changes
+//   const hashData = useCallback((data) => {
+//     if (!data) return null;
+//     return JSON.stringify(data);
+//   }, []);
+
 //   const dateRangeOptions = useMemo(() => {
 //     switch (timeFilter) {
 //       case "Daily":
@@ -679,7 +756,6 @@ export default function FarmAnalytics({
 //     }
 //   }, [timeFilter]);
 
-//   // Reset date range when timeFilter changes to appropriate default
 //   useEffect(() => {
 //     let newRange;
 //     switch (timeFilter) {
@@ -704,7 +780,6 @@ export default function FarmAnalytics({
 //     }
 //   }, [timeFilter, onDateRangeChange]);
 
-//   // Close dropdown when clicking outside
 //   useEffect(() => {
 //     const handleClickOutside = (e) => {
 //       if (dateRangeRef.current && !dateRangeRef.current.contains(e.target)) {
@@ -715,12 +790,13 @@ export default function FarmAnalytics({
 //     return () => document.removeEventListener("mousedown", handleClickOutside);
 //   }, []);
 
-//   // Fetch farm health data (independent of date range changes)
+//   // Fetch farm health data with polling
 //   useEffect(() => {
 //     if (!farmId) return;
 
-//     const fetchFarmHealth = async () => {
-//       setHealthLoading(true);
+//     const fetchFarmHealth = async (silent = false) => {
+//       if (!silent) setHealthLoading(true);
+
 //       try {
 //         const response = await fetch(
 //           `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
@@ -734,28 +810,32 @@ export default function FarmAnalytics({
 //         if (response.ok) {
 //           const data = await response.json();
 //           setFarmHealthData(data);
-//         } else {
-//           setFarmHealthData(null);
 //         }
 //       } catch (error) {
-//         setFarmHealthData(null);
+//         console.error("Failed to fetch farm health:", error);
 //       } finally {
-//         setHealthLoading(false);
+//         if (!silent) setHealthLoading(false);
 //       }
 //     };
 
+//     // Initial fetch
 //     fetchFarmHealth();
-//   }, [farmId]); // Only depends on farmId, not dateRange
 
-//   // Fetch analytics data with AbortController for cleanup
+//     // Set up polling
+//     const healthInterval = setInterval(
+//       () => fetchFarmHealth(true),
+//       refreshInterval
+//     );
+
+//     return () => clearInterval(healthInterval);
+//   }, [farmId, refreshInterval]);
+
+//   // Fetch analytics data with polling
 //   useEffect(() => {
 //     if (!farmId) return;
 
-//     const controller = new AbortController();
-
-//     const fetchAnalytics = async () => {
-//       // Only show loading on initial load (when analyticsData is null)
-//       if (!analyticsData) {
+//     const fetchAnalytics = async (silent = false) => {
+//       if (!silent && !analyticsData) {
 //         setLoading(true);
 //       }
 //       setError(null);
@@ -774,75 +854,75 @@ export default function FarmAnalytics({
 //             headers: {
 //               Authorization: `Bearer ${localStorage.getItem("token")}`,
 //             },
-//             signal: controller.signal,
 //           }
 //         );
 
 //         if (response.ok) {
 //           const data = await response.json();
-//           setAnalyticsData(data);
+//           const newHash = hashData(data);
+
+//           // Only update if data changed
+//           if (newHash !== lastDataHashRef.current) {
+//             lastDataHashRef.current = newHash;
+//             setAnalyticsData(data);
+//           }
 //         } else {
 //           const errorData = await response.json().catch(() => ({}));
 //           setError(errorData.error || `HTTP ${response.status} error`);
 //           setAnalyticsData(null);
 //         }
 //       } catch (error) {
-//         if (error.name !== "AbortError") {
-//           setError("Failed to load analytics data");
-//           setAnalyticsData(null);
-//         }
+//         setError("Failed to load analytics data");
+//         setAnalyticsData(null);
 //       } finally {
-//         setLoading(false);
+//         if (!silent) setLoading(false);
 //       }
 //     };
 
+//     // Initial fetch
 //     fetchAnalytics();
 
-//     return () => controller.abort();
-//   }, [farmId, timeFilter]);
+//     // Set up polling
+//     pollIntervalRef.current = setInterval(() => {
+//       if (!document.hidden) {
+//         fetchAnalytics(true);
+//       }
+//     }, refreshInterval);
 
-//   // Helper function to get number of periods to show based on date range
+//     return () => {
+//       if (pollIntervalRef.current) {
+//         clearInterval(pollIntervalRef.current);
+//       }
+//     };
+//   }, [farmId, timeFilter, refreshInterval, analyticsData, hashData]);
+
 //   const getPeriodsToShow = useCallback((range, filter) => {
 //     switch (filter) {
 //       case "Daily":
 //         if (range === "Last 7 days") return 7;
 //         if (range === "Last 11 days") return 11;
 //         if (range === "Last 14 days") return 14;
-//         if (range === "Last 30 days") return 30;
-//         if (range === "Last 60 days") return 60;
-//         if (range === "Last 90 days") return 90;
 //         return 11;
-
 //       case "Weekly":
 //         if (range === "Last 4 weeks") return 4;
 //         if (range === "Last 9 weeks") return 9;
 //         if (range === "Last 12 weeks") return 12;
-//         if (range === "Last 26 weeks") return 26;
-//         if (range === "Last 52 weeks") return 52;
 //         return 9;
-
 //       case "Monthly":
 //         if (range === "Last 3 months") return 3;
 //         if (range === "Last 6 months") return 6;
 //         if (range === "Last 12 months") return 12;
-//         if (range === "Last 24 months") return 24;
-//         if (range === "Last 36 months") return 36;
 //         return 12;
-
 //       case "Yearly":
 //         if (range === "Last 3 years") return 3;
 //         if (range === "Last 5 years") return 5;
 //         if (range === "Last 7 years") return 7;
-//         if (range === "Last 10 years") return 10;
-//         if (range === "Last 15 years") return 15;
 //         return 7;
-
 //       default:
 //         return 11;
 //     }
 //   }, []);
 
-//   // Memoize default data generation - now based on date range
 //   const generateDefaultData = useCallback(() => {
 //     const now = new Date();
 //     let data = [];
@@ -936,7 +1016,6 @@ export default function FarmAnalytics({
 //     return data;
 //   }, [timeFilter, dateRange, getPeriodsToShow]);
 
-//   // Memoize processed chart data
 //   const chartData = useMemo(() => {
 //     let defaultData = generateDefaultData();
 
@@ -981,7 +1060,6 @@ export default function FarmAnalytics({
 //     return defaultData;
 //   }, [analyticsData, timeFilter, generateDefaultData]);
 
-//   // Memoize disease types
 //   const diseaseTypes = useMemo(() => {
 //     const diseases = new Set([
 //       "Healthy",
@@ -1012,7 +1090,6 @@ export default function FarmAnalytics({
 //     return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
 //   }, []);
 
-//   // Memoize CustomTooltip
 //   const CustomTooltip = useCallback(
 //     ({ active, payload, label }) => {
 //       if (active && payload && payload.length) {
@@ -1055,11 +1132,9 @@ export default function FarmAnalytics({
 //     [getDiseaseColor]
 //   );
 
-//   // Calculate summary stats from farm health API
 //   const summaryStats = useMemo(() => {
 //     if (farmHealthData) {
 //       const totalScans = farmHealthData.totalPredictions || 0;
-//       const healthyCount = farmHealthData.healthyCount || 0;
 //       const healthScore = farmHealthData.healthPercentage
 //         ? parseFloat(farmHealthData.healthPercentage.replace("%", ""))
 //         : 0;
@@ -1073,7 +1148,6 @@ export default function FarmAnalytics({
 //       };
 //     }
 
-//     // Fallback to 0 if no data
 //     return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
 //   }, [farmHealthData]);
 
@@ -1084,14 +1158,12 @@ export default function FarmAnalytics({
 //       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
 //       style={{ height: FIXED_HEIGHT }}
 //     >
-//       {/* Header with inline filters */}
 //       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
 //         <h2 className="text-base sm:text-lg font-bold text-gray-800">
 //           Farm Analytics ({timeFilter})
 //         </h2>
 
 //         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-//           {/* Time Filter Buttons */}
 //           <div className="flex gap-2 flex-wrap">
 //             {timeFilters.map((filter) => (
 //               <button
@@ -1108,7 +1180,6 @@ export default function FarmAnalytics({
 //             ))}
 //           </div>
 
-//           {/* Date Range Dropdown */}
 //           <div className="relative min-w-[150px]" ref={dateRangeRef}>
 //             <button
 //               onClick={() => setIsDateRangeOpen(!isDateRangeOpen)}

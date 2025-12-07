@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   MapPin,
@@ -8,6 +8,7 @@ import {
   ToggleRight,
   Lock,
 } from "lucide-react";
+import { useAlert } from "../AlertContext";
 import HeaderMain from "../components/Header/HeaderMain";
 import Footer from "../components/Footer/Footer";
 import AddFarmerModal from "../components/Popups/AddFarmerModal";
@@ -25,10 +26,12 @@ import ScansBreakdown from "./ScansBreakdown";
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
   const [farmData, setFarmData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [timeFilter, setTimeFilter] = useState("Daily");
   const [dateRange, setDateRange] = useState("Last 11 days");
+  const [teamsRefreshTrigger, setTeamsRefreshTrigger] = useState(0);
 
   // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
@@ -43,7 +46,30 @@ export default function FarmDashboardPage() {
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
-  // Fetch farm data
+  // Refresh farm data function
+  const refreshFarmData = useCallback(async () => {
+    if (!farmId) return;
+
+    try {
+      const response = await fetch(
+        "https://papaiaapi.onrender.com/api/owner/farms",
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      const farm = data.farms?.find((f) => f.id === farmId);
+      if (farm) {
+        setFarmData(farm);
+      }
+    } catch (error) {
+      console.error("Failed to refresh farm data:", error);
+    }
+  }, [farmId]);
+
+  // Fetch farm data on mount
   useEffect(() => {
     if (!farmId) return;
 
@@ -80,8 +106,8 @@ export default function FarmDashboardPage() {
 
   const handleFarmerAdded = async () => {
     setIsAddFarmerModalOpen(false);
-    window.alert("Farmer Added Successfully!");
-    window.location.reload();
+    showAlert("success", "Farmer Added Successfully!");
+    setTeamsRefreshTrigger((prev) => prev + 1);
   };
 
   const handleViewFarmer = async (farmerId, isArchived = false) => {
@@ -147,10 +173,10 @@ export default function FarmDashboardPage() {
       }
 
       setIsRemoveFarmerModalOpen(false);
-      window.alert("Farmer Removed Successfully!");
-      window.location.reload();
+      showAlert("success", "Farmer Removed Successfully!");
+      setTeamsRefreshTrigger((prev) => prev + 1);
     } catch (error) {
-      window.alert(error.message);
+      showAlert("error", error.message);
     }
   };
 
@@ -164,8 +190,10 @@ export default function FarmDashboardPage() {
     setIsRestoreFarmerModalOpen(true);
   };
 
-  const handleFarmUpdated = () => {
-    window.location.reload();
+  const handleFarmUpdated = async () => {
+    setIsEditFarmModalOpen(false);
+    showAlert("success", "Farm Updated Successfully!");
+    await refreshFarmData();
   };
 
   const handleStatusToggled = (newStatus) => {
@@ -200,11 +228,11 @@ export default function FarmDashboardPage() {
         throw new Error(data.message || "Failed to restore farmer");
       }
 
-      window.alert("Farmer Restored Successfully!");
+      showAlert("success", "Farmer Restored Successfully!");
       setIsRestoreFarmerModalOpen(false);
-      window.location.reload();
+      setTeamsRefreshTrigger((prev) => prev + 1);
     } catch (err) {
-      window.alert(err.message);
+      showAlert("error", err.message);
       throw err;
     }
   };
@@ -212,7 +240,7 @@ export default function FarmDashboardPage() {
   const goBack = () =>
     navigate("/dashboard", { state: { refreshFarms: false } });
 
-  // Not found state (only show after loading completes)
+  // Not found state
   if (!loading && !farmData) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -351,7 +379,7 @@ export default function FarmDashboardPage() {
             </>
           )}
 
-          {/* Analytics & Breakdown - Always render, components handle their own loading */}
+          {/* Analytics & Breakdown */}
           <div
             className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 ${
               !isActive ? "pointer-events-none" : ""
@@ -403,6 +431,7 @@ export default function FarmDashboardPage() {
               farmId={farmId}
               onAddFarmer={handleAddFarmer}
               onViewFarmer={handleViewFarmer}
+              refreshTrigger={teamsRefreshTrigger}
             />
           </div>
         </div>

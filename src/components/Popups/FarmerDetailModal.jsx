@@ -1,7 +1,19 @@
-import { X, User, Phone, CheckCircle, RotateCcw, Trash2 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import {
+  X,
+  User,
+  Phone,
+  CheckCircle,
+  RotateCcw,
+  Trash2,
+  UserMinus,
+  UserPlus,
+  Loader2,
+} from "lucide-react";
+import { useEffect, useRef, useMemo, useState } from "react";
+import { useAlert } from "../../AlertContext";
 import defaultUserPic from "../../assets/default-user.png";
 
+// Farmer Detail Modal
 export default function FarmerDetailModal({
   isOpen,
   onClose,
@@ -23,24 +35,50 @@ export default function FarmerDetailModal({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !farmer) return null;
+  const farmerData = useMemo(() => {
+    if (!farmer) return null;
 
-  const firstName = farmer.firstname || farmer.firstName || "";
-  const lastName = farmer.lastname || farmer.lastName || "";
-  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "N/A";
+    const firstName = farmer.firstname || farmer.firstName || "";
+    const lastName = farmer.lastname || farmer.lastName || "";
+    const fullName = [firstName, lastName].filter(Boolean).join(" ") || "N/A";
+    const isArchived =
+      farmer.isArchived || farmer.status?.toLowerCase() === "archived";
 
-  const isArchived =
-    farmer.isArchived || farmer.status?.toLowerCase() === "archived";
+    const addressParts = [
+      farmer.street,
+      farmer.barangay,
+      farmer.municipality,
+      farmer.province,
+    ].filter(Boolean);
+    const hasAddress = addressParts.length > 0;
+    const fullAddress = hasAddress ? addressParts.join(", ") : "";
 
-  // Build address only if we have address components
-  const addressParts = [
-    farmer.street,
-    farmer.barangay,
-    farmer.municipality,
-    farmer.province,
-  ].filter(Boolean);
-  const hasAddress = addressParts.length > 0;
-  const fullAddress = hasAddress ? addressParts.join(", ") : "";
+    return {
+      firstName,
+      lastName,
+      fullName,
+      isArchived,
+      hasAddress,
+      fullAddress,
+      idNumber: farmer.idNumber || "N/A",
+      contactNumber: farmer.contactNumber || "N/A",
+      profilePicture: farmer.profilePicture || defaultUserPic,
+    };
+  }, [farmer]);
+
+  if (!isOpen || !farmerData) return null;
+
+  const {
+    firstName,
+    lastName,
+    fullName,
+    isArchived,
+    hasAddress,
+    fullAddress,
+    idNumber,
+    contactNumber,
+    profilePicture,
+  } = farmerData;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -48,7 +86,6 @@ export default function FarmerDetailModal({
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
       >
-        {/* Header */}
         <div
           className={`rounded-t-2xl p-6 relative ${
             isArchived
@@ -81,7 +118,6 @@ export default function FarmerDetailModal({
           </button>
         </div>
 
-        {/* Archived Banner */}
         {isArchived && (
           <div className="bg-red-50 border-b-2 border-red-200 p-4">
             <div className="flex items-center gap-2">
@@ -93,17 +129,19 @@ export default function FarmerDetailModal({
           </div>
         )}
 
-        {/* Profile Section */}
         <div className="p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="relative">
               <img
-                src={farmer.profilePicture || defaultUserPic}
+                src={profilePicture}
                 alt="Profile"
                 className={`w-20 h-20 rounded-full object-cover border-4 shadow-lg ${
                   isArchived ? "border-gray-300 grayscale" : "border-green-100"
                 }`}
-                onError={(e) => (e.target.src = defaultUserPic)}
+                onError={(e) => {
+                  e.target.src = defaultUserPic;
+                }}
+                loading="eager"
               />
               <div
                 className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-3 border-white shadow-md ${
@@ -132,7 +170,7 @@ export default function FarmerDetailModal({
                     isArchived ? "text-gray-500" : "text-gray-700"
                   }`}
                 >
-                  {farmer.idNumber || "N/A"}
+                  {idNumber}
                 </span>
               </p>
               <span
@@ -152,7 +190,6 @@ export default function FarmerDetailModal({
             </div>
           </div>
 
-          {/* Personal Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
               <User
@@ -169,7 +206,6 @@ export default function FarmerDetailModal({
               </h4>
             </div>
 
-            {/* Name Fields */}
             <div className="grid grid-cols-2 gap-3">
               <div
                 className={`p-3 rounded-xl border ${
@@ -217,7 +253,6 @@ export default function FarmerDetailModal({
               </div>
             </div>
 
-            {/* Contact Number */}
             <div
               className={`p-3 rounded-xl border ${
                 isArchived
@@ -238,11 +273,10 @@ export default function FarmerDetailModal({
                   isArchived ? "text-gray-600" : "text-gray-900"
                 }`}
               >
-                {farmer.contactNumber || "N/A"}
+                {contactNumber}
               </p>
             </div>
 
-            {/* Address - Only display if available */}
             {hasAddress && (
               <div
                 className={`p-3 rounded-xl border ${
@@ -269,7 +303,6 @@ export default function FarmerDetailModal({
             )}
           </div>
 
-          {/* Action Button */}
           <div className="mt-6">
             {isArchived ? (
               <button

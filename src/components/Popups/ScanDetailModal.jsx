@@ -59,12 +59,9 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
     try {
       if (!timestamp) return { date: "", time: "" };
 
-      // Handle both Date objects and string timestamps
       const date = new Date(timestamp);
 
-      // Check if valid date
       if (isNaN(date.getTime())) {
-        // Fallback: try parsing custom format "MM/DD/YYYY HH:MM AM/PM"
         const parts = timestamp.trim().split(/\s+/);
         if (parts.length === 3) {
           const [datePart, timePart, period] = parts;
@@ -125,7 +122,6 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
-        {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-orange-500 p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
@@ -147,9 +143,7 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
           </button>
         </div>
 
-        {/* Body - Scrollable */}
         <div className="overflow-y-auto flex-1 p-6">
-          {/* Image */}
           <div className="mb-6">
             <img
               src={scan.imageUrl}
@@ -163,10 +157,8 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
             />
           </div>
 
-          {/* Prediction Badge and Confidence */}
           <div className="mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Disease Detected */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">
                   Disease Detected
@@ -179,35 +171,18 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                 </span>
               </div>
 
-              {/* Confidence Level */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                  Confidence Level
+                  AI Verified
                 </label>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 bg-gray-200 rounded-full h-3 max-w-[200px]">
-                    <div
-                      className={`h-3 rounded-full ${
-                        scan.prediction === "Healthy"
-                          ? "bg-gradient-to-r from-emerald-500 to-emerald-600"
-                          : "bg-gradient-to-r from-red-500 to-red-600"
-                      }`}
-                      style={{
-                        width: `${(scan.confidence * 100).toFixed(0)}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-lg font-bold text-gray-700">
-                    {(scan.confidence * 100).toFixed(0)}%
-                  </span>
-                </div>
+                <span className="text-lg font-bold text-gray-700">
+                  {(scan.confidence * 100).toFixed(0)}%
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Info Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {/* Farmer Name */}
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-1">
                 <User className="w-4 h-4 text-gray-500" />
@@ -218,7 +193,6 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
               <p className="text-sm font-medium text-gray-800">{farmerName}</p>
             </div>
 
-            {/* Timestamp */}
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="w-4 h-4 text-gray-500" />
@@ -233,13 +207,12 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
             </div>
           </div>
 
-          {/* Suggestions */}
           {scan.suggestions && (
             <div>
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Recommendations
+                Suggested Treatment
               </label>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <div className="prose prose-sm max-w-none">
                   {scan.suggestions.split("\n").map((line, index) => {
                     const trimmedLine = line.trim();

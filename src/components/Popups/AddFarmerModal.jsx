@@ -1,5 +1,6 @@
 import { X, UserPlus, Loader2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { useAlert } from "../../AlertContext";
 
 export default function AddFarmerModal({
   isOpen,
@@ -11,23 +12,25 @@ export default function AddFarmerModal({
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
   const modalRef = useRef(null);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (modalRef.current && !modalRef.current.contains(e.target)) {
-        onClose();
+        if (!isLoading) onClose();
       }
     };
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isLoading]);
 
   useEffect(() => {
     if (!isOpen) {
       setFarmerId("");
       setHasError(false);
+      setIsLoading(false);
     }
   }, [isOpen]);
 
@@ -46,7 +49,7 @@ export default function AddFarmerModal({
 
     if (!validateFarmerId(farmerId)) {
       setHasError(true);
-      window.alert("Invalid farmer ID format. Use: FMR-123456");
+      showAlert("error", "Invalid farmer ID");
       return;
     }
 
@@ -73,29 +76,80 @@ export default function AddFarmerModal({
       const data = await response.json();
 
       if (!response.ok) {
+        // Handle specific error cases
+        const errorMessage = data?.message?.toLowerCase() || "";
+
+        // Case 1: Farmer is already added to this farm
         if (
-          data?.message?.includes("already added") ||
-          data?.message?.includes("another farm")
+          errorMessage.includes("already added") ||
+          errorMessage.includes("already assigned") ||
+          errorMessage.includes("already exists")
         ) {
-          window.alert(
+          showAlert(
+            "error",
             "Adding failed. This farmer is already assigned to another farm."
           );
-        } else {
-          window.alert("Invalid farmer ID");
+          setIsLoading(false);
+          return;
         }
+
+        // Case 2: Farmer is currently active in another farm
+        if (
+          errorMessage.includes("another farm") ||
+          errorMessage.includes("different farm") ||
+          errorMessage.includes("other farm")
+        ) {
+          showAlert(
+            "error",
+            "Adding failed. This farmer is already assigned to another farm."
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        // Case 3: Farmer has been restored and is still active elsewhere
+        if (
+          errorMessage.includes("restored") ||
+          errorMessage.includes("active")
+        ) {
+          showAlert(
+            "error",
+            "Adding failed. This farmer is already assigned to another farm."
+          );
+          setIsLoading(false);
+          return;
+        }
+
+        // Case 4: Invalid farmer ID (doesn't exist in system)
+        if (
+          errorMessage.includes("not found") ||
+          errorMessage.includes("invalid") ||
+          errorMessage.includes("does not exist")
+        ) {
+          showAlert("error", "Invalid farmer ID");
+          setIsLoading(false);
+          return;
+        }
+
+        // Default error: Invalid farmer ID
+        showAlert("error", "Invalid farmer ID");
         setIsLoading(false);
         return;
       }
 
-      window.alert("Farmer Added Successfully!");
+      // Success
+      showAlert("success", "Farmer Added Successfully!");
 
+      // Call the callback to refresh farmer list
       if (onFarmerAdded) {
         onFarmerAdded(data.farmer);
       }
 
+      // Close modal after successful addition
       onClose();
     } catch (err) {
-      window.alert("Failed to add farmer. Please try again.");
+      console.error("Add farmer error:", err);
+      showAlert("error", "Invalid farmer ID");
       setIsLoading(false);
     }
   };

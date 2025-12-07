@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X, User, UserMinus, Loader2 } from "lucide-react";
+import { useAlert } from "../../AlertContext";
 
 export default function RemoveFarmerModal({
   isOpen,
@@ -10,6 +11,7 @@ export default function RemoveFarmerModal({
   const [confirmationText, setConfirmationText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef(null);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -48,17 +50,20 @@ export default function RemoveFarmerModal({
 
   const handleConfirmRemove = async () => {
     if (confirmationText !== "REMOVE") {
-      window.alert('Please type "REMOVE" in capital letters to confirm');
+      showAlert(
+        "warning",
+        'Please type "REMOVE" in capital letters to confirm'
+      );
       return;
     }
 
     setIsLoading(true);
     try {
       await onConfirmRemove();
-      window.alert("Farmer Removed Successfully!");
+      showAlert("success", "Farmer Removed Successfully!");
       onClose();
     } catch (error) {
-      window.alert("Failed to remove farmer. Please try again.");
+      showAlert("error", "Failed to remove farmer. Please try again.");
       setIsLoading(false);
     }
   };
@@ -71,7 +76,6 @@ export default function RemoveFarmerModal({
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full"
       >
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 relative">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
@@ -92,7 +96,6 @@ export default function RemoveFarmerModal({
         </div>
 
         <div className="p-6 space-y-5">
-          {/* Farmer Info */}
           <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
             <div className="flex items-center gap-3">
               <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center">
@@ -112,7 +115,6 @@ export default function RemoveFarmerModal({
             </div>
           </div>
 
-          {/* Warning */}
           <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4">
             <p className="font-bold text-amber-900 mb-2">
               This action cannot be undone and will have the following
@@ -132,7 +134,6 @@ export default function RemoveFarmerModal({
             </ul>
           </div>
 
-          {/* Confirmation Input */}
           <div>
             <p className="text-sm text-gray-800 font-semibold mb-2">
               Type <span className="font-bold text-red-600">"REMOVE"</span> (in
@@ -143,13 +144,12 @@ export default function RemoveFarmerModal({
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
               placeholder="Type REMOVE here"
-              className="w-full px-4 py-3 border-3 border-gray-300 rounded-xl focus:border-orange-500 focus:outline-none transition-all"
+              className="w-full px-4 py-3 border-2 rounded-xl focus:outline-none transition-all focus:border-orange-500"
               style={{ borderWidth: "3px" }}
               disabled={isLoading}
             />
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={onClose}

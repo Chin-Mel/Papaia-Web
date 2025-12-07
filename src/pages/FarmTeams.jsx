@@ -54,114 +54,147 @@ function StatusDropdown({ value, onChange }) {
   );
 }
 
-export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
+export default function FarmTeams({
+  farmId,
+  onAddFarmer,
+  onViewFarmer,
+  refreshTrigger,
+}) {
   const [farmers, setFarmers] = useState([]);
   const [archivedFarmers, setArchivedFarmers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All Status");
   const [currentPage, setCurrentPage] = useState(1);
   const farmersPerPage = 5;
+  const abortControllerRef = useRef(null);
 
   const fetchActiveFarmers = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+    const response = await fetch(
+      `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      const farmersList = data.farmers || [];
+
+      const farmersWithDetails = await Promise.all(
+        farmersList.map(async (farmer) => {
+          try {
+            const detailResponse = await fetch(
+              `https://papaiaapi.onrender.com/api/owner/farmer/${farmer.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              }
+            );
+
+            const detailData = await detailResponse.json();
+
+            if (detailData.status === "success" && detailData.farmer) {
+              return { ...detailData.farmer, isArchived: false };
+            }
+
+            return { ...farmer, isArchived: false };
+          } catch {
+            return { ...farmer, isArchived: false };
+          }
+        })
       );
 
-      const data = await response.json();
-
-      if (data.status === "success") {
-        const farmersList = data.farmers || [];
-
-        const farmersWithDetails = await Promise.all(
-          farmersList.map(async (farmer) => {
-            try {
-              const detailResponse = await fetch(
-                `https://papaiaapi.onrender.com/api/owner/farmer/${farmer.id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  },
-                }
-              );
-
-              const detailData = await detailResponse.json();
-
-              if (detailData.status === "success" && detailData.farmer) {
-                return { ...detailData.farmer, isArchived: false };
-              }
-
-              return { ...farmer, isArchived: false };
-            } catch {
-              return { ...farmer, isArchived: false };
-            }
-          })
-        );
-
-        return farmersWithDetails;
-      }
-      return [];
-    } catch {
-      return [];
+      return farmersWithDetails;
     }
+    return [];
   }, [farmId]);
 
   const fetchArchivedFarmers = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      const data = await response.json();
-
-      if (data.status === "success" && data.removedFarmers) {
-        return data.removedFarmers.map((farmer) => ({
-          ...farmer,
-          isArchived: true,
-          status: "archived",
-        }));
+    const response = await fetch(
+      `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
-      return [];
-    } catch {
-      return [];
+    );
+
+    const data = await response.json();
+
+    if (data.status === "success" && data.removedFarmers) {
+      return data.removedFarmers.map((farmer) => ({
+        ...farmer,
+        isArchived: true,
+        status: "archived",
+      }));
     }
+    return [];
   }, [farmId]);
 
-  useEffect(() => {
-    if (!farmId) return;
+  const fetchAllFarmers = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    let isMounted = true;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-    const fetchAllFarmers = async () => {
-      const [active, archived] = await Promise.all([
-        fetchActiveFarmers(),
-        fetchArchivedFarmers(),
-      ]);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      if (isMounted) {
+      if (!silent && isInitialLoad) {
+        setLoading(true);
+      }
+
+      try {
+        const [active, archived] = await Promise.all([
+          fetchActiveFarmers(),
+          fetchArchivedFarmers(),
+        ]);
+
         setFarmers(active);
         setArchivedFarmers(archived);
-        setLoading(false);
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Error fetching farmers:", error);
+        }
+      } finally {
+        if (!silent && isInitialLoad) {
+          setLoading(false);
+          setIsInitialLoad(false);
+        }
       }
-    };
+    },
+    [farmId, fetchActiveFarmers, fetchArchivedFarmers, isInitialLoad]
+  );
 
+  // Initial fetch and polling
+  useEffect(() => {
     fetchAllFarmers();
 
+    // Poll every 10 seconds
+    const interval = setInterval(() => fetchAllFarmers(true), 10000);
+
     return () => {
-      isMounted = false;
+      clearInterval(interval);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [farmId, fetchActiveFarmers, fetchArchivedFarmers]);
+  }, [fetchAllFarmers]);
+
+  // Refresh when refreshTrigger changes
+  useEffect(() => {
+    if (refreshTrigger) {
+      fetchAllFarmers(true);
+    }
+  }, [refreshTrigger, fetchAllFarmers]);
 
   const formatName = useCallback((farmer) => {
     if (!farmer) return "N/A";
@@ -360,9 +393,9 @@ export default function FarmTeams({ farmId, onAddFarmer, onViewFarmer }) {
                 key={farmer.id}
                 className={`bg-white border rounded-lg p-4 transition-all ${
                   isArchived
-                    ? "opacity-50 bg-gray-50 border-gray-300"
+                    ? "opacity-60 bg-gray-50 border-gray-300"
                     : isInactive
-                    ? "opacity-60 border-gray-200"
+                    ? "opacity-70 border-gray-200"
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
               >

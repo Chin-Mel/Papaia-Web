@@ -1,6 +1,5 @@
 import { Bell, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
 
 export default function NotificationDropdown({
   isOpen,
@@ -56,23 +55,10 @@ export default function NotificationDropdown({
     markAsRead(notificationId);
   };
 
-  const formatDiseaseTitle = (disease) => {
-    if (disease === "Anthracnose") {
-      return "An";
-    }
-    return disease.charAt(0);
+  const formatMessage = (disease) => {
+    const article = disease === "Anthracnose" ? "An" : "A";
+    return `${article} ${disease} disease has been detected on your farm!`;
   };
-
-  useEffect(() => {
-    if (isOpen && unreadCount > 0) {
-      const latestUnread = notifications.find((n) => !n.read);
-      if (latestUnread) {
-        alert(
-          `New notification: ${latestUnread.title} - ${latestUnread.message}`
-        );
-      }
-    }
-  }, [isOpen, notifications, unreadCount]);
 
   if (!isOpen) return null;
 
@@ -148,7 +134,7 @@ export default function NotificationDropdown({
                           {notification.title}
                         </p>
                         <p className="text-gray-600 text-sm mt-1">
-                          {notification.message}
+                          {formatMessage(notification.disease)}
                         </p>
                         <div className="flex items-center justify-between mt-2">
                           <p className="text-gray-500 text-xs">

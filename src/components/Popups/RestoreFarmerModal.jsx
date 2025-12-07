@@ -1,5 +1,6 @@
 import { X, UserPlus, Loader2, RotateCcw } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
+import { useAlert } from "../../AlertContext";
 
 export default function RestoreFarmerModal({
   isOpen,
@@ -9,6 +10,7 @@ export default function RestoreFarmerModal({
 }) {
   const [isRestoring, setIsRestoring] = useState(false);
   const modalRef = useRef(null);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -28,9 +30,7 @@ export default function RestoreFarmerModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
-  const formatName = () => {
+  const formatName = useMemo(() => {
     if (!farmer) return "Unknown Farmer";
     const firstName = farmer.firstname || farmer.firstName || "";
     const middleName = farmer.middlename || farmer.middleName || "";
@@ -38,25 +38,46 @@ export default function RestoreFarmerModal({
     const suffix = farmer.suffix || "";
     const nameParts = [firstName, middleName, lastName, suffix].filter(Boolean);
     return nameParts.length > 0 ? nameParts.join(" ") : "Unknown Farmer";
-  };
+  }, [farmer]);
+
+  if (!isOpen) return null;
 
   const handleConfirm = async () => {
     setIsRestoring(true);
     try {
       await onConfirm();
-      window.alert("Farmer Restored Successfully!");
+      showAlert("success", "Farmer Restored Successfully!");
       onClose();
     } catch (error) {
+      const errorMessage = error.message?.toLowerCase() || "";
+
       if (
-        error.message?.includes("already added") ||
-        error.message?.includes("another farm")
+        errorMessage.includes("already added") ||
+        errorMessage.includes("already assigned") ||
+        errorMessage.includes("another farm") ||
+        errorMessage.includes("different farm") ||
+        errorMessage.includes("other farm") ||
+        errorMessage.includes("restored") ||
+        errorMessage.includes("already active") ||
+        errorMessage.includes("currently active")
       ) {
-        window.alert("This farmer is already added to another farm.");
+        showAlert(
+          "error",
+          "Adding failed. This farmer is already assigned to another farm."
+        );
+      } else if (
+        errorMessage.includes("not found") ||
+        errorMessage.includes("invalid") ||
+        errorMessage.includes("does not exist")
+      ) {
+        showAlert("error", "Invalid farmer ID");
       } else {
-        window.alert(
+        showAlert(
+          "error",
           error.message || "Failed to restore farmer. Please try again."
         );
       }
+
       setIsRestoring(false);
     }
   };
@@ -67,7 +88,6 @@ export default function RestoreFarmerModal({
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full"
       >
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 relative">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl ring-4 ring-white/30">
@@ -87,14 +107,12 @@ export default function RestoreFarmerModal({
         </div>
 
         <div className="p-6">
-          {/* Description */}
           <p className="text-sm text-gray-600 text-center mb-6">
             This will restore{" "}
-            <span className="font-semibold text-gray-900">{formatName()}</span>{" "}
+            <span className="font-semibold text-gray-900">{formatName}</span>{" "}
             back to active status.
           </p>
 
-          {/* Farmer Info */}
           <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 mb-6 border border-green-200">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
@@ -102,7 +120,7 @@ export default function RestoreFarmerModal({
               </div>
               <div>
                 <h3 className="font-bold text-base text-slate-900">
-                  {formatName()}
+                  {formatName}
                 </h3>
                 <p className="text-xs text-slate-600 font-mono">
                   ID: {farmer?.idNumber || "N/A"}
@@ -111,7 +129,6 @@ export default function RestoreFarmerModal({
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex gap-3">
             <button
               onClick={onClose}
