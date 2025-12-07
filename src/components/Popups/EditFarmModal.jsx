@@ -1,9 +1,14 @@
 //new
-import React, { useState, useRef, useEffect } from "react";
-import { X, Save, Upload, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { X, Save, Upload, Loader2, Leaf } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
-function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
+export default function EditFarmModal({
+  isOpen,
+  onClose,
+  farmData,
+  onFarmUpdated,
+}) {
   const [formData, setFormData] = useState({
     farmName: "",
     location: "",
@@ -12,19 +17,18 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState({});
+  const [focusedField, setFocusedField] = useState(null);
   const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target))
         handleClose();
-      }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isOpen]);
 
   useEffect(() => {
     if (farmData && isOpen) {
@@ -39,22 +43,16 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           ? farmData.farmImage
           : `https://papaiaapi.onrender.com${farmData.farmImage}`;
         setImagePreview(imageUrl);
-      } else {
-        setImagePreview("");
-      }
+      } else setImagePreview("");
 
       setSelectedImage(null);
-      setFieldErrors({});
+      setFocusedField(null);
       setAlert({ type: "", message: "" });
     }
   }, [farmData, isOpen]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field, value) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (fieldErrors[field]) {
-      setFieldErrors((prev) => ({ ...prev, [field]: false }));
-    }
-  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -62,11 +60,13 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
 
     if (!file.type.startsWith("image/")) {
       setAlert({ type: "error", message: "Please select a valid image file" });
+      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
       setAlert({ type: "error", message: "Image size must be less than 10MB" });
+      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
       return;
     }
 
@@ -75,28 +75,7 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
   };
 
   const handleSave = async () => {
-    const errors = {};
-
-    if (!formData.farmName.trim()) errors.farmName = true;
-    if (!formData.location.trim()) errors.location = true;
-    if (!formData.description.trim()) errors.description = true;
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      setAlert({
-        type: "error",
-        message: "Please fill in all required fields",
-      });
-      return;
-    }
-
-    if (!farmData?.id) {
-      setAlert({
-        type: "error",
-        message: "Farm ID is missing. Please try again.",
-      });
-      return;
-    }
+    if (!farmData?.id) return;
 
     const trimmedData = {
       farmName: formData.farmName.trim(),
@@ -127,58 +106,41 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     setIsLoading(true);
 
     try {
-      const url = `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`;
       const token = localStorage.getItem("token");
-      if (!token) throw new Error("Authentication token not found.");
-
-      const response = await fetch(url, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataToSend,
-      });
-
-      const responseText = await response.text();
-      if (!response.ok) {
-        let msg = `HTTP ${response.status}`;
-        try {
-          const data = JSON.parse(responseText);
-          msg = data.message || msg;
-        } catch {}
-        throw new Error(msg);
-      }
-
-      const data = JSON.parse(responseText);
-
-      if (data.status === "success") {
-        if (onFarmUpdated) {
-          onFarmUpdated(data.farm || { ...farmData, ...trimmedData });
+      const response = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/farm/${farmData.id}`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formDataToSend,
         }
-        setAlert({ type: "success", message: "Farm updated successfully!" });
+      );
 
-        setTimeout(() => {
-          handleClose();
-        }, 1000);
+      const data = await response.json();
+
+      if (response.ok && data.status === "success") {
+        setAlert({ type: "success", message: "Farm Updated Successfully!" });
+        if (onFarmUpdated)
+          onFarmUpdated(data.farm || { ...farmData, ...trimmedData });
+        setTimeout(() => handleClose(), 1000);
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
     } catch (error) {
-      setAlert({
-        type: "error",
-        message: `Failed to update farm: ${error.message}`,
-      });
+      setAlert({ type: "error", message: error.message });
+      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    if (selectedImage && imagePreview.startsWith("blob:")) {
+    if (selectedImage && imagePreview.startsWith("blob:"))
       URL.revokeObjectURL(imagePreview);
-    }
     setSelectedImage(null);
     setFormData({ farmName: "", location: "", description: "" });
     setImagePreview("");
-    setFieldErrors({});
+    setFocusedField(null);
     setAlert({ type: "", message: "" });
     onClose();
   };
@@ -191,74 +153,82 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     formData.location.trim() !== (farmData?.location || "").trim() ||
     formData.description.trim() !== (farmData?.description || "").trim();
 
+  const getBorderClass = (field) =>
+    focusedField === field ? "border-orange-500" : "border-gray-300";
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-gray-50 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
       >
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-lg p-6 relative flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-            <img
-              src={PapayaLogo}
-              alt="Papaia Logo"
-              className="w-5 h-7"
-              loading="eager"
-              decoding="async"
-            />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-xl font-bold text-white">Edit Farm Details</h2>
-            <p className="text-white/80 text-sm">
-              Update your farm information and description
-            </p>
+        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-xl p-5 relative">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+              <img
+                src={PapayaLogo}
+                alt="Papaia Logo"
+                className="w-5 h-7"
+                loading="eager"
+                decoding="async"
+              />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-white">
+                Edit Farm Details
+              </h2>
+              <p className="text-white/90 text-sm">
+                Update your farm information
+              </p>
+            </div>
           </div>
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
             disabled={isLoading}
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          {alert.message && (
+        {alert.message && (
+          <div className="mx-5 mt-5">
             <div
               className={`p-3 rounded-lg ${
                 alert.type === "error"
-                  ? "bg-red-50 text-red-800"
-                  : "bg-green-50 text-green-800"
+                  ? "bg-red-50 text-red-800 border border-red-200"
+                  : "bg-green-50 text-green-800 border border-green-200"
               }`}
             >
               <p className="text-sm font-medium">{alert.message}</p>
             </div>
-          )}
+          </div>
+        )}
 
+        <div className="p-5 space-y-5">
           <div>
-            <label className="block text-gray-800 font-medium mb-3">
+            <label className="block text-gray-700 font-medium mb-2">
               Farm Image{" "}
-              <span className="text-gray-500 text-sm">(Optional)</span>
+              <span className="text-gray-400 text-sm">(Optional)</span>
             </label>
             <div className="relative">
               {imagePreview ? (
                 <img
                   src={imagePreview}
                   alt="Farm preview"
-                  className="w-full h-64 object-cover rounded-lg border-2 border-gray-300"
-                  onError={(e) => (e.target.style.display = "none")}
+                  className="w-full h-56 object-cover rounded-lg border-2 border-gray-300"
                 />
               ) : (
-                <div className="w-full h-64 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <div className="w-full h-56 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
                   <div className="text-center">
-                    <Upload className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-500">No image selected</p>
+                    <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">No image selected</p>
                   </div>
                 </div>
               )}
-              <label className="absolute bottom-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2">
+              <label className="absolute bottom-3 right-3 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-lg text-sm font-medium">
                 <Upload className="w-4 h-4" />
-                {imagePreview ? "Change Image" : "Upload Image"}
+                {imagePreview ? "Change" : "Upload"}
                 <input
                   type="file"
                   accept="image/*"
@@ -270,38 +240,39 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-gray-800 font-medium mb-2">
-                Farm Name <span className="text-red-500">*</span>
+              <label className="block text-gray-700 font-medium mb-2">
+                Farm Name{" "}
+                <span className="text-gray-400 text-sm">(Optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.farmName}
                 onChange={(e) => handleInputChange("farmName", e.target.value)}
-                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white transition-all ${
-                  fieldErrors.farmName
-                    ? "border-red-500 focus:border-red-500"
-                    : "border-gray-300 focus:border-transparent"
-                }`}
+                onFocus={() => setFocusedField("farmName")}
+                onBlur={() => setFocusedField(null)}
+                className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getBorderClass(
+                  "farmName"
+                )}`}
                 placeholder="Enter farm name"
                 disabled={isLoading}
               />
             </div>
-
             <div>
-              <label className="block text-gray-800 font-medium mb-2">
-                Location <span className="text-red-500">*</span>
+              <label className="block text-gray-700 font-medium mb-2">
+                Location{" "}
+                <span className="text-gray-400 text-sm">(Optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.location}
                 onChange={(e) => handleInputChange("location", e.target.value)}
-                className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white transition-all ${
-                  fieldErrors.location
-                    ? "border-red-500 focus:border-red-500"
-                    : "border-gray-300 focus:border-transparent"
-                }`}
+                onFocus={() => setFocusedField("location")}
+                onBlur={() => setFocusedField(null)}
+                className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getBorderClass(
+                  "location"
+                )}`}
                 placeholder="Enter location"
                 disabled={isLoading}
               />
@@ -309,28 +280,29 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           </div>
 
           <div>
-            <label className="block text-gray-800 font-medium mb-2">
-              Farm Description <span className="text-red-500">*</span>
+            <label className="block text-gray-700 font-medium mb-2">
+              Description{" "}
+              <span className="text-gray-400 text-sm">(Optional)</span>
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              rows={6}
-              className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#4A7C59] bg-white resize-none transition-all ${
-                fieldErrors.description
-                  ? "border-red-500 focus:border-red-500"
-                  : "border-gray-300 focus:border-transparent"
-              }`}
+              onFocus={() => setFocusedField("description")}
+              onBlur={() => setFocusedField(null)}
+              rows={5}
+              className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white resize-none transition-all ${getBorderClass(
+                "description"
+              )}`}
               placeholder="Enter farm description..."
               disabled={isLoading}
             />
           </div>
         </div>
 
-        <div className="p-6 border-t border-gray-200 flex justify-between">
+        <div className="p-5 border-t border-gray-200 flex gap-3">
           <button
             onClick={handleClose}
-            className="px-6 py-3 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 px-5 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
             disabled={isLoading}
           >
             Cancel
@@ -338,12 +310,12 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
           <button
             onClick={handleSave}
             disabled={isLoading || !saveEnabled}
-            className="px-6 py-3 bg-gradient-to-r from-[#FF8C42] to-[#F97316] text-white rounded-lg font-bold hover:from-[#F97316] hover:to-[#FF8C42] transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-bold hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving Changes...
+                Saving
               </>
             ) : (
               <>
@@ -357,5 +329,3 @@ function EditFarmModal({ isOpen, onClose, farmData, onFarmUpdated }) {
     </div>
   );
 }
-
-export default EditFarmModal;

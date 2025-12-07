@@ -11,25 +11,36 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
+export default function ToggleFarmStatusModal({
+  isOpen,
+  onClose,
+  farmData,
+  onStatusToggled,
+}) {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
-      }
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) onClose();
     };
-    document.addEventListener("mousedown", handleClickOutside);
+    if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsLoading(false);
+      setAlert({ type: "", message: "" });
+    }
+  }, [isOpen]);
 
   const handleToggleStatus = async () => {
     if (!farmData) return;
-
     setIsLoading(true);
+    const isActive = farmData.status === "active";
+
     try {
       const response = await fetch(
         `https://papaiaapi.onrender.com/api/owner/farm/status/${farmData.id}`,
@@ -45,43 +56,28 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        if (window.clearFarmCache) {
-          window.clearFarmCache();
-        }
-
-        if (window.refreshActivities) {
-          window.refreshActivities();
-        }
-
-        if (onStatusToggled) {
-          onStatusToggled(data.newStatus);
-        }
-        onClose();
+        const successMsg = isActive
+          ? "Farm Deactivated Successfully!"
+          : "Farm Reactivated Successfully!";
+        setAlert({ type: "success", message: successMsg });
+        if (window.clearFarmCache) window.clearFarmCache();
+        if (window.refreshActivities) window.refreshActivities();
+        if (onStatusToggled) onStatusToggled(data.newStatus);
+        setTimeout(() => onClose(), 1000);
       } else {
         throw new Error(data.message || "Failed to toggle farm status");
       }
     } catch (error) {
-      setAlert({
-        type: "error",
-        message: `Failed to toggle farm status: ${error.message}`,
-      });
+      setAlert({ type: "error", message: error.message });
+      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      setIsLoading(false);
-      setAlert({ type: "", message: "" });
-    }
-  }, [isOpen]);
-
   if (!isOpen || !farmData) return null;
-
   const isActive = farmData.status === "active";
   const actionText = isActive ? "Deactivate" : "Reactivate";
-  const actionColor = isActive ? "red" : "green";
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -89,7 +85,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
       >
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] rounded-t-2xl p-6 relative">
+        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-2xl p-5 relative">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
               {isActive ? (
@@ -103,9 +99,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                 {actionText} Farm
               </h2>
               <p className="text-white/90 text-sm">
-                {isActive
-                  ? "Temporarily disable this farm"
-                  : "Enable this farm"}
+                {isActive ? "Temporarily disable farm" : "Enable this farm"}
               </p>
             </div>
           </div>
@@ -119,19 +113,21 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
         </div>
 
         <div className="overflow-y-auto flex-1">
-          <div className="p-6 space-y-5">
-            {alert.message && (
+          {alert.message && (
+            <div className="mx-5 mt-5">
               <div
                 className={`p-3 rounded-lg ${
                   alert.type === "error"
-                    ? "bg-red-50 text-red-800"
-                    : "bg-green-50 text-green-800"
+                    ? "bg-red-50 text-red-800 border border-red-200"
+                    : "bg-green-50 text-green-800 border border-green-200"
                 }`}
               >
                 <p className="text-sm font-medium">{alert.message}</p>
               </div>
-            )}
+            </div>
+          )}
 
+          <div className="p-5 space-y-5">
             <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
               <div className="flex items-start gap-3">
                 <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
@@ -144,7 +140,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                   <div className="flex items-center gap-1.5 text-gray-600 text-sm mb-2">
                     <MapPin className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
                     <span className="truncate">
-                      {farmData.location || "No location specified"}
+                      {farmData.location || "No location"}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -189,9 +185,8 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                 ) : (
                   <CheckCircle className="w-5 h-5 text-green-600" />
                 )}
-                What happens when you {actionText.toLowerCase()}?
+                What happens?
               </h4>
-
               <ul
                 className={`space-y-2 text-sm ${
                   isActive ? "text-amber-800" : "text-green-800"
@@ -209,7 +204,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-0.5">•</span>
-                      <span>Data and analytics preserved</span>
+                      <span>Data preserved and accessible</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-amber-500 mt-0.5">•</span>
@@ -238,21 +233,12 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                 )}
               </ul>
             </div>
-
-            <div className="text-center bg-gray-50 rounded-xl p-4 border-2 border-gray-200">
-              <p className="text-gray-900 font-bold text-base mb-1">
-                {actionText} this farm?
-              </p>
-              <p className="text-sm text-gray-600">
-                This action can be reversed anytime.
-              </p>
-            </div>
           </div>
 
-          <div className="p-6 border-t-2 border-gray-100 flex flex-col sm:flex-row gap-3">
+          <div className="p-5 border-t-2 border-gray-100 flex gap-3">
             <button
               onClick={onClose}
-              className="flex-1 px-6 py-3 border-2 border-gray-300 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+              className="flex-1 px-5 py-2.5 border-2 border-gray-300 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"
               disabled={isLoading}
             >
               Cancel
@@ -260,8 +246,8 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
             <button
               onClick={handleToggleStatus}
               disabled={isLoading}
-              className={`flex-1 px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95 ${
-                actionColor === "red"
+              className={`flex-1 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:scale-95 ${
+                isActive
                   ? "bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700"
                   : "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700"
               }`}
@@ -269,7 +255,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
+                  {isActive ? "Deactivating" : "Reactivating"}
                 </>
               ) : (
                 <>
@@ -278,7 +264,7 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
                   ) : (
                     <ToggleRight className="w-5 h-5" />
                   )}
-                  {actionText} Farm
+                  {actionText}
                 </>
               )}
             </button>
@@ -288,5 +274,3 @@ function ToggleFarmStatusModal({ isOpen, onClose, farmData, onStatusToggled }) {
     </div>
   );
 }
-
-export default ToggleFarmStatusModal;

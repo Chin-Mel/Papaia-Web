@@ -1,46 +1,46 @@
-import {
-  X,
-  User,
-  Phone,
-  CheckCircle,
-  RotateCcw,
-  Calendar,
-  Trash2,
-} from "lucide-react";
+import { X, User, Phone, CheckCircle, RotateCcw, Trash2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import defaultUserPic from "../../assets/default-user.png";
 
-function FarmerDetailModal({
+export default function FarmerDetailModal({
   isOpen,
   onClose,
   onRestoreFarmer,
   onRemoveFarmer,
   farmer,
 }) {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
+        onClose();
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !farmer) return null;
 
-  const fullName = [
-    farmer.firstname || farmer.firstName || "",
-    farmer.middlename || farmer.middleName || "",
-    farmer.lastname || farmer.lastName || "",
-    farmer.suffix || "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+  const firstName = farmer.firstname || farmer.firstName || "";
+  const lastName = farmer.lastname || farmer.lastName || "";
+  const fullName = [firstName, lastName].filter(Boolean).join(" ") || "N/A";
 
   const isArchived =
     farmer.isArchived || farmer.status?.toLowerCase() === "archived";
 
-  const modalRef = useRef(null);
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [onClose]);
+  // Build address only if we have address components
+  const addressParts = [
+    farmer.street,
+    farmer.barangay,
+    farmer.municipality,
+    farmer.province,
+  ].filter(Boolean);
+  const hasAddress = addressParts.length > 0;
+  const fullAddress = hasAddress ? addressParts.join(", ") : "";
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -66,12 +66,10 @@ function FarmerDetailModal({
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">
-                {isArchived ? "Archived Farmer Details" : "Farmer Details"}
+                {isArchived ? "Archived Farmer" : "Farmer Details"}
               </h2>
               <p className="text-white/90 text-sm">
-                {isArchived
-                  ? "This farmer has been archived"
-                  : "Complete farmer profile information"}
+                {isArchived ? "This farmer is archived" : "View profile"}
               </p>
             </div>
           </div>
@@ -121,7 +119,7 @@ function FarmerDetailModal({
                   isArchived ? "text-gray-600" : "text-gray-900"
                 }`}
               >
-                {fullName || "N/A"}
+                {fullName}
               </h3>
               <p
                 className={`text-sm mb-2 ${
@@ -149,12 +147,7 @@ function FarmerDetailModal({
                     isArchived ? "bg-red-500" : "bg-green-500"
                   }`}
                 ></div>
-                {isArchived
-                  ? "Archived"
-                  : farmer.status
-                  ? farmer.status.charAt(0).toUpperCase() +
-                    farmer.status.slice(1)
-                  : "Active"}
+                {isArchived ? "Archived" : "Active"}
               </span>
             </div>
           </div>
@@ -176,7 +169,7 @@ function FarmerDetailModal({
               </h4>
             </div>
 
-            {/* First Name and Middle Name */}
+            {/* Name Fields */}
             <div className="grid grid-cols-2 gap-3">
               <div
                 className={`p-3 rounded-xl border ${
@@ -197,35 +190,9 @@ function FarmerDetailModal({
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
-                  {farmer.firstname || farmer.firstName || "N/A"}
+                  {firstName || "N/A"}
                 </p>
               </div>
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <p
-                  className={`text-xs font-medium mb-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Middle Name
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {farmer.middlename || farmer.middleName || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Last Name and Suffix */}
-            <div className="grid grid-cols-2 gap-3">
               <div
                 className={`p-3 rounded-xl border ${
                   isArchived
@@ -245,9 +212,38 @@ function FarmerDetailModal({
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
-                  {farmer.lastname || farmer.lastName || "N/A"}
+                  {lastName || "N/A"}
                 </p>
               </div>
+            </div>
+
+            {/* Contact Number */}
+            <div
+              className={`p-3 rounded-xl border ${
+                isArchived
+                  ? "bg-gray-100 border-gray-300"
+                  : "bg-gray-50 border-gray-200"
+              }`}
+            >
+              <p
+                className={`text-xs font-medium mb-1 flex items-center gap-1 ${
+                  isArchived ? "text-gray-400" : "text-gray-500"
+                }`}
+              >
+                <Phone className="w-3 h-3" />
+                Contact Number
+              </p>
+              <p
+                className={`font-semibold ${
+                  isArchived ? "text-gray-600" : "text-gray-900"
+                }`}
+              >
+                {farmer.contactNumber || "N/A"}
+              </p>
+            </div>
+
+            {/* Address - Only display if available */}
+            {hasAddress && (
               <div
                 className={`p-3 rounded-xl border ${
                   isArchived
@@ -260,111 +256,25 @@ function FarmerDetailModal({
                     isArchived ? "text-gray-400" : "text-gray-500"
                   }`}
                 >
-                  Suffix
+                  Address
                 </p>
                 <p
                   className={`font-semibold ${
                     isArchived ? "text-gray-600" : "text-gray-900"
                   }`}
                 >
-                  {farmer.suffix || "N/A"}
+                  {fullAddress}
                 </p>
               </div>
-            </div>
-
-            {/* Contact Number and Birth Date */}
-            <div className="grid grid-cols-2 gap-3">
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <p
-                  className={`text-xs font-medium mb-1 flex items-center gap-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  <Phone className="w-3 h-3" />
-                  Contact Number
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {farmer.contactNumber || "N/A"}
-                </p>
-              </div>
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <p
-                  className={`text-xs font-medium mb-1 flex items-center gap-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  <Calendar className="w-3 h-3" />
-                  Birth Date
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {farmer.birthDate || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Address - Full width */}
-            <div
-              className={`p-3 rounded-xl border ${
-                isArchived
-                  ? "bg-gray-100 border-gray-300"
-                  : "bg-gray-50 border-gray-200"
-              }`}
-            >
-              <p
-                className={`text-xs font-medium mb-1 ${
-                  isArchived ? "text-gray-400" : "text-gray-500"
-                }`}
-              >
-                Address
-              </p>
-              <p
-                className={`font-semibold ${
-                  isArchived ? "text-gray-600" : "text-gray-900"
-                }`}
-              >
-                {(() => {
-                  const addressParts = [
-                    farmer.street,
-                    farmer.barangay,
-                    farmer.municipality,
-                    farmer.province,
-                    farmer.zipcode || farmer.zipCode,
-                  ].filter(Boolean);
-
-                  return addressParts.length > 0
-                    ? addressParts.join(", ")
-                    : "N/A";
-                })()}
-              </p>
-            </div>
+            )}
           </div>
 
-          {/* Action Button - Restore for archived, Remove for active */}
+          {/* Action Button */}
           <div className="mt-6">
             {isArchived ? (
               <button
                 onClick={onRestoreFarmer}
-                className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 <RotateCcw className="w-4 h-4" />
                 Restore Farmer
@@ -372,7 +282,7 @@ function FarmerDetailModal({
             ) : (
               <button
                 onClick={onRemoveFarmer}
-                className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg hover:shadow-xl active:scale-95 flex items-center justify-center gap-2"
+                className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex items-center justify-center gap-2"
               >
                 <Trash2 className="w-4 h-4" />
                 Remove Farmer
@@ -384,5 +294,3 @@ function FarmerDetailModal({
     </div>
   );
 }
-
-export default FarmerDetailModal;

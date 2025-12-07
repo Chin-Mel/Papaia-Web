@@ -1,4 +1,4 @@
-import { X, Calendar, User, MapPin, AlertCircle } from "lucide-react";
+import { X, Calendar, User, AlertCircle } from "lucide-react";
 import { useEffect, useRef } from "react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
@@ -6,8 +6,8 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
   const modalRef = useRef(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (modalRef.current && !modalRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (modalRef.current && !modalRef.current.contains(e.target)) {
         onClose();
       }
     };
@@ -55,6 +55,70 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
 
   const cardStyle = getCardStyle(scan.prediction);
 
+  const formatDateTime = (timestamp) => {
+    try {
+      if (!timestamp) return { date: "", time: "" };
+
+      // Handle both Date objects and string timestamps
+      const date = new Date(timestamp);
+
+      // Check if valid date
+      if (isNaN(date.getTime())) {
+        // Fallback: try parsing custom format "MM/DD/YYYY HH:MM AM/PM"
+        const parts = timestamp.trim().split(/\s+/);
+        if (parts.length === 3) {
+          const [datePart, timePart, period] = parts;
+          const [month, day, year] = datePart.split("/");
+          const [hours, minutes] = timePart.split(":");
+          let hour24 = parseInt(hours);
+          if (period === "PM" && hour24 !== 12) hour24 += 12;
+          if (period === "AM" && hour24 === 12) hour24 = 0;
+
+          const monthNames = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ];
+
+          return {
+            date: `${monthNames[parseInt(month) - 1]} ${parseInt(
+              day
+            )}, ${year}`,
+            time: `${timePart} ${period}`,
+          };
+        }
+        return { date: timestamp, time: "" };
+      }
+
+      const dateStr = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      const timeStr = date.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+      return { date: dateStr, time: timeStr };
+    } catch {
+      return { date: timestamp, time: "" };
+    }
+  };
+
+  const { date, time } = formatDateTime(scan.timestamp);
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
@@ -92,10 +156,9 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
               alt="Scan"
               className="w-full h-64 object-cover rounded-lg border-2 border-gray-200"
               onError={(e) => {
-                e.target.src = "";
-                e.target.alt = "Image not available";
-                e.target.className =
-                  "w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400";
+                e.target.onerror = null;
+                e.target.src =
+                  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='256'%3E%3Crect fill='%23e5e7eb' width='800' height='256'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='16'%3EImage not available%3C/text%3E%3C/svg%3E";
               }}
             />
           </div>
@@ -164,19 +227,8 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                 </label>
               </div>
               <p className="text-sm font-medium text-gray-800">
-                {new Date(scan.timestamp).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}{" "}
-                <span className="text-gray-600">
-                  at{" "}
-                  {new Date(scan.timestamp).toLocaleTimeString("en-US", {
-                    hour: "numeric",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
-                </span>
+                {date}{" "}
+                {time && <span className="text-gray-600">at {time}</span>}
               </p>
             </div>
           </div>
@@ -193,7 +245,6 @@ export default function ScanDetailModal({ isOpen, onClose, scan, farmerName }) {
                     const trimmedLine = line.trim();
                     if (!trimmedLine) return null;
 
-                    // Check if line starts with bullet point
                     if (trimmedLine.startsWith("*")) {
                       return (
                         <p
