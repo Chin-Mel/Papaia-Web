@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X, User, UserMinus, Loader2 } from "lucide-react";
-import realtimeSync from "../utils/RealtimeSync";
+import realtimeSync from "../../utils/realtimeSync";
 
 export default function RemoveFarmerModal({
   isOpen,

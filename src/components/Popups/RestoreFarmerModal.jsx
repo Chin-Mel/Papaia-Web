@@ -1,6 +1,6 @@
 import { X, UserPlus, Loader2, RotateCcw } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
-import realtimeSync from "../utils/RealtimeSync";
+import realtimeSync from "../../utils/realtimeSync";
 
 export default function RestoreFarmerModal({
   isOpen,
