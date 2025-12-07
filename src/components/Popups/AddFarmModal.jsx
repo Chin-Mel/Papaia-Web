@@ -32,6 +32,9 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (touched[field]) {
+      setTouched((prev) => ({ ...prev, [field]: false }));
+    }
   };
 
   const handleBlur = (field) => {
@@ -42,6 +45,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
+        alert("Image exceeds 10 MB");
         return;
       }
 
@@ -59,6 +63,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     });
 
     if (!formData.farmName.trim() || !formData.location.trim()) {
+      alert("Please fill in all required fields.");
       return;
     }
 
@@ -67,12 +72,13 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     const farmData = {
       name: formData.farmName,
       location: formData.location,
-      description: formData.description,
+      description: formData.description || "No farm description",
       farmImage: formData.farmImage,
     };
 
     try {
       await onSubmit(farmData);
+      alert("Farm Added Successfully!");
       setFormData({
         farmName: "",
         location: "",
@@ -84,7 +90,9 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         farmName: false,
         location: false,
       });
-    } catch {
+      onClose();
+    } catch (error) {
+      alert(error.message || "Failed to add farm. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -103,9 +111,9 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
   const getInputBorderClass = (field) => {
     if (isFieldInvalid(field)) {
-      return "border-red-500 focus:ring-red-400";
+      return "border-red-500 border-2 focus:ring-red-400";
     }
-    return "border-gray-300 focus:ring-orange-400";
+    return "border-gray-300 focus:border-orange-500 focus:border-2 focus:ring-orange-400";
   };
 
   if (!isOpen) return null;
@@ -114,7 +122,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
         <div className="bg-gradient-to-r from-green-700 to-orange-500 p-5 flex items-center gap-3 relative">
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
@@ -142,57 +150,51 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
         <div className="overflow-y-auto flex-1">
           <div className="p-6 space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                Farm Name
-                <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.farmName}
-                onChange={(e) => handleInputChange("farmName", e.target.value)}
-                onBlur={() => handleBlur("farmName")}
-                onKeyPress={handleKeyPress}
-                placeholder="Enter your farm name"
-                disabled={loading}
-                className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                  "farmName"
-                )}`}
-              />
-              {isFieldInvalid("farmName") && (
-                <p className="text-xs text-red-500 mt-1">
-                  Farm name is required
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                Location/Address
-                <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Farm Name
+                  <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="text"
-                  value={formData.location}
+                  value={formData.farmName}
                   onChange={(e) =>
-                    handleInputChange("location", e.target.value)
+                    handleInputChange("farmName", e.target.value)
                   }
-                  onBlur={() => handleBlur("location")}
+                  onBlur={() => handleBlur("farmName")}
                   onKeyPress={handleKeyPress}
-                  placeholder="Enter farm address or location"
+                  placeholder="Enter your farm name"
                   disabled={loading}
-                  className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                    "location"
+                  className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                    "farmName"
                   )}`}
                 />
               </div>
-              {isFieldInvalid("location") && (
-                <p className="text-xs text-red-500 mt-1">
-                  Location is required
-                </p>
-              )}
+
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Location/Address
+                  <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
+                  <input
+                    type="text"
+                    value={formData.location}
+                    onChange={(e) =>
+                      handleInputChange("location", e.target.value)
+                    }
+                    onBlur={() => handleBlur("location")}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Enter farm location"
+                    disabled={loading}
+                    className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                      "location"
+                    )}`}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -260,7 +262,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
                 rows={4}
                 disabled={loading}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
+                className="w-full px-4 py-2.5 border border-gray-300 focus:border-orange-500 focus:border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
               />
             </div>
           </div>
@@ -282,8 +284,17 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               disabled={loading}
               className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Plus className="w-4 h-4" />
-              {loading ? "Adding..." : "Add Farm"}
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  Add Farm
+                </>
+              )}
             </button>
           </div>
         </div>

@@ -13,7 +13,6 @@ export default function ScanDetailsPage() {
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
   const [farmerDetails, setFarmerDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function ScanDetailsPage() {
     }
 
     if (!scanId) {
-      setLoading(false);
       return;
     }
 
@@ -45,7 +43,6 @@ export default function ScanDetailsPage() {
           setScanDetails(cached.scan);
           setFarmDetails(cached.farm);
           setFarmerDetails(cached.farmer);
-          setLoading(false);
           return;
         }
 
@@ -73,7 +70,6 @@ export default function ScanDetailsPage() {
         clearTimeout(timeoutId);
 
         if (!historyRes.ok) {
-          setLoading(false);
           return;
         }
 
@@ -83,7 +79,6 @@ export default function ScanDetailsPage() {
           : scanData;
 
         if (!specificScan) {
-          setLoading(false);
           return;
         }
 
@@ -139,10 +134,7 @@ export default function ScanDetailsPage() {
           farmer,
           timestamp: Date.now(),
         });
-        setLoading(false);
-      } catch {
-        setLoading(false);
-      }
+      } catch {}
     };
 
     fetchScanDetails();
@@ -309,21 +301,6 @@ export default function ScanDetailsPage() {
       .map((line) => line.replace(/^\*\s*/, "").trim())
       .filter((line) => line.length > 0);
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <HeaderMain />
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <div className="text-gray-500">Loading scan details...</div>
-          </div>
-        </div>
-        <FooterMain />
-      </div>
-    );
-  }
 
   if (!scanDetails) {
     return (

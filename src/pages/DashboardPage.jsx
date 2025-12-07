@@ -10,6 +10,7 @@ import ScansCount from "../assets/ic_todays_scan.png";
 import FarmersCount from "../assets/ic_all_farmers.png";
 import FarmsCount from "../assets/ic_all_farms.png";
 import MainBackground from "../assets/MainBackground.png";
+import DefaultFarmImage from "../assets/default-farm-image.png";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const cache = new Map();
@@ -111,7 +112,7 @@ const FarmCard = ({ farm, isMobile }) => {
     >
       <div className="relative">
         <img
-          src={imageError ? MainBackground : farm.img}
+          src={imageError ? DefaultFarmImage : farm.img}
           alt={farm.name}
           className={`w-full ${
             isMobile ? "h-28 sm:h-36" : "h-40"
@@ -178,13 +179,12 @@ export default function DashboardPage() {
   const { showAlert } = useAlert();
   const [showAddFarmModal, setShowAddFarmModal] = useState(false);
   const [farms, setFarms] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [isAddingFarm, setIsAddingFarm] = useState(false);
   const [dashboardStats, setDashboardStats] = useState({
     totalFarmers: 0,
     totalFarms: 0,
     todayScans: 0,
   });
-  const wsRef = useRef(null);
   const pollIntervalRef = useRef(null);
 
   const fetchDashboardStats = useCallback(async () => {
@@ -234,30 +234,28 @@ export default function DashboardPage() {
 
   const fetchFarms = useCallback(async () => {
     try {
-      setLoading(true);
       const data = await cachedFetch(`${API_BASE}/farms`, "owner_farms", 30000);
 
       if (data.status === "success" && Array.isArray(data.farms)) {
         const mappedFarms = data.farms.map((f) => ({
           id: f.id,
           name: f.farmName || "Unnamed Farm",
-          desc:
-            f.description ||
-            `Farm located in ${f.location || "Unknown location"}`,
+          desc: f.description || "No farm description",
           location: f.location || "Unknown",
           health: "0.00%",
           hasScans: false,
           img:
             f.farmImage && f.farmImage.startsWith("http")
               ? f.farmImage
-              : MainBackground,
+              : DefaultFarmImage,
           isActive: f.status === "active",
+          createdAt: f.createdAt || new Date().toISOString(),
         }));
 
         const sortedFarms = mappedFarms.sort((a, b) => {
           if (a.isActive && !b.isActive) return -1;
           if (!a.isActive && b.isActive) return 1;
-          return parseFloat(b.health) - parseFloat(a.health);
+          return new Date(b.createdAt) - new Date(a.createdAt);
         });
 
         setFarms(sortedFarms);
@@ -281,8 +279,6 @@ export default function DashboardPage() {
       }
     } catch {
       setFarms([]);
-    } finally {
-      setLoading(false);
     }
   }, [fetchFarmHealth]);
 
@@ -314,15 +310,17 @@ export default function DashboardPage() {
 
   const handleAddFarm = async (farmData) => {
     try {
-      setLoading(true);
+      setIsAddingFarm(true);
       const formData = new FormData();
       formData.append("farmName", farmData.name);
       formData.append("location", farmData.location);
       formData.append(
         "description",
-        farmData.description || "No description provided"
+        farmData.description || "No farm description"
       );
-      if (farmData.farmImage) formData.append("farmImage", farmData.farmImage);
+      if (farmData.farmImage) {
+        formData.append("farmImage", farmData.farmImage);
+      }
 
       const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE}/farm`, {
@@ -337,12 +335,13 @@ export default function DashboardPage() {
         cache.delete("farm_count");
         await Promise.all([fetchFarms(), fetchDashboardStats()]);
         if (window.refreshActivities) window.refreshActivities();
-        setShowAddFarmModal(false);
-        showAlert("Farm added successfully!", "success");
+      } else {
+        throw new Error(data.message || "Failed to add farm");
       }
-    } catch {
+    } catch (error) {
+      throw error;
     } finally {
-      setLoading(false);
+      setIsAddingFarm(false);
     }
   };
 
@@ -372,22 +371,8 @@ export default function DashboardPage() {
       <HeaderMain />
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
+          {/* Mobile Layout */}
           <div className="block lg:hidden">
-            <div className="mb-4">
-              <h2 className="text-base sm:text-lg font-bold text-slate-800 mb-3">
-                Dashboard Overview
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {stats.map((stat, idx) => (
-                  <div
-                    key={stat.title}
-                    className={idx === 2 ? "sm:col-span-2" : ""}
-                  >
-                    <StatCard {...stat} />
-                  </div>
-                ))}
-              </div>
-            </div>
             <div className="mb-4">
               <RecentActivities limit={5} />
             </div>
@@ -398,85 +383,62 @@ export default function DashboardPage() {
                 </h2>
                 <button
                   onClick={() => setShowAddFarmModal(true)}
-                  disabled={loading}
+                  disabled={isAddingFarm}
                   className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-3 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
                 >
                   <Plus size={16} />
-                  {loading ? "Loading..." : "Add Farm"}
+                  Add Farm
                 </button>
               </div>
-              {loading && farms.length === 0 ? (
-                <div className="flex justify-center items-center py-12">
-                  <div className="animate-spin rounded-full h-10 w-10 border-3 border-slate-200 border-t-slate-600"></div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {farms.length === 0 ? (
-                    <div className="col-span-1 sm:col-span-2 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
-                      <Leaf className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                      <p className="text-slate-600 font-medium">No farms yet</p>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Click "Add Farm" to get started!
-                      </p>
-                    </div>
-                  ) : (
-                    farms.map((farm) => (
-                      <FarmCard key={farm.id} farm={farm} isMobile />
-                    ))
-                  )}
-                </div>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {farms.length === 0 ? (
+                  <div className="col-span-1 sm:col-span-2 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-8 text-center">
+                    <Leaf className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                    <p className="text-slate-600 font-medium">
+                      Add your first farm to get started
+                    </p>
+                  </div>
+                ) : (
+                  farms.map((farm) => (
+                    <FarmCard key={farm.id} farm={farm} isMobile />
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Desktop Layout */}
           <div className="hidden lg:flex gap-6">
             <div className="w-[330px] flex-shrink-0">
               <RecentActivities limit={5} />
             </div>
             <div className="flex-1">
-              <h2 className="text-lg font-bold text-slate-800 mb-4">
-                Dashboard Overview
-              </h2>
-              <div className="grid grid-cols-3 gap-5 mb-6">
-                {stats.map((stat) => (
-                  <StatCard key={stat.title} {...stat} />
-                ))}
-              </div>
               <div>
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-lg font-bold text-slate-800">My Farms</h2>
                   <button
                     onClick={() => setShowAddFarmModal(true)}
-                    disabled={loading}
+                    disabled={isAddingFarm}
                     className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-semibold shadow-lg shadow-orange-500/30 hover:shadow-xl transition-all active:scale-95 disabled:opacity-50"
                   >
                     <Plus size={16} />
-                    {loading ? "Loading..." : "Add Farm"}
+                    Add Farm
                   </button>
                 </div>
-                {loading && farms.length === 0 ? (
-                  <div className="flex justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-3 border-slate-200 border-t-slate-600"></div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-4">
-                    {farms.length === 0 ? (
-                      <div className="col-span-3 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
-                        <Leaf className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-                        <p className="text-lg text-slate-600 font-medium">
-                          No farms yet
-                        </p>
-                        <p className="text-slate-500 mt-2">
-                          Click "Add Farm" to get started!
-                        </p>
-                      </div>
-                    ) : (
-                      farms.map((farm) => (
-                        <FarmCard key={farm.id} farm={farm} isMobile={false} />
-                      ))
-                    )}
-                  </div>
-                )}
+                <div className="grid grid-cols-3 gap-4">
+                  {farms.length === 0 ? (
+                    <div className="col-span-3 bg-white/80 backdrop-blur-sm border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
+                      <Leaf className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                      <p className="text-lg text-slate-600 font-medium">
+                        Add your first farm to get started
+                      </p>
+                    </div>
+                  ) : (
+                    farms.map((farm) => (
+                      <FarmCard key={farm.id} farm={farm} isMobile={false} />
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           </div>

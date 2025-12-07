@@ -59,7 +59,6 @@ window.refreshActivities = () => {
 
 export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
   const fetchedRef = useRef(false);
   const mountedRef = useRef(true);
 
@@ -257,7 +256,6 @@ export default function RecentActivities({ limit = 5 }) {
               setActivities(
                 processed.length ? [...processed, ...fallback] : fallback
               );
-              setLoading(false);
             }
             return;
           }
@@ -267,7 +265,6 @@ export default function RecentActivities({ limit = 5 }) {
         if (!token) {
           if (mountedRef.current) {
             setActivities(getFallbackActivity());
-            setLoading(false);
           }
           return;
         }
@@ -286,7 +283,6 @@ export default function RecentActivities({ limit = 5 }) {
         if (!res.ok) {
           if (mountedRef.current) {
             setActivities(getFallbackActivity());
-            setLoading(false);
           }
           return;
         }
@@ -322,10 +318,6 @@ export default function RecentActivities({ limit = 5 }) {
         if (mountedRef.current) {
           setActivities(getFallbackActivity());
         }
-      } finally {
-        if (mountedRef.current) {
-          setLoading(false);
-        }
       }
     },
     [limit, formatTime, getActivityStyle, getFallbackActivity]
@@ -350,22 +342,6 @@ export default function RecentActivities({ limit = 5 }) {
       mountedRef.current = false;
     };
   }, []);
-
-  if (loading && activities.length === 0) {
-    return (
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-slate-200/50 p-4 sm:p-6 w-full border border-slate-200/60">
-        <div className="flex items-center gap-2 mb-4">
-          <ClockFading className="w-5 h-5 text-orange-600" />
-          <h2 className="text-base sm:text-lg font-bold text-slate-800">
-            Recent Activities
-          </h2>
-        </div>
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-10 w-10 border-3 border-slate-200 border-t-slate-600"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg shadow-slate-200/50 p-4 sm:p-6 w-full border border-slate-200/60">

@@ -44,27 +44,71 @@ const developers = [
   },
 ];
 
+const features = [
+  {
+    icon: CameraIcon,
+    title: "Disease Identification",
+    description:
+      "Simply scan your crops with your camera and get instant AI-powered disease identification with 95% accuracy",
+  },
+  {
+    icon: TrendingUpIcon,
+    title: "Smart Analytics",
+    description:
+      "Track crop health, monitor disease patterns, and access detailed analytics to optimize your farming strategy",
+  },
+  {
+    icon: ClipboardListIcon,
+    title: "Treatment Suggestions",
+    description:
+      "Receive personalized treatment recommendations from agricultural experts based on detected diseases",
+  },
+];
+
+const steps = [
+  {
+    number: 1,
+    title: "Capture",
+    description:
+      "Take a clear photo of the affected plant or leaf using your smartphone camera",
+  },
+  {
+    number: 2,
+    title: "Analyze",
+    description:
+      "Our AI instantly analyzes the image and identifies potential diseases or issues",
+  },
+  {
+    number: 3,
+    title: "Treat",
+    description:
+      "Receive detailed treatment recommendations and track your crop's recovery progress",
+  },
+];
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
 
       <main>
-        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-papaia-green to-papaia-green-dark overflow-hidden">
+        {/* Hero Section */}
+        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-[#00712D] to-[#004d1f] overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
               alt="Background plants"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover opacity-40"
+              loading="eager"
             />
           </div>
-          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
+              <div className="w-full max-w-4xl mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8 md:p-12">
                 <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                   About Papaia
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
                   Revolutionizing agriculture through intelligent crop disease
                   detection and smart farming solutions
                 </p>
@@ -73,13 +117,14 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* System Overview */}
         <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 System Overview
               </h2>
-              <p className="text-base sm:text-lg md:text-lg text-papaia-text-secondary leading-relaxed">
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
                 Papaia is your intelligent agricultural companion, designed to
                 help farmers and gardeners identify plant diseases, optimize
                 crop health, and make informed farming decisions using advanced
@@ -89,43 +134,46 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Vision & Mission */}
         <section className="py-12 sm:py-16 bg-gray-50">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
-              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#94C522]/10 flex items-center justify-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                     <img
                       src={EyeIcon}
                       alt="Vision"
-                      className="w-5 sm:w-7 h-5 sm:h-6"
+                      className="w-6 sm:w-7 h-6 sm:h-7"
+                      loading="lazy"
                     />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
                     Our Vision
                   </h3>
                 </div>
-                <p className="text-papaia-text-secondary leading-relaxed text-sm sm:text-base">
+                <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
                   To revolutionize agriculture through accessible AI technology,
                   empowering every farmer with the tools to achieve sustainable
                   and productive farming practices.
                 </p>
               </div>
 
-              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
+              <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-shadow">
                 <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#16A34A]/10 flex items-center justify-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                     <img
                       src={TargetIcon}
                       alt="Mission"
-                      className="w-5 sm:w-6 h-5 sm:h-6"
+                      className="w-6 sm:w-7 h-6 sm:h-7"
+                      loading="lazy"
                     />
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900">
                     Our Mission
                   </h3>
                 </div>
-                <p className="text-papaia-text-secondary leading-relaxed text-sm sm:text-base">
+                <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
                   To provide intelligent plant disease detection and
                   agricultural guidance, helping farmers increase yields while
                   promoting environmentally conscious farming methods.
@@ -135,49 +183,38 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* Key Features */}
         <section className="py-12 sm:py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Key Features
               </h2>
-              <p className="text-base sm:text-lg text-papaia-text-secondary">
+              <p className="text-base sm:text-lg text-gray-600">
                 Discover the powerful tools that make Papaia the perfect farming
                 companion
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-              {[
-                {
-                  icon: CameraIcon,
-                  title: "Disease Identification",
-                  text: "Simply scan your crops with your camera and get instant AI-powered disease identification with 95% accuracy",
-                },
-                {
-                  icon: TrendingUpIcon,
-                  title: "Smart Analytics",
-                  text: "Track crop health, monitor disease patterns, and access detailed analytics to optimize your farming strategy",
-                },
-                {
-                  icon: ClipboardListIcon,
-                  title: "Treatment Suggestions",
-                  text: "Receive personalized treatment recommendations from agricultural experts based on detected diseases",
-                },
-              ].map((feat, i) => (
-                <div key={i} className="text-center p-4 sm:p-6">
-                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-4 sm:mb-6">
+              {features.map((feature, index) => (
+                <div
+                  key={index}
+                  className="text-center p-4 sm:p-6 hover:transform hover:scale-105 transition-transform"
+                >
+                  <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 sm:mb-6">
                     <img
-                      src={feat.icon}
-                      alt={feat.title}
-                      className="w-5 sm:w-8 h-5 sm:h-8"
+                      src={feature.icon}
+                      alt={feature.title}
+                      className="w-8 sm:w-10 h-8 sm:h-10"
+                      loading="lazy"
                     />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-papaia-text-primary mb-2 sm:mb-4">
-                    {feat.title}
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2 sm:mb-4">
+                    {feature.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
-                    {feat.text}
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    {feature.description}
                   </p>
                 </div>
               ))}
@@ -185,39 +222,31 @@ export default function AboutPage() {
           </div>
         </section>
 
+        {/* How to Use */}
         <section className="py-12 sm:py-16 bg-gray-50">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12 sm:mb-16">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-papaia-text-primary mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 How to Use the App
               </h2>
-              <p className="text-base sm:text-lg text-papaia-text-secondary">
+              <p className="text-base sm:text-lg text-gray-600">
                 Get started in just three simple steps
               </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12">
-              {["Capture", "Analyze", "Treat"].map((step, index) => (
+              {steps.map((step, index) => (
                 <div key={index} className="text-center">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-6">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-orange-500 flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <span className="text-2xl sm:text-3xl font-bold text-white">
-                      {index + 1}
+                      {step.number}
                     </span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-papaia-text-primary mb-4">
-                    {step}
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                    {step.title}
                   </h3>
-                  <p className="text-sm sm:text-base text-papaia-text-secondary leading-relaxed">
-                    {
-                      {
-                        Capture:
-                          "Take a clear photo of the affected plant or leaf using your smartphone camera",
-                        Analyze:
-                          "Our AI instantly analyzes the image and identifies potential diseases or issues",
-                        Treat:
-                          "Receive detailed treatment recommendations and track your crop's recovery progress",
-                      }[step]
-                    }
+                  <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    {step.description}
                   </p>
                 </div>
               ))}
@@ -225,31 +254,38 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="py-16 bg-white">
-          <div className="max-w-[1440px] mx-auto px-20">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold text-papaia-text-primary mb-4">
+        {/* Meet the Developers */}
+        <section className="py-12 sm:py-16 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+            <div className="text-center mb-12 sm:mb-16">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                 Meet the Developers
               </h2>
-              <p className="text-lg text-papaia-text-secondary">
+              <p className="text-base sm:text-lg text-gray-600">
                 The passionate team behind Papaia
               </p>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-8">
-              {developers.map((dev, index) => (
-                <div key={index} className="text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+              {developers.map((developer, index) => (
+                <div
+                  key={index}
+                  className="text-center hover:transform hover:scale-105 transition-transform"
+                >
                   <img
-                    src={dev.image}
-                    alt={dev.name}
-                    className="w-32 h-32 rounded-full object-cover mx-auto mb-6"
+                    src={developer.image}
+                    alt={developer.name}
+                    className="w-32 h-32 rounded-full object-cover mx-auto mb-6 border-4 border-gray-200 shadow-lg"
+                    loading="lazy"
                   />
-                  <h3 className="text-xl font-bold text-papaia-text-primary mb-2">
-                    {dev.name}
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+                    {developer.name}
                   </h3>
-                  <p className="text-[#FF8C42] font-medium mb-4">{dev.role}</p>
-                  <p className="text-sm text-papaia-text-secondary leading-relaxed">
-                    {dev.description}
+                  <p className="text-orange-500 font-medium mb-4">
+                    {developer.role}
+                  </p>
+                  <p className="text-sm text-gray-600 leading-relaxed px-2">
+                    {developer.description}
                   </p>
                 </div>
               ))}

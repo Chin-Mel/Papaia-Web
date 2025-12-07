@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
-import EyeIcon from "../assets/eye-icon.png";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
@@ -109,11 +108,9 @@ const ViewDetailsButton = ({ status, prediction, scanId, farmId }) => {
   return (
     <Link
       to={`/scan-history-details/${farmId}/${scanId}`}
-      className={`flex items-center gap-1 sm:gap-2 ${config.color} p-0 h-auto text-xs sm:text-sm font-medium transition-colors`}
+      className={`${config.color} text-xs sm:text-sm font-medium transition-colors hover:underline`}
     >
-      <img src={EyeIcon} alt="View" className="h-3 w-3 sm:h-4 sm:w-4" />
-      <span className="hidden sm:inline">View Details</span>
-      <span className="sm:hidden">View</span>
+      View Details
     </Link>
   );
 };
@@ -123,7 +120,6 @@ export default function ScanHistoryPage() {
   const [scanData, setScanData] = useState([]);
   const [farms, setFarms] = useState([]);
   const [allFarmers, setAllFarmers] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [allScans, setAllScans] = useState([]);
   const [filters, setFilters] = useState({
     dateRange: "All Time",
@@ -150,7 +146,6 @@ export default function ScanHistoryPage() {
       setFarms(cached.farms);
       setAllScans(cached.scans);
       setAllFarmers(cached.farmers);
-      setLoading(false);
       return;
     }
 
@@ -303,8 +298,6 @@ export default function ScanHistoryPage() {
         setAllScans([]);
         setAllFarmers([]);
       }
-    } finally {
-      setLoading(false);
     }
   }, [token]);
 
@@ -487,145 +480,37 @@ export default function ScanHistoryPage() {
                 options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
               />
 
-              <div className="flex flex-col space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700">
-                  Status
-                </label>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="status-all"
-                      name="status"
-                      checked={filters.status === "All Status"}
-                      onChange={() =>
-                        handleFilterChange("status", "All Status")
-                      }
-                      className="w-4 h-4"
-                    />
-                    <label htmlFor="status-all" className="text-xs sm:text-sm">
-                      All Status
-                    </label>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      id="status-healthy"
-                      name="status"
-                      checked={filters.status === "Healthy"}
-                      onChange={() => handleFilterChange("status", "Healthy")}
-                      className="w-4 h-4"
-                    />
-                    <label
-                      htmlFor="status-healthy"
-                      className="text-xs sm:text-sm"
-                    >
-                      Healthy
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        id="status-disease"
-                        name="status"
-                        checked={filters.status === "Disease Detected"}
-                        onChange={() =>
-                          handleFilterChange("status", "Disease Detected")
-                        }
-                        className="w-4 h-4"
-                      />
-                      <label
-                        htmlFor="status-disease"
-                        className="text-xs sm:text-sm"
-                      >
-                        Disease Detected
-                      </label>
-                    </div>
-                    {filters.status === "Disease Detected" && (
-                      <div className="ml-6 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id="disease-all"
-                            checked={!filters.diseaseType}
-                            onChange={() =>
-                              handleFilterChange("diseaseType", "")
-                            }
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="disease-all"
-                            className="text-xs sm:text-sm"
-                          >
-                            All Diseases
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id="disease-anthracnose"
-                            checked={filters.diseaseType === "Anthracnose"}
-                            onChange={(e) =>
-                              handleFilterChange(
-                                "diseaseType",
-                                e.target.checked ? "Anthracnose" : ""
-                              )
-                            }
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="disease-anthracnose"
-                            className="text-xs sm:text-sm"
-                          >
-                            Anthracnose
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id="disease-mildew"
-                            checked={filters.diseaseType === "Powdery Mildew"}
-                            onChange={(e) =>
-                              handleFilterChange(
-                                "diseaseType",
-                                e.target.checked ? "Powdery Mildew" : ""
-                              )
-                            }
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="disease-mildew"
-                            className="text-xs sm:text-sm"
-                          >
-                            Powdery Mildew
-                          </label>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="checkbox"
-                            id="disease-ring"
-                            checked={filters.diseaseType === "Ring Spot Virus"}
-                            onChange={(e) =>
-                              handleFilterChange(
-                                "diseaseType",
-                                e.target.checked ? "Ring Spot Virus" : ""
-                              )
-                            }
-                            className="w-4 h-4"
-                          />
-                          <label
-                            htmlFor="disease-ring"
-                            className="text-xs sm:text-sm"
-                          >
-                            Ring Spot Virus
-                          </label>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <FilterDropdown
+                label="Status"
+                value={
+                  filters.status === "Disease Detected" && filters.diseaseType
+                    ? filters.diseaseType
+                    : filters.status
+                }
+                onChange={(v) => {
+                  if (
+                    v === "Anthracnose" ||
+                    v === "Powdery Mildew" ||
+                    v === "Ring Spot Virus"
+                  ) {
+                    handleFilterChange("status", "Disease Detected");
+                    handleFilterChange("diseaseType", v);
+                  } else {
+                    handleFilterChange("status", v);
+                    if (v !== "Disease Detected") {
+                      handleFilterChange("diseaseType", "");
+                    }
+                  }
+                }}
+                options={[
+                  "All Status",
+                  "Healthy",
+                  "Disease Detected",
+                  "Anthracnose",
+                  "Powdery Mildew",
+                  "Ring Spot Virus",
+                ]}
+              />
 
               <FilterDropdown
                 label="Farmer Name"
@@ -661,15 +546,12 @@ export default function ScanHistoryPage() {
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-200">
-              {loading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-300 border-t-gray-600 mx-auto mb-2"></div>
-                  <div className="text-gray-500 text-sm">Loading scans...</div>
-                </div>
-              ) : scanData.length === 0 ? (
+              {scanData.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-gray-500 text-sm">
-                    {allScans.length === 0 ? "No scans yet" : "No scans found"}
+                    {allScans.length === 0
+                      ? "No scans yet"
+                      : "No results found"}
                   </div>
                 </div>
               ) : (
