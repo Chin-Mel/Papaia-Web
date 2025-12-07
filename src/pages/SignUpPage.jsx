@@ -1,10 +1,11 @@
-// SignUpPage.jsx - Updated Version with Modal Callbacks
+// SignUpPage.jsx - Updated with UserRoleModal
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
 import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
+import UserRoleModal from "../components/Popups/UserRoleModal";
 import MainBackground from "../assets/MainBackground.png";
 import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
 import UserIcon from "../assets/user-icon.png";
@@ -18,6 +19,10 @@ import { useAlert } from "../AlertContext";
 
 export default function SignUpPage() {
   const { showAlert } = useAlert();
+
+  // Role selection state
+  const [showRoleModal, setShowRoleModal] = useState(true);
+  const [selectedRole, setSelectedRole] = useState(null);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -67,6 +72,12 @@ export default function SignUpPage() {
       img.src = src;
     });
   }, []);
+
+  // Handle role selection
+  const handleRoleSelect = (role) => {
+    setSelectedRole(role);
+    setShowRoleModal(false);
+  };
 
   // Validation helpers
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -202,7 +213,7 @@ export default function SignUpPage() {
       username: usernameVal,
       email: emailVal,
       password: pwd,
-      role: "owner",
+      role: selectedRole || "owner",
       firstName: firstNameVal,
       middleName: "",
       lastName: lastNameVal,
@@ -259,6 +270,17 @@ export default function SignUpPage() {
       setIsLoading(false);
     }
   };
+
+  // Show role modal first
+  if (showRoleModal) {
+    return (
+      <>
+        <HeaderStart />
+        <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
+        <FooterStart />
+      </>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
