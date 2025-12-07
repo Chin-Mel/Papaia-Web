@@ -271,20 +271,12 @@ export default function SignUpPage() {
     }
   };
 
-  // Show role modal first
-  if (showRoleModal) {
-    return (
-      <>
-        <HeaderStart />
-        <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
-        <FooterStart />
-      </>
-    );
-  }
-
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
+
+      {/* User Role Modal - Overlay */}
+      <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
 
       <main className="flex-1 relative flex justify-center py-16 sm:py-20 px-4">
         {/* Background */}
