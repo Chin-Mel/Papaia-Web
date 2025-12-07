@@ -13,7 +13,8 @@ export const useAlert = () => {
 export const AlertProvider = ({ children }) => {
   const [alert, setAlert] = useState({ type: "", message: "" });
 
-  const showAlert = (message, type = "info", duration = 3000) => {
+  // Fixed parameter order: type comes first, then message
+  const showAlert = (type = "info", message, duration = 3000) => {
     setAlert({ message, type, duration });
   };
 
