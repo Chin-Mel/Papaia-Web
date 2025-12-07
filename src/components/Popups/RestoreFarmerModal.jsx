@@ -1,5 +1,6 @@
 import { X, UserPlus, Loader2, RotateCcw } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
+import realtimeSync from "../utils/RealtimeSync";
 
 export default function RestoreFarmerModal({
   isOpen,
@@ -44,6 +45,8 @@ export default function RestoreFarmerModal({
     setIsRestoring(true);
     try {
       await onConfirm();
+      realtimeSync.notifyChange("farmers");
+      realtimeSync.notifyChange("activities");
       window.alert("Farmer Restored Successfully!");
       onClose();
     } catch (error) {

@@ -11,6 +11,30 @@ import EyeIcon from "../assets/eye-icon.png";
 import EyeOffIcon from "../assets/eye-off-icon.png";
 import LoginIcon from "../assets/login-icon.png";
 import { useAlert } from "../AlertContext";
+import realtimeSync from "../utils/RealtimeSync";
+
+const prefetchScanHistory = async (token) => {
+  const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+
+  try {
+    // Prefetch scans data
+    fetch(`${API_BASE}/identification-history`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Scan history prefetched");
+      })
+      .catch(() => {});
+
+    // Prefetch farms for scan history filters
+    fetch(`${API_BASE}/farms`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .catch(() => {});
+  } catch {}
+};
 
 export default function SignInPage() {
   const { showAlert } = useAlert();
@@ -127,6 +151,7 @@ export default function SignInPage() {
       // Store credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
+        prefetchScanHistory(loginData.token);
       }
 
       if (loginData.user) {
@@ -277,6 +302,7 @@ export default function SignInPage() {
       // Store user credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
+        prefetchScanHistory(loginData.token);
       }
 
       if (loginData.user) {
