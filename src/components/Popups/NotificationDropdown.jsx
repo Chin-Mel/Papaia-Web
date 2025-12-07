@@ -1,5 +1,6 @@
-import { Bell, AlertTriangle, X } from "lucide-react";
+import { Bell, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function NotificationDropdown({
   isOpen,
@@ -55,6 +56,24 @@ export default function NotificationDropdown({
     markAsRead(notificationId);
   };
 
+  const formatDiseaseTitle = (disease) => {
+    if (disease === "Anthracnose") {
+      return "An";
+    }
+    return disease.charAt(0);
+  };
+
+  useEffect(() => {
+    if (isOpen && unreadCount > 0) {
+      const latestUnread = notifications.find((n) => !n.read);
+      if (latestUnread) {
+        alert(
+          `New notification: ${latestUnread.title} - ${latestUnread.message}`
+        );
+      }
+    }
+  }, [isOpen, notifications, unreadCount]);
+
   if (!isOpen) return null;
 
   const recentNotifications = notifications.slice(0, 5);
@@ -74,12 +93,6 @@ export default function NotificationDropdown({
               </span>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {unreadCount > 0 && (
@@ -94,14 +107,7 @@ export default function NotificationDropdown({
         )}
 
         <div className="overflow-y-auto flex-1">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
-              <p className="text-gray-500 text-sm mt-2">
-                Loading notifications...
-              </p>
-            </div>
-          ) : recentNotifications.length === 0 ? (
+          {recentNotifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 text-sm">No notifications yet</p>

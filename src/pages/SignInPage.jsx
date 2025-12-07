@@ -1,3 +1,4 @@
+// SignInPage.jsx - Complete Optimized Version
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterStart from "../components/Footer/FooterStart";
@@ -13,15 +14,25 @@ import { useAlert } from "../AlertContext";
 
 export default function SignInPage() {
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
+
+  // Form state
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [reactivationPrompt, setReactivationPrompt] = useState(false);
-  const [deactivatedUserToken, setDeactivatedUserToken] = useState(null);
-  const navigate = useNavigate();
 
+  // Validation state
+  const [touched, setTouched] = useState({
+    usernameOrEmail: false,
+    password: false,
+  });
+
+  // Reactivation state
+  const [showReactivationModal, setShowReactivationModal] = useState(false);
+  const [deactivatedUserToken, setDeactivatedUserToken] = useState(null);
+
+  // Preload images for better performance
   useEffect(() => {
     const images = [
       papaiaLogo,
@@ -38,18 +49,48 @@ export default function SignInPage() {
     });
   }, []);
 
+  // Validation helper
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
+  // Get border class based on validation state
+  const getFieldBorderClass = (fieldName, value) => {
+    if (touched[fieldName] && !value.trim()) {
+      return "border-red-500 border-2";
+    }
+    return "border-gray-300 focus:border-orange-500 focus:border-2";
+  };
+
+  // Handle field blur to mark as touched
+  const handleBlur = (fieldName) => {
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+  };
+
+  // Handle field change to clear touched state
+  const handleFieldChange = (fieldName, value) => {
+    if (fieldName === "usernameOrEmail") {
+      setUsernameOrEmail(value);
+    } else if (fieldName === "password") {
+      setPassword(value);
+    }
+
+    // Clear touched state when user starts typing
+    if (touched[fieldName]) {
+      setTouched((prev) => ({ ...prev, [fieldName]: false }));
+    }
+  };
+
+  // Handle account reactivation
   const handleReactivate = async () => {
     if (!deactivatedUserToken) {
       showAlert("error", "Unable to reactivate. Please try logging in again.");
-      setReactivationPrompt(false);
+      setShowReactivationModal(false);
       return;
     }
 
     setLoading(true);
 
     try {
+      // Call reactivation API
       const reactivateResponse = await fetch(
         "https://papaiaapi.onrender.com/api/reactivate",
         {
@@ -61,18 +102,19 @@ export default function SignInPage() {
       );
 
       if (!reactivateResponse.ok) {
-        throw new Error("Failed to reactivate account. Please try again.");
+        throw new Error("Failed to reactivate account.");
       }
 
-      const safeEmail = usernameOrEmail.trim();
-      const safePassword = password.trim();
-
+      // Re-login after successful reactivation
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: safeEmail, password: safePassword }),
+          body: JSON.stringify({
+            email: usernameOrEmail.trim(),
+            password: password.trim(),
+          }),
         }
       );
 
@@ -82,6 +124,7 @@ export default function SignInPage() {
 
       const loginData = await loginResponse.json();
 
+      // Store credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
       }
@@ -92,65 +135,79 @@ export default function SignInPage() {
 
       window.dispatchEvent(new Event("userUpdated"));
 
-      showAlert(
-        "success",
-        "Welcome back! Your account has been reactivated successfully."
-      );
-      setTimeout(() => navigate("/dashboard", { replace: true }), 1500);
+      // Show success message
+      showAlert("success", "Account reactivated successfully!");
+
+      // Navigate to dashboard
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 1500);
     } catch (err) {
       showAlert("error", "Failed to reactivate account. Please try again.");
-      setReactivationPrompt(false);
+      setShowReactivationModal(false);
       setDeactivatedUserToken(null);
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle cancel reactivation
   const handleCancelReactivation = () => {
-    setReactivationPrompt(false);
+    setShowReactivationModal(false);
     setDeactivatedUserToken(null);
     setLoading(false);
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Mark all fields as touched
+    setTouched({
+      usernameOrEmail: true,
+      password: true,
+    });
+
+    const trimmedEmail = usernameOrEmail.trim();
+    const trimmedPassword = password.trim();
+
+    // Validate required fields
+    if (!trimmedEmail || !trimmedPassword) {
+      showAlert("error", "Please fill in all required fields.");
+      return;
+    }
+
+    // Validate email format if @ is present
+    if (trimmedEmail.includes("@") && !validateEmail(trimmedEmail)) {
+      showAlert("error", "Invalid email format, username, password.");
+      return;
+    }
+
     setLoading(true);
-    setReactivationPrompt(false);
+    setShowReactivationModal(false);
 
     try {
-      const safeEmail = usernameOrEmail.trim();
-      const safePassword = password.trim();
-
-      if (!safeEmail || !safePassword) {
-        showAlert("error", "Please fill in all required fields.");
-        setLoading(false);
-        return;
-      }
-
-      if (safeEmail.includes("@") && !validateEmail(safeEmail)) {
-        showAlert(
-          "error",
-          "Invalid email format. Please enter a valid email address."
-        );
-        setLoading(false);
-        return;
-      }
-
+      // Set up request timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
+      // Call login API
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: safeEmail, password: safePassword }),
+          body: JSON.stringify({
+            email: trimmedEmail,
+            password: trimmedPassword,
+          }),
           signal: controller.signal,
         }
       );
 
       clearTimeout(timeoutId);
 
+      // Handle failed login
       if (!loginResponse.ok) {
         const errorData = await loginResponse.json().catch(() => ({}));
 
@@ -160,13 +217,10 @@ export default function SignInPage() {
         ) {
           showAlert(
             "error",
-            "Please verify your email address before logging in. Check your inbox for the verification link."
+            "Login Failed. Please verify your account before logging in."
           );
         } else {
-          showAlert(
-            "error",
-            "Invalid username/email or password. Please check your credentials and try again."
-          );
+          showAlert("error", "Invalid email format, username, password.");
         }
         setLoading(false);
         return;
@@ -174,52 +228,55 @@ export default function SignInPage() {
 
       const loginData = await loginResponse.json();
 
+      // Check if account is deactivated
       if (
         loginData.user?.status &&
         loginData.user.status.toLowerCase() === "deactivate"
       ) {
         setDeactivatedUserToken(loginData.token);
-        setReactivationPrompt(true);
+        setShowReactivationModal(true);
         setLoading(false);
         return;
       }
 
+      // Check email verification
       if (loginData.user?.emailVerified === false) {
         showAlert(
           "error",
-          "Please verify your email address before logging in. Check your inbox for the verification link."
+          "Login Failed. Please verify your account before logging in."
         );
         setLoading(false);
         return;
       }
 
+      // Check if user is a farmer
       if (
-        loginData.user &&
-        loginData.user.role &&
+        loginData.user?.role &&
         loginData.user.role.toLowerCase() === "farmer"
       ) {
         showAlert(
           "error",
-          "This account is registered as a farmer. Please use the Papaia mobile app to log in."
+          "Login Failed. This is a Farmer account. Only Farm Owners can access this site."
         );
         setLoading(false);
         return;
       }
 
+      // Check if user has owner role
       const allowedRoles = ["owner"];
       if (
-        loginData.user &&
-        loginData.user.role &&
+        loginData.user?.role &&
         !allowedRoles.includes(loginData.user.role.toLowerCase())
       ) {
         showAlert(
           "error",
-          "Access denied. This dashboard is only available for farm owners."
+          "Login Failed. This is a Farmer account. Only Farm Owners can access this site."
         );
         setLoading(false);
         return;
       }
 
+      // Store user credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
       }
@@ -228,7 +285,14 @@ export default function SignInPage() {
         localStorage.setItem("user", JSON.stringify(loginData.user));
       }
 
-      navigate("/dashboard", { replace: true });
+      window.dispatchEvent(new Event("userUpdated"));
+
+      // Show success message and redirect
+      showAlert("success", "Login Successful!");
+
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 1500);
     } catch (err) {
       if (err.name === "AbortError") {
         showAlert(
@@ -236,7 +300,7 @@ export default function SignInPage() {
           "Request timeout. Please check your connection and try again."
         );
       } else {
-        showAlert("error", "Login failed. Please try again.");
+        showAlert("error", "Invalid email format, username, password.");
       }
     } finally {
       setLoading(false);
@@ -246,47 +310,51 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
-      <main className="flex-1 flex justify-center items-center py-12 px-4 relative">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
-          style={{ backgroundImage: `url(${MainBackground})` }}
-        ></div>
 
-        <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10 my-12">
-          <div className="w-full bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col">
-            <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
+      <main className="flex-1 flex justify-center items-center py-16 sm:py-20 px-4 relative">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 brightness-110"
+          style={{ backgroundImage: `url(${MainBackground})` }}
+          role="img"
+          aria-label="Agricultural background"
+        />
+
+        {/* Login Form Container */}
+        <div className="w-full max-w-md mx-auto relative z-10">
+          <div className="bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+            {/* Header Section */}
+            <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center">
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                 <img
                   src={papaiaLogo}
                   alt="Papaia Logo"
-                  className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
+                  className="w-8 h-10 object-contain"
                 />
               </div>
-
-              <h1 className="text-lg sm:text-xl font-bold text-white mt-[2px]">
-                Papaya Farm
-              </h1>
-              <p className="text-[#FDEDD3] text-xs sm:text-sm mt-1 text-center">
+              <h1 className="text-xl font-bold text-white">Papaya Farm</h1>
+              <p className="text-[#FDEDD3] text-sm mt-1">
                 Welcome back to your farm dashboard
               </p>
             </div>
 
-            <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
-              {reactivationPrompt ? (
-                <div className="space-y-4 sm:space-y-5">
-                  <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+            {/* Form Section */}
+            <div className="p-6 sm:p-8">
+              {showReactivationModal ? (
+                // Reactivation Modal
+                <div className="space-y-5">
+                  <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-xl font-bold">!</span>
                       </div>
                       <div>
-                        <h3 className="font-bold text-yellow-900 mb-1 text-sm sm:text-base">
+                        <h3 className="font-bold text-yellow-900 mb-2">
                           Account Deactivated
                         </h3>
-                        <p className="text-xs sm:text-sm text-yellow-800 leading-relaxed">
+                        <p className="text-sm text-yellow-800 leading-relaxed">
                           Your account is currently deactivated. Would you like
-                          to reactivate it now to regain full access to your
-                          farm dashboard?
+                          to reactivate it now to regain full access?
                         </p>
                       </div>
                     </div>
@@ -296,52 +364,57 @@ export default function SignInPage() {
                     <button
                       onClick={handleReactivate}
                       disabled={loading}
-                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm sm:text-base font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      {loading ? "Reactivating..." : "Reactivate My Account"}
+                      {loading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Reactivating...
+                        </>
+                      ) : (
+                        "Reactivate My Account"
+                      )}
                     </button>
 
                     <button
                       onClick={handleCancelReactivation}
                       disabled={loading}
-                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 border-2 border-gray-300 text-gray-700 text-sm sm:text-base font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-11 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
+                // Login Form
                 <>
-                  <form
-                    className="space-y-4 sm:space-y-5 flex flex-col justify-start"
-                    onSubmit={handleSubmit}
-                  >
-                    <div className="space-y-1">
-                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
-                        <img
-                          src={UserIcon}
-                          alt="Username"
-                          className="w-4 h-4"
-                        />
+                  <form onSubmit={handleSubmit} className="space-y-5">
+                    {/* Username/Email Field */}
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+                        <img src={UserIcon} alt="" className="w-4 h-4" />
                         Username or Email *
                       </label>
                       <input
                         type="text"
                         placeholder="Enter your username or email"
                         value={usernameOrEmail}
-                        onChange={(e) => setUsernameOrEmail(e.target.value)}
-                        className="w-full h-10 sm:h-11 px-3 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                        onChange={(e) =>
+                          handleFieldChange("usernameOrEmail", e.target.value)
+                        }
+                        onBlur={() => handleBlur("usernameOrEmail")}
+                        className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
+                          "usernameOrEmail",
+                          usernameOrEmail
+                        )}`}
                         autoComplete="username"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
-                        <img
-                          src={LockIcon}
-                          alt="Password"
-                          className="w-4 h-4"
-                        />
+                    {/* Password Field */}
+                    <div className="space-y-2">
+                      <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+                        <img src={LockIcon} alt="" className="w-4 h-4" />
                         Password *
                       </label>
                       <div className="relative">
@@ -349,65 +422,71 @@ export default function SignInPage() {
                           type={showPassword ? "text" : "password"}
                           placeholder="Enter your password"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="w-full h-10 sm:h-11 px-3 pr-10 bg-gray-50 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                          onChange={(e) =>
+                            handleFieldChange("password", e.target.value)
+                          }
+                          onBlur={() => handleBlur("password")}
+                          className={`w-full h-11 px-4 pr-12 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
+                            "password",
+                            password
+                          )}`}
                           autoComplete="current-password"
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
                         >
                           <img
                             src={showPassword ? EyeOffIcon : EyeIcon}
-                            alt={showPassword ? "Hide" : "Show"}
+                            alt=""
                             className="w-5 h-5"
                           />
                         </button>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <label className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={rememberMe}
-                          onChange={(e) => setRememberMe(e.target.checked)}
-                          className="w-4 h-4 border border-gray-400 rounded-sm accent-orange-500"
-                        />
-                        <span className="text-xs sm:text-sm text-gray-500 cursor-pointer hover:underline">
-                          Remember me
-                        </span>
-                      </label>
+                    {/* Forgot Password Link */}
+                    <div className="flex justify-end">
                       <Link
                         to="/forgot-password"
-                        className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline cursor-pointer transition-colors"
+                        className="text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
                       >
                         Forgot password?
                       </Link>
                     </div>
 
+                    {/* Login Button */}
                     <button
                       type="submit"
                       disabled={loading}
-                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full h-11 bg-[#F0820B] hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                      <img
-                        src={LoginIcon}
-                        alt="Login"
-                        className="w-4 h-4 sm:w-5 sm:h-5"
-                      />
-                      {loading ? "Logging in..." : "Login to Farm"}
+                      {loading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Logging in...
+                        </>
+                      ) : (
+                        <>
+                          <img src={LoginIcon} alt="" className="w-5 h-5" />
+                          Login to Farm
+                        </>
+                      )}
                     </button>
                   </form>
 
-                  <div className="text-center">
-                    <span className="text-gray-500 text-xs sm:text-sm">
+                  {/* Sign Up Link */}
+                  <div className="text-center mt-6">
+                    <span className="text-gray-600 text-sm">
                       Don't have an account?{" "}
                     </span>
                     <Link
                       to="/sign-up"
-                      className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+                      className="text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors font-medium"
                     >
                       Sign up here
                     </Link>

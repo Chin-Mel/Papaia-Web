@@ -1,3 +1,4 @@
+// DemoPage.jsx - Optimized Version
 import { PlayCircle, Monitor, Smartphone } from "lucide-react";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
@@ -54,21 +55,19 @@ export default function DemoPage() {
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
-              alt="Background plants"
+              alt="Agricultural background"
               className="w-full h-full object-cover"
             />
           </div>
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                  Tutorials & User Guides
-                </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
-                  Learn how to get the most out of Papaia with our comprehensive
-                  video tutorials
-                </p>
-              </div>
+            <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-32">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                Tutorials & User Guides
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                Learn how to get the most out of Papaia with our comprehensive
+                video tutorials
+              </p>
             </div>
           </div>
         </section>
@@ -101,12 +100,10 @@ export default function DemoPage() {
                 return (
                   <div
                     key={tutorial.id}
-                    className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center ${
-                      isEven ? "" : "lg:flex-row-reverse"
-                    }`}
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
                   >
                     {/* Video Section */}
-                    <div className={`${isEven ? "" : "lg:order-2"}`}>
+                    <div className={isEven ? "lg:order-1" : "lg:order-2"}>
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900">
                         <div className="aspect-video">
                           <iframe
@@ -124,7 +121,7 @@ export default function DemoPage() {
                     </div>
 
                     {/* Content Section */}
-                    <div className={`${isEven ? "" : "lg:order-1"}`}>
+                    <div className={isEven ? "lg:order-2" : "lg:order-1"}>
                       <div className="flex items-center gap-3 mb-4">
                         <div
                           className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -174,7 +171,7 @@ export default function DemoPage() {
                         href={tutorial.watchUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`inline-block mt-6 px-6 py-3 rounded-lg font-semibold text-white transition-all shadow-lg hover:shadow-xl ${
+                        className={`inline-block mt-6 px-6 py-3 rounded-lg font-semibold text-white transition-all shadow-lg hover:shadow-xl active:scale-95 ${
                           tutorial.platform === "Web"
                             ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                             : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"

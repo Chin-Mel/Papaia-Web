@@ -1,194 +1,105 @@
+// SignUpPage.jsx - Updated Version with Modal Callbacks
 import { Link } from "react-router-dom";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
 import PrivacyPolicyModal from "../components/Popups/PrivacyPolicyModal";
-import UserRoleModal from "../components/Popups/UserRoleModal";
-import { ChevronDown, User, Lock, Eye, EyeOff } from "lucide-react";
+import MainBackground from "../assets/MainBackground.png";
+import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
 import UserIcon from "../assets/user-icon.png";
 import LockIcon from "../assets/lock-icon.png";
 import MailIcon from "../assets/mail-icon.png";
 import PhoneIcon from "../assets/phone-icon.png";
-import MainBackground from "../assets/MainBackground.png";
-import papaiaLogo from "../assets/ic_papaia_logo_no_word.png";
+import EyeIcon from "../assets/eye-icon.png";
+import EyeOffIcon from "../assets/eye-off-icon.png";
 import CreateUserIcon from "../assets/create-user.png";
 import { useAlert } from "../AlertContext";
 
-function SuffixDropdown({ value, onChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const options = useMemo(() => ["", "Jr.", "Sr.", "II", "III"], []);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative min-w-[120px]" ref={dropdownRef}>
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full h-10 px-4 border-2 border-gray-200 rounded-xl flex justify-between items-center text-sm bg-white/90 hover:bg-white hover:border-orange-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400"
-      >
-        <span className={value ? "text-gray-900" : "text-gray-400"}>
-          {value || "Select"}
-        </span>
-        <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-
-      {isOpen && (
-        <ul className="absolute z-50 w-full mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-2xl max-h-60 overflow-auto">
-          {options.map((option, index) => (
-            <li
-              key={`${option}-${index}`}
-              onClick={() => {
-                onChange(option);
-                setIsOpen(false);
-              }}
-              className="px-4 py-2.5 cursor-pointer hover:bg-gradient-to-r hover:from-green-600 hover:to-orange-500 hover:text-white text-sm transition-all duration-150 first:rounded-t-xl last:rounded-b-xl"
-            >
-              {option || "None"}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function PasswordStrengthIndicator({ password }) {
-  const getStrength = () => {
-    if (!password) return null;
-
-    const hasLower = /[a-z]/.test(password);
-    const hasUpper = /[A-Z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-    const length = password.length;
-
-    let score = 0;
-    if (length >= 8) score++;
-    if (length >= 12) score++;
-    if (hasLower && hasUpper) score++;
-    if (hasNumber) score++;
-    if (hasSpecial) score++;
-
-    if (score <= 2)
-      return { level: "Weak", color: "text-red-600", bg: "bg-red-200" };
-    if (score <= 3)
-      return {
-        level: "Average",
-        color: "text-yellow-600",
-        bg: "bg-yellow-200",
-      };
-    return { level: "Strong", color: "text-green-600", bg: "bg-green-200" };
-  };
-
-  const strength = getStrength();
-  if (!strength) return null;
-
-  return (
-    <div className="flex items-center gap-2 mt-1">
-      <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-        <div
-          className={`h-full ${strength.bg} transition-all duration-300`}
-          style={{
-            width:
-              strength.level === "Weak"
-                ? "33%"
-                : strength.level === "Average"
-                ? "66%"
-                : "100%",
-          }}
-        />
-      </div>
-      <span className={`text-xs font-semibold ${strength.color}`}>
-        {strength.level}
-      </span>
-    </div>
-  );
-}
-
 export default function SignUpPage() {
   const { showAlert } = useAlert();
-  const [lastName, setLastName] = useState("");
+
+  // Form state
   const [firstName, setFirstName] = useState("");
-  const [middleName, setMiddleName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [isChecked, setIsChecked] = useState(false);
-  const [suffix, setSuffix] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+
+  // Modal state
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
-  const [showRoleModal, setShowRoleModal] = useState(true);
-  const [farmerMessage, setFarmerMessage] = useState("");
 
-  const handleRoleSelect = (role) => {
-    if (role === "farmer") {
-      setFarmerMessage("Please install the Papaia mobile app to continue.");
-      setTimeout(() => setFarmerMessage(""), 3000);
-    } else if (role === "owner") {
-      setShowRoleModal(false);
-    }
-  };
+  // Touched state for validation
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    username: false,
+    phoneNumber: false,
+    email: false,
+    password: false,
+    confirmPassword: false,
+  });
 
+  // Preload images
   useEffect(() => {
-    const images = [MainBackground, papaiaLogo, CreateUserIcon];
+    const images = [
+      MainBackground,
+      papaiaLogo,
+      UserIcon,
+      LockIcon,
+      MailIcon,
+      PhoneIcon,
+      EyeIcon,
+      EyeOffIcon,
+      CreateUserIcon,
+    ];
     images.forEach((src) => {
       const img = new Image();
       img.src = src;
     });
   }, []);
 
+  // Validation helpers
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  const validatePhoneNumber = (value) =>
+    /^[0-9]{10,11}$/.test(value.replace(/[\s-]/g, ""));
 
-  const validatePassword = (pwd) => {
-    const hasLower = /[a-z]/.test(pwd);
-    const hasUpper = /[A-Z]/.test(pwd);
-    const hasNumber = /\d/.test(pwd);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd);
-    const length = pwd.length >= 8;
-
-    if (!length) return "Password must be at least 8 characters long";
-    if (!hasLower || !hasUpper)
-      return "Password must contain both uppercase and lowercase letters";
-    if (!hasNumber) return "Password must contain at least one number";
-    if (!hasSpecial)
-      return "Password must contain at least one special character";
-    return null;
+  // Get border class based on validation
+  const getBorderClass = (fieldName, value) => {
+    if (touched[fieldName] && !value.trim()) {
+      return "border-red-500 border-2";
+    }
+    return "border-gray-300 focus:border-orange-500 focus:border-2";
   };
 
-  const inputClasses = (hasError) => `
-    w-full h-10 px-4 text-sm 
-    bg-white/90 border-2 rounded-xl 
-    transition-all duration-200
-    placeholder:text-gray-400
-    focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-orange-400 focus:bg-white
-    hover:bg-white hover:border-orange-300
-    ${
-      hasError
-        ? "border-red-400 focus:ring-red-400 focus:border-red-400"
-        : "border-gray-200"
-    }
-  `;
+  // Handle field blur
+  const handleBlur = (fieldName) => {
+    setTouched((prev) => ({ ...prev, [fieldName]: true }));
+  };
 
+  // Handle field change
+  const handleFieldChange = (fieldName, value, setter) => {
+    setter(value);
+    if (touched[fieldName]) {
+      setTouched((prev) => ({ ...prev, [fieldName]: false }));
+    }
+  };
+
+  // Handle modal agree - check the checkbox
+  const handleModalAgree = () => {
+    setIsChecked(true);
+  };
+
+  // Register user API call
   const registerUser = async (userData) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
@@ -230,22 +141,33 @@ export default function SignUpPage() {
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    const lastNameVal = lastName.trim();
+    // Mark all fields as touched
+    setTouched({
+      firstName: true,
+      lastName: true,
+      username: true,
+      phoneNumber: true,
+      email: true,
+      password: true,
+      confirmPassword: true,
+    });
+
     const firstNameVal = firstName.trim();
-    const middleNameVal = middleName.trim();
+    const lastNameVal = lastName.trim();
     const usernameVal = username.trim();
     const emailVal = email.trim();
     const phoneNumberVal = phoneNumber.trim();
     const pwd = password.trim();
     const confirmPwd = confirmPassword.trim();
 
+    // Validate required fields
     if (
-      !lastNameVal ||
       !firstNameVal ||
+      !lastNameVal ||
       !usernameVal ||
       !emailVal ||
       !phoneNumberVal ||
@@ -253,37 +175,28 @@ export default function SignUpPage() {
       !confirmPwd
     ) {
       showAlert("error", "Please fill in all required fields.");
-      setIsLoading(false);
       return;
     }
 
+    // Validate email format
     if (!validateEmail(emailVal)) {
-      showAlert(
-        "error",
-        "Invalid email format. Please enter a valid email address."
-      );
-      setIsLoading(false);
+      showAlert("error", "Invalid email format.");
       return;
     }
 
-    const passwordError = validatePassword(pwd);
-    if (passwordError) {
-      showAlert("error", passwordError);
-      setIsLoading(false);
+    // Validate phone number format
+    if (!validatePhoneNumber(phoneNumberVal)) {
+      showAlert("error", "Invalid phone number.");
       return;
     }
 
+    // Check if passwords match
     if (pwd !== confirmPwd) {
-      showAlert("error", "Passwords do not match. Please try again.");
-      setIsLoading(false);
+      showAlert("error", "Passwords do not match.");
       return;
     }
 
-    if (!isChecked) {
-      showAlert("error", "You must agree to the terms and conditions.");
-      setIsLoading(false);
-      return;
-    }
+    setIsLoading(true);
 
     const userData = {
       username: usernameVal,
@@ -291,9 +204,9 @@ export default function SignUpPage() {
       password: pwd,
       role: "owner",
       firstName: firstNameVal,
-      middleName: middleNameVal || "",
+      middleName: "",
       lastName: lastNameVal,
-      suffix: suffix || "",
+      suffix: "",
       birthDate: null,
       contactNumber: phoneNumberVal,
       profilePicture: "",
@@ -305,12 +218,12 @@ export default function SignUpPage() {
     };
 
     try {
-      const result = await registerUser(userData);
+      await registerUser(userData);
 
-      const successMessage =
-        result.message ||
-        "Account created successfully! Please check your email to verify your account.";
-      showAlert("success", successMessage);
+      showAlert(
+        "success",
+        "Account created successfully. Please check your email to verify your account."
+      );
 
       setTimeout(() => {
         window.location.href = "/sign-in";
@@ -350,277 +263,255 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
-      <main className="flex-1 relative flex justify-center py-12 px-4">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
-          style={{
-            backgroundImage: `url(${MainBackground})`,
-          }}
-        ></div>
 
+      <main className="flex-1 relative flex justify-center py-16 sm:py-20 px-4">
+        {/* Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 brightness-110"
+          style={{ backgroundImage: `url(${MainBackground})` }}
+          role="img"
+          aria-label="Agricultural background"
+        />
+
+        {/* Form Container */}
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-6xl relative z-10 my-12"
+          className="w-full max-w-2xl relative z-10"
         >
-          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0">
+          <div className="bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+            {/* Header */}
             <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-6 px-6">
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
                   <img
                     src={papaiaLogo}
                     alt="Papaia Logo"
-                    className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
+                    className="w-8 h-10 object-contain"
                   />
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-1">Welcome!</h1>
-                <p className="text-white/90 text-sm text-center max-w-md">
+                <p className="text-white/90 text-sm text-center">
                   Create your farm dashboard account
                 </p>
               </div>
             </div>
 
-            <div className="p-8">
-              <div className="w-full flex justify-center">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start w-full px-4 max-w-6xl relative">
-                  <div className="hidden lg:block absolute left-1/2 top-0 h-full w-px bg-gray-300 -translate-x-1/2"></div>
+            {/* Form Content */}
+            <div className="p-6 sm:p-8 space-y-5">
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={UserIcon} className="w-4 h-4" alt="" />
+                    First Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) =>
+                      handleFieldChange(
+                        "firstName",
+                        e.target.value,
+                        setFirstName
+                      )
+                    }
+                    onBlur={() => handleBlur("firstName")}
+                    placeholder="Enter first name"
+                    autoComplete="given-name"
+                    className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                      "firstName",
+                      firstName
+                    )}`}
+                  />
+                </div>
 
-                  <div className="flex flex-col items-center lg:items-start lg:pr-6">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-800">
-                        Personal Information
-                      </h2>
-                    </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={UserIcon} className="w-4 h-4" alt="" />
+                    Last Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) =>
+                      handleFieldChange("lastName", e.target.value, setLastName)
+                    }
+                    onBlur={() => handleBlur("lastName")}
+                    placeholder="Enter last name"
+                    autoComplete="family-name"
+                    className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                      "lastName",
+                      lastName
+                    )}`}
+                  />
+                </div>
+              </div>
 
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              className="w-4 h-4"
-                              alt="First Name"
-                            />
-                            First Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            placeholder="Enter first name"
-                            autoComplete="given-name"
-                            className={inputClasses(false)}
-                          />
-                        </div>
+              {/* Username & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={UserIcon} className="w-4 h-4" alt="" />
+                    Username <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) =>
+                      handleFieldChange("username", e.target.value, setUsername)
+                    }
+                    onBlur={() => handleBlur("username")}
+                    placeholder="Choose username"
+                    autoComplete="username"
+                    className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                      "username",
+                      username
+                    )}`}
+                  />
+                </div>
 
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              className="w-4 h-4"
-                              alt="Middle Name"
-                            />
-                            Middle Name
-                          </label>
-                          <input
-                            type="text"
-                            value={middleName}
-                            onChange={(e) => setMiddleName(e.target.value)}
-                            placeholder="Enter middle name"
-                            autoComplete="middle-name"
-                            className={inputClasses(false)}
-                          />
-                        </div>
-                      </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={PhoneIcon} className="w-4 h-4" alt="" />
+                    Phone Number <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) =>
+                      handleFieldChange(
+                        "phoneNumber",
+                        e.target.value,
+                        setPhoneNumber
+                      )
+                    }
+                    onBlur={() => handleBlur("phoneNumber")}
+                    placeholder="Enter phone number"
+                    autoComplete="tel"
+                    className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                      "phoneNumber",
+                      phoneNumber
+                    )}`}
+                  />
+                </div>
+              </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              className="w-4 h-4"
-                              alt="Last Name"
-                            />
-                            Last Name <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                            placeholder="Enter last name"
-                            autoComplete="family-name"
-                            className={inputClasses(false)}
-                          />
-                        </div>
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <img src={MailIcon} className="w-4 h-4" alt="" />
+                  Email Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) =>
+                    handleFieldChange("email", e.target.value, setEmail)
+                  }
+                  onBlur={() => handleBlur("email")}
+                  placeholder="Enter email address"
+                  autoComplete="email"
+                  className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                    "email",
+                    email
+                  )}`}
+                />
+              </div>
 
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              className="w-4 h-4"
-                              alt="Suffix"
-                            />
-                            Suffix
-                          </label>
-                          <SuffixDropdown value={suffix} onChange={setSuffix} />
-                        </div>
-                      </div>
-                    </div>
+              {/* Password Fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={LockIcon} className="w-4 h-4" alt="" />
+                    Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "password",
+                          e.target.value,
+                          setPassword
+                        )
+                      }
+                      onBlur={() => handleBlur("password")}
+                      placeholder="Enter password"
+                      autoComplete="new-password"
+                      className={`w-full h-11 px-4 pr-12 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                        "password",
+                        password
+                      )}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <img
+                        src={showPassword ? EyeOffIcon : EyeIcon}
+                        alt=""
+                        className="w-5 h-5"
+                      />
+                    </button>
                   </div>
+                </div>
 
-                  <div className="lg:pl-6 flex flex-col items-center lg:items-start">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                        <Lock className="w-5 h-5 text-white" />
-                      </div>
-                      <h2 className="text-lg font-bold text-gray-800">
-                        Account Information
-                      </h2>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={UserIcon}
-                              className="w-4 h-4"
-                              alt="Username"
-                            />
-                            Username <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            placeholder="Choose username"
-                            autoComplete="username"
-                            className={inputClasses(false)}
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={PhoneIcon}
-                              className="w-4 h-4"
-                              alt="Phone Number"
-                            />
-                            Phone Number <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="tel"
-                            value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
-                            placeholder="Enter phone number"
-                            autoComplete="tel"
-                            className={inputClasses(false)}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 col-span-full">
-                        <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                          <img src={MailIcon} className="w-4 h-4" alt="Email" />
-                          Email Address <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          value={email}
-                          placeholder="Enter email address"
-                          autoComplete="email"
-                          className={inputClasses(false)}
-                          onChange={(e) => setEmail(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={LockIcon}
-                              className="w-4 h-4"
-                              alt="Password"
-                            />
-                            Password <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Enter password"
-                              value={password}
-                              autoComplete="new-password"
-                              onChange={(e) => setPassword(e.target.value)}
-                              className={inputClasses(false)}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="w-5 h-5" />
-                              ) : (
-                                <Eye className="w-5 h-5" />
-                              )}
-                            </button>
-                          </div>
-                          <PasswordStrengthIndicator password={password} />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <img
-                              src={LockIcon}
-                              className="w-4 h-4"
-                              alt="Confirm Password"
-                            />
-                            Confirm Password{" "}
-                            <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <input
-                              type={showConfirmPassword ? "text" : "password"}
-                              placeholder="Confirm password"
-                              value={confirmPassword}
-                              autoComplete="new-password"
-                              onChange={(e) =>
-                                setConfirmPassword(e.target.value)
-                              }
-                              className={inputClasses(false)}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setShowConfirmPassword(!showConfirmPassword)
-                              }
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="w-5 h-5" />
-                              ) : (
-                                <Eye className="w-5 h-5" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <img src={LockIcon} className="w-4 h-4" alt="" />
+                    Confirm Password <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "confirmPassword",
+                          e.target.value,
+                          setConfirmPassword
+                        )
+                      }
+                      onBlur={() => handleBlur("confirmPassword")}
+                      placeholder="Confirm password"
+                      autoComplete="new-password"
+                      className={`w-full h-11 px-4 pr-12 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                        "confirmPassword",
+                        confirmPassword
+                      )}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <img
+                        src={showConfirmPassword ? EyeOffIcon : EyeIcon}
+                        alt=""
+                        className="w-5 h-5"
+                      />
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-5 mt-7 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
+              {/* Terms & Privacy */}
+              <div className="flex items-start gap-3 p-4 bg-gradient-to-r from-green-50 to-orange-50 rounded-xl border-2 border-orange-200">
                 <input
                   type="checkbox"
                   id="terms"
                   checked={isChecked}
                   onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer"
+                  className="w-5 h-5 mt-0.5 accent-orange-500 cursor-pointer"
                 />
-                <p className="text-sm text-gray-700">
+                <label
+                  htmlFor="terms"
+                  className="text-sm text-gray-700 cursor-pointer"
+                >
                   I agree to the{" "}
                   <button
                     type="button"
@@ -638,35 +529,34 @@ export default function SignUpPage() {
                     Privacy Policy
                   </button>
                   .
-                </p>
+                </label>
               </div>
 
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={!isChecked || isLoading}
-                className={`
-                  w-full h-12 
-                  bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700
-                  text-base font-bold text-white 
-                  rounded-xl shadow-lg 
-                  flex items-center justify-center gap-2
-                  transition-all duration-200
-                  ${
-                    !isChecked || isLoading
-                      ? "opacity-50 cursor-not-allowed"
-                      : "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
-                  }
-                `}
+                className="w-full h-12 bg-[#F97316] hover:bg-orange-600 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <img src={CreateUserIcon} alt="Create" className="w-5 h-5" />
-                {isLoading ? "Creating Account..." : "Create Account"}
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  <>
+                    <img src={CreateUserIcon} alt="" className="w-5 h-5" />
+                    Create Account
+                  </>
+                )}
               </button>
 
-              <p className="text-center text-sm text-gray-600 pt-2">
+              {/* Sign In Link */}
+              <p className="text-center text-sm text-gray-600">
                 Already have an account?{" "}
                 <Link
                   to="/sign-in"
-                  className="text-orange-600 hover:text-orange-700 font-bold hover:underline underline-offset-2 transition-colors"
+                  className="text-orange-600 hover:text-orange-700 font-semibold hover:underline transition-colors"
                 >
                   Sign in here
                 </Link>
@@ -675,27 +565,17 @@ export default function SignUpPage() {
           </div>
         </form>
 
-        {showRoleModal && (
-          <>
-            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"></div>
-            <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
-          </>
-        )}
-
-        {farmerMessage && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-yellow-200 text-yellow-900 p-4 rounded-lg z-50 shadow-lg">
-            {farmerMessage}
-          </div>
-        )}
-
+        {/* Modals */}
         <TermsAndConditionsModal
           isOpen={showTermsModal}
           onClose={() => setShowTermsModal(false)}
+          onAgree={handleModalAgree}
         />
 
         <PrivacyPolicyModal
           isOpen={showPrivacyModal}
           onClose={() => setShowPrivacyModal(false)}
+          onAgree={handleModalAgree}
         />
       </main>
 

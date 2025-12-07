@@ -1,8 +1,7 @@
-// components/Header/HeaderMain.js
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Bell } from "lucide-react";
-import { secureLogout, getLoggedInUser } from "../../utils/security";
+import { getLoggedInUser } from "../../utils/security";
 import { useNotifications } from "../../NotificationContext";
 
 import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -18,11 +17,11 @@ export default function HeaderMain() {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userData, setUserData] = useState(null);
-  const location = useLocation();
-  const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Use the notifications hook
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
     useNotifications();
 
@@ -32,7 +31,6 @@ export default function HeaderMain() {
     { label: "About", href: "/about" },
   ];
 
-  // Load user initially + listen for updates
   useEffect(() => {
     const loadUser = () => {
       const user = getLoggedInUser();
@@ -41,55 +39,37 @@ export default function HeaderMain() {
 
     loadUser();
 
-    const handleUserUpdate = () => {
-      loadUser();
-    };
-
+    const handleUserUpdate = () => loadUser();
     window.addEventListener("userUpdated", handleUserUpdate);
 
-    return () => {
-      window.removeEventListener("userUpdated", handleUserUpdate);
-    };
+    return () => window.removeEventListener("userUpdated", handleUserUpdate);
   }, []);
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true);
-    setIsMenuOpen(false); // Close mobile menu
-    setIsProfileOpen(false); // Close profile dropdown
+    setIsMenuOpen(false);
+    setIsProfileOpen(false);
   };
 
-  // 3. ADD new function for actual logout after confirmation:
-  // Update this function to be async and add a small delay to show the loading state
   const handleConfirmLogout = async () => {
-    // Add a small delay to ensure the loading animation is visible
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // Clear all auth data
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     sessionStorage.clear();
 
-    // Clear user state
     setUserData(null);
-
-    // Close modal and dropdowns
     setShowLogoutModal(false);
     setIsProfileOpen(false);
     setIsMenuOpen(false);
 
-    // Redirect to sign-in
     window.location.href = "/sign-in";
   };
 
-  // Get profile picture URL
   const getProfilePictureUrl = () => {
-    if (userData?.profilePicture) {
-      return userData.profilePicture;
-    }
-    return defaultUser;
+    return userData?.profilePicture || defaultUser;
   };
 
-  // Get display name
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
       return `${userData.firstName} ${userData.lastName}`;
@@ -97,15 +77,12 @@ export default function HeaderMain() {
     return userData?.username || "User";
   };
 
-  // Handle mobile profile click
   const handleMobileProfileClick = () => {
     setIsMenuOpen(false);
     navigate("/profile");
   };
 
-  // Handle notification click - Different behavior for mobile/desktop
   const handleNotificationClick = () => {
-    // Check if mobile/tablet (screen width < 1024px)
     if (window.innerWidth < 1024) {
       navigate("/notifications");
     } else {
@@ -114,7 +91,11 @@ export default function HeaderMain() {
     }
   };
 
-  // Close dropdowns when clicking outside
+  const handleProfileClick = () => {
+    setIsProfileOpen(!isProfileOpen);
+    setIsNotifOpen(false);
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       const target = event.target;
@@ -136,33 +117,8 @@ export default function HeaderMain() {
 
   return (
     <>
-      {/* Toast Animation Styles */}
-      <style>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-        @keyframes slideOut {
-          from {
-            transform: translateX(0);
-            opacity: 1;
-          }
-          to {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-        }
-      `}</style>
-
       <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm px-3 sm:px-4">
         <div className="flex justify-between items-center h-14 sm:h-16">
-          {/* Left: Logo + Nav */}
           <div className="flex items-center gap-6">
             <Link to="/dashboard">
               <img
@@ -190,16 +146,13 @@ export default function HeaderMain() {
             </nav>
           </div>
 
-          {/* Right: Welcome + Notifications + Profile + Burger */}
           <div className="flex items-center gap-4 relative">
-            {/* Welcome Message */}
             <span className="hidden md:block text-[#4A7C59] font-medium truncate max-w-[180px]">
               {userData
                 ? `Welcome, ${userData.username || "User"}!`
                 : "Loading..."}
             </span>
 
-            {/* Notification Bell with Badge */}
             <div className="relative notification-container">
               <button
                 className={`relative cursor-pointer p-2 rounded-full transition-colors
@@ -212,16 +165,11 @@ export default function HeaderMain() {
                 aria-label="Notifications"
               >
                 <Bell className="w-5 h-5" />
-
-                {/* Badge with unread count */}
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
+                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
                 )}
               </button>
 
-              {/* Show dropdown only on desktop */}
               <div className="hidden lg:block">
                 <NotificationDropdown
                   isOpen={isNotifOpen}
@@ -235,7 +183,6 @@ export default function HeaderMain() {
               </div>
             </div>
 
-            {/* Desktop Profile */}
             <div className="hidden lg:flex items-center gap-2 relative profile-container">
               <button
                 className={`flex items-center gap-2 rounded-md px-2 py-1 transition-colors
@@ -244,10 +191,7 @@ export default function HeaderMain() {
                       ? "bg-gray-100"
                       : "hover:bg-gray-100 active:bg-gray-200"
                   }`}
-                onClick={() => {
-                  setIsProfileOpen(!isProfileOpen);
-                  setIsNotifOpen(false);
-                }}
+                onClick={handleProfileClick}
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
                   <img
@@ -271,7 +215,6 @@ export default function HeaderMain() {
               )}
             </div>
 
-            {/* Mobile Burger */}
             <button
               className="lg:hidden text-[#2D5016]"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -286,10 +229,8 @@ export default function HeaderMain() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div className="lg:hidden absolute top-full left-0 right-0 bg-white p-4 shadow-lg border-t border-gray-100 space-y-3">
-            {/* Navigation Links */}
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -308,7 +249,6 @@ export default function HeaderMain() {
 
             <div className="border-t border-gray-200 my-2"></div>
 
-            {/* Mobile Profile Section */}
             <button
               onClick={handleMobileProfileClick}
               className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors text-left"
@@ -331,7 +271,6 @@ export default function HeaderMain() {
               </div>
             </button>
 
-            {/* Mobile Logout Button */}
             <button
               onClick={handleLogoutClick}
               className="w-full flex items-center justify-center gap-2 py-2 px-4 border-2 border-red-500 text-red-500 rounded-xl font-semibold hover:bg-red-50 transition-colors"
@@ -342,6 +281,7 @@ export default function HeaderMain() {
           </div>
         )}
       </header>
+
       <LogoutModal
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}

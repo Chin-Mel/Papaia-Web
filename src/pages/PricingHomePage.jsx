@@ -1,3 +1,4 @@
+// PricingHomePage.jsx - Optimized Version
 import { Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
@@ -6,6 +7,7 @@ import HeroBackground from "../assets/MainBackground.png";
 
 export default function PricingHomePage() {
   const navigate = useNavigate();
+
   const plans = [
     {
       name: "Free",
@@ -25,7 +27,6 @@ export default function PricingHomePage() {
         "No team access",
       ],
       color: "from-gray-500 to-gray-600",
-      popular: false,
     },
     {
       name: "Farmer",
@@ -41,7 +42,6 @@ export default function PricingHomePage() {
       ],
       limitations: ["No web dashboard", "No multi-farm tools"],
       color: "from-green-500 to-green-600",
-      popular: false,
     },
     {
       name: "Basic",
@@ -58,7 +58,6 @@ export default function PricingHomePage() {
       ],
       limitations: [],
       color: "from-orange-500 to-orange-600",
-      popular: true,
     },
     {
       name: "Enterprise",
@@ -75,7 +74,6 @@ export default function PricingHomePage() {
       ],
       limitations: [],
       color: "from-blue-600 to-blue-700",
-      popular: false,
     },
   ];
 
@@ -89,21 +87,19 @@ export default function PricingHomePage() {
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
-              alt="Background plants"
+              alt="Agricultural background"
               className="w-full h-full object-cover"
             />
           </div>
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
-                  Simple, Transparent Pricing
-                </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
-                  Choose the perfect plan for your farming needs. From backyard
-                  growers to large agribusinesses.
-                </p>
-              </div>
+            <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-32">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+                Simple, Transparent Pricing
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                Choose the perfect plan for your farming needs. From backyard
+                growers to large agribusinesses.
+              </p>
             </div>
           </div>
         </section>
@@ -124,16 +120,9 @@ export default function PricingHomePage() {
               {plans.map((plan, index) => (
                 <div
                   key={index}
-                  className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 flex flex-col ${
-                    plan.popular ? "ring-2 ring-orange-500" : ""
-                  }`}
+                  className="relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 flex flex-col"
                 >
-                  {plan.popular && (
-                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
-                      POPULAR
-                    </div>
-                  )}
-
+                  {/* Header */}
                   <div
                     className={`bg-gradient-to-r ${plan.color} p-6 text-white`}
                   >
@@ -145,6 +134,7 @@ export default function PricingHomePage() {
                     <p className="text-sm text-white/90">{plan.description}</p>
                   </div>
 
+                  {/* Content */}
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="space-y-3 mb-6 flex-1">
                       {plan.features.map((feature, i) => (
@@ -165,8 +155,9 @@ export default function PricingHomePage() {
                       ))}
                     </div>
 
+                    {/* Button */}
                     <button
-                      className={`w-full py-3 rounded-lg font-semibold transition-all ${
+                      className={`w-full py-3 rounded-lg font-semibold transition-all active:scale-95 ${
                         plan.name === "Free"
                           ? "bg-gray-200 text-gray-800 hover:bg-gray-300"
                           : `bg-gradient-to-r ${plan.color} text-white hover:shadow-lg`
@@ -189,13 +180,13 @@ export default function PricingHomePage() {
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
               Ready to Transform Your Farm?
             </h2>
-            <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+            <p className="text-base sm:text-lg text-white/90 mb-8 max-w-2xl mx-auto">
               Join hundreds of Filipino farmers using Papaia to protect their
               crops and increase yields.
             </p>
             <button
               onClick={() => navigate("/sign-up")}
-              className="bg-white text-green-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all shadow-lg"
+              className="bg-white text-green-700 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-all shadow-lg active:scale-95"
             >
               Start Your Free Trial
             </button>
