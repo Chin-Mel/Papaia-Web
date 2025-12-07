@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
 
     // Validate email format
     if (!validateEmail(trimmedEmail)) {
-      showAlert("error", "Invalid email format.");
+      showAlert("error", "Invalid email.");
       return;
     }
 

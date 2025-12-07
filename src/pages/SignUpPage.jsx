@@ -73,6 +73,34 @@ export default function SignUpPage() {
     });
   }, []);
 
+  useEffect(() => {
+    // Check email format if email field has been touched and has value
+    if (touched.email && email.trim()) {
+      if (!validateEmail(email.trim())) {
+        showAlert("error", "Invalid email format.");
+      }
+    }
+
+    // Check password match if both password fields have been touched and have values
+    if (
+      touched.password &&
+      touched.confirmPassword &&
+      password.trim() &&
+      confirmPassword.trim()
+    ) {
+      if (password.trim() !== confirmPassword.trim()) {
+        showAlert("error", "Passwords do not match.");
+      }
+    }
+  }, [
+    email,
+    password,
+    confirmPassword,
+    touched.email,
+    touched.password,
+    touched.confirmPassword,
+  ]);
+
   // Handle role selection
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
@@ -290,318 +318,326 @@ export default function SignUpPage() {
             role="img"
             aria-label="Agricultural background"
           />
-
-          {/* Form Container */}
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-2xl relative z-10 pt-17"
-          >
-            <div className="bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
-              {/* Header */}
-              <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-3 px-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-2 ring-2 ring-white/30">
-                    <img
-                      src={papaiaLogo}
-                      alt="Papaia Logo"
-                      className="w-6 h-8 object-contain"
-                    />
+          <div className="w-full h-full flex items-center justify-center pt-16 sm:pt-20 md:pt-24 pb-8">
+            {/* Form Container */}
+            <form
+              onSubmit={handleSubmit}
+              className="w-full max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl xl:max-w-3xl mx-auto px-4 relative z-10"
+            >
+              <div className="bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-3 px-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg mb-2 ring-2 ring-white/30">
+                      <img
+                        src={papaiaLogo}
+                        alt="Papaia Logo"
+                        className="w-6 h-8 object-contain"
+                      />
+                    </div>
+                    <h1 className="text-lg font-bold text-white">Welcome!</h1>
+                    <p className="text-white/90 text-xs text-center">
+                      Create your farm dashboard account
+                    </p>
                   </div>
-                  <h1 className="text-lg font-bold text-white">Welcome!</h1>
-                  <p className="text-white/90 text-xs text-center">
-                    Create your farm dashboard account
+                </div>
+
+                {/* Form Content */}
+                <div className="p-4 sm:p-5 space-y-3">
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={UserIcon} className="w-4 h-4" alt="" />
+                        First Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "firstName",
+                            e.target.value,
+                            setFirstName
+                          )
+                        }
+                        onBlur={() => handleBlur("firstName")}
+                        placeholder="Enter first name"
+                        autoComplete="given-name"
+                        className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                          "firstName",
+                          firstName
+                        )}`}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={UserIcon} className="w-4 h-4" alt="" />
+                        Last Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "lastName",
+                            e.target.value,
+                            setLastName
+                          )
+                        }
+                        onBlur={() => handleBlur("lastName")}
+                        placeholder="Enter last name"
+                        autoComplete="family-name"
+                        className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                          "lastName",
+                          lastName
+                        )}`}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={UserIcon} className="w-4 h-4" alt="" />
+                        Username <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "username",
+                            e.target.value,
+                            setUsername
+                          )
+                        }
+                        onBlur={() => handleBlur("username")}
+                        placeholder="Choose username"
+                        autoComplete="username"
+                        className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                          "username",
+                          username
+                        )}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Username & Phone */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={MailIcon} className="w-4 h-4" alt="" />
+                        Email Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          handleFieldChange("email", e.target.value, setEmail);
+                          if (touched.email) {
+                            handleBlur("email");
+                          }
+                        }}
+                        onBlur={() => handleBlur("email")}
+                        placeholder="Enter email address"
+                        autoComplete="email"
+                        className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                          "email",
+                          email
+                        )}`}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={PhoneIcon} className="w-4 h-4" alt="" />
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "phoneNumber",
+                            e.target.value,
+                            setPhoneNumber
+                          )
+                        }
+                        onBlur={() => handleBlur("phoneNumber")}
+                        placeholder="Enter phone number"
+                        autoComplete="tel"
+                        className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                          "phoneNumber",
+                          phoneNumber
+                        )}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Password Fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={LockIcon} className="w-4 h-4" alt="" />
+                        Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) =>
+                            handleFieldChange(
+                              "password",
+                              e.target.value,
+                              setPassword
+                            )
+                          }
+                          onBlur={() => handleBlur("password")}
+                          placeholder="Enter password"
+                          autoComplete="new-password"
+                          className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                            "password",
+                            password
+                          )}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <img
+                            src={showPassword ? EyeOffIcon : EyeIcon}
+                            alt=""
+                            className="w-5 h-5"
+                          />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <img src={LockIcon} className="w-4 h-4" alt="" />
+                        Confirm Password <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          value={confirmPassword}
+                          onChange={(e) => {
+                            handleFieldChange(
+                              "confirmPassword",
+                              e.target.value,
+                              setConfirmPassword
+                            );
+                            // Trigger validation on change if already touched
+                            if (touched.confirmPassword) {
+                              handleBlur("confirmPassword");
+                            }
+                          }}
+                          onBlur={() => handleBlur("confirmPassword")}
+                          placeholder="Confirm password"
+                          autoComplete="new-password"
+                          className={`w-full h-11 md:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
+                            "confirmPassword",
+                            confirmPassword
+                          )}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          <img
+                            src={showConfirmPassword ? EyeOffIcon : EyeIcon}
+                            alt=""
+                            className="w-5 h-5"
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Terms & Privacy */}
+                  <div className="flex items-start gap-2 p-3 bg-gradient-to-r from-green-50 to-orange-50 rounded-lg border-2 border-orange-200">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={isChecked}
+                      onChange={(e) => setIsChecked(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 accent-orange-500 cursor-pointer"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-xs text-gray-700 cursor-pointer"
+                    >
+                      I agree to the{" "}
+                      <button
+                        type="button"
+                        className="text-green-700 font-semibold underline hover:text-green-900"
+                        onClick={() => setShowTermsModal(true)}
+                      >
+                        Terms and Conditions
+                      </button>{" "}
+                      and{" "}
+                      <button
+                        type="button"
+                        className="text-orange-700 font-semibold underline hover:text-orange-900"
+                        onClick={() => setShowPrivacyModal(true)}
+                      >
+                        Privacy Policy
+                      </button>
+                      .
+                    </label>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={!isChecked || isLoading}
+                    className="w-full h-10 bg-[#F97316] hover:bg-orange-600 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Creating Account...
+                      </>
+                    ) : (
+                      <>
+                        <img src={CreateUserIcon} alt="" className="w-5 h-5" />
+                        Create Account
+                      </>
+                    )}
+                  </button>
+
+                  {/* Sign In Link */}
+                  <p className="text-center text-xs text-gray-600 mt-2">
+                    Already have an account?{" "}
+                    <Link
+                      to="/sign-in"
+                      className="text-orange-600 hover:text-orange-700 font-semibold hover:underline transition-colors"
+                    >
+                      Sign in here
+                    </Link>
                   </p>
                 </div>
               </div>
+            </form>
 
-              {/* Form Content */}
-              <div className="p-4 sm:p-5 space-y-3">
-                {/* Name Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={UserIcon} className="w-4 h-4" alt="" />
-                      First Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "firstName",
-                          e.target.value,
-                          setFirstName
-                        )
-                      }
-                      onBlur={() => handleBlur("firstName")}
-                      placeholder="Enter first name"
-                      autoComplete="given-name"
-                      className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                        "firstName",
-                        firstName
-                      )}`}
-                    />
-                  </div>
+            {/* Modals */}
+            <TermsAndConditionsModal
+              isOpen={showTermsModal}
+              onClose={() => setShowTermsModal(false)}
+              onAgree={handleModalAgree}
+            />
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={UserIcon} className="w-4 h-4" alt="" />
-                      Last Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "lastName",
-                          e.target.value,
-                          setLastName
-                        )
-                      }
-                      onBlur={() => handleBlur("lastName")}
-                      placeholder="Enter last name"
-                      autoComplete="family-name"
-                      className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                        "lastName",
-                        lastName
-                      )}`}
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={UserIcon} className="w-4 h-4" alt="" />
-                      Username <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "username",
-                          e.target.value,
-                          setUsername
-                        )
-                      }
-                      onBlur={() => handleBlur("username")}
-                      placeholder="Choose username"
-                      autoComplete="username"
-                      className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                        "username",
-                        username
-                      )}`}
-                    />
-                  </div>
-                </div>
-
-                {/* Username & Phone */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={MailIcon} className="w-4 h-4" alt="" />
-                      Email Address <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) =>
-                        handleFieldChange("email", e.target.value, setEmail)
-                      }
-                      onBlur={() => handleBlur("email")}
-                      placeholder="Enter email address"
-                      autoComplete="email"
-                      className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                        "email",
-                        email
-                      )}`}
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={PhoneIcon} className="w-4 h-4" alt="" />
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={phoneNumber}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "phoneNumber",
-                          e.target.value,
-                          setPhoneNumber
-                        )
-                      }
-                      onBlur={() => handleBlur("phoneNumber")}
-                      placeholder="Enter phone number"
-                      autoComplete="tel"
-                      className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                        "phoneNumber",
-                        phoneNumber
-                      )}`}
-                    />
-                  </div>
-                </div>
-
-                {/* Password Fields */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={LockIcon} className="w-4 h-4" alt="" />
-                      Password <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "password",
-                            e.target.value,
-                            setPassword
-                          )
-                        }
-                        onBlur={() => handleBlur("password")}
-                        placeholder="Enter password"
-                        autoComplete="new-password"
-                        className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                          "password",
-                          password
-                        )}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <img
-                          src={showPassword ? EyeOffIcon : EyeIcon}
-                          alt=""
-                          className="w-5 h-5"
-                        />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-xs font-semibold text-gray-700 flex items-center gap-2">
-                      <img src={LockIcon} className="w-4 h-4" alt="" />
-                      Confirm Password <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={showConfirmPassword ? "text" : "password"}
-                        value={confirmPassword}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "confirmPassword",
-                            e.target.value,
-                            setConfirmPassword
-                          )
-                        }
-                        onBlur={() => handleBlur("confirmPassword")}
-                        placeholder="Confirm password"
-                        autoComplete="new-password"
-                        className={`w-full h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getBorderClass(
-                          "confirmPassword",
-                          confirmPassword
-                        )}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setShowConfirmPassword(!showConfirmPassword)
-                        }
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                      >
-                        <img
-                          src={showConfirmPassword ? EyeOffIcon : EyeIcon}
-                          alt=""
-                          className="w-5 h-5"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Terms & Privacy */}
-                <div className="flex items-start gap-2 p-3 bg-gradient-to-r from-green-50 to-orange-50 rounded-lg border-2 border-orange-200">
-                  <input
-                    type="checkbox"
-                    id="terms"
-                    checked={isChecked}
-                    onChange={(e) => setIsChecked(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 accent-orange-500 cursor-pointer"
-                  />
-                  <label
-                    htmlFor="terms"
-                    className="text-xs text-gray-700 cursor-pointer"
-                  >
-                    I agree to the{" "}
-                    <button
-                      type="button"
-                      className="text-green-700 font-semibold underline hover:text-green-900"
-                      onClick={() => setShowTermsModal(true)}
-                    >
-                      Terms and Conditions
-                    </button>{" "}
-                    and{" "}
-                    <button
-                      type="button"
-                      className="text-orange-700 font-semibold underline hover:text-orange-900"
-                      onClick={() => setShowPrivacyModal(true)}
-                    >
-                      Privacy Policy
-                    </button>
-                    .
-                  </label>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={!isChecked || isLoading}
-                  className="w-full h-10 bg-[#F97316] hover:bg-orange-600 text-white font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      <img src={CreateUserIcon} alt="" className="w-5 h-5" />
-                      Create Account
-                    </>
-                  )}
-                </button>
-
-                {/* Sign In Link */}
-                <p className="text-center text-xs text-gray-600 mt-2">
-                  Already have an account?{" "}
-                  <Link
-                    to="/sign-in"
-                    className="text-orange-600 hover:text-orange-700 font-semibold hover:underline transition-colors"
-                  >
-                    Sign in here
-                  </Link>
-                </p>
-              </div>
-            </div>
-          </form>
-
-          {/* Modals */}
-          <TermsAndConditionsModal
-            isOpen={showTermsModal}
-            onClose={() => setShowTermsModal(false)}
-            onAgree={handleModalAgree}
-          />
-
-          <PrivacyPolicyModal
-            isOpen={showPrivacyModal}
-            onClose={() => setShowPrivacyModal(false)}
-            onAgree={handleModalAgree}
-          />
+            <PrivacyPolicyModal
+              isOpen={showPrivacyModal}
+              onClose={() => setShowPrivacyModal(false)}
+              onAgree={handleModalAgree}
+            />
+          </div>
         </section>
       </main>
 
