@@ -11,11 +11,11 @@ import { BarChart3 } from "lucide-react";
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
-  const [analyticsData, setAnalyticsData] = useState(null);
+  const [diseaseData, setDiseaseData] = useState(null);
+  const [allScansData, setAllScansData] = useState(null);
   const [loading, setLoading] = useState(true);
   const abortControllerRef = useRef(null);
-  const pollIntervalRef = useRef(null);
-  const lastHashRef = useRef(null);
+  const cacheRef = useRef({});
 
   const diseaseColors = {
     Healthy: "#10b981",
@@ -24,182 +24,129 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     "Powdery Mildew": "#3b82f6",
   };
 
-  // Hash function to detect data changes
-  const hashData = useCallback((data) => {
-    if (!data) return null;
-    const str = JSON.stringify(data);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash;
-  }, []);
-
-  const getPeriodsFromRange = useCallback((range, filter) => {
-    const periods = {
-      Daily: { "Last 7 days": 7, "Last 11 days": 11, "Last 14 days": 14 },
-      Weekly: { "Last 4 weeks": 4, "Last 9 weeks": 9, "Last 12 weeks": 12 },
-      Monthly: { "Last 3 months": 3, "Last 6 months": 6, "Last 12 months": 12 },
-      Yearly: { "Last 3 years": 3, "Last 5 years": 5, "Last 7 years": 7 },
+  // Map filters to API endpoints
+  const getEndpoint = useCallback((filter, range) => {
+    const endpointMap = {
+      Daily: {
+        "Last 7 days": "seven-days-common-diseases",
+        "Last 11 days": "eleven-days-common-diseases",
+        "Last 14 days": "fourteen-days-common-diseases",
+      },
+      Weekly: {
+        "Last 4 weeks": "three-weeks-common-diseases",
+        "Last 9 weeks": "nine-weeks-common-diseases",
+        "Last 12 weeks": "twelve-weeks-common-diseases",
+      },
+      Monthly: {
+        "Last 3 months": "three-month-common-diseases",
+        "Last 6 months": "six-month-common-diseases",
+        "Last 12 months": "twelve-month-common-diseases",
+      },
+      Yearly: {
+        "Last 3 years": "three-year-common-diseases",
+        "Last 5 years": "five-year-common-diseases",
+        "Last 7 years": "seven-year-common-diseases",
+      },
     };
-    return periods[filter]?.[range] || 11;
+    return endpointMap[filter]?.[range];
   }, []);
 
-  const filterPredictionsByDateRange = useCallback(
-    (allPredictions, filter, range) => {
-      const periods = getPeriodsFromRange(range, filter);
-      const now = new Date();
-      let startDate = new Date(now);
+  // Fetch all scans (default view)
+  const fetchAllScans = useCallback(async () => {
+    if (!farmId) return null;
 
-      switch (filter) {
-        case "Daily":
-          startDate.setDate(startDate.getDate() - periods + 1);
-          break;
-        case "Weekly":
-          startDate.setDate(startDate.getDate() - periods * 7);
-          break;
-        case "Monthly":
-          startDate.setMonth(startDate.getMonth() - periods);
-          break;
-        case "Yearly":
-          startDate.setFullYear(startDate.getFullYear() - periods);
-          break;
-      }
+    const cacheKey = `all-${farmId}`;
+    if (cacheRef.current[cacheKey]) {
+      return cacheRef.current[cacheKey];
+    }
 
-      startDate.setHours(0, 0, 0, 0);
-
-      return allPredictions.filter((pred) => {
-        try {
-          const [datePart, timePart, period] = pred.timestamp.split(/\s+/);
-          const [month, day, year] = datePart.split("/");
-          const [hours, minutes] = timePart.split(":");
-          let hour24 = parseInt(hours);
-          if (period === "PM" && hour24 !== 12) hour24 += 12;
-          if (period === "AM" && hour24 === 12) hour24 = 0;
-          const predDate = new Date(year, month - 1, day, hour24, minutes);
-          return predDate >= startDate && predDate <= now;
-        } catch {
-          return false;
+    try {
+      const response = await fetch(
+        `${API_BASE}/identification-history/${farmId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      });
-    },
-    [getPeriodsFromRange]
-  );
+      );
 
-  const fetchData = useCallback(
-    async (silent = false) => {
-      if (!farmId) return;
+      if (!response.ok) throw new Error("Failed to fetch all scans");
+      const data = await response.json();
+      cacheRef.current[cacheKey] = data;
+      return data;
+    } catch (error) {
+      console.error("All scans fetch error:", error);
+      return null;
+    }
+  }, [farmId]);
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      try {
-        if (!silent && !analyticsData) {
-          setLoading(true);
-        }
-
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(
-          `${API_BASE}/identification-history/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            signal: controller.signal,
-          }
-        );
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) throw new Error("Failed to fetch data");
-
-        const data = await response.json();
-        const newHash = hashData(data);
-
-        // Only update if data changed
-        if (newHash !== lastHashRef.current) {
-          lastHashRef.current = newHash;
-          const allPredictions = Array.isArray(data) ? data : [];
-          const filteredPredictions = filterPredictionsByDateRange(
-            allPredictions,
-            timeFilter,
-            dateRange
-          );
-          setAnalyticsData(filteredPredictions);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Scans breakdown fetch error:", error);
-        }
-      } finally {
-        if (!silent) {
-          setLoading(false);
-        }
-      }
-    },
-    [
-      farmId,
-      timeFilter,
-      dateRange,
-      filterPredictionsByDateRange,
-      analyticsData,
-      hashData,
-    ]
-  );
-
-  // Initial fetch
-  useEffect(() => {
-    fetchData();
-  }, [farmId, timeFilter, dateRange]);
-
-  // Poll for changes silently
-  useEffect(() => {
+  // Fetch disease data from API
+  const fetchDiseaseData = useCallback(async () => {
     if (!farmId) return;
 
-    const checkForUpdates = async () => {
-      if (document.hidden) return;
-      await fetchData(true);
-    };
+    const endpoint = getEndpoint(timeFilter, dateRange);
 
-    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
+    // If no specific endpoint (means "All time" or default), fetch all scans
+    if (!endpoint) {
+      setLoading(true);
+      const allData = await fetchAllScans();
+      setAllScansData(allData);
+      setDiseaseData(null);
+      setLoading(false);
+      return;
+    }
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const cacheKey = `${endpoint}-${farmId}`;
+    if (cacheRef.current[cacheKey]) {
+      setDiseaseData(cacheRef.current[cacheKey]);
+      setAllScansData(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await fetch(`${API_BASE}/${endpoint}/${farmId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch disease data");
+
+      const data = await response.json();
+      cacheRef.current[cacheKey] = data;
+      setDiseaseData(data);
+      setAllScansData(null);
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Disease data fetch error:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [farmId, timeFilter, dateRange, getEndpoint, fetchAllScans]);
+
+  useEffect(() => {
+    fetchDiseaseData();
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId, timeFilter, dateRange, fetchData]);
+  }, [fetchDiseaseData]);
 
   const breakdown = useMemo(() => {
-    if (!analyticsData || analyticsData.length === 0) {
-      return {
-        chartData: [],
-        zeroCases: [
-          "Healthy",
-          "Ring Spot Virus",
-          "Anthracnose",
-          "Powdery Mildew",
-        ],
-        counts: {
-          Healthy: 0,
-          "Ring Spot Virus": 0,
-          Anthracnose: 0,
-          "Powdery Mildew": 0,
-        },
-        total: 0,
-      };
-    }
-
     const allDiseases = [
       "Healthy",
       "Ring Spot Virus",
@@ -213,11 +160,32 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       "Powdery Mildew": 0,
     };
 
-    analyticsData.forEach((pred) => {
-      if (counts.hasOwnProperty(pred.prediction)) {
-        counts[pred.prediction]++;
+    let total = 0;
+
+    // Process data from disease API
+    if (diseaseData && diseaseData.allDiseases) {
+      diseaseData.allDiseases.forEach((item) => {
+        if (counts.hasOwnProperty(item.disease)) {
+          counts[item.disease] = item.count;
+          total += item.count;
+        }
+      });
+
+      // Calculate healthy from total scans minus diseased
+      if (diseaseData.totalDiseased) {
+        counts.Healthy = Math.max(0, total - diseaseData.totalDiseased);
+        total = total + counts.Healthy;
       }
-    });
+    }
+    // Process data from all scans
+    else if (allScansData && Array.isArray(allScansData)) {
+      allScansData.forEach((pred) => {
+        if (counts.hasOwnProperty(pred.prediction)) {
+          counts[pred.prediction]++;
+        }
+      });
+      total = allScansData.length;
+    }
 
     const chartData = allDiseases
       .filter((disease) => counts[disease] > 0)
@@ -228,18 +196,25 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       }));
 
     const zeroCases = allDiseases.filter((disease) => counts[disease] === 0);
-    const total = analyticsData.length;
 
     return { chartData, zeroCases, counts, total };
-  }, [analyticsData, diseaseColors]);
+  }, [diseaseData, allScansData, diseaseColors]);
 
   const mostCommonDisease = useMemo(() => {
+    if (
+      diseaseData &&
+      diseaseData.mostCommonDiseases &&
+      diseaseData.mostCommonDiseases.length > 0
+    ) {
+      const diseaseName = diseaseData.mostCommonDiseases[0];
+      return [diseaseName, diseaseData.count];
+    }
+
     return Object.entries(breakdown.counts)
       .filter(([disease]) => disease !== "Healthy")
       .sort(([, a], [, b]) => b - a)[0];
-  }, [breakdown.counts]);
+  }, [diseaseData, breakdown.counts]);
 
-  // Custom label renderer for pie chart
   const renderCustomLabel = useCallback(
     ({ name, percent, value, cx, cy, midAngle, innerRadius, outerRadius }) => {
       const RADIAN = Math.PI / 180;
@@ -277,7 +252,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
 
   const FIXED_HEIGHT = "580px";
 
-  if (loading && !analyticsData) {
+  if (loading) {
     return (
       <div
         className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"

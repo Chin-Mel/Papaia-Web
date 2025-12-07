@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
-import ScanDetailModal from "../components/Popups/ScanDetailModal.jsx";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
@@ -11,21 +10,34 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const abortControllerRef = useRef(null);
-  const pollIntervalRef = useRef(null);
-  const lastHashRef = useRef(null);
+  const cacheRef = useRef({});
   const SCANS_PER_PAGE = 3;
 
-  // Hash function to detect data changes
-  const hashData = useCallback((data) => {
-    if (!data) return null;
-    const str = JSON.stringify(data);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-    return hash;
+  // Map filters to API endpoints for disease data
+  const getEndpoint = useCallback((filter, range) => {
+    const endpointMap = {
+      Daily: {
+        "Last 7 days": "seven-days-common-diseases",
+        "Last 11 days": "eleven-days-common-diseases",
+        "Last 14 days": "fourteen-days-common-diseases",
+      },
+      Weekly: {
+        "Last 4 weeks": "three-weeks-common-diseases",
+        "Last 9 weeks": "nine-weeks-common-diseases",
+        "Last 12 weeks": "twelve-weeks-common-diseases",
+      },
+      Monthly: {
+        "Last 3 months": "three-month-common-diseases",
+        "Last 6 months": "six-month-common-diseases",
+        "Last 12 months": "twelve-month-common-diseases",
+      },
+      Yearly: {
+        "Last 3 years": "three-year-common-diseases",
+        "Last 5 years": "five-year-common-diseases",
+        "Last 7 years": "seven-year-common-diseases",
+      },
+    };
+    return endpointMap[filter]?.[range];
   }, []);
 
   const getPeriodsFromRange = useCallback((range, filter) => {
@@ -79,24 +91,27 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
-  const fetchData = useCallback(
-    async (silent = false) => {
-      if (!farmId) return;
+  const fetchData = useCallback(async () => {
+    if (!farmId) return;
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+    const endpoint = getEndpoint(timeFilter, dateRange);
 
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-      try {
-        if (!silent && recentScans.length === 0) {
-          setLoading(true);
-        }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      setLoading(true);
 
+      // Check if we have all scans cached
+      const cacheKey = `all-scans-${farmId}`;
+      let allScans = cacheRef.current[cacheKey];
+
+      // Fetch all scans if not cached
+      if (!allScans) {
         const response = await fetch(
           `${API_BASE}/identification-history/${farmId}`,
           {
@@ -107,69 +122,42 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           }
         );
 
-        clearTimeout(timeoutId);
-
         if (!response.ok) throw new Error("Failed to fetch scans");
 
-        const scansData = await response.json();
-        const newHash = hashData(scansData);
-
-        // Only update if data changed
-        if (newHash !== lastHashRef.current) {
-          lastHashRef.current = newHash;
-          const allScans = Array.isArray(scansData) ? scansData : [];
-          const filteredScans = filterScansByDateRange(
-            allScans,
-            timeFilter,
-            dateRange
-          );
-          setRecentScans(filteredScans);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Recent scans fetch error:", error);
-        }
-      } finally {
-        if (!silent) {
-          setLoading(false);
-        }
+        allScans = await response.json();
+        cacheRef.current[cacheKey] = allScans;
       }
-    },
-    [
-      farmId,
-      timeFilter,
-      dateRange,
-      filterScansByDateRange,
-      recentScans.length,
-      hashData,
-    ]
-  );
 
-  // Initial fetch
+      // If no specific endpoint (default/all time), show all scans
+      if (!endpoint) {
+        setRecentScans(Array.isArray(allScans) ? allScans : []);
+      } else {
+        // Filter scans by date range
+        const filtered = filterScansByDateRange(
+          Array.isArray(allScans) ? allScans : [],
+          timeFilter,
+          dateRange
+        );
+        setRecentScans(filtered);
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Recent scans fetch error:", error);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [farmId, timeFilter, dateRange, getEndpoint, filterScansByDateRange]);
+
   useEffect(() => {
     fetchData();
-  }, [farmId, timeFilter, dateRange]);
-
-  // Poll for changes silently
-  useEffect(() => {
-    if (!farmId) return;
-
-    const checkForUpdates = async () => {
-      if (document.hidden) return;
-      await fetchData(true);
-    };
-
-    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
 
     return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [farmId, timeFilter, dateRange, fetchData]);
+  }, [fetchData]);
 
   const getCardStyle = useCallback((prediction) => {
     const styles = {
@@ -268,7 +256,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
   const FIXED_HEIGHT = "340px";
 
-  if (loading && recentScans.length === 0) {
+  if (loading) {
     return (
       <div
         className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
@@ -377,12 +365,13 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         )}
       </div>
 
-      <ScanDetailModal
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        scan={selectedScan}
-        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
-      />
+      {showDetailModal && selectedScan && (
+        <ScanDetailModal
+          scan={selectedScan}
+          farmerName={getFarmerName(selectedScan)}
+          onClose={() => setShowDetailModal(false)}
+        />
+      )}
     </div>
   );
 }
