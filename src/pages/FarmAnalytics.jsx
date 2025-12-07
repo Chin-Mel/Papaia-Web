@@ -1,3 +1,4 @@
+//new
 import React, {
   useState,
   useEffect,
@@ -31,6 +32,8 @@ export default function FarmAnalytics({
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
+  const [farmHealthData, setFarmHealthData] = useState(null);
+  const [healthLoading, setHealthLoading] = useState(false);
   const abortControllerRef = useRef(null);
   const pollIntervalRef = useRef(null);
   const lastDataHashRef = useRef(null);
@@ -545,7 +548,6 @@ export default function FarmAnalytics({
     </div>
   );
 }
-
 // import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 // import {
 //   LineChart,
