@@ -1,4 +1,4 @@
-// SignInPage.jsx - Complete Optimized Version
+// SignInPage.jsx - Enhanced Responsive Version
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterStart from "../components/Footer/FooterStart";
@@ -139,9 +139,7 @@ export default function SignInPage() {
       showAlert("success", "Account reactivated successfully!");
 
       // Navigate to dashboard
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 1500);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       showAlert("error", "Failed to reactivate account. Please try again.");
       setShowReactivationModal(false);
@@ -290,9 +288,7 @@ export default function SignInPage() {
       // Show success message and redirect
       showAlert("success", "Login Successful!");
 
-      setTimeout(() => {
-        navigate("/dashboard", { replace: true });
-      }, 1500);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err.name === "AbortError") {
         showAlert(
@@ -311,194 +307,180 @@ export default function SignInPage() {
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      <main className="flex-1">
-        <section className="relative h-[90vh] sm:h-[100vh] flex items-center justify-center overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 brightness-110"
-            style={{ backgroundImage: `url(${MainBackground})` }}
-            role="img"
-            aria-label="Agricultural background"
-          />
+      <main className="flex-1 py-12 px-4 relative h-[90vh] sm:h-[100vh] flex items-center justify-center overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
+          style={{
+            backgroundImage: `url(${MainBackground})`,
+          }}
+        ></div>
 
-          {/* Login Form Container */}
-          <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-xl mx-auto px-4 relative z-10 pt-15">
-            <div className="bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
-              {/* Header Section */}
-              <div className="py-6 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center rounded-t-2xl">
-                <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl mb-2 ring-4 ring-white/30">
-                  <img
-                    src={papaiaLogo}
-                    alt="Papaia Logo"
-                    className="w-7 h-9 object-contain"
-                  />
-                </div>
-                <h1 className="text-lg font-bold text-white">Papaya Farm</h1>
-                <p className="text-white/90 text-xs mt-1">
-                  Welcome back to your farm dashboard
-                </p>
+        <div className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl mx-auto relative z-10 my-12">
+          <div className="w-full bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col">
+            <div className="h-36 sm:h-40 bg-gradient-to-r from-[#00712D] to-[#F97316] flex flex-col items-center justify-center relative">
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+                <img
+                  src={papaiaLogo}
+                  alt="Papaia Logo"
+                  className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
+                />
               </div>
-              {/* Form Section */}
-              <div className="p-6 sm:p-8 lg:p-6 xl:p-5">
-                {showReactivationModal ? (
-                  // Reactivation Modal
-                  <div className="space-y-5">
-                    <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white text-xl font-bold">
-                            !
-                          </span>
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-yellow-900 mb-2">
-                            Account Deactivated
-                          </h3>
-                          <p className="text-sm text-yellow-800 leading-relaxed">
-                            Your account is currently deactivated. Would you
-                            like to reactivate it now to regain full access?
-                          </p>
-                        </div>
+
+              <h1 className="text-lg sm:text-xl font-bold text-white mt-[2px]">
+                Papaya Farm
+              </h1>
+              <p className="text-[#FDEDD3] text-xs sm:text-sm mt-1 text-center">
+                Welcome back to your farm dashboard
+              </p>
+            </div>
+
+            <div className="p-4 sm:p-6 flex-1 flex flex-col justify-between">
+              {showReactivationModal ? (
+                <div className="space-y-4 sm:space-y-5">
+                  <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xl font-bold">!</span>
                       </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <button
-                        onClick={handleReactivate}
-                        disabled={loading}
-                        className="w-full h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        {loading ? (
-                          <>
-                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Reactivating...
-                          </>
-                        ) : (
-                          "Reactivate My Account"
-                        )}
-                      </button>
-
-                      <button
-                        onClick={handleCancelReactivation}
-                        disabled={loading}
-                        className="w-full h-11 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Cancel
-                      </button>
+                      <div>
+                        <h3 className="font-bold text-yellow-900 mb-1 text-sm sm:text-base">
+                          Account Deactivated
+                        </h3>
+                        <p className="text-xs sm:text-sm text-yellow-800 leading-relaxed">
+                          Your account is currently deactivated. Would you like
+                          to reactivate it now to regain full access to your
+                          farm dashboard?
+                        </p>
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  // Login Form
-                  <>
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                      {/* Username/Email Field */}
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
-                          <img src={UserIcon} alt="" className="w-4 h-4" />
-                          Username or Email{" "}
-                          <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Enter your username or email"
-                          value={usernameOrEmail}
-                          onChange={(e) =>
-                            handleFieldChange("usernameOrEmail", e.target.value)
-                          }
-                          onBlur={() => handleBlur("usernameOrEmail")}
-                          className={`w-full h-11 px-4 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
-                            "usernameOrEmail",
-                            usernameOrEmail
-                          )}`}
-                          autoComplete="username"
+
+                  <div className="space-y-3">
+                    <button
+                      onClick={handleReactivate}
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm sm:text-base font-semibold rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? "Reactivating..." : "Reactivate My Account"}
+                    </button>
+
+                    <button
+                      onClick={handleCancelReactivation}
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 border-2 border-gray-300 text-gray-700 text-sm sm:text-base font-medium rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <form
+                    className="space-y-4 sm:space-y-5 flex flex-col justify-start"
+                    onSubmit={handleSubmit}
+                  >
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                        <img
+                          src={UserIcon}
+                          alt="Username"
+                          className="w-4 h-4"
                         />
-                      </div>
+                        Username or Email *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Enter your username or email"
+                        value={usernameOrEmail}
+                        onChange={(e) =>
+                          handleFieldChange("usernameOrEmail", e.target.value)
+                        }
+                        onBlur={() => handleBlur("usernameOrEmail")}
+                        className={`w-full h-10 sm:h-11 px-3 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
+                          "usernameOrEmail",
+                          usernameOrEmail
+                        )}`}
+                        autoComplete="username"
+                      />
+                    </div>
 
-                      {/* Password Field */}
-                      <div className="space-y-2">
-                        <label className="flex items-center gap-2 text-gray-700 text-sm font-medium">
-                          <img src={LockIcon} alt="" className="w-4 h-4" />
-                          Password <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) =>
-                              handleFieldChange("password", e.target.value)
-                            }
-                            onBlur={() => handleBlur("password")}
-                            className={`w-full h-11 px-4 pr-12 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
-                              "password",
-                              password
-                            )}`}
-                            autoComplete="current-password"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                            aria-label={
-                              showPassword ? "Hide password" : "Show password"
-                            }
-                          >
-                            <img
-                              src={showPassword ? EyeOffIcon : EyeIcon}
-                              alt=""
-                              className="w-5 h-5"
-                            />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Forgot Password Link */}
-                      <div className="flex justify-end">
-                        <Link
-                          to="/forgot-password"
-                          className="text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+                    <div className="space-y-1">
+                      <label className="flex items-center gap-2 text-gray-600 text-xs sm:text-sm font-medium">
+                        <img
+                          src={LockIcon}
+                          alt="Password"
+                          className="w-4 h-4"
+                        />
+                        Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) =>
+                            handleFieldChange("password", e.target.value)
+                          }
+                          onBlur={() => handleBlur("password")}
+                          className={`w-full h-10 sm:h-11 px-3 pr-10 bg-gray-50 border rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 outline-none transition-all ${getFieldBorderClass(
+                            "password",
+                            password
+                          )}`}
+                          autoComplete="current-password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                         >
-                          Forgot password?
-                        </Link>
+                          <img
+                            src={showPassword ? EyeOffIcon : EyeIcon}
+                            alt={showPassword ? "Hide" : "Show"}
+                            className="w-5 h-5"
+                          />
+                        </button>
                       </div>
+                    </div>
 
-                      {/* Login Button */}
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full h-11 bg-[#F0820B] hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        {loading ? (
-                          <>
-                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                            Logging in...
-                          </>
-                        ) : (
-                          <>
-                            <img src={LoginIcon} alt="" className="w-5 h-5" />
-                            Login to Farm
-                          </>
-                        )}
-                      </button>
-                    </form>
-
-                    {/* Sign Up Link */}
-                    <div className="text-center mt-6">
-                      <span className="text-gray-600 text-sm">
-                        Don't have an account?{" "}
-                      </span>
+                    <div className="flex items-center justify-end">
                       <Link
-                        to="/sign-up"
-                        className="text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors font-medium"
+                        to="/forgot-password"
+                        className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline cursor-pointer transition-colors"
                       >
-                        Sign up here
+                        Forgot password?
                       </Link>
                     </div>
-                  </>
-                )}
-              </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer w-full h-10 sm:h-11 bg-gradient-to-r bg-[#F0820B] hover:bg-orange-600 text-white text-sm sm:text-base font-semibold rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <img
+                        src={LoginIcon}
+                        alt="Login"
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                      />
+                      {loading ? "Logging in..." : "Login to Farm"}
+                    </button>
+                  </form>
+
+                  <div className="text-center">
+                    <span className="text-gray-500 text-xs sm:text-sm">
+                      Don't have an account?{" "}
+                    </span>
+                    <Link
+                      to="/sign-up"
+                      className="text-xs sm:text-sm text-orange-500 hover:text-orange-600 hover:underline transition-colors"
+                    >
+                      Sign up here
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </section>
+        </div>
       </main>
 
       <FooterStart />
