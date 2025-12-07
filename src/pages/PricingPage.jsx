@@ -23,7 +23,6 @@ export default function PricingPage() {
         "No team access",
       ],
       color: "from-gray-500 to-gray-600",
-      popular: false,
     },
     {
       name: "Farmer",
@@ -39,7 +38,6 @@ export default function PricingPage() {
       ],
       limitations: ["No web dashboard", "No multi-farm tools"],
       color: "from-green-500 to-green-600",
-      popular: false,
     },
     {
       name: "Basic",
@@ -56,7 +54,6 @@ export default function PricingPage() {
       ],
       limitations: [],
       color: "from-orange-500 to-orange-600",
-      popular: true,
     },
     {
       name: "Enterprise",
@@ -73,7 +70,6 @@ export default function PricingPage() {
       ],
       limitations: [],
       color: "from-blue-600 to-blue-700",
-      popular: false,
     },
   ];
 
@@ -82,7 +78,6 @@ export default function PricingPage() {
       <HeaderMain />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
@@ -91,13 +86,13 @@ export default function PricingPage() {
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
             <div className="text-center">
-              <div className="w-full max-w-[842px] mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
+              <div className="w-full max-w-4xl mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-25 mb-8">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                   Simple, Transparent Pricing
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-white/90 leading-relaxed max-w-3xl mx-auto">
                   Choose the perfect plan for your farming needs. From backyard
                   growers to large agribusinesses.
                 </p>
@@ -106,9 +101,8 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Pricing Plans */}
         <section className="py-12 sm:py-16 bg-gray-50">
-          <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12">
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-4">
                 Choose Your Plan
@@ -122,16 +116,8 @@ export default function PricingPage() {
               {plans.map((plan, index) => (
                 <div
                   key={index}
-                  className={`relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 flex flex-col ${
-                    plan.popular ? "ring-2 ring-orange-500" : ""
-                  }`}
+                  className="relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 flex flex-col"
                 >
-                  {plan.popular && (
-                    <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
-                      POPULAR
-                    </div>
-                  )}
-
                   <div
                     className={`bg-gradient-to-r ${plan.color} p-6 text-white`}
                   >

@@ -1,5 +1,4 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   User,
   AtSign,
@@ -8,6 +7,8 @@ import {
   Edit3,
   Tractor,
   FileText,
+  FileCheck,
+  Shield,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../utils/security";
@@ -17,79 +18,62 @@ import defaultUserPic from "../assets/default-user.png";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState(null);
   const [farmCount, setFarmCount] = useState(0);
-
-  const loggedInUser = getLoggedInUser();
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!loggedInUser || !token) return;
+    const initializeProfile = async () => {
+      const loggedInUser = getLoggedInUser();
+      const token = localStorage.getItem("token");
 
-    setUserData(loggedInUser);
+      if (!loggedInUser || !token) {
+        setLoading(false);
+        return;
+      }
 
-    let mounted = true;
+      setUserData(loggedInUser);
 
-    const fetchUserData = async () => {
       try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const [userRes, farmRes] = await Promise.all([
+          fetch(`https://papaiaapi.onrender.com/api/user/${loggedInUser.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        if (res.ok) {
-          const data = await res.json();
-          const user = data.user || data;
-          if (mounted) {
-            setUserData(user);
-            const currentUser = JSON.parse(
-              localStorage.getItem("user") || "{}"
-            );
-            if (JSON.stringify(currentUser) !== JSON.stringify(user)) {
-              localStorage.setItem("user", JSON.stringify(user));
-            }
-          }
-        }
-      } catch (err) {}
-    };
-
-    const fetchFarmCount = async () => {
-      try {
-        const res = await fetch(
-          "https://papaiaapi.onrender.com/api/owner/count-farms",
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        if (!res.ok) {
-          return;
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          const user = userData.user || userData;
+          setUserData(user);
+          localStorage.setItem("user", JSON.stringify(user));
         }
 
-        const data = await res.json();
-        if (mounted) setFarmCount(data.farmCount ?? 0);
-      } catch (err) {}
+        if (farmRes.ok) {
+          const farmData = await farmRes.json();
+          setFarmCount(farmData.farmCount ?? 0);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    fetchUserData();
-    fetchFarmCount();
+    initializeProfile();
 
     const handleUserUpdate = () => {
       const updatedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (mounted && updatedUser.id) {
+      if (updatedUser.id) {
         setUserData(updatedUser);
       }
     };
 
     window.addEventListener("userUpdated", handleUserUpdate);
-
-    return () => {
-      mounted = false;
-      window.removeEventListener("userUpdated", handleUserUpdate);
-    };
-  }, [loggedInUser?.id, token]);
-
-  const handleEditProfile = () => {
-    navigate("/edit-profile");
-  };
+    return () => window.removeEventListener("userUpdated", handleUserUpdate);
+  }, []);
 
   const renderField = (value) => (
     <span className={value ? "text-gray-800" : "text-gray-400 italic"}>
@@ -98,34 +82,43 @@ export default function ProfilePage() {
   );
 
   const getFullName = () => {
+    if (!userData) return "N/A";
     const { firstName, lastName, middleName, suffix } = userData;
     if (firstName && lastName) {
       let fullName = middleName
         ? `${firstName} ${middleName} ${lastName}`
         : `${firstName} ${lastName}`;
-
-      if (suffix) {
-        fullName += ` ${suffix}`;
-      }
-
+      if (suffix) fullName += ` ${suffix}`;
       return fullName;
     }
     return userData.username || "N/A";
   };
 
   const getProfilePictureUrl = () => {
-    if (userData?.profilePicture) {
-      return userData.profilePicture;
-    }
-    return defaultUserPic;
+    return userData?.profilePicture || defaultUserPic;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading profile...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
 
       <main className="flex-1 mt-8 px-4 sm:px-6 lg:px-8 mb-10">
-        <div className="w-full">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">
               Profile
@@ -138,7 +131,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div>
               <div className="bg-white rounded-lg shadow-sm p-6 h-full flex flex-col items-center">
-                <div className="relative">
+                <div className="relative mb-4">
                   <img
                     src={getProfilePictureUrl()}
                     alt={getFullName()}
@@ -149,12 +142,12 @@ export default function ProfilePage() {
                   />
                 </div>
 
-                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mt-4 mb-1 text-center">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-1 text-center">
                   {getFullName()}
                 </h2>
-                <p className="text-gray-600 text-sm mb-3">Farm Owner</p>
+                <p className="text-gray-600 text-sm mb-4">Farm Owner</p>
 
-                <div className="bg-green-50 rounded-lg p-4 border border-green-100 w-full">
+                <div className="bg-green-50 rounded-lg p-4 border border-green-100 w-full mb-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
@@ -170,12 +163,44 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-100 w-full mb-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <FileCheck className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700">
+                        Current Plan
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold text-blue-600">
+                      Enterprise
+                    </span>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => navigate("/billing")}
-                  className="mt-4 w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-start gap-3 transition-colors border border-gray-200"
+                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-3 transition-all shadow hover:shadow-md mb-3"
+                >
+                  <FileText className="w-5 h-5" />
+                  <span>Manage Billing</span>
+                </button>
+
+                <button
+                  onClick={() => navigate("/terms")}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-3 transition-colors border border-gray-200 mb-2"
                 >
                   <FileText className="w-5 h-5 text-gray-600" />
-                  <span>Manage Billing</span>
+                  <span>Terms & Conditions</span>
+                </button>
+
+                <button
+                  onClick={() => navigate("/privacy")}
+                  className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center justify-center gap-3 transition-colors border border-gray-200"
+                >
+                  <Shield className="w-5 h-5 text-gray-600" />
+                  <span>Privacy Policy</span>
                 </button>
               </div>
             </div>
@@ -187,9 +212,9 @@ export default function ProfilePage() {
                     Personal Information
                   </h3>
                   <button
-                    onClick={handleEditProfile}
-                    disabled={!userData.id}
-                    className="bg-gradient-to-r from-[#FF8C42] to-[#F97316] hover:from-[#F97316] hover:to-[#FF8C42] text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm transition shadow hover:shadow-md self-center sm:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => navigate("/edit-profile")}
+                    disabled={!userData?.id}
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm transition-all shadow hover:shadow-md self-center sm:self-auto disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Edit3 className="w-4 h-4" />
                     Edit Profile
@@ -211,7 +236,7 @@ export default function ProfilePage() {
                       <AtSign className="w-4 h-4" /> Username
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.username)}
+                      {renderField(userData?.username)}
                     </div>
                   </div>
 
@@ -220,7 +245,7 @@ export default function ProfilePage() {
                       <Mail className="w-4 h-4" /> Email Address
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.email)}
+                      {renderField(userData?.email)}
                     </div>
                   </div>
 
@@ -229,7 +254,7 @@ export default function ProfilePage() {
                       <Phone className="w-4 h-4" /> Contact Number
                     </label>
                     <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
-                      {renderField(userData.contactNumber)}
+                      {renderField(userData?.contactNumber)}
                     </div>
                   </div>
                 </div>

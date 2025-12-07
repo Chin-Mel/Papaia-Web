@@ -93,7 +93,7 @@ export default function AboutPage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-[#00712D] to-[#004d1f] overflow-hidden">
+        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}

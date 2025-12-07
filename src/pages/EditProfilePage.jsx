@@ -77,17 +77,17 @@ export default function EditProfilePage() {
         contactNumber: user.contactNumber || "",
       });
 
-      const url = `https://papaiaapi.onrender.com/api/user/${userId}`;
-
       try {
-        const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (res.ok) {
           const data = await res.json();
           const freshUser = data.user || data;
-
           setUserData(freshUser);
           setFormValues({
             firstName: freshUser.firstName || "",
@@ -98,11 +98,11 @@ export default function EditProfilePage() {
             email: freshUser.email || "",
             contactNumber: freshUser.contactNumber || "",
           });
-
           localStorage.setItem("user", JSON.stringify(freshUser));
           setError(null);
         }
       } catch (err) {
+        console.error("Error fetching user data:", err);
       } finally {
         setInitialLoad(false);
       }
@@ -113,10 +113,7 @@ export default function EditProfilePage() {
 
   const handleProfilePictureSelect = (e) => {
     const file = e.target.files[0];
-
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
     if (file.size > 10485760) {
       showAlert("File size exceeds 10MB limit", "error");
@@ -143,27 +140,27 @@ export default function EditProfilePage() {
 
   const handleSaveChanges = async () => {
     if (!formValues.firstName?.trim()) {
-      showAlert("First name is required and cannot be empty", "error");
+      showAlert("First name is required", "error");
       return;
     }
 
     if (!formValues.lastName?.trim()) {
-      showAlert("Last name is required and cannot be empty", "error");
+      showAlert("Last name is required", "error");
       return;
     }
 
     if (!formValues.username?.trim()) {
-      showAlert("Username is required and cannot be empty", "error");
+      showAlert("Username is required", "error");
       return;
     }
 
     if (!formValues.email?.trim()) {
-      showAlert("Email is required and cannot be empty", "error");
+      showAlert("Email is required", "error");
       return;
     }
 
     if (!formValues.contactNumber?.trim()) {
-      showAlert("Contact number is required and cannot be empty", "error");
+      showAlert("Contact number is required", "error");
       return;
     }
 
@@ -181,39 +178,30 @@ export default function EditProfilePage() {
         const formData = new FormData();
         formData.append("profilePicture", selectedImage);
 
-        try {
-          const res = await fetch(
-            "https://papaiaapi.onrender.com/api/profile-picture",
-            {
-              method: "PUT",
-              headers: { Authorization: `Bearer ${token}` },
-              body: formData,
-            }
-          );
-
-          if (res.ok) {
-            const data = await res.json();
-            updatedProfilePicture = data.profilePicture;
-          } else {
-            throw new Error("Failed to upload profile picture");
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/profile-picture",
+          {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
           }
-        } catch (err) {
-          showAlert(`Error uploading profile picture: ${err.message}`, "error");
-          setLoading(false);
-          return;
+        );
+
+        if (res.ok) {
+          const data = await res.json();
+          updatedProfilePicture = data.profilePicture;
+        } else {
+          throw new Error("Failed to upload profile picture");
         }
       }
 
       const updatedData = {};
       Object.keys(formValues).forEach((key) => {
         let newValue = formValues[key];
-
         if (typeof newValue === "string") {
           newValue = newValue.trim();
         }
-
         const oldValue = userData[key];
-
         if (newValue !== oldValue) {
           updatedData[key] = newValue;
         }
@@ -256,7 +244,6 @@ export default function EditProfilePage() {
 
       setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
-
       setSelectedImage(null);
       setPreviewUrl(null);
       if (fileInputRef.current) {
@@ -274,9 +261,8 @@ export default function EditProfilePage() {
       });
 
       window.dispatchEvent(new Event("userUpdated"));
-
       showAlert("Profile updated successfully!", "success");
-      navigate("/profile");
+      setTimeout(() => navigate("/profile"), 1000);
     } catch (err) {
       showAlert(
         err.message || "Error updating profile. Please try again.",
@@ -287,22 +273,12 @@ export default function EditProfilePage() {
     }
   };
 
-  const handleCloseChangePasswordModal = () =>
-    setShowChangePasswordModal(false);
-  const handleCloseDeactivateAccountModal = () =>
-    setShowDeactivateAccountModal(false);
-
   const getProfilePictureUrl = () => {
-    if (previewUrl) {
-      return previewUrl;
-    }
-
+    if (previewUrl) return previewUrl;
     const pic = userData?.profilePicture;
-
     if (pic && typeof pic === "string") {
       return `${pic}${pic.includes("?") ? "&" : "?"}t=${Date.now()}`;
     }
-
     return defaultUserPic;
   };
 
@@ -318,7 +294,7 @@ export default function EditProfilePage() {
         <HeaderMain />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading your profile...</p>
           </div>
         </main>
@@ -344,16 +320,6 @@ export default function EditProfilePage() {
                 <p className="text-red-700 mb-4">{error}</p>
               </div>
             </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-              <h3 className="font-bold text-yellow-800 mb-2">What to do:</h3>
-              <ul className="list-disc list-inside text-yellow-700 space-y-1">
-                <li>Your session may have expired</li>
-                <li>Try logging in again</li>
-                <li>If the problem persists, contact support</li>
-              </ul>
-            </div>
-
             <button
               onClick={handleClearAndLogin}
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
@@ -370,7 +336,6 @@ export default function EditProfilePage() {
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <HeaderMain />
-
       <input
         type="file"
         ref={fileInputRef}
@@ -380,212 +345,152 @@ export default function EditProfilePage() {
       />
 
       <main className="flex-1 w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-            <div className="relative">
-              <img
-                src={getProfilePictureUrl()}
-                alt={`${userData?.firstName || ""} ${userData?.lastName || ""}`}
-                className="w-24 h-24 rounded-full border-2 border-gray-200 object-cover"
-                onError={(e) => (e.currentTarget.src = defaultUserPic)}
-              />
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+              <div className="relative">
+                <img
+                  src={getProfilePictureUrl()}
+                  alt={`${userData?.firstName || ""} ${
+                    userData?.lastName || ""
+                  }`}
+                  className="w-24 h-24 rounded-full border-2 border-gray-200 object-cover"
+                  onError={(e) => (e.currentTarget.src = defaultUserPic)}
+                />
+                <button
+                  onClick={handleCameraClick}
+                  className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition border-2 border-white"
+                  title="Change profile picture"
+                >
+                  <Camera className="w-4 h-4 text-white" />
+                </button>
+              </div>
 
+              <div className="flex-1 text-center sm:text-left">
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                  {userData?.firstName}{" "}
+                  {userData?.middleName
+                    ? `${userData.middleName.charAt(0)}. `
+                    : ""}
+                  {userData?.lastName}
+                  {userData?.suffix ? ` ${userData.suffix}` : ""}
+                </h1>
+                <p className="text-gray-600 mb-2">Farm Owner</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Personal Information
+              </h2>
               <button
-                onClick={handleCameraClick}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition border-2 border-white"
-                title="Change profile picture"
+                onClick={handleSaveChanges}
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
-                <Camera className="w-4 h-4 text-white" />
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save size={18} />
+                    Save Changes
+                  </>
+                )}
               </button>
             </div>
 
-            <div className="flex-1 text-center sm:text-left">
-              <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                {userData?.firstName}{" "}
-                {userData?.middleName
-                  ? `${userData.middleName.charAt(0)}. `
-                  : ""}
-                {userData?.lastName}
-                {userData?.suffix ? ` ${userData.suffix}` : ""}
-              </h1>
-              <p className="text-gray-600 mb-2">Farm Owner</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <InputField
+                label="First Name"
+                value={formValues.firstName}
+                placeholder="First Name"
+                onChange={(val) => handleChange("firstName", val)}
+              />
+              <InputField
+                label="Middle Name"
+                value={formValues.middleName}
+                placeholder="Middle Name"
+                optional
+                onChange={(val) => handleChange("middleName", val)}
+              />
+              <InputField
+                label="Last Name"
+                value={formValues.lastName}
+                placeholder="Last Name"
+                onChange={(val) => handleChange("lastName", val)}
+              />
+              <ProfileSelect
+                label="Suffix"
+                value={formValues.suffix}
+                onChange={(val) => handleChange("suffix", val)}
+                options={[
+                  { value: "", label: "Select Suffix (Optional)" },
+                  { value: "Jr.", label: "Jr." },
+                  { value: "Sr.", label: "Sr." },
+                  { value: "II", label: "II" },
+                  { value: "III", label: "III" },
+                  { value: "IV", label: "IV" },
+                  { value: "V", label: "V" },
+                ]}
+              />
+              <InputField
+                label="Username"
+                value={formValues.username}
+                placeholder="Username"
+                onChange={(val) => handleChange("username", val)}
+              />
+              <InputField
+                label="Email Address"
+                type="email"
+                icon={Mail}
+                value={formValues.email}
+                placeholder="Email"
+                onChange={(val) => handleChange("email", val)}
+              />
+              <InputField
+                label="Contact Number"
+                type="tel"
+                icon={Phone}
+                value={formValues.contactNumber}
+                placeholder="Contact Number"
+                onChange={(val) => handleChange("contactNumber", val)}
+              />
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Personal Information
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200">
+              Security & Privacy
             </h2>
-            <button
-              onClick={handleSaveChanges}
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
-            >
-              <Save size={18} />
-              {loading ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                First Name
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  value={formValues.firstName}
-                  placeholder="First Name"
-                  onChange={(e) => handleChange("firstName", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-gray-50 rounded-xl border border-gray-200">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                  Change Password
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Update your account password to keep it secure
+                </p>
               </div>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                Middle Name{" "}
-                <span className="text-gray-400 font-normal">(Optional)</span>
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  value={formValues.middleName}
-                  placeholder="Middle Name"
-                  onChange={(e) => handleChange("middleName", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                Last Name
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  value={formValues.lastName}
-                  placeholder="Last Name"
-                  onChange={(e) => handleChange("lastName", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <ProfileSelect
-              label="Suffix"
-              value={formValues.suffix}
-              onChange={(val) => handleChange("suffix", val)}
-              options={[
-                { value: "", label: "Select Suffix (Optional)" },
-                { value: "Jr.", label: "Jr." },
-                { value: "Sr.", label: "Sr." },
-                { value: "II", label: "II" },
-                { value: "III", label: "III" },
-                { value: "IV", label: "IV" },
-                { value: "V", label: "V" },
-              ]}
-            />
-
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                Username
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <User size={18} />
-                </div>
-                <input
-                  type="text"
-                  value={formValues.username}
-                  placeholder="Username"
-                  onChange={(e) => handleChange("username", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <Mail size={18} />
-                </div>
-                <input
-                  type="email"
-                  value={formValues.email}
-                  placeholder="Email"
-                  onChange={(e) => handleChange("email", e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-sm font-semibold text-gray-700 mb-2">
-                Contact Number
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-gray-400">
-                  <Phone size={18} />
-                </div>
-                <input
-                  type="tel"
-                  value={formValues.contactNumber}
-                  placeholder="Contact Number"
-                  onChange={(e) =>
-                    handleChange("contactNumber", e.target.value)
-                  }
-                  className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200">
-            Security & Privacy
-          </h2>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-gray-50 rounded-xl border border-gray-200">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
+              <button
+                onClick={() => setShowChangePasswordModal(true)}
+                disabled={loading}
+                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md whitespace-nowrap"
+              >
+                <Shield size={18} />
                 Change Password
-              </h3>
-              <p className="text-sm text-gray-600">
-                Update your account password to keep it secure
-              </p>
+              </button>
             </div>
-            <button
-              onClick={() => setShowChangePasswordModal(true)}
-              disabled={loading}
-              className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md whitespace-nowrap"
-            >
-              <Shield size={18} />
-              Change Password
-            </button>
           </div>
-        </div>
 
-        <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-6">
-          <h2 className="text-2xl font-bold text-red-700 mb-4 pb-4 border-b border-red-200">
-            Danger Zone
-          </h2>
-          <div className="space-y-4">
+          <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-6">
+            <h2 className="text-2xl font-bold text-red-700 mb-4 pb-4 border-b border-red-200">
+              Danger Zone
+            </h2>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-red-50 rounded-xl border border-red-200">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-1">
@@ -611,13 +516,13 @@ export default function EditProfilePage() {
       {showChangePasswordModal && (
         <ChangePasswordModal
           isOpen={showChangePasswordModal}
-          onClose={handleCloseChangePasswordModal}
+          onClose={() => setShowChangePasswordModal(false)}
         />
       )}
       {showDeactivateAccountModal && (
         <DeactivateAccountModal
           isOpen={showDeactivateAccountModal}
-          onClose={handleCloseDeactivateAccountModal}
+          onClose={() => setShowDeactivateAccountModal(false)}
         />
       )}
 
@@ -625,6 +530,37 @@ export default function EditProfilePage() {
     </div>
   );
 }
+
+const InputField = ({
+  label,
+  value,
+  placeholder,
+  onChange,
+  optional,
+  type = "text",
+  icon: Icon = User,
+}) => (
+  <div className="flex flex-col">
+    <label className="text-sm font-semibold text-gray-700 mb-2">
+      {label}{" "}
+      {optional && (
+        <span className="text-gray-400 font-normal">(Optional)</span>
+      )}
+    </label>
+    <div className="relative flex items-center">
+      <div className="absolute left-3 text-gray-400">
+        <Icon size={18} />
+      </div>
+      <input
+        type={type}
+        value={value}
+        placeholder={placeholder}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+      />
+    </div>
+  </div>
+);
 
 const ProfileSelect = ({ label, value, onChange, options }) => {
   const [isOpen, setIsOpen] = useState(false);

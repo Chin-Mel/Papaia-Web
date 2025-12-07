@@ -8,7 +8,6 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [otherReason, setOtherReason] = useState("");
   const [acknowledged, setAcknowledged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const modalRef = useRef(null);
 
   useEffect(() => {
@@ -25,7 +24,6 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
     if (!acknowledged) return;
 
     setIsLoading(true);
-    setError("");
 
     try {
       const response = await fetch(
@@ -44,10 +42,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           window.refreshActivities();
         }
 
-        showAlert(
-          "Account deactivated successfully. You can reactivate it by logging in again.",
-          "success"
-        );
+        showAlert("Account deactivated successfully!", "success");
 
         setTimeout(() => {
           localStorage.removeItem("token");
@@ -68,10 +63,13 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           errorMessage = `Failed to deactivate account (${response.status})`;
         }
 
-        setError(errorMessage);
+        showAlert(errorMessage, "error");
       }
     } catch (error) {
-      setError("Network error. Please check your connection and try again.");
+      showAlert(
+        "Network error. Please check your connection and try again.",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +79,6 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
     setReason("");
     setOtherReason("");
     setAcknowledged(false);
-    setError("");
     onClose();
   };
 
@@ -114,12 +111,6 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
 
         <div className="overflow-y-auto flex-1">
           <div className="px-6 py-6 space-y-5">
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
-                {error}
-              </div>
-            )}
-
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-start gap-3">
                 <div className="w-6 h-6 bg-orange-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -173,9 +164,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
                   placeholder="Tell us more about your reason..."
                   value={otherReason}
                   onChange={(e) => setOtherReason(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg 
-                 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
-                 text-sm placeholder-gray-400"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-sm placeholder-gray-400"
                   disabled={isLoading}
                 />
               </div>
@@ -208,13 +197,20 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
           <button
             onClick={handleDeactivate}
             disabled={!acknowledged || isLoading}
-            className={`flex-1 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+            className={`flex-1 px-4 py-3 rounded-lg font-medium text-sm transition-colors flex items-center justify-center gap-2 ${
               acknowledged && !isLoading
-                ? "bg-[#FF6B6B] hover:bg-red-500 text-white"
+                ? "bg-red-500 hover:bg-red-600 text-white"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
-            {isLoading ? "Deactivating..." : "Deactivate Account"}
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                Deactivating...
+              </>
+            ) : (
+              "Deactivate Account"
+            )}
           </button>
         </div>
       </div>
