@@ -11,13 +11,24 @@ import {
 } from "recharts";
 import { ChevronDown } from "lucide-react";
 
+// Generate hash for data comparison
+const generateHash = (data) => {
+  const str = JSON.stringify(data);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash;
+  }
+  return hash;
+};
+
 export default function FarmAnalytics({
   farmId,
   timeFilter = "Daily",
   onTimeFilterChange,
   onDateRangeChange,
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
-  refreshInterval = 10000,
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,20 +36,16 @@ export default function FarmAnalytics({
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
-  const pollIntervalRef = useRef(null);
-  const lastDataHashRef = useRef(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [farmHealthData, setFarmHealthData] = useState(null);
-  const [filteredHealthData, setFilteredHealthData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
 
-  // Hash function to detect data changes
-  const hashData = useCallback((data) => {
-    if (!data) return null;
-    return JSON.stringify(data);
-  }, []);
+  const pollIntervalRef = useRef(null);
+  const analyticsHashRef = useRef(null);
+  const healthHashRef = useRef(null);
+  const initialLoadRef = useRef(true);
 
+  // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
     switch (timeFilter) {
       case "Daily":
@@ -54,6 +61,7 @@ export default function FarmAnalytics({
     }
   }, [timeFilter]);
 
+  // Reset date range when timeFilter changes
   useEffect(() => {
     let newRange;
     switch (timeFilter) {
@@ -78,6 +86,7 @@ export default function FarmAnalytics({
     }
   }, [timeFilter, onDateRangeChange]);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dateRangeRef.current && !dateRangeRef.current.contains(e.target)) {
@@ -88,41 +97,16 @@ export default function FarmAnalytics({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Map filters to API endpoints for filtered health data
-  const getHealthEndpoint = useCallback((filter, range) => {
-    const endpointMap = {
-      Daily: {
-        "Last 7 days": "seven-days-common-diseases",
-        "Last 11 days": "eleven-days-common-diseases",
-        "Last 14 days": "fourteen-days-common-diseases",
-      },
-      Weekly: {
-        "Last 4 weeks": "three-weeks-common-diseases",
-        "Last 9 weeks": "nine-weeks-common-diseases",
-        "Last 12 weeks": "twelve-weeks-common-diseases",
-      },
-      Monthly: {
-        "Last 3 months": "three-month-common-diseases",
-        "Last 6 months": "six-month-common-diseases",
-        "Last 12 months": "twelve-month-common-diseases",
-      },
-      Yearly: {
-        "Last 3 years": "three-year-common-diseases",
-        "Last 5 years": "five-year-common-diseases",
-        "Last 7 years": "seven-year-common-diseases",
-      },
-    };
-    return endpointMap[filter]?.[range];
-  }, []);
-
-  // Fetch overall farm health data (all-time) with polling
-  useEffect(() => {
-    if (!farmId) return;
-
-    const fetchFarmHealth = async (silent = false) => {
-      if (!silent && isInitialLoad) setHealthLoading(true);
+  // Fetch farm health data with hash comparison
+  const fetchFarmHealth = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
       try {
+        if (!silent && initialLoadRef.current) {
+          setHealthLoading(true);
+        }
+
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
           {
@@ -134,78 +118,54 @@ export default function FarmAnalytics({
 
         if (response.ok) {
           const data = await response.json();
+
+          // Generate hash to check if data changed
+          const newHash = generateHash({
+            totalPredictions: data.totalPredictions,
+            healthyCount: data.healthyCount,
+            healthPercentage: data.healthPercentage,
+          });
+
+          // Only update if hash changed
+          if (silent && healthHashRef.current === newHash) {
+            return; // No changes, skip update
+          }
+
+          healthHashRef.current = newHash;
           setFarmHealthData(data);
+        } else {
+          if (!silent) {
+            setFarmHealthData(null);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch farm health:", error);
+        if (!silent) {
+          setFarmHealthData(null);
+        }
       } finally {
-        if (!silent && isInitialLoad) {
+        if (!silent && initialLoadRef.current) {
           setHealthLoading(false);
         }
       }
-    };
+    },
+    [farmId]
+  );
 
-    fetchFarmHealth();
-
-    const healthInterval = setInterval(
-      () => fetchFarmHealth(true),
-      refreshInterval
-    );
-
-    return () => clearInterval(healthInterval);
-  }, [farmId, refreshInterval, isInitialLoad]);
-
-  // Fetch filtered health data based on date range
-  useEffect(() => {
-    if (!farmId) return;
-
-    const fetchFilteredHealth = async (silent = false) => {
-      const endpoint = getHealthEndpoint(timeFilter, dateRange);
-      if (!endpoint) {
-        setFilteredHealthData(null);
-        return;
-      }
+  // Fetch analytics data with hash comparison
+  const fetchAnalytics = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
       try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setFilteredHealthData(data);
+        if (!silent && initialLoadRef.current) {
+          setLoading(true);
         }
-      } catch (error) {
-        console.error("Failed to fetch filtered health:", error);
-      }
-    };
 
-    fetchFilteredHealth();
+        if (!silent) {
+          setError(null);
+        }
 
-    const filteredHealthInterval = setInterval(
-      () => fetchFilteredHealth(true),
-      refreshInterval
-    );
-
-    return () => clearInterval(filteredHealthInterval);
-  }, [farmId, timeFilter, dateRange, getHealthEndpoint, refreshInterval]);
-
-  // Fetch analytics data with polling
-  useEffect(() => {
-    if (!farmId) return;
-
-    const fetchAnalytics = async (silent = false) => {
-      if (!silent && !analyticsData && isInitialLoad) {
-        setLoading(true);
-      }
-      setError(null);
-
-      try {
         const endpointMap = {
           Daily: "daily-analytics",
           Weekly: "weekly-analytics",
@@ -213,61 +173,84 @@ export default function FarmAnalytics({
           Yearly: "yearly-analytics",
         };
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
+            signal: controller.signal,
           }
         );
 
+        clearTimeout(timeoutId);
+
         if (response.ok) {
           const data = await response.json();
-          const newHash = hashData(data);
 
-          if (newHash !== lastDataHashRef.current) {
-            lastDataHashRef.current = newHash;
-            setAnalyticsData(data);
+          // Generate hash to check if data changed
+          const statsKey = `${timeFilter.toLowerCase()}Stats`;
+          const stats = data?.[statsKey];
+          const newHash = generateHash(stats);
+
+          // Only update if hash changed
+          if (silent && analyticsHashRef.current === newHash) {
+            return; // No changes, skip update
           }
+
+          analyticsHashRef.current = newHash;
+          setAnalyticsData(data);
         } else {
-          const errorData = await response.json().catch(() => ({}));
-          setError(errorData.error || `HTTP ${response.status} error`);
-          setAnalyticsData(null);
+          if (!silent) {
+            const errorData = await response.json().catch(() => ({}));
+            setError(errorData.error || `HTTP ${response.status} error`);
+            setAnalyticsData(null);
+          }
         }
       } catch (error) {
-        setError("Failed to load analytics data");
-        setAnalyticsData(null);
-      } finally {
-        if (!silent && isInitialLoad) {
-          setLoading(false);
-          setIsInitialLoad(false);
+        if (error.name !== "AbortError" && !silent) {
+          setError("Failed to load analytics data");
+          setAnalyticsData(null);
         }
+      } finally {
+        if (!silent && initialLoadRef.current) {
+          setLoading(false);
+          initialLoadRef.current = false;
+        }
+      }
+    },
+    [farmId, timeFilter]
+  );
+
+  // Initial load
+  useEffect(() => {
+    if (farmId) {
+      fetchFarmHealth(false);
+      fetchAnalytics(false);
+    }
+  }, [farmId, fetchFarmHealth, fetchAnalytics]);
+
+  // Silent polling for updates
+  useEffect(() => {
+    const checkForUpdates = async () => {
+      if (!document.hidden && farmId) {
+        await Promise.all([fetchFarmHealth(true), fetchAnalytics(true)]);
       }
     };
 
-    fetchAnalytics();
-
-    pollIntervalRef.current = setInterval(() => {
-      if (!document.hidden) {
-        fetchAnalytics(true);
-      }
-    }, refreshInterval);
+    pollIntervalRef.current = setInterval(checkForUpdates, 15000); // Poll every 15 seconds
 
     return () => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, [
-    farmId,
-    timeFilter,
-    refreshInterval,
-    analyticsData,
-    hashData,
-    isInitialLoad,
-  ]);
+  }, [farmId, fetchFarmHealth, fetchAnalytics]);
 
+  // Helper function to get number of periods to show
   const getPeriodsToShow = useCallback((range, filter) => {
     switch (filter) {
       case "Daily":
@@ -275,26 +258,31 @@ export default function FarmAnalytics({
         if (range === "Last 11 days") return 11;
         if (range === "Last 14 days") return 14;
         return 11;
+
       case "Weekly":
         if (range === "Last 4 weeks") return 4;
         if (range === "Last 9 weeks") return 9;
         if (range === "Last 12 weeks") return 12;
         return 9;
+
       case "Monthly":
         if (range === "Last 3 months") return 3;
         if (range === "Last 6 months") return 6;
         if (range === "Last 12 months") return 12;
         return 12;
+
       case "Yearly":
         if (range === "Last 3 years") return 3;
         if (range === "Last 5 years") return 5;
         if (range === "Last 7 years") return 7;
         return 7;
+
       default:
         return 11;
     }
   }, []);
 
+  // Generate default data based on date range
   const generateDefaultData = useCallback(() => {
     const now = new Date();
     let data = [];
@@ -388,6 +376,7 @@ export default function FarmAnalytics({
     return data;
   }, [timeFilter, dateRange, getPeriodsToShow]);
 
+  // Process chart data
   const chartData = useMemo(() => {
     let defaultData = generateDefaultData();
 
@@ -431,6 +420,38 @@ export default function FarmAnalytics({
 
     return defaultData;
   }, [analyticsData, timeFilter, generateDefaultData]);
+
+  // Calculate summary stats from date range
+  const summaryStats = useMemo(() => {
+    // Get total from farm health (default display)
+    const farmTotalScans = farmHealthData?.totalPredictions || 0;
+    const farmHealthyCount = farmHealthData?.healthyCount || 0;
+
+    // Calculate from current date range
+    const rangeTotal = chartData.reduce(
+      (sum, item) => sum + item.totalPredictions,
+      0
+    );
+    const rangeHealthy = chartData.reduce(
+      (sum, item) => sum + (item.Healthy || 0),
+      0
+    );
+
+    // Use date range stats if available, otherwise use farm total
+    const totalScans = rangeTotal > 0 ? rangeTotal : farmTotalScans;
+    const healthyCount = rangeTotal > 0 ? rangeHealthy : farmHealthyCount;
+
+    const healthScore =
+      totalScans > 0 ? ((healthyCount / totalScans) * 100).toFixed(1) : "0";
+    const diseaseScore =
+      totalScans > 0 ? (100 - parseFloat(healthScore)).toFixed(1) : "0";
+
+    return {
+      totalScans,
+      healthScore,
+      diseaseScore,
+    };
+  }, [chartData, farmHealthData]);
 
   const diseaseTypes = useMemo(() => {
     const diseases = new Set([
@@ -504,28 +525,6 @@ export default function FarmAnalytics({
     [getDiseaseColor]
   );
 
-  // Calculate summary stats: use filtered data if available, otherwise use all-time data
-  const summaryStats = useMemo(() => {
-    const dataToUse = filteredHealthData || farmHealthData;
-
-    if (dataToUse) {
-      const totalScans = dataToUse.totalPredictions || 0;
-      const healthScore = dataToUse.healthPercentage
-        ? parseFloat(dataToUse.healthPercentage.replace("%", ""))
-        : 0;
-      const diseaseScore =
-        totalScans > 0 ? (100 - healthScore).toFixed(1) : "0";
-
-      return {
-        totalScans,
-        healthScore: healthScore.toFixed(1),
-        diseaseScore,
-      };
-    }
-
-    return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
-  }, [filteredHealthData, farmHealthData]);
-
   const FIXED_HEIGHT = "580px";
 
   return (
@@ -533,17 +532,23 @@ export default function FarmAnalytics({
       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
       style={{ height: FIXED_HEIGHT }}
     >
+      {/* Header with inline filters */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
           Farm Analytics ({timeFilter})
         </h2>
 
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          {/* Time Filter Buttons */}
           <div className="flex gap-2 flex-wrap">
             {timeFilters.map((filter) => (
               <button
                 key={filter}
-                onClick={() => onTimeFilterChange(filter)}
+                onClick={() => {
+                  onTimeFilterChange(filter);
+                  analyticsHashRef.current = null; // Reset hash on filter change
+                  initialLoadRef.current = true;
+                }}
                 className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all duration-150 active:scale-95 active:shadow-inner cursor-pointer ${
                   timeFilter === filter
                     ? "bg-green-700 text-white"
@@ -555,6 +560,7 @@ export default function FarmAnalytics({
             ))}
           </div>
 
+          {/* Date Range Dropdown */}
           <div className="relative min-w-[150px]" ref={dateRangeRef}>
             <button
               onClick={() => setIsDateRangeOpen(!isDateRangeOpen)}
@@ -677,24 +683,34 @@ export default function FarmAnalytics({
             className="grid grid-cols-3 gap-2 sm:gap-4"
             style={{ minHeight: "60px" }}
           >
-            <div className="text-center">
-              <p className="text-green-600 font-semibold text-base sm:text-xl">
-                {summaryStats.totalScans}
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
-            </div>
-            <div className="text-center">
-              <p className="text-blue-600 font-semibold text-base sm:text-xl">
-                {summaryStats.healthScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-            </div>
-            <div className="text-center">
-              <p className="text-orange-600 font-semibold text-base sm:text-xl">
-                {summaryStats.diseaseScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Diseases</p>
-            </div>
+            {healthLoading ? (
+              <div className="col-span-3 flex justify-center items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-700"></div>
+              </div>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="text-green-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.totalScans}
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">
+                    Total Scans
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-blue-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.healthScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-orange-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.diseaseScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
