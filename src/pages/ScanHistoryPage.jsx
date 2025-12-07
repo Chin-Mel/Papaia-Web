@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
+import realtimeSync from "../services/RealtimeSync"; // Adjust path as needed
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
@@ -29,9 +30,6 @@ const STATUS_CONFIG = {
     color: "text-[#EF4444] hover:text-red-600",
   },
 };
-
-const dataCache = new Map();
-let lastScanCount = 0;
 
 const getStatus = (prediction) => {
   if (!prediction) return "healthy";
@@ -174,28 +172,117 @@ export default function ScanHistoryPage() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const abortControllerRef = useRef(null);
-  const pollIntervalRef = useRef(null);
   const initialLoadRef = useRef(true);
+  const farmersDataRef = useRef({});
 
   useEffect(() => {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
-  const fetchData = useCallback(async () => {
-    const cacheKey = "scan_history_data";
-    const cached = dataCache.get(cacheKey);
-
-    if (cached && Date.now() - cached.timestamp < 20000) {
-      setFarms(cached.farms);
-      setAllScans(cached.scans);
-      setAllFarmers(cached.farmers);
-      if (initialLoadRef.current) {
-        setIsLoading(false);
-        initialLoadRef.current = false;
-      }
-      return;
+  // Process scan data with farm and farmer information
+  const processScans = useCallback((scansArray, farmsList) => {
+    if (!Array.isArray(scansArray) || farmsList.length === 0) {
+      return [];
     }
 
+    const farmMap = Object.fromEntries(
+      farmsList.map((f) => [f.id, f.farmName])
+    );
+
+    return scansArray
+      .map((scan) => {
+        const predictionValue = scan.result || scan.prediction;
+        const status = getStatus(predictionValue);
+        return {
+          ...scan,
+          prediction: predictionValue,
+          farmName: farmMap[scan.farmId] || "Unknown Farm",
+          status,
+          description: predictionValue || "Unknown",
+          idNumber: scan.idNumber || "Unknown Farmer",
+          farmerName:
+            scan.farmerName ||
+            farmersDataRef.current[scan.idNumber] ||
+            scan.idNumber ||
+            "Unknown Farmer",
+        };
+      })
+      .sort((a, b) => {
+        const parseTimestamp = (timestamp) => {
+          if (!timestamp) return new Date(0);
+          try {
+            const [datePart, timePart, period] = timestamp.split(/\s+/);
+            const [month, day, year] = datePart.split("/");
+            const [hours, minutes] = timePart.split(":");
+            let hour24 = parseInt(hours);
+            if (period === "PM" && hour24 !== 12) hour24 += 12;
+            if (period === "AM" && hour24 === 12) hour24 = 0;
+            return new Date(year, month - 1, day, hour24, minutes);
+          } catch {
+            return new Date(timestamp);
+          }
+        };
+        return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
+      });
+  }, []);
+
+  // Fetch farmers data for all farms
+  const fetchFarmersData = useCallback(
+    async (farmsList) => {
+      if (!farmsList.length) return;
+
+      const allFarmersSet = new Set();
+      const farmersData = {};
+
+      const farmersPromises = farmsList.map(async (farm) => {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const farmersRes = await fetch(`${API_BASE}/farmers/${farm.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (farmersRes.ok) {
+            const data = await farmersRes.json();
+            if (data.status === "success" && data.farmers) {
+              data.farmers.forEach((farmer) => {
+                let fullName = "";
+                if (farmer.firstname) fullName += farmer.firstname;
+                if (farmer.middlename) fullName += ` ${farmer.middlename}`;
+                if (farmer.lastname) fullName += ` ${farmer.lastname}`;
+                if (farmer.suffix) fullName += ` ${farmer.suffix}`;
+                const name = fullName.trim() || farmer.idNumber;
+                farmersData[farmer.idNumber] = name;
+                allFarmersSet.add(
+                  JSON.stringify({
+                    id: farmer.idNumber,
+                    name: name,
+                  })
+                );
+              });
+            }
+          }
+        } catch {}
+      });
+
+      await Promise.all(farmersPromises);
+
+      farmersDataRef.current = farmersData;
+      const uniqueFarmers = Array.from(allFarmersSet).map((f) => JSON.parse(f));
+      setAllFarmers(uniqueFarmers);
+    },
+    [token]
+  );
+
+  // Initial data fetch
+  const fetchInitialData = useCallback(async () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -204,9 +291,7 @@ export default function ScanHistoryPage() {
     abortControllerRef.current = controller;
 
     try {
-      if (initialLoadRef.current) {
-        setIsLoading(true);
-      }
+      setIsLoading(true);
 
       const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -237,115 +322,22 @@ export default function ScanHistoryPage() {
       const farmsList =
         farmsData.status === "success" ? farmsData.farms || [] : [];
 
-      if (Array.isArray(scansArray) && farmsList.length > 0) {
-        const farmMap = Object.fromEntries(
-          farmsList.map((f) => [f.id, f.farmName])
-        );
-        const farmersData = {};
-        const allFarmersSet = new Set();
+      setFarms(farmsList);
 
-        const farmersPromises = farmsList.map(async (farm) => {
-          try {
-            const farmersRes = await fetch(`${API_BASE}/farmers/${farm.id}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              signal: controller.signal,
-            });
+      if (farmsList.length > 0) {
+        // Fetch farmers data
+        await fetchFarmersData(farmsList);
 
-            if (farmersRes.ok) {
-              const data = await farmersRes.json();
-              if (data.status === "success" && data.farmers) {
-                data.farmers.forEach((farmer) => {
-                  let fullName = "";
-                  if (farmer.firstname) fullName += farmer.firstname;
-                  if (farmer.middlename) fullName += ` ${farmer.middlename}`;
-                  if (farmer.lastname) fullName += ` ${farmer.lastname}`;
-                  if (farmer.suffix) fullName += ` ${farmer.suffix}`;
-                  const name = fullName.trim() || farmer.idNumber;
-                  farmersData[farmer.idNumber] = name;
-                  allFarmersSet.add(
-                    JSON.stringify({
-                      id: farmer.idNumber,
-                      name: name,
-                    })
-                  );
-                });
-              }
-            }
-          } catch {}
-        });
-
-        await Promise.all(farmersPromises);
-
-        const uniqueFarmers = Array.from(allFarmersSet).map((f) =>
-          JSON.parse(f)
-        );
-
-        const processed = scansArray
-          .map((scan) => {
-            const predictionValue = scan.result || scan.prediction;
-            const status = getStatus(predictionValue);
-            return {
-              ...scan,
-              prediction: predictionValue,
-              farmName: farmMap[scan.farmId] || "Unknown Farm",
-              status,
-              description: predictionValue || "Unknown",
-              idNumber: scan.idNumber || "Unknown Farmer",
-              farmerName:
-                scan.farmerName ||
-                farmersData[scan.idNumber] ||
-                scan.idNumber ||
-                "Unknown Farmer",
-            };
-          })
-          .sort((a, b) => {
-            const parseTimestamp = (timestamp) => {
-              if (!timestamp) return new Date(0);
-              try {
-                const [datePart, timePart, period] = timestamp.split(/\s+/);
-                const [month, day, year] = datePart.split("/");
-                const [hours, minutes] = timePart.split(":");
-                let hour24 = parseInt(hours);
-                if (period === "PM" && hour24 !== 12) hour24 += 12;
-                if (period === "AM" && hour24 === 12) hour24 = 0;
-                return new Date(year, month - 1, day, hour24, minutes);
-              } catch {
-                return new Date(timestamp);
-              }
-            };
-            return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
-          });
-
-        setFarms(farmsList);
-        setAllScans(processed);
-        setAllFarmers(uniqueFarmers);
-        dataCache.set(cacheKey, {
-          farms: farmsList,
-          scans: processed,
-          farmers: uniqueFarmers,
-          timestamp: Date.now(),
-        });
-
-        lastScanCount = processed.length;
-      } else if (farmsList.length > 0) {
-        setFarms(farmsList);
-        setAllScans([]);
-        setAllFarmers([]);
-        dataCache.set(cacheKey, {
-          farms: farmsList,
-          scans: [],
-          farmers: [],
-          timestamp: Date.now(),
-        });
-        lastScanCount = 0;
+        // Process and set scans
+        if (Array.isArray(scansArray)) {
+          const processed = processScans(scansArray, farmsList);
+          setAllScans(processed);
+        } else {
+          setAllScans([]);
+        }
       } else {
-        setFarms([]);
         setAllScans([]);
         setAllFarmers([]);
-        lastScanCount = 0;
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -354,54 +346,41 @@ export default function ScanHistoryPage() {
         setAllFarmers([]);
       }
     } finally {
-      if (initialLoadRef.current) {
-        setIsLoading(false);
-        initialLoadRef.current = false;
-      }
+      setIsLoading(false);
+      initialLoadRef.current = false;
     }
-  }, [token]);
+  }, [token, fetchFarmersData, processScans]);
 
-  const checkForNewScans = useCallback(async () => {
-    if (document.hidden) return;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const scansRes = await fetch(`${API_BASE}/identification-history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (scansRes.ok) {
-        const scansArray = await scansRes.json();
-        if (Array.isArray(scansArray) && scansArray.length !== lastScanCount) {
-          dataCache.delete("scan_history_data");
-          fetchData();
-        }
-      }
-    } catch {}
-  }, [token, fetchData]);
-
+  // Subscribe to real-time scan updates
   useEffect(() => {
-    fetchData();
+    // Initial fetch
+    fetchInitialData();
 
-    pollIntervalRef.current = setInterval(checkForNewScans, 10000);
+    // Subscribe to scan updates via RealtimeSync
+    const unsubscribeScans = realtimeSync.subscribe("scans", (newScans) => {
+      if (Array.isArray(newScans) && farms.length > 0) {
+        const processed = processScans(newScans, farms);
+        setAllScans(processed);
+      }
+    });
 
+    // Subscribe to farms updates
+    const unsubscribeFarms = realtimeSync.subscribe("farms", (data) => {
+      if (data.status === "success" && data.farms) {
+        setFarms(data.farms);
+        fetchFarmersData(data.farms);
+      }
+    });
+
+    // Cleanup subscriptions
     return () => {
+      unsubscribeScans();
+      unsubscribeFarms();
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
     };
-  }, [fetchData, checkForNewScans]);
+  }, [fetchInitialData, processScans, farms, fetchFarmersData]);
 
   const filteredScans = useMemo(() => {
     let filtered = allScans;
