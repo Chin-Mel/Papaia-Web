@@ -8,10 +8,14 @@ import React, {
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { BarChart3 } from "lucide-react";
 
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastHashRef = useRef(null);
 
   const diseaseColors = {
     Healthy: "#10b981",
@@ -19,6 +23,19 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     Anthracnose: "#f43f5e",
     "Powdery Mildew": "#3b82f6",
   };
+
+  // Hash function to detect data changes
+  const hashData = useCallback((data) => {
+    if (!data) return null;
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return hash;
+  }, []);
 
   const getPeriodsFromRange = useCallback((range, filter) => {
     const periods = {
@@ -71,22 +88,26 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
-  useEffect(() => {
-    if (!farmId) return;
+  const fetchData = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const fetchData = async () => {
-      if (!analyticsData) setLoading(true);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
+        if (!silent && !analyticsData) {
+          setLoading(true);
+        }
+
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/identification-history/${farmId}`,
+          `${API_BASE}/identification-history/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -95,40 +116,69 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           }
         );
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) throw new Error("Failed to fetch data");
 
         const data = await response.json();
-        const allPredictions = Array.isArray(data) ? data : [];
-        const filteredPredictions = filterPredictionsByDateRange(
-          allPredictions,
-          timeFilter,
-          dateRange
-        );
+        const newHash = hashData(data);
 
-        setAnalyticsData(filteredPredictions);
+        // Only update if data changed
+        if (newHash !== lastHashRef.current) {
+          lastHashRef.current = newHash;
+          const allPredictions = Array.isArray(data) ? data : [];
+          const filteredPredictions = filterPredictionsByDateRange(
+            allPredictions,
+            timeFilter,
+            dateRange
+          );
+          setAnalyticsData(filteredPredictions);
+        }
       } catch (error) {
         if (error.name !== "AbortError") {
-          setAnalyticsData([]);
+          console.error("Scans breakdown fetch error:", error);
         }
       } finally {
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
       }
+    },
+    [
+      farmId,
+      timeFilter,
+      dateRange,
+      filterPredictionsByDateRange,
+      analyticsData,
+      hashData,
+    ]
+  );
+
+  // Initial fetch
+  useEffect(() => {
+    fetchData();
+  }, [farmId, timeFilter, dateRange]);
+
+  // Poll for changes silently
+  useEffect(() => {
+    if (!farmId) return;
+
+    const checkForUpdates = async () => {
+      if (document.hidden) return;
+      await fetchData(true);
     };
 
-    fetchData();
+    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
 
     return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [
-    farmId,
-    timeFilter,
-    dateRange,
-    filterPredictionsByDateRange,
-    analyticsData,
-  ]);
+  }, [farmId, timeFilter, dateRange, fetchData]);
 
   const breakdown = useMemo(() => {
     if (!analyticsData || analyticsData.length === 0) {
@@ -189,6 +239,42 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       .sort(([, a], [, b]) => b - a)[0];
   }, [breakdown.counts]);
 
+  // Custom label renderer for pie chart
+  const renderCustomLabel = useCallback(
+    ({ name, percent, value, cx, cy, midAngle, innerRadius, outerRadius }) => {
+      const RADIAN = Math.PI / 180;
+      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+      return (
+        <text
+          x={x}
+          y={y}
+          fill="white"
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{ fontWeight: 600, fontSize: "11px" }}
+        >
+          <tspan x={x} dy="-0.8em">
+            {name}
+          </tspan>
+          <tspan
+            x={x}
+            dy="1.3em"
+            style={{ fontSize: "15px", fontWeight: "bold" }}
+          >
+            {`${(percent * 100).toFixed(0)}%`}
+          </tspan>
+          <tspan x={x} dy="1.3em" style={{ fontSize: "11px" }}>
+            {`${value} ${value === 1 ? "case" : "cases"}`}
+          </tspan>
+        </text>
+      );
+    },
+    []
+  );
+
   const FIXED_HEIGHT = "580px";
 
   if (loading && !analyticsData) {
@@ -229,7 +315,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
-          {/* Most Common Disease - BEFORE pie chart */}
           {mostCommonDisease && mostCommonDisease[1] > 0 && (
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
               <p className="text-xs font-semibold text-amber-900 mb-1">
@@ -248,7 +333,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
             </div>
           )}
 
-          {/* Pie Chart */}
           <div className="mb-3">
             {breakdown.chartData.length > 0 ? (
               <>
@@ -259,59 +343,12 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({
-                        name,
-                        percent,
-                        value,
-                        cx,
-                        cy,
-                        midAngle,
-                        innerRadius,
-                        outerRadius,
-                      }) => {
-                        const RADIAN = Math.PI / 180;
-                        const radius =
-                          innerRadius + (outerRadius - innerRadius) * 0.5;
-                        const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                        const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-                        return (
-                          <text
-                            x={x}
-                            y={y}
-                            fill="white"
-                            textAnchor="middle"
-                            dominantBaseline="central"
-                            className="text-xs"
-                          >
-                            <tspan
-                              x={x}
-                              dy="-0.6em"
-                              style={{ fontSize: "13px" }}
-                            >
-                              {name}
-                            </tspan>
-                            <tspan
-                              x={x}
-                              dy="1.2em"
-                              style={{ fontSize: "14px", fontWeight: "bold" }}
-                            >
-                              {`${(percent * 100).toFixed(0)}%`}
-                            </tspan>
-                            <tspan
-                              x={x}
-                              dy="1.2em"
-                              style={{ fontSize: "12px" }}
-                            >
-                              {`${value} ${value === 1 ? "case" : "cases"}`}
-                            </tspan>
-                          </text>
-                        );
-                      }}
+                      label={renderCustomLabel}
                       outerRadius={110}
                       innerRadius={0}
                       fill="#8884d8"
                       dataKey="value"
+                      isAnimationActive={false}
                     >
                       {breakdown.chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -342,7 +379,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
             )}
           </div>
 
-          {/* Disease Distribution */}
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <p className="text-xs font-semibold text-gray-600 mb-2">
               Disease Distribution

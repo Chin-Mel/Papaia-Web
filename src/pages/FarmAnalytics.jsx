@@ -17,6 +17,8 @@ import {
 } from "recharts";
 import { ChevronDown } from "lucide-react";
 
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+
 export default function FarmAnalytics({
   farmId,
   timeFilter = "Daily",
@@ -29,8 +31,9 @@ export default function FarmAnalytics({
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
-  const [farmHealthData, setFarmHealthData] = useState(null);
   const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastDataHashRef = useRef(null);
 
   const dateRangeOptions = useMemo(() => {
     const options = {
@@ -64,44 +67,36 @@ export default function FarmAnalytics({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (!farmId) return;
-
-    const fetchFarmHealth = async () => {
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          setFarmHealthData(data);
-        }
-      } catch {}
-    };
-
-    fetchFarmHealth();
-  }, [farmId]);
-
-  useEffect(() => {
-    if (!farmId) return;
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+  // Hash function to detect data changes
+  const hashData = useCallback((data) => {
+    if (!data) return null;
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
     }
+    return hash;
+  }, []);
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
+  // Fetch analytics data
+  const fetchAnalytics = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    const fetchAnalytics = async () => {
-      if (!analyticsData) setLoading(true);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
+        if (!silent && !analyticsData) {
+          setLoading(true);
+        }
+
         const endpointMap = {
           Daily: "daily-analytics",
           Weekly: "weekly-analytics",
@@ -110,7 +105,7 @@ export default function FarmAnalytics({
         };
 
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
+          `${API_BASE}/${endpointMap[timeFilter]}/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -121,23 +116,52 @@ export default function FarmAnalytics({
 
         if (response.ok) {
           const data = await response.json();
-          setAnalyticsData(data);
-        } else {
-          setAnalyticsData(null);
+          const newHash = hashData(data);
+
+          // Only update if data actually changed
+          if (newHash !== lastDataHashRef.current) {
+            lastDataHashRef.current = newHash;
+            setAnalyticsData(data);
+          }
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          setAnalyticsData(null);
+          console.error("Analytics fetch error:", error);
         }
       } finally {
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
       }
+    },
+    [farmId, timeFilter, analyticsData, hashData]
+  );
+
+  // Initial fetch
+  useEffect(() => {
+    fetchAnalytics();
+  }, [farmId, timeFilter]);
+
+  // Poll for changes silently
+  useEffect(() => {
+    if (!farmId) return;
+
+    const checkForUpdates = async () => {
+      if (document.hidden) return;
+      await fetchAnalytics(true);
     };
 
-    fetchAnalytics();
+    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
 
-    return () => controller.abort();
-  }, [farmId, timeFilter, analyticsData]);
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [farmId, timeFilter, fetchAnalytics]);
 
   const getPeriodsToShow = useCallback((range, filter) => {
     const periods = {
@@ -280,6 +304,28 @@ export default function FarmAnalytics({
     return defaultData;
   }, [analyticsData, timeFilter, generateDefaultData]);
 
+  // Calculate stats based on visible chart data
+  const summaryStats = useMemo(() => {
+    const totalScans = chartData.reduce(
+      (sum, item) => sum + (item.totalPredictions || 0),
+      0
+    );
+    const healthyCount = chartData.reduce(
+      (sum, item) => sum + (item.Healthy || 0),
+      0
+    );
+    const healthScore =
+      totalScans > 0 ? ((healthyCount / totalScans) * 100).toFixed(1) : "0.0";
+    const diseaseScore =
+      totalScans > 0 ? (100 - parseFloat(healthScore)).toFixed(1) : "0.0";
+
+    return {
+      totalScans,
+      healthScore,
+      diseaseScore,
+    };
+  }, [chartData]);
+
   const diseaseTypes = useMemo(() => {
     return ["Healthy", "Ring Spot Virus", "Anthracnose", "Powdery Mildew"];
   }, []);
@@ -340,25 +386,6 @@ export default function FarmAnalytics({
     [getDiseaseColor, diseaseTypes]
   );
 
-  const summaryStats = useMemo(() => {
-    if (farmHealthData) {
-      const totalScans = farmHealthData.totalPredictions || 0;
-      const healthScore = farmHealthData.healthPercentage
-        ? parseFloat(farmHealthData.healthPercentage.replace("%", ""))
-        : 0;
-      const diseaseScore =
-        totalScans > 0 ? (100 - healthScore).toFixed(1) : "0";
-
-      return {
-        totalScans,
-        healthScore: healthScore.toFixed(1),
-        diseaseScore,
-      };
-    }
-
-    return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
-  }, [farmHealthData]);
-
   const FIXED_HEIGHT = "580px";
 
   return (
@@ -377,7 +404,7 @@ export default function FarmAnalytics({
               <button
                 key={filter}
                 onClick={() => onTimeFilterChange(filter)}
-                className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                className={`px-2 sm:px-3 py-1 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
                   timeFilter === filter
                     ? "bg-green-700 text-white"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -486,16 +513,14 @@ export default function FarmAnalytics({
                     dot={{ r: 4 }}
                     name={disease}
                     connectNulls={false}
+                    isAnimationActive={false}
                   />
                 ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
 
-          <div
-            className="grid grid-cols-3 gap-2 sm:gap-4"
-            style={{ minHeight: "60px" }}
-          >
+          <div className="grid grid-cols-3 gap-2 sm:gap-4">
             <div className="text-center">
               <p className="text-green-600 font-semibold text-base sm:text-xl">
                 {summaryStats.totalScans}

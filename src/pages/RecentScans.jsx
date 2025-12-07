@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
 import ScanDetailModal from "../components/Popups/ScanDetailModal.jsx";
 
+const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+
 export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,7 +11,22 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastHashRef = useRef(null);
   const SCANS_PER_PAGE = 3;
+
+  // Hash function to detect data changes
+  const hashData = useCallback((data) => {
+    if (!data) return null;
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
+    }
+    return hash;
+  }, []);
 
   const getPeriodsFromRange = useCallback((range, filter) => {
     const periods = {
@@ -62,23 +79,26 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
-  useEffect(() => {
-    if (!farmId) return;
+  const fetchData = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    const fetchData = async () => {
-      // Show loading only on initial load
-      if (recentScans.length === 0) setLoading(true);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
       try {
+        if (!silent && recentScans.length === 0) {
+          setLoading(true);
+        }
+
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/identification-history/${farmId}`,
+          `${API_BASE}/identification-history/${farmId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -87,40 +107,69 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           }
         );
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) throw new Error("Failed to fetch scans");
 
         const scansData = await response.json();
-        const allScans = Array.isArray(scansData) ? scansData : [];
-        const filteredScans = filterScansByDateRange(
-          allScans,
-          timeFilter,
-          dateRange
-        );
+        const newHash = hashData(scansData);
 
-        setRecentScans(filteredScans);
+        // Only update if data changed
+        if (newHash !== lastHashRef.current) {
+          lastHashRef.current = newHash;
+          const allScans = Array.isArray(scansData) ? scansData : [];
+          const filteredScans = filterScansByDateRange(
+            allScans,
+            timeFilter,
+            dateRange
+          );
+          setRecentScans(filteredScans);
+        }
       } catch (error) {
         if (error.name !== "AbortError") {
-          setRecentScans([]);
+          console.error("Recent scans fetch error:", error);
         }
       } finally {
-        setLoading(false);
+        if (!silent) {
+          setLoading(false);
+        }
       }
+    },
+    [
+      farmId,
+      timeFilter,
+      dateRange,
+      filterScansByDateRange,
+      recentScans.length,
+      hashData,
+    ]
+  );
+
+  // Initial fetch
+  useEffect(() => {
+    fetchData();
+  }, [farmId, timeFilter, dateRange]);
+
+  // Poll for changes silently
+  useEffect(() => {
+    if (!farmId) return;
+
+    const checkForUpdates = async () => {
+      if (document.hidden) return;
+      await fetchData(true);
     };
 
-    fetchData();
+    pollIntervalRef.current = setInterval(checkForUpdates, 5000);
 
     return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [
-    farmId,
-    timeFilter,
-    dateRange,
-    filterScansByDateRange,
-    recentScans.length,
-  ]);
+  }, [farmId, timeFilter, dateRange, fetchData]);
 
   const getCardStyle = useCallback((prediction) => {
     const styles = {
@@ -217,7 +266,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     setCurrentPage(1);
   }, [recentScans.length]);
 
-  const FIXED_HEIGHT = "580px";
+  const FIXED_HEIGHT = "340px";
 
   if (loading && recentScans.length === 0) {
     return (
@@ -255,10 +304,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           </div>
         ) : (
           <>
-            <div
-              className="flex-1 space-y-3 overflow-y-auto pr-2"
-              style={{ scrollbarWidth: "thin" }}
-            >
+            <div className="flex-1 space-y-2 overflow-y-auto">
               {currentScans.map((scan, index) => {
                 const cardStyle = getCardStyle(scan.prediction);
                 const { date, time } = formatDateTime(scan.timestamp);
@@ -266,16 +312,16 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                   <div
                     key={`${scan.id || scan.timestamp}-${index}`}
                     onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
+                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-2.5 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-2.5">
                       <img
                         src={scan.imageUrl}
                         alt="Scan"
-                        className="w-14 h-14 rounded-lg object-cover border border-gray-200"
+                        className="w-12 h-12 rounded-lg object-cover border border-gray-200 flex-shrink-0"
                         onError={(e) => {
                           e.target.src =
-                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect fill='%23e5e7eb' width='56' height='56'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Crect fill='%23e5e7eb' width='48' height='48'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='9'%3ENo Image%3C/text%3E%3C/svg%3E";
                         }}
                       />
 
@@ -286,7 +332,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                           >
                             {scan.prediction}
                           </p>
-                          <p className="text-xs text-slate-500">
+                          <p className="text-xs text-slate-500 truncate">
                             By: {getFarmerName(scan)}
                           </p>
                         </div>
@@ -335,7 +381,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         isOpen={showDetailModal}
         onClose={() => setShowDetailModal(false)}
         scan={selectedScan}
-        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
+        farmerName={selectedSan ? getFarmerName(selectedScan) : ""}
       />
     </div>
   );
