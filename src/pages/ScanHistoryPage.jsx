@@ -6,7 +6,7 @@ import HeaderMain from "../components/Header/HeaderMain";
 import UserIcon from "../assets/sh-user-icon.png";
 import CalendarIcon from "../assets/sh-calendar-icon.png";
 import ClockIcon from "../assets/sh-clock-icon.png";
-import realtimeSync from "../utils/RealtimeSync";
+import realtimeSync from "../utils/RealTimeSync";
 
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
