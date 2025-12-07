@@ -92,7 +92,8 @@ export default function AboutHomePage() {
 
       <main>
         {/* Hero Section */}
-        <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] bg-gradient-to-r from-[#94C522] to-[#4A7C59] overflow-hidden">
+        <section className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
+          {/* Background image */}
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
@@ -100,8 +101,10 @@ export default function AboutHomePage() {
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
-            <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12 mt-20 sm:mt-24 md:mt-28 lg:mt-32">
+
+          {/* Centered content */}
+          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center mt-5">
+            <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                 About Papaia
               </h1>

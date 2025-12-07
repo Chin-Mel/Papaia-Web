@@ -120,7 +120,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+      <div className="w-full max-w-md sm:max-w-lg md:max-w-xl mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
         {/* Header */}
         <div
           className="flex flex-col items-center justify-center text-white p-6"
@@ -166,7 +166,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           {/* New Password Field */}
           <div className="space-y-2">
             <label className="text-gray-700 text-sm font-medium block">
-              New Password *
+              New Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input
@@ -201,7 +201,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           {/* Confirm Password Field */}
           <div className="space-y-2">
             <label className="text-gray-700 text-sm font-medium block">
-              Confirm New Password *
+              Confirm New Password <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <input

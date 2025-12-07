@@ -159,7 +159,7 @@ export default function ForgotPasswordPage() {
                   className="flex items-center gap-2 text-sm font-medium text-gray-700"
                 >
                   <MdEmail className="text-[#FF8C42] text-lg" />
-                  Email Address *
+                  Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="email"

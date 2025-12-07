@@ -186,7 +186,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
         {/* Header - Shorter */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
@@ -202,18 +202,14 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             />
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-center">
-            Email Authentication
+            OTP Verification
           </h2>
-          <p className="text-xs text-center opacity-90 mt-1">
-            A one-time password has been sent to
-          </p>
-          <p className="text-sm font-semibold text-white">{email}</p>
         </div>
 
         {/* Form */}
         <div className="bg-white p-6 sm:p-8">
           <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
-            Enter the 4 digit code to continue
+            Enter the 4 digit code sent to your email to continue
           </p>
 
           {/* OTP Inputs */}
@@ -274,17 +270,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
               "Verify"
             )}
           </button>
-
-          {/* Security Info */}
-          <div className="p-4 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 flex items-start gap-3">
-            <FiInfo className="mt-0.5 flex-shrink-0 w-5 h-5 text-blue-600" />
-            <div className="text-sm">
-              <p className="font-bold mb-1">Security Reminder</p>
-              <p className="text-blue-700">
-                Never share your OTP codes with anyone.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
