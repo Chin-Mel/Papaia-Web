@@ -32,6 +32,7 @@ export default function FarmAnalytics({
   const pollIntervalRef = useRef(null);
   const abortControllerRef = useRef(null);
   const hasInitialLoad = useRef(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
