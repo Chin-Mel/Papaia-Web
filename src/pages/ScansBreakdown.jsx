@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [animationKey, setAnimationKey] = useState(0);
+  //const [animationKey, setAnimationKey] = useState(0);
   const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -186,7 +186,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       if (!silent) {
         setLoading(true);
         // Trigger animation when filters change
-        setAnimationKey((prev) => prev + 1);
+        //setAnimationKey((prev) => prev + 1);
       }
 
       try {
@@ -307,7 +307,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               {chartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={300}>
-                    <PieChart key={animationKey}>
+                    <PieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
