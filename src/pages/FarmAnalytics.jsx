@@ -25,11 +25,9 @@ export default function FarmAnalytics({
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
   const dateRangeRef = useRef(null);
 
+  // Separate state for farm health data
   const [farmHealthData, setFarmHealthData] = useState(null);
-
-  const pollIntervalRef = useRef(null);
-  const isInitialLoad = useRef(true);
-  const abortControllerRef = useRef(null);
+  const [healthLoading, setHealthLoading] = useState(false);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -47,7 +45,7 @@ export default function FarmAnalytics({
     }
   }, [timeFilter]);
 
-  // Reset date range when timeFilter changes
+  // Reset date range when timeFilter changes to appropriate default
   useEffect(() => {
     let newRange;
     switch (timeFilter) {
@@ -83,24 +81,51 @@ export default function FarmAnalytics({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Fetch all data (analytics + health)
-  const fetchAllData = useCallback(
-    async (silent = false) => {
-      if (!farmId) return;
+  // Fetch farm health data (independent of date range changes)
+  useEffect(() => {
+    if (!farmId) return;
 
-      // Cancel previous request
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+    const fetchFarmHealth = async () => {
+      setHealthLoading(true);
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setFarmHealthData(data);
+        } else {
+          setFarmHealthData(null);
+        }
+      } catch (error) {
+        console.error("Failed to fetch farm health:", error);
+        setFarmHealthData(null);
+      } finally {
+        setHealthLoading(false);
       }
+    };
 
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+    fetchFarmHealth();
+  }, [farmId]); // Only depends on farmId, not dateRange
 
-      // Only show loading on initial load
-      if (!silent && isInitialLoad.current) {
+  // Fetch analytics data with AbortController for cleanup
+  useEffect(() => {
+    if (!farmId) return;
+
+    const controller = new AbortController();
+
+    const fetchAnalytics = async () => {
+      // Only show loading on initial load (when analyticsData is null)
+      if (!analyticsData) {
         setLoading(true);
-        setError(null);
       }
+      setError(null);
 
       try {
         const endpointMap = {
@@ -110,118 +135,73 @@ export default function FarmAnalytics({
           Yearly: "yearly-analytics",
         };
 
-        // Fetch both analytics and health data in parallel
-        const [analyticsResponse, healthResponse] = await Promise.all([
-          fetch(
-            `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-              signal: controller.signal,
-            }
-          ),
-          fetch(
-            `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-              signal: controller.signal,
-            }
-          ),
-        ]);
-
-        // Process analytics data
-        if (analyticsResponse.ok) {
-          const data = await analyticsResponse.json();
-          setAnalyticsData(data);
-          setError(null);
-        } else {
-          if (isInitialLoad.current) {
-            const errorData = await analyticsResponse.json().catch(() => ({}));
-            setError(
-              errorData.error || `HTTP ${analyticsResponse.status} error`
-            );
-            setAnalyticsData(null);
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpointMap[timeFilter]}/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            signal: controller.signal,
           }
-        }
+        );
 
-        // Process health data
-        if (healthResponse.ok) {
-          const healthData = await healthResponse.json();
-          setFarmHealthData(healthData);
+        if (response.ok) {
+          const data = await response.json();
+          setAnalyticsData(data);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          setError(errorData.error || `HTTP ${response.status} error`);
+          setAnalyticsData(null);
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          if (isInitialLoad.current) {
-            setError("Failed to load analytics data");
-            setAnalyticsData(null);
-          }
-          console.error("Error fetching data:", error);
+          setError("Failed to load analytics data");
+          setAnalyticsData(null);
         }
       } finally {
-        if (!silent && isInitialLoad.current) {
-          setLoading(false);
-          isInitialLoad.current = false;
-        }
-      }
-    },
-    [farmId, timeFilter]
-  );
-
-  // Initial load and polling setup
-  useEffect(() => {
-    if (!farmId) return;
-
-    // Reset to initial load when filters change
-    isInitialLoad.current = true;
-
-    // Initial fetch
-    fetchAllData(false);
-
-    // Set up polling - fetch every 2 seconds in background
-    pollIntervalRef.current = setInterval(() => {
-      if (!document.hidden) {
-        fetchAllData(true); // Silent update
-      }
-    }, 2000);
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
+        setLoading(false);
       }
     };
-  }, [farmId, timeFilter, fetchAllData]);
 
-  // Helper function to get number of periods to show
+    fetchAnalytics();
+
+    return () => controller.abort();
+  }, [farmId, timeFilter]);
+
+  // Helper function to get number of periods to show based on date range
   const getPeriodsToShow = useCallback((range, filter) => {
     switch (filter) {
       case "Daily":
         if (range === "Last 7 days") return 7;
         if (range === "Last 11 days") return 11;
         if (range === "Last 14 days") return 14;
+        if (range === "Last 30 days") return 30;
+        if (range === "Last 60 days") return 60;
+        if (range === "Last 90 days") return 90;
         return 11;
 
       case "Weekly":
         if (range === "Last 4 weeks") return 4;
         if (range === "Last 9 weeks") return 9;
         if (range === "Last 12 weeks") return 12;
+        if (range === "Last 26 weeks") return 26;
+        if (range === "Last 52 weeks") return 52;
         return 9;
 
       case "Monthly":
         if (range === "Last 3 months") return 3;
         if (range === "Last 6 months") return 6;
         if (range === "Last 12 months") return 12;
+        if (range === "Last 24 months") return 24;
+        if (range === "Last 36 months") return 36;
         return 12;
 
       case "Yearly":
         if (range === "Last 3 years") return 3;
         if (range === "Last 5 years") return 5;
         if (range === "Last 7 years") return 7;
+        if (range === "Last 10 years") return 10;
+        if (range === "Last 15 years") return 15;
         return 7;
 
       default:
@@ -229,7 +209,7 @@ export default function FarmAnalytics({
     }
   }, []);
 
-  // Generate default data based on date range
+  // Memoize default data generation - now based on date range
   const generateDefaultData = useCallback(() => {
     const now = new Date();
     let data = [];
@@ -323,7 +303,7 @@ export default function FarmAnalytics({
     return data;
   }, [timeFilter, dateRange, getPeriodsToShow]);
 
-  // Process chart data
+  // Memoize processed chart data
   const chartData = useMemo(() => {
     let defaultData = generateDefaultData();
 
@@ -368,33 +348,7 @@ export default function FarmAnalytics({
     return defaultData;
   }, [analyticsData, timeFilter, generateDefaultData]);
 
-  // Calculate summary stats based on current date range filter
-  const summaryStats = useMemo(() => {
-    // Calculate from the filtered chartData (respects date range)
-    const rangeTotal = chartData.reduce(
-      (sum, item) => sum + item.totalPredictions,
-      0
-    );
-    const rangeHealthy = chartData.reduce(
-      (sum, item) => sum + (item.Healthy || 0),
-      0
-    );
-
-    const totalScans = rangeTotal;
-    const healthyCount = rangeHealthy;
-
-    const healthScore =
-      totalScans > 0 ? ((healthyCount / totalScans) * 100).toFixed(1) : "0";
-    const diseaseScore =
-      totalScans > 0 ? (100 - parseFloat(healthScore)).toFixed(1) : "0";
-
-    return {
-      totalScans,
-      healthScore,
-      diseaseScore,
-    };
-  }, [chartData]);
-
+  // Memoize disease types
   const diseaseTypes = useMemo(() => {
     const diseases = new Set([
       "Healthy",
@@ -425,6 +379,7 @@ export default function FarmAnalytics({
     return diseaseColors[disease] || `hsl(${(index * 137.5) % 360}, 70%, 50%)`;
   }, []);
 
+  // Memoize CustomTooltip
   const CustomTooltip = useCallback(
     ({ active, payload, label }) => {
       if (active && payload && payload.length) {
@@ -466,6 +421,28 @@ export default function FarmAnalytics({
     },
     [getDiseaseColor]
   );
+
+  // Calculate summary stats from farm health API
+  const summaryStats = useMemo(() => {
+    if (farmHealthData) {
+      const totalScans = farmHealthData.totalPredictions || 0;
+      const healthyCount = farmHealthData.healthyCount || 0;
+      const healthScore = farmHealthData.healthPercentage
+        ? parseFloat(farmHealthData.healthPercentage.replace("%", ""))
+        : 0;
+      const diseaseScore =
+        totalScans > 0 ? (100 - healthScore).toFixed(1) : "0";
+
+      return {
+        totalScans,
+        healthScore: healthScore.toFixed(1),
+        diseaseScore,
+      };
+    }
+
+    // Fallback to 0 if no data
+    return { totalScans: 0, healthScore: "0", diseaseScore: "0" };
+  }, [farmHealthData]);
 
   const FIXED_HEIGHT = "580px";
 
@@ -610,7 +587,6 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
-                      isAnimationActive={false}
                     />
                   ))}
                 </LineChart>
@@ -618,36 +594,44 @@ export default function FarmAnalytics({
             </div>
           </div>
 
-          {/* Summary Stats - Labels stay, only numbers change */}
           <div
             className="grid grid-cols-3 gap-2 sm:gap-4"
             style={{ minHeight: "60px" }}
           >
-            <div className="text-center">
-              <p className="text-green-600 font-semibold text-base sm:text-xl">
-                {summaryStats.totalScans}
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Total Scans</p>
-            </div>
-            <div className="text-center">
-              <p className="text-blue-600 font-semibold text-base sm:text-xl">
-                {summaryStats.healthScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Healthy</p>
-            </div>
-            <div className="text-center">
-              <p className="text-orange-600 font-semibold text-base sm:text-xl">
-                {summaryStats.diseaseScore}%
-              </p>
-              <p className="text-xs sm:text-base text-gray-600">Diseases</p>
-            </div>
+            {healthLoading ? (
+              <div className="col-span-3 flex justify-center items-center">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-700"></div>
+              </div>
+            ) : (
+              <>
+                <div className="text-center">
+                  <p className="text-green-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.totalScans}
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">
+                    Total Scans
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-blue-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.healthScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Healthy</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-orange-600 font-semibold text-base sm:text-xl">
+                    {summaryStats.diseaseScore}%
+                  </p>
+                  <p className="text-xs sm:text-base text-gray-600">Diseases</p>
+                </div>
+              </>
+            )}
           </div>
         </>
       )}
     </div>
   );
 }
-
 // import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 // import {
 //   LineChart,
