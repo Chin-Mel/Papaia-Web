@@ -35,9 +35,12 @@ export default function FarmAnalytics({
   const prevTimeFilterRef = useRef(timeFilter);
 
   // Track time filter changes
+  // Track time filter changes
   useEffect(() => {
-    prevTimeFilterRef.current = timeFilter;
-  }, [chartData]);
+    return () => {
+      prevTimeFilterRef.current = timeFilter;
+    };
+  }, [timeFilter]);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
