@@ -32,6 +32,12 @@ export default function FarmAnalytics({
   const pollIntervalRef = useRef(null);
   const abortControllerRef = useRef(null);
   const hasInitialLoad = useRef(false);
+  const prevTimeFilterRef = useRef(timeFilter);
+
+  // Track time filter changes
+  useEffect(() => {
+    prevTimeFilterRef.current = timeFilter;
+  }, [chartData]);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -631,6 +637,9 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
+                      isAnimationActive={
+                        prevTimeFilterRef.current === timeFilter
+                      }
                     />
                   ))}
                 </LineChart>
