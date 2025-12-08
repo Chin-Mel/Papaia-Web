@@ -4,18 +4,6 @@ import ScanDetailModal from "../components/Popups/ScanDetailModal";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
-// Generate hash for data comparison
-const generateHash = (data) => {
-  const str = JSON.stringify(data);
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash;
-  }
-  return hash;
-};
-
 export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +12,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const abortControllerRef = useRef(null);
-  const lastScansHashRef = useRef(null);
   const pollIntervalRef = useRef(null);
   const initialLoadRef = useRef(true);
 
@@ -137,16 +124,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
         const allScans = await response.json();
 
-        // Generate hash to check if data changed
-        const newHash = generateHash(allScans);
-
-        // Only update if hash changed
-        if (silent && lastScansHashRef.current === newHash) {
-          return; // No changes, skip update
-        }
-
-        lastScansHashRef.current = newHash;
-
         const endpoint = getEndpoint(timeFilter, dateRange);
 
         if (!endpoint) {
@@ -186,7 +163,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       }
     };
 
-    pollIntervalRef.current = setInterval(checkForUpdates, 2000); // Poll every 15 seconds
+    pollIntervalRef.current = setInterval(checkForUpdates, 2000);
 
     return () => {
       if (pollIntervalRef.current) {
