@@ -367,76 +367,36 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
             <div className="space-y-3">
               {/* Most Common Disease */}
               {mostCommonDiseases.length > 0 && (
-                <div className="bg-amber-50/50 border-l-4 border-amber-500 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <TrendingUp className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm font-bold text-amber-800 mb-1">
-                        Most Common Disease
-                      </p>
-                      <p className="text-sm text-amber-700">
-                        {mostCommonDiseases.join(", ")}
-                      </p>
-                      <p className="text-xs text-amber-600 mt-1">
-                        {counts[mostCommonDiseases[0]]}{" "}
-                        {counts[mostCommonDiseases[0]] === 1 ? "case" : "cases"}{" "}
-                        (
-                        {(
-                          (counts[mostCommonDiseases[0]] / totalScans) *
-                          100
-                        ).toFixed(1)}
-                        %)
-                      </p>
-                    </div>
-                  </div>
+                <div className="mb-3">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Most Common Disease:</span>{" "}
+                    {mostCommonDiseases.join(", ")}
+                  </p>
                 </div>
               )}
 
               {/* All Diseases List */}
               {Object.entries(counts).map(([disease, count]) => {
-                const percentage =
-                  totalScans > 0 ? ((count / totalScans) * 100).toFixed(1) : 0;
                 const color = diseaseColors[disease] || "#64748b";
 
                 return (
-                  <div
-                    key={disease}
-                    className="bg-gray-50 rounded-lg p-4 border-l-4"
-                    style={{ borderColor: color }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-bold text-sm" style={{ color }}>
-                          {disease}
-                        </p>
-                        <p className="text-xs text-gray-600 mt-0.5">
-                          {count} {count === 1 ? "case" : "cases"}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold" style={{ color }}>
-                          {percentage}%
-                        </p>
-                      </div>
+                  <div key={disease} className="flex items-center gap-3 py-2">
+                    <div
+                      className="w-4 h-4 rounded-sm flex-shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <div className="flex-1 flex justify-between items-center">
+                      <p className="text-sm text-gray-700">{disease}</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {count === 0
+                          ? "No cases"
+                          : `${count} ${count === 1 ? "case" : "cases"}`}
+                      </p>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-
-          <div className="mt-3 pt-3 border-t border-gray-200 text-center flex-shrink-0">
-            <p className="text-xs text-gray-500">
-              {recentScans.length > 0
-                ? filterActive
-                  ? `Showing ${recentScans.length} ${
-                      recentScans.length === 1 ? "scan" : "scans"
-                    } from ${dateRange.toLowerCase()}`
-                  : `Showing all ${recentScans.length} ${
-                      recentScans.length === 1 ? "scan" : "scans"
-                    }`
-                : "No scans in selected range"}
-            </p>
           </div>
         </div>
       )}
