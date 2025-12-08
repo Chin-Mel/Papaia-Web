@@ -32,7 +32,6 @@ export default function FarmAnalytics({
   const pollIntervalRef = useRef(null);
   const abortControllerRef = useRef(null);
   const hasInitialLoad = useRef(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -74,14 +73,6 @@ export default function FarmAnalytics({
       onDateRangeChange(newRange);
     }
   }, [timeFilter, onDateRangeChange]);
-
-  useEffect(() => {
-    if (hasInitialLoad.current) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => setIsTransitioning(false), 300);
-      return () => clearTimeout(timer);
-    }
-  }, [timeFilter]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -581,14 +572,7 @@ export default function FarmAnalytics({
       ) : (
         <>
           <div className="flex-1 w-full mb-4">
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                opacity: isTransitioning ? 0 : 1,
-                transition: "opacity 300ms ease-in-out",
-              }}
-            >
+            <div style={{ width: "100%", height: "100%" }}>
               <ResponsiveContainer>
                 <LineChart
                   data={chartData}
