@@ -156,6 +156,8 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
 
     const fetchData = async () => {
       setLoading(true);
+      // Trigger animation when filters change
+      setAnimationKey((prev) => prev + 1);
 
       try {
         const response = await fetch(
@@ -199,13 +201,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       }
     };
   }, [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]);
-
-  useEffect(() => {
-    if (farmId && timeFilter && dateRange) {
-      setAnimationKey((prev) => prev + 1); // Trigger re-animation
-      fetchAnalytics(false);
-    }
-  }, [farmId, timeFilter, dateRange, fetchAnalytics]);
 
   // Get card styling based on disease type
   const getCardStyle = useCallback((prediction) => {
@@ -359,7 +354,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               {chartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={330}>
-                    <PieChart key={animationKey}>
+                    <PieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
