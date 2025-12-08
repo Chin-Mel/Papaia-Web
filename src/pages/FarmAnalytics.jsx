@@ -74,6 +74,14 @@ export default function FarmAnalytics({
     }
   }, [timeFilter, onDateRangeChange]);
 
+  useEffect(() => {
+    if (hasInitialLoad.current) {
+      setIsTransitioning(true);
+      const timer = setTimeout(() => setIsTransitioning(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [timeFilter]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -572,10 +580,16 @@ export default function FarmAnalytics({
       ) : (
         <>
           <div className="flex-1 w-full mb-4">
-            <div style={{ width: "100%", height: "100%" }}>
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                opacity: isTransitioning ? 0 : 1,
+                transition: "opacity 300ms ease-in-out",
+              }}
+            >
               <ResponsiveContainer>
                 <LineChart
-                  key={timeFilter}
                   data={chartData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                 >
@@ -632,6 +646,7 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
+                      isAnimationActive={!isTransitioning}
                     />
                   ))}
                 </LineChart>
