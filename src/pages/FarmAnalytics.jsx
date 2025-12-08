@@ -19,7 +19,7 @@ export default function FarmAnalytics({
   timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"],
 }) {
   const [analyticsData, setAnalyticsData] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [isDateRangeOpen, setIsDateRangeOpen] = useState(false);
@@ -30,8 +30,8 @@ export default function FarmAnalytics({
   const [healthLoading, setHealthLoading] = useState(false);
 
   const pollIntervalRef = useRef(null);
-  const isInitialLoad = useRef(true);
   const abortControllerRef = useRef(null);
+  const hasInitialLoad = useRef(false);
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -136,7 +136,7 @@ export default function FarmAnalytics({
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      if (!silent && isInitialLoad.current) {
+      if (!silent && !hasInitialLoad.current) {
         setLoading(true);
         setError(null);
       }
@@ -163,7 +163,7 @@ export default function FarmAnalytics({
           const data = await response.json();
           setAnalyticsData(data);
         } else {
-          if (isInitialLoad.current) {
+          if (!hasInitialLoad.current) {
             const errorData = await response.json().catch(() => ({}));
             setError(errorData.error || `HTTP ${response.status} error`);
             setAnalyticsData(null);
@@ -171,15 +171,15 @@ export default function FarmAnalytics({
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          if (isInitialLoad.current) {
+          if (!hasInitialLoad.current) {
             setError("Failed to load analytics data");
             setAnalyticsData(null);
           }
         }
       } finally {
-        if (!silent && isInitialLoad.current) {
+        if (!silent && !hasInitialLoad.current) {
           setLoading(false);
-          isInitialLoad.current = false;
+          hasInitialLoad.current = true;
         }
       }
     },
@@ -191,10 +191,8 @@ export default function FarmAnalytics({
     if (!farmId) return;
 
     // Reset initial load flag when filters change
-    isInitialLoad.current = true;
-
-    // Initial fetch
-    Promise.all([fetchFarmHealth(false), fetchAnalytics(false)]);
+    const isSilent = hasInitialLoad.current;
+    Promise.all([fetchFarmHealth(isSilent), fetchAnalytics(isSilent)]);
 
     // Set up polling - fetch every 2 seconds
     pollIntervalRef.current = setInterval(() => {
