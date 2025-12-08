@@ -86,48 +86,43 @@ export default function FarmAnalytics({
   }, []);
 
   // Fetch farm health data (independent of date range changes)
-  useEffect(() => {
-    if (!farmId) return;
 
-    // Fetch farm health data with polling
-    const fetchFarmHealth = useCallback(
-      async (silent = false) => {
-        if (!farmId) return;
+  // Fetch farm health data with polling
+  const fetchFarmHealth = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-        if (!silent) {
-          setHealthLoading(true);
-        }
+      if (!silent) {
+        setHealthLoading(true);
+      }
 
-        try {
-          const response = await fetch(
-            `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-
-          if (response.ok) {
-            const data = await response.json();
-            setFarmHealthData(data);
-          } else {
-            setFarmHealthData(null);
+      try {
+        const response = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
-        } catch (error) {
-          console.error("Failed to fetch farm health:", error);
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setFarmHealthData(data);
+        } else {
           setFarmHealthData(null);
-        } finally {
-          if (!silent) {
-            setHealthLoading(false);
-          }
         }
-      },
-      [farmId]
-    );
-
-    fetchFarmHealth();
-  }, [farmId]); // Only depends on farmId, not dateRange
+      } catch (error) {
+        console.error("Failed to fetch farm health:", error);
+        setFarmHealthData(null);
+      } finally {
+        if (!silent) {
+          setHealthLoading(false);
+        }
+      }
+    },
+    [farmId]
+  );
 
   const fetchAnalytics = useCallback(
     async (silent = false) => {
