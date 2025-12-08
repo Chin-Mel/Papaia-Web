@@ -1,14 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Leaf } from "lucide-react";
+import { Leaf, TrendingUp } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import ScanDetailModal from "../components/Popups/ScanDetailModal.jsx";
 
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [selectedScan, setSelectedScan] = useState(null);
   const [animationKey, setAnimationKey] = useState(0);
-  const [showDetailModal, setShowDetailModal] = useState(false);
   const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -134,6 +131,21 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     return { chartData, zeroCases, counts };
   }, []);
 
+  // Get most common disease(s)
+  const getMostCommonDiseases = useCallback((counts) => {
+    // Filter out Healthy and diseases with 0 count
+    const diseaseEntries = Object.entries(counts)
+      .filter(([disease, count]) => disease !== "Healthy" && count > 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (diseaseEntries.length === 0) return [];
+
+    const maxCount = diseaseEntries[0][1];
+    return diseaseEntries
+      .filter(([, count]) => count === maxCount)
+      .map(([disease]) => disease);
+  }, []);
+
   // Track when user manually changes date range (skip initial load)
   useEffect(() => {
     if (initialLoadRef.current) {
@@ -202,108 +214,12 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     };
   }, [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]);
 
-  // Get card styling based on disease type
-  const getCardStyle = useCallback((prediction) => {
-    const styles = {
-      Healthy: {
-        bg: "bg-emerald-50/50",
-        border: "border-l-2 border-emerald-700",
-        textColor: "text-emerald-700",
-      },
-      "Ring Spot Virus": {
-        bg: "bg-orange-50/50",
-        border: "border-l-2 border-orange-600",
-        textColor: "text-orange-600",
-      },
-      Anthracnose: {
-        bg: "bg-rose-50/50",
-        border: "border-l-2 border-rose-600",
-        textColor: "text-rose-600",
-      },
-      "Powdery Mildew": {
-        bg: "bg-blue-50/50",
-        border: "border-l-2 border-blue-600",
-        textColor: "text-blue-600",
-      },
-    };
-
-    return (
-      styles[prediction] || {
-        bg: "bg-slate-50/50",
-        border: "border-l-2 border-slate-600",
-        textColor: "text-slate-600",
-      }
-    );
-  }, []);
-
-  const formatDateTime = useCallback((timestamp) => {
-    try {
-      if (!timestamp) return "";
-
-      const parts = timestamp.trim().split(/\s+/);
-      if (parts.length !== 3) return timestamp;
-
-      const datePart = parts[0];
-      const timePart = parts[1];
-      const period = parts[2];
-
-      const [month, day, year] = datePart.split("/");
-      if (!month || !day || !year) return timestamp;
-
-      const monthNames = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-      ];
-
-      const monthIndex = parseInt(month) - 1;
-      const monthName = monthNames[monthIndex] || month;
-
-      return {
-        date: `${monthName} ${parseInt(day)}, ${year}`,
-        time: `${timePart} ${period}`,
-      };
-    } catch (error) {
-      return { date: timestamp, time: "" };
-    }
-  }, []);
-
-  const getFarmerName = useCallback((scan) => {
-    // Use farmerName from API if available
-    if (scan.farmerName) {
-      return scan.farmerName;
-    }
-
-    // Fallback to ID number if no name
-    return `Farmer ${scan.idNumber}`;
-  }, []);
-
-  const handleImageError = useCallback((e) => {
-    e.target.style.display = "none";
-    if (e.target.nextSibling) {
-      e.target.nextSibling.style.display = "flex";
-    }
-  }, []);
-
-  const handleScanClick = useCallback((scan) => {
-    setSelectedScan(scan);
-    setShowDetailModal(true);
-  }, []);
-
   const FIXED_HEIGHT = "580px";
 
   const { chartData, zeroCases, counts } =
     calculateDiseaseDistribution(recentScans);
   const totalScans = recentScans.length;
+  const mostCommonDiseases = getMostCommonDiseases(counts);
 
   if (loading && !recentScans.length) {
     return (
@@ -312,7 +228,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Recent Scans{filterActive ? ` (${dateRange})` : ""}
+          Scan Breakdown{filterActive ? ` (${dateRange})` : ""}
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -327,7 +243,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       style={{ height: FIXED_HEIGHT }}
     >
       <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-        Recent Scans{filterActive ? ` (${dateRange})` : ""}
+        Scan Breakdown{filterActive ? ` (${dateRange})` : ""}
       </h2>
 
       {recentScans.length === 0 ? (
@@ -344,7 +260,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Scrollable Container for Both Pie Chart and Scans */}
+          {/* Scrollable Container */}
           <div
             className="flex-1 overflow-y-auto pr-2 space-y-4"
             style={{ scrollbarWidth: "thin" }}
@@ -354,7 +270,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               {chartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={330}>
-                    <PieChart>
+                    <PieChart key={animationKey}>
                       <Pie
                         data={chartData}
                         cx="50%"
@@ -447,51 +363,60 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               )}
             </div>
 
-            {/* Scans List */}
+            {/* Disease Statistics List */}
             <div className="space-y-3">
-              {recentScans.map((scan, index) => {
-                const cardStyle = getCardStyle(scan.prediction);
-                const { date, time } = formatDateTime(scan.timestamp);
+              {/* Most Common Disease */}
+              {mostCommonDiseases.length > 0 && (
+                <div className="bg-amber-50/50 border-l-4 border-amber-500 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <TrendingUp className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-amber-800 mb-1">
+                        Most Common Disease
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        {mostCommonDiseases.join(", ")}
+                      </p>
+                      <p className="text-xs text-amber-600 mt-1">
+                        {counts[mostCommonDiseases[0]]}{" "}
+                        {counts[mostCommonDiseases[0]] === 1 ? "case" : "cases"}{" "}
+                        (
+                        {(
+                          (counts[mostCommonDiseases[0]] / totalScans) *
+                          100
+                        ).toFixed(1)}
+                        %)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* All Diseases List */}
+              {Object.entries(counts).map(([disease, count]) => {
+                const percentage =
+                  totalScans > 0 ? ((count / totalScans) * 100).toFixed(1) : 0;
+                const color = diseaseColors[disease] || "#64748b";
+
                 return (
                   <div
-                    key={`${scan.id || scan.timestamp}-${index}`}
-                    onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all duration-200 hover:shadow-md cursor-pointer hover:scale-[1.02]`}
+                    key={disease}
+                    className="bg-gray-50 rounded-lg p-4 border-l-4"
+                    style={{ borderColor: color }}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={scan.imageUrl}
-                          alt="Scan"
-                          className="w-14 h-14 rounded-lg object-cover border border-gray-200"
-                          onError={handleImageError}
-                        />
-                        <div
-                          className="w-14 h-14 rounded-lg border border-gray-200 bg-gray-200 items-center justify-center text-gray-400 text-xs hidden"
-                          style={{ display: "none" }}
-                        >
-                          No Image
-                        </div>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-bold text-sm" style={{ color }}>
+                          {disease}
+                        </p>
+                        <p className="text-xs text-gray-600 mt-0.5">
+                          {count} {count === 1 ? "case" : "cases"}
+                        </p>
                       </div>
-
-                      <div className="flex-1 min-w-0 flex justify-between items-start">
-                        <div className="flex-1">
-                          <p
-                            className={`font-bold text-sm mb-0.5 ${cardStyle.textColor}`}
-                          >
-                            {scan.prediction}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            By: {getFarmerName(scan)}
-                          </p>
-                        </div>
-
-                        <div className="text-right flex-shrink-0">
-                          <p className="text-xs text-slate-700 font-medium break-words">
-                            {date}
-                          </p>
-                          <p className="text-xs text-slate-500">{time}</p>
-                        </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold" style={{ color }}>
+                          {percentage}%
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -515,12 +440,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           </div>
         </div>
       )}
-      <ScanDetailModal
-        isOpen={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        scan={selectedScan}
-        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
-      />
     </div>
   );
 }
