@@ -575,6 +575,7 @@ export default function FarmAnalytics({
             <div style={{ width: "100%", height: "100%" }}>
               <ResponsiveContainer>
                 <LineChart
+                  key={timeFilter}
                   data={chartData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                 >
@@ -631,7 +632,6 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
-                      isAnimationActive={true}
                     />
                   ))}
                 </LineChart>
