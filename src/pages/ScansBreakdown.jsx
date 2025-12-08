@@ -16,17 +16,27 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [analyticsData, setAnalyticsData] = useState(null);
   const [farmHealthData, setFarmHealthData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [filterActive, setFilterActive] = useState(false);
   const pollIntervalRef = useRef(null);
   const analyticsHashRef = useRef(null);
   const healthHashRef = useRef(null);
   const initialLoadRef = useRef(true);
 
   const diseaseColors = {
-    Healthy: "#22c55e",
-    "Ring Spot Virus": "#f97316",
-    Anthracnose: "#ef4444",
-    "Powdery Mildew": "#0046FF",
+    Healthy: "#10b981",
+    "Ring Spot Virus": "#ea580c",
+    Anthracnose: "#f43f5e",
+    "Powdery Mildew": "#3b82f6",
   };
+
+  // Track when user manually changes date range (skip initial load)
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    setFilterActive(true);
+  }, [dateRange]);
 
   // Fetch farm health data (all-time data)
   const fetchFarmHealth = useCallback(
@@ -69,7 +79,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       if (!farmId || !timeFilter) return;
 
       try {
-        if (!silent && initialLoadRef.current) {
+        if (!silent && !analyticsData) {
           setLoading(true);
         }
 
@@ -113,13 +123,12 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           console.error("Failed to fetch analytics:", error);
         }
       } finally {
-        if (!silent && initialLoadRef.current) {
+        if (!silent) {
           setLoading(false);
-          initialLoadRef.current = false;
         }
       }
     },
-    [farmId, timeFilter]
+    [farmId, timeFilter, analyticsData]
   );
 
   // Initial load - fetch farm health (all-time data)
@@ -132,17 +141,17 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
 
   // Fetch analytics when filter is applied
   useEffect(() => {
-    if (farmId && timeFilter) {
+    if (farmId && filterActive && timeFilter) {
       fetchAnalytics(false);
     }
-  }, [farmId, timeFilter, fetchAnalytics]);
+  }, [farmId, timeFilter, filterActive, fetchAnalytics]);
 
-  // Polling for updates
+  // Polling for updates every 15 seconds
   useEffect(() => {
     const checkForUpdates = async () => {
       if (!document.hidden && farmId) {
         await fetchFarmHealth(true);
-        if (timeFilter) {
+        if (filterActive && timeFilter) {
           await fetchAnalytics(true);
         }
       }
@@ -155,7 +164,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics]);
+  }, [farmId, timeFilter, filterActive, fetchFarmHealth, fetchAnalytics]);
 
   const getPeriodsToShow = useCallback((range, filter) => {
     switch (filter) {
@@ -186,51 +195,44 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
 
   const { chartData, totalScans, zeroCases, mostCommonDisease } =
     useMemo(() => {
+      const allDiseases = [
+        "Healthy",
+        "Ring Spot Virus",
+        "Anthracnose",
+        "Powdery Mildew",
+      ];
       let totals = {};
 
-      // If no time filter is selected, show all-time data from farm health
-      if (!timeFilter || !dateRange) {
-        if (!farmHealthData || !farmHealthData.diseaseCounts) {
-          return {
-            chartData: [],
-            totalScans: 0,
-            zeroCases: [],
-            mostCommonDisease: "None",
-          };
+      // Initialize all diseases with 0
+      allDiseases.forEach((disease) => {
+        totals[disease] = 0;
+      });
+
+      // If filter is not active, show all-time data from farm health
+      if (!filterActive || !timeFilter || !dateRange) {
+        if (farmHealthData && farmHealthData.diseaseCounts) {
+          totals = { ...totals, ...farmHealthData.diseaseCounts };
         }
-        totals = farmHealthData.diseaseCounts;
       } else {
-        // If time filter is selected, use analytics data with date range
-        if (!analyticsData) {
-          return {
-            chartData: [],
-            totalScans: 0,
-            zeroCases: [],
-            mostCommonDisease: "None",
-          };
+        // If filter is active, use analytics data with date range
+        if (analyticsData) {
+          const statsKey = `${timeFilter.toLowerCase()}Stats`;
+          const stats = analyticsData?.[statsKey];
+
+          if (stats && Array.isArray(stats)) {
+            const periodsToShow = getPeriodsToShow(dateRange, timeFilter);
+            const relevantStats = stats.slice(-periodsToShow);
+
+            relevantStats.forEach((item) => {
+              const predictions = item.predictions || {};
+              Object.entries(predictions).forEach(([disease, count]) => {
+                if (totals.hasOwnProperty(disease)) {
+                  totals[disease] += count;
+                }
+              });
+            });
+          }
         }
-
-        const statsKey = `${timeFilter.toLowerCase()}Stats`;
-        const stats = analyticsData?.[statsKey];
-
-        if (!stats || !Array.isArray(stats)) {
-          return {
-            chartData: [],
-            totalScans: 0,
-            zeroCases: [],
-            mostCommonDisease: "None",
-          };
-        }
-
-        const periodsToShow = getPeriodsToShow(dateRange, timeFilter);
-        const relevantStats = stats.slice(-periodsToShow);
-
-        relevantStats.forEach((item) => {
-          const predictions = item.predictions || {};
-          Object.entries(predictions).forEach(([disease, count]) => {
-            totals[disease] = (totals[disease] || 0) + count;
-          });
-        });
       }
 
       const total = Object.values(totals).reduce(
@@ -256,9 +258,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           withCases.push({
             name,
             value,
-            color:
-              diseaseColors[name] ||
-              `hsl(${(withCases.length * 137.5) % 360}, 70%, 50%)`,
+            color: diseaseColors[name],
           });
         } else {
           noCases.push(name);
@@ -281,15 +281,37 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       farmHealthData,
       timeFilter,
       dateRange,
+      filterActive,
       getPeriodsToShow,
       diseaseColors,
     ]);
 
+  const FIXED_HEIGHT = "580px";
+
+  if (loading && chartData.length === 0) {
+    return (
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
+        <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+          Scan Breakdown{filterActive ? ` (${dateRange})` : ""}
+        </h2>
+        <div className="flex justify-center items-center flex-1">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 h-[580px] flex flex-col">
+    <div
+      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+      style={{ height: FIXED_HEIGHT }}
+    >
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base sm:text-lg font-bold text-gray-800">
-          Scan Breakdown
+          Scan Breakdown{filterActive ? ` (${dateRange})` : ""}
         </h2>
         {mostCommonDisease !== "None" && (
           <div className="text-right">
@@ -301,14 +323,27 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         )}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center flex-1">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+      {chartData.length === 0 ? (
+        <div className="text-center py-6 sm:py-8 flex-1 flex flex-col items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center text-2xl">
+            📊
+          </div>
+          <p className="text-sm sm:text-base text-gray-500">
+            No scan data available
+          </p>
+          <p className="text-xs text-gray-400 mt-1">
+            {filterActive
+              ? `Data from ${dateRange.toLowerCase()} will appear here`
+              : "Scan data will appear here"}
+          </p>
         </div>
       ) : (
-        <div className="border-b border-gray-200 pb-4 flex-1 flex flex-col">
-          {chartData.length > 0 ? (
-            <>
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div
+            className="flex-1 overflow-y-auto pr-2"
+            style={{ scrollbarWidth: "thin" }}
+          >
+            <div className="border-b border-gray-200 pb-4">
               <ResponsiveContainer width="100%" height={330}>
                 <PieChart>
                   <Pie
@@ -331,6 +366,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                         innerRadius + (outerRadius - innerRadius) * 0.5;
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
                       return (
                         <text
                           x={x}
@@ -378,17 +414,56 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                   />
                 </PieChart>
               </ResponsiveContainer>
+
               {zeroCases.length > 0 && (
                 <p className="text-xs text-black mb-3 mt-3 italic font-medium text-center">
                   No cases: {zeroCases.join(", ")}
                 </p>
               )}
-            </>
-          ) : (
-            <p className="text-xs text-gray-500 text-center py-4 mt-3">
-              No data to display
+            </div>
+
+            {/* Disease List */}
+            <div className="mt-4 space-y-2">
+              {chartData.map((item, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-sm font-medium text-gray-700">
+                      {item.name}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-gray-800">
+                      {item.value} {item.value === 1 ? "case" : "cases"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {((item.value / totalScans) * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-3 pt-3 border-t border-gray-200 text-center flex-shrink-0">
+            <p className="text-xs text-gray-500">
+              {totalScans > 0
+                ? filterActive
+                  ? `Showing ${totalScans} ${
+                      totalScans === 1 ? "scan" : "scans"
+                    } from ${dateRange.toLowerCase()}`
+                  : `Showing all ${totalScans} ${
+                      totalScans === 1 ? "scan" : "scans"
+                    }`
+                : "No scans available"}
             </p>
-          )}
+          </div>
         </div>
       )}
     </div>
