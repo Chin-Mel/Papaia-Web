@@ -211,24 +211,23 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           ? filterScansByDateRange(allScans, timeFilter, dateRange)
           : allScans;
 
-        // ✅ ADD THIS: Only update if data has actually changed
-        // setRecentScans((prevScans) => {
-        //   // Compare lengths and content
-        //   if (prevScans.length !== filteredScans.length) {
-        //     return filteredScans;
-        //   }
+        setRecentScans((prevScans) => {
+          // Compare lengths and content
+          if (prevScans.length !== filteredScans.length) {
+            return filteredScans;
+          }
 
-        //   // If lengths are same, check if content is different
-        //   const isDifferent = filteredScans.some(
-        //     (scan, index) =>
-        //       scan.id !== prevScans[index]?.id ||
-        //       scan.timestamp !== prevScans[index]?.timestamp
-        //   );
+          // If lengths are same, check if content is different
+          const isDifferent = filteredScans.some(
+            (scan, index) =>
+              scan.id !== prevScans[index]?.id ||
+              scan.timestamp !== prevScans[index]?.timestamp
+          );
 
-        //   return isDifferent ? filteredScans : prevScans;
-        // });
+          return isDifferent ? filteredScans : prevScans;
+        });
 
-        setRecentScans(filteredScans);
+        //setRecentScans(filteredScans);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Error fetching data:", error);
