@@ -1,12 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 const generateHash = (data) => {
   const str = JSON.stringify(data);
@@ -191,116 +184,106 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     }
   }, []);
 
-  const pieData = useMemo(() => {
-    // If no time filter is selected, show all-time data from farm health
-    if (!timeFilter || !dateRange) {
-      if (!farmHealthData || !farmHealthData.diseaseCounts) return [];
+  const { chartData, totalScans, zeroCases, mostCommonDisease } =
+    useMemo(() => {
+      let totals = {};
 
-      const totals = farmHealthData.diseaseCounts;
-      const totalScans = Object.values(totals).reduce(
+      // If no time filter is selected, show all-time data from farm health
+      if (!timeFilter || !dateRange) {
+        if (!farmHealthData || !farmHealthData.diseaseCounts) {
+          return {
+            chartData: [],
+            totalScans: 0,
+            zeroCases: [],
+            mostCommonDisease: "None",
+          };
+        }
+        totals = farmHealthData.diseaseCounts;
+      } else {
+        // If time filter is selected, use analytics data with date range
+        if (!analyticsData) {
+          return {
+            chartData: [],
+            totalScans: 0,
+            zeroCases: [],
+            mostCommonDisease: "None",
+          };
+        }
+
+        const statsKey = `${timeFilter.toLowerCase()}Stats`;
+        const stats = analyticsData?.[statsKey];
+
+        if (!stats || !Array.isArray(stats)) {
+          return {
+            chartData: [],
+            totalScans: 0,
+            zeroCases: [],
+            mostCommonDisease: "None",
+          };
+        }
+
+        const periodsToShow = getPeriodsToShow(dateRange, timeFilter);
+        const relevantStats = stats.slice(-periodsToShow);
+
+        relevantStats.forEach((item) => {
+          const predictions = item.predictions || {};
+          Object.entries(predictions).forEach(([disease, count]) => {
+            totals[disease] = (totals[disease] || 0) + count;
+          });
+        });
+      }
+
+      const total = Object.values(totals).reduce(
         (sum, count) => sum + count,
         0
       );
 
-      if (totalScans === 0) return [];
+      if (total === 0) {
+        return {
+          chartData: [],
+          totalScans: 0,
+          zeroCases: [],
+          mostCommonDisease: "None",
+        };
+      }
 
-      const data = Object.entries(totals)
-        .map(([name, value]) => ({
-          name,
-          value,
-          percentage: ((value / totalScans) * 100).toFixed(1),
-        }))
-        .sort((a, b) => b.value - a.value);
+      // Separate diseases with cases and without cases
+      const withCases = [];
+      const noCases = [];
 
-      return data;
-    }
-
-    // If time filter is selected, use analytics data with date range
-    if (!analyticsData) return [];
-
-    const statsKey = `${timeFilter.toLowerCase()}Stats`;
-    const stats = analyticsData?.[statsKey];
-
-    if (!stats || !Array.isArray(stats)) return [];
-
-    const periodsToShow = getPeriodsToShow(dateRange, timeFilter);
-    const relevantStats = stats.slice(-periodsToShow);
-
-    const totals = {};
-    relevantStats.forEach((item) => {
-      const predictions = item.predictions || {};
-      Object.entries(predictions).forEach(([disease, count]) => {
-        totals[disease] = (totals[disease] || 0) + count;
+      Object.entries(totals).forEach(([name, value]) => {
+        if (value > 0) {
+          withCases.push({
+            name,
+            value,
+            color:
+              diseaseColors[name] ||
+              `hsl(${(withCases.length * 137.5) % 360}, 70%, 50%)`,
+          });
+        } else {
+          noCases.push(name);
+        }
       });
-    });
 
-    const totalScans = Object.values(totals).reduce(
-      (sum, count) => sum + count,
-      0
-    );
+      // Sort by value descending
+      withCases.sort((a, b) => b.value - a.value);
 
-    if (totalScans === 0) return [];
+      const topDisease = withCases.length > 0 ? withCases[0].name : "None";
 
-    const data = Object.entries(totals)
-      .map(([name, value]) => ({
-        name,
-        value,
-        percentage: ((value / totalScans) * 100).toFixed(1),
-      }))
-      .sort((a, b) => b.value - a.value);
-
-    return data;
-  }, [analyticsData, farmHealthData, timeFilter, dateRange, getPeriodsToShow]);
-
-  const mostCommonDisease = useMemo(() => {
-    if (pieData.length === 0) return "None";
-    return pieData[0].name;
-  }, [pieData]);
-
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0];
-      return (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 text-sm">
-          <p className="font-semibold text-gray-800">{data.name}</p>
-          <p className="text-gray-600">Cases: {data.value}</p>
-          <p className="text-gray-600">
-            Percentage: {data.payload.percentage}%
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const CustomLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percentage,
-  }) => {
-    const RADIAN = Math.PI / 180;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
-    if (parseFloat(percentage) < 5) return null;
-
-    return (
-      <text
-        x={x}
-        y={y}
-        fill="white"
-        textAnchor={x > cx ? "start" : "end"}
-        dominantBaseline="central"
-        className="font-semibold text-sm"
-      >
-        {`${percentage}%`}
-      </text>
-    );
-  };
+      return {
+        chartData: withCases,
+        totalScans: total,
+        zeroCases: noCases,
+        mostCommonDisease: topDisease,
+      };
+    }, [
+      analyticsData,
+      farmHealthData,
+      timeFilter,
+      dateRange,
+      getPeriodsToShow,
+      diseaseColors,
+    ]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 h-[580px] flex flex-col">
@@ -322,88 +305,91 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
-      ) : pieData.length === 0 ? (
-        <div className="flex items-center justify-center flex-1 text-gray-500 text-sm">
-          <div className="text-center">
-            <div className="w-16 h-16 mx-auto mb-2 bg-gray-100 rounded-full flex items-center justify-center text-2xl">
-              📊
-            </div>
-            <p className="font-medium">No scan data available</p>
-          </div>
-        </div>
       ) : (
-        <>
-          <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={(props) => <CustomLabel {...props} />}
-                  outerRadius="70%"
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationDuration={600}
-                  animationBegin={0}
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        diseaseColors[entry.name] ||
-                        `hsl(${(index * 137.5) % 360}, 70%, 50%)`
-                      }
-                    />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  verticalAlign="bottom"
-                  height={36}
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{
-                    fontSize: "12px",
-                    paddingTop: "10px",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {pieData.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between p-2 rounded-lg bg-gray-50"
-                >
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded-full flex-shrink-0"
-                      style={{
-                        backgroundColor:
-                          diseaseColors[item.name] ||
-                          `hsl(${(index * 137.5) % 360}, 70%, 50%)`,
-                      }}
-                    ></div>
-                    <span className="text-sm font-medium text-gray-700 truncate">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="text-right flex-shrink-0 ml-2">
-                    <p className="text-sm font-semibold text-gray-800">
-                      {item.value}
-                    </p>
-                    <p className="text-xs text-gray-500">{item.percentage}%</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
+        <div className="border-b border-gray-200 pb-4 flex-1 flex flex-col">
+          {chartData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={330}>
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({
+                      name,
+                      percent,
+                      value,
+                      cx,
+                      cy,
+                      midAngle,
+                      innerRadius,
+                      outerRadius,
+                    }) => {
+                      const RADIAN = Math.PI / 180;
+                      const radius =
+                        innerRadius + (outerRadius - innerRadius) * 0.5;
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                      return (
+                        <text
+                          x={x}
+                          y={y}
+                          fill="white"
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          className="text-xs"
+                        >
+                          <tspan x={x} dy="-0.6em" style={{ fontSize: "15px" }}>
+                            {name}
+                          </tspan>
+                          <tspan
+                            x={x}
+                            dy="1.2em"
+                            style={{
+                              fontSize: "15px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {`${(percent * 100).toFixed(0)}%`}
+                          </tspan>
+                          <tspan x={x} dy="1.2em" style={{ fontSize: "14px" }}>
+                            {`${value} ${value === 1 ? "case" : "cases"}`}
+                          </tspan>
+                        </text>
+                      );
+                    }}
+                    outerRadius={150}
+                    innerRadius={0}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(value, name, props) => [
+                      `${value} cases (${((value / totalScans) * 100).toFixed(
+                        1
+                      )}%)`,
+                      props.payload.name,
+                    ]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              {zeroCases.length > 0 && (
+                <p className="text-xs text-black mb-3 mt-3 italic font-medium text-center">
+                  No cases: {zeroCases.join(", ")}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-xs text-gray-500 text-center py-4 mt-3">
+              No data to display
+            </p>
+          )}
+        </div>
       )}
     </div>
   );
