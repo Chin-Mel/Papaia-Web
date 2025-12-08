@@ -186,7 +186,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       }
     };
 
-    pollIntervalRef.current = setInterval(checkForUpdates, 15000); // Poll every 15 seconds
+    pollIntervalRef.current = setInterval(checkForUpdates, 2000); // Poll every 15 seconds
 
     return () => {
       if (pollIntervalRef.current) {
@@ -320,7 +320,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         Scans ({dateRange})
       </h2>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col justify-between">
         {recentScans.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
