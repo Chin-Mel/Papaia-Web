@@ -631,6 +631,7 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
+                      isAnimationActive={false}
                     />
                   ))}
                 </LineChart>
