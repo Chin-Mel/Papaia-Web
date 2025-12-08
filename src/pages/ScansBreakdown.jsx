@@ -321,7 +321,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               {chartData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={300}>
-                    <PieChart key={animationKey}>
+                    <PieChart>
                       <Pie
                         data={chartData}
                         cx="50%"
@@ -381,9 +381,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                         innerRadius={0}
                         fill="#8884d8"
                         dataKey="value"
-                        animationBegin={0}
-                        animationDuration={800}
-                        animationEasing="ease-out"
                       >
                         {chartData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
