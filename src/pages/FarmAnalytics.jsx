@@ -29,6 +29,10 @@ export default function FarmAnalytics({
   const [farmHealthData, setFarmHealthData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(false);
 
+  const pollIntervalRef = useRef(null);
+  const isInitialLoad = useRef(true);
+  const abortControllerRef = useRef(null);
+
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
     switch (timeFilter) {
@@ -85,47 +89,62 @@ export default function FarmAnalytics({
   useEffect(() => {
     if (!farmId) return;
 
-    const fetchFarmHealth = async () => {
-      setHealthLoading(true);
-      try {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+    // Fetch farm health data with polling
+    const fetchFarmHealth = useCallback(
+      async (silent = false) => {
+        if (!farmId) return;
 
-        if (response.ok) {
-          const data = await response.json();
-          setFarmHealthData(data);
-        } else {
-          setFarmHealthData(null);
+        if (!silent) {
+          setHealthLoading(true);
         }
-      } catch (error) {
-        console.error("Failed to fetch farm health:", error);
-        setFarmHealthData(null);
-      } finally {
-        setHealthLoading(false);
-      }
-    };
+
+        try {
+          const response = await fetch(
+            `https://papaiaapi.onrender.com/api/owner/farm-health/${farmId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            setFarmHealthData(data);
+          } else {
+            setFarmHealthData(null);
+          }
+        } catch (error) {
+          console.error("Failed to fetch farm health:", error);
+          setFarmHealthData(null);
+        } finally {
+          if (!silent) {
+            setHealthLoading(false);
+          }
+        }
+      },
+      [farmId]
+    );
 
     fetchFarmHealth();
   }, [farmId]); // Only depends on farmId, not dateRange
 
-  // Fetch analytics data with AbortController for cleanup
-  useEffect(() => {
-    if (!farmId) return;
-
-    const controller = new AbortController();
-
-    const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(
+    async (silent = false) => {
       // Only show loading on initial load (when analyticsData is null)
-      if (!analyticsData) {
-        setLoading(true);
+      if (!farmId) return;
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
-      setError(null);
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      if (!silent && isInitialLoad.current) {
+        setLoading(true);
+        setError(null);
+      }
 
       try {
         const endpointMap = {
@@ -149,24 +168,56 @@ export default function FarmAnalytics({
           const data = await response.json();
           setAnalyticsData(data);
         } else {
-          const errorData = await response.json().catch(() => ({}));
-          setError(errorData.error || `HTTP ${response.status} error`);
-          setAnalyticsData(null);
+          if (isInitialLoad.current) {
+            const errorData = await response.json().catch(() => ({}));
+            setError(errorData.error || `HTTP ${response.status} error`);
+            setAnalyticsData(null);
+          }
         }
       } catch (error) {
         if (error.name !== "AbortError") {
-          setError("Failed to load analytics data");
-          setAnalyticsData(null);
+          if (isInitialLoad.current) {
+            setError("Failed to load analytics data");
+            setAnalyticsData(null);
+          }
         }
       } finally {
-        setLoading(false);
+        if (!silent && isInitialLoad.current) {
+          setLoading(false);
+          isInitialLoad.current = false;
+        }
+      }
+    },
+    [farmId, timeFilter]
+  );
+
+  // Initial load and polling
+  useEffect(() => {
+    if (!farmId) return;
+
+    // Reset initial load flag when filters change
+    isInitialLoad.current = true;
+
+    // Initial fetch
+    Promise.all([fetchFarmHealth(false), fetchAnalytics(false)]);
+
+    // Set up polling - fetch every 2 seconds
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        fetchFarmHealth(true);
+        fetchAnalytics(true);
+      }
+    }, 2000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-
-    fetchAnalytics();
-
-    return () => controller.abort();
-  }, [farmId, timeFilter]);
+  }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics]);
 
   // Helper function to get number of periods to show based on date range
   const getPeriodsToShow = useCallback((range, filter) => {
