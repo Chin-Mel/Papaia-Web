@@ -30,6 +30,7 @@ export default function FarmAnalytics({
   const pollIntervalRef = useRef(null);
   const isFirstLoad = useRef(true);
   const chartContainerRef = useRef(null);
+  const lastFilterRef = useRef({ timeFilter, dateRange });
 
   // Dynamic date range options based on timeFilter
   const dateRangeOptions = useMemo(() => {
@@ -82,6 +83,19 @@ export default function FarmAnalytics({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Detect filter changes and show loading
+  useEffect(() => {
+    const filterChanged =
+      lastFilterRef.current.timeFilter !== timeFilter ||
+      lastFilterRef.current.dateRange !== dateRange;
+
+    if (filterChanged) {
+      lastFilterRef.current = { timeFilter, dateRange };
+      setLoading(true);
+      isFirstLoad.current = true;
+    }
+  }, [timeFilter, dateRange]);
 
   // Fetch farm health data
   const fetchFarmHealth = useCallback(async () => {
@@ -161,15 +175,10 @@ export default function FarmAnalytics({
   useEffect(() => {
     if (!farmId) return;
 
-    // Only show loading on filter change
-    if (!analyticsData) {
-      isFirstLoad.current = true;
-    }
-
     // Initial fetch
     Promise.all([fetchFarmHealth(), fetchAnalytics()]);
 
-    // Set up polling - fetch every 5 seconds in background
+    // Set up polling - fetch every 2 seconds in background
     pollIntervalRef.current = setInterval(() => {
       if (!document.hidden) {
         fetchFarmHealth();
@@ -182,7 +191,7 @@ export default function FarmAnalytics({
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics, analyticsData]);
+  }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics]);
 
   // Helper function to get number of periods to show
   const getPeriodsToShow = useCallback((range, filter) => {
@@ -543,6 +552,7 @@ export default function FarmAnalytics({
             <div style={{ width: "100%", height: "100%" }}>
               <ResponsiveContainer>
                 <LineChart
+                  key={timeFilter}
                   data={chartData}
                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                 >
@@ -599,7 +609,7 @@ export default function FarmAnalytics({
                       dot={{ r: 4 }}
                       name={disease}
                       connectNulls={false}
-                      isAnimationActive={false}
+                      isAnimationActive={true}
                     />
                   ))}
                 </LineChart>
@@ -799,8 +809,10 @@ export default function FarmAnalytics({
 //   useEffect(() => {
 //     if (!farmId) return;
 
-//     // Reset first load flag when filter changes
-//     isFirstLoad.current = true;
+//     // Only show loading on filter change
+//     if (!analyticsData) {
+//       isFirstLoad.current = true;
+//     }
 
 //     // Initial fetch
 //     Promise.all([fetchFarmHealth(), fetchAnalytics()]);
@@ -811,14 +823,14 @@ export default function FarmAnalytics({
 //         fetchFarmHealth();
 //         fetchAnalytics();
 //       }
-//     }, 5000);
+//     }, 2000);
 
 //     return () => {
 //       if (pollIntervalRef.current) {
 //         clearInterval(pollIntervalRef.current);
 //       }
 //     };
-//   }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics]);
+//   }, [farmId, timeFilter, fetchFarmHealth, fetchAnalytics, analyticsData]);
 
 //   // Helper function to get number of periods to show
 //   const getPeriodsToShow = useCallback((range, filter) => {
@@ -1179,6 +1191,7 @@ export default function FarmAnalytics({
 //             <div style={{ width: "100%", height: "100%" }}>
 //               <ResponsiveContainer>
 //                 <LineChart
+//                   key={timeFilter}
 //                   data={chartData}
 //                   margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
 //                 >
@@ -1235,7 +1248,7 @@ export default function FarmAnalytics({
 //                       dot={{ r: 4 }}
 //                       name={disease}
 //                       connectNulls={false}
-//                       isAnimationActive={false}
+//                       isAnimationActive={true}
 //                     />
 //                   ))}
 //                 </LineChart>

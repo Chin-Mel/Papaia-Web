@@ -179,7 +179,7 @@ export default function FarmTeams({
     fetchAllFarmers();
 
     // Poll every 10 seconds
-    const interval = setInterval(() => fetchAllFarmers(true), 10000);
+    const interval = setInterval(() => fetchAllFarmers(true), 2000);
 
     return () => {
       clearInterval(interval);
