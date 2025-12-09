@@ -154,12 +154,12 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           </button>
         </div>
 
-        {/* Modal Body - 2 Column Layout */}
-        <div className="overflow-y-auto flex-1">
-          <div className="p-5 flex gap-4">
-            {/* Left Column: Farm Image (Full Height) */}
-            <div className="w-52 flex-shrink-0">
-              <label className="text-sm font-semibold text-gray-700 block mb-2">
+        {/* Modal Body - Vertical Layout */}
+        <div className="flex-1">
+          <div className="p-5 space-y-2.5">
+            {/* Farm Image at Top */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 block">
                 Farm Picture
                 <span className="text-gray-400 font-normal text-xs ml-1">
                   (Optional)
@@ -167,31 +167,32 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               </label>
               <div
                 onClick={() => !loading && fileInputRef.current?.click()}
-                className={`border-2 border-dashed border-gray-300 rounded-xl p-4 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all h-full ${
+                className={`border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
+                style={{ height: "110px" }}
               >
                 {imagePreview ? (
-                  <div className="space-y-2">
+                  <div className="flex items-center justify-center h-full">
                     <img
                       src={imagePreview}
                       alt="Farm preview"
-                      className="w-24 h-24 mx-auto object-cover rounded-lg border-2 border-gray-200"
+                      className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
                     />
-                    <p className="text-xs text-gray-600 font-medium">
+                    <p className="text-xs text-gray-600 font-medium ml-3">
                       {loading ? "Uploading..." : "Click to change"}
                     </p>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-                      <Camera className="w-6 h-6 text-orange-500" />
+                  <div className="flex items-center justify-center gap-3 h-full">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Camera className="w-5 h-5 text-orange-500" />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <p className="text-xs font-semibold text-gray-700">
                         Click to upload
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500">
                         PNG, JPG (Max 10MB)
                       </p>
                     </div>
@@ -208,79 +209,76 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               </div>
             </div>
 
-            {/* Right Column: Form Fields */}
-            <div className="flex-1 space-y-3">
-              {/* Name and Location Side by Side */}
-              <div className="flex gap-3">
-                {/* Farm Name */}
-                <div className="flex-1 space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                    Farm Name
-                    <span className="text-red-500">*</span>
-                  </label>
+            {/* Name and Location Side by Side */}
+            <div className="flex gap-3">
+              {/* Farm Name */}
+              <div className="flex-1 space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Farm Name
+                  <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.farmName}
+                  onChange={(e) =>
+                    handleInputChange("farmName", e.target.value)
+                  }
+                  onBlur={() => handleBlur("farmName")}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Enter farm name"
+                  disabled={loading}
+                  style={{ width: "100%" }}
+                  className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                    "farmName"
+                  )}`}
+                />
+              </div>
+
+              {/* Farm Location */}
+              <div className="flex-1 space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Location/Address
+                  <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-orange-500" />
                   <input
                     type="text"
-                    value={formData.farmName}
+                    value={formData.location}
                     onChange={(e) =>
-                      handleInputChange("farmName", e.target.value)
+                      handleInputChange("location", e.target.value)
                     }
-                    onBlur={() => handleBlur("farmName")}
+                    onBlur={() => handleBlur("location")}
                     onKeyPress={handleKeyPress}
-                    placeholder="Enter farm name"
+                    placeholder="Enter location"
                     disabled={loading}
-                    style={{ width: "calc(100% - 10px)" }}
-                    className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                      "farmName"
+                    style={{ width: "100%" }}
+                    className={`pl-9 pr-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                      "location"
                     )}`}
                   />
                 </div>
-
-                {/* Farm Location */}
-                <div className="flex-1 space-y-1.5">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                    Location/Address
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-orange-500" />
-                    <input
-                      type="text"
-                      value={formData.location}
-                      onChange={(e) =>
-                        handleInputChange("location", e.target.value)
-                      }
-                      onBlur={() => handleBlur("location")}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Enter location"
-                      disabled={loading}
-                      style={{ width: "calc(100% - 10px)" }}
-                      className={`pl-9 pr-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                        "location"
-                      )}`}
-                    />
-                  </div>
-                </div>
               </div>
+            </div>
 
-              {/* Description Below - Fixed Height with Scroll */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-gray-700">
-                  Description
-                  <span className="text-gray-400 font-normal text-xs ml-1">
-                    (Optional)
-                  </span>
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                  placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
-                  disabled={loading}
-                  style={{ width: "calc(100% - 10px)", height: "120px" }}
-                  className="px-3.5 py-2 border border-gray-300 focus:border-orange-500 focus:border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 overflow-y-auto"
-                />
-              </div>
+            {/* Description Below - Fixed Height with Scroll */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                Description
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  (Optional)
+                </span>
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
+                disabled={loading}
+                style={{ width: "100%", height: "90px" }}
+                className="px-3.5 py-2 border border-gray-300 focus:border-orange-500 focus:border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 overflow-y-auto"
+              />
             </div>
           </div>
         </div>
@@ -320,327 +318,3 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     </div>
   );
 }
-
-// import { useState, useEffect, useRef } from "react";
-// import { X, MapPin, Camera, Plus } from "lucide-react";
-// import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
-
-// export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
-//   const [formData, setFormData] = useState({
-//     farmName: "",
-//     location: "",
-//     description: "",
-//     farmImage: null,
-//   });
-//   const [imagePreview, setImagePreview] = useState(null);
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState("");
-//   const [touched, setTouched] = useState({
-//     farmName: false,
-//     location: false,
-//   });
-//   const fileInputRef = useRef(null);
-//   const modalRef = useRef(null);
-
-//   useEffect(() => {
-//     const handleClickOutside = (event) => {
-//       if (modalRef.current && !modalRef.current.contains(event.target)) {
-//         onClose();
-//       }
-//     };
-//     if (isOpen) {
-//       document.addEventListener("mousedown", handleClickOutside);
-//     }
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, [onClose, isOpen]);
-
-//   const handleInputChange = (field, value) => {
-//     setFormData((prev) => ({ ...prev, [field]: value }));
-//     setError("");
-//   };
-
-//   const handleBlur = (field) => {
-//     setTouched((prev) => ({ ...prev, [field]: true }));
-//   };
-
-//   const handleImageUpload = (event) => {
-//     const file = event.target.files[0];
-//     if (file) {
-//       // Check file size (10MB = 10 * 1024 * 1024 bytes)
-//       if (file.size > 10 * 1024 * 1024) {
-//         setError("Image size must not exceed 10MB");
-//         return;
-//       }
-
-//       setFormData((prev) => ({ ...prev, farmImage: file }));
-//       const reader = new FileReader();
-//       reader.onload = (e) => setImagePreview(e.target.result);
-//       reader.readAsDataURL(file);
-//       setError("");
-//     }
-//   };
-
-//   const handleSubmit = async () => {
-//     // Mark all required fields as touched
-//     setTouched({
-//       farmName: true,
-//       location: true,
-//     });
-
-//     // Validation
-//     if (!formData.farmName.trim()) {
-//       setError("Farm name is required");
-//       return;
-//     }
-//     if (!formData.location.trim()) {
-//       setError("Location is required");
-//       return;
-//     }
-
-//     setLoading(true);
-//     setError("");
-
-//     const farmData = {
-//       name: formData.farmName,
-//       location: formData.location,
-//       description: formData.description,
-//       farmImage: formData.farmImage,
-//     };
-
-//     try {
-//       await onSubmit(farmData);
-//       // Reset form after successful submission
-//       setFormData({
-//         farmName: "",
-//         location: "",
-//         description: "",
-//         farmImage: null,
-//       });
-//       setImagePreview(null);
-//       setTouched({
-//         farmName: false,
-//         location: false,
-//       });
-//     } catch (error) {
-//       // Error handling is done in parent component
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const handleKeyPress = (e) => {
-//     if (e.key === "Enter" && !e.shiftKey && e.target.tagName !== "TEXTAREA") {
-//       e.preventDefault();
-//       handleSubmit();
-//     }
-//   };
-
-//   // Validation helper functions
-//   const isFieldInvalid = (field) => {
-//     return touched[field] && !formData[field].trim();
-//   };
-
-//   const getInputBorderClass = (field) => {
-//     if (isFieldInvalid(field)) {
-//       return "border-red-500 focus:ring-red-400";
-//     }
-//     return "border-gray-300 focus:ring-orange-400";
-//   };
-
-//   if (!isOpen) return null;
-
-//   return (
-//     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-//       <div
-//         ref={modalRef}
-//         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden flex flex-col"
-//       >
-//         {/* Header */}
-//         <div className="bg-gradient-to-r from-green-700 to-orange-500 p-5 flex items-center gap-3 relative">
-//           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
-//             <img
-//               src={PapayaLogo}
-//               alt="Papaia Logo"
-//               className="w-5 h-7"
-//               loading="eager"
-//               decoding="async"
-//             />
-//           </div>
-//           <div className="flex-1">
-//             <h2 className="text-xl font-bold text-white">Add a Farm</h2>
-//             <p className="text-white/90 text-sm">Create a new farm profile</p>
-//           </div>
-//           <button
-//             onClick={onClose}
-//             disabled={loading}
-//             type="button"
-//             className="text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5 flex-shrink-0"
-//           >
-//             <X className="w-5 h-5" />
-//           </button>
-//         </div>
-
-//         {/* Error Message */}
-//         {error && (
-//           <div className="mx-6 mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl">
-//             <p className="text-sm text-rose-800 font-medium">{error}</p>
-//           </div>
-//         )}
-
-//         {/* Body - Scrollable */}
-//         <div className="overflow-y-auto flex-1">
-//           <div className="p-6 space-y-5">
-//             {/* Farm Name */}
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-//                 Farm Name
-//                 <span className="text-red-500">*</span>
-//               </label>
-//               <input
-//                 type="text"
-//                 value={formData.farmName}
-//                 onChange={(e) => handleInputChange("farmName", e.target.value)}
-//                 onBlur={() => handleBlur("farmName")}
-//                 onKeyPress={handleKeyPress}
-//                 placeholder="Enter your farm name"
-//                 disabled={loading}
-//                 className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-//                   "farmName"
-//                 )}`}
-//               />
-//               {isFieldInvalid("farmName") && (
-//                 <p className="text-xs text-red-500 mt-1">
-//                   Farm name is required
-//                 </p>
-//               )}
-//             </div>
-
-//             {/* Location */}
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-//                 Location/Address
-//                 <span className="text-red-500">*</span>
-//               </label>
-//               <div className="relative">
-//                 <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
-//                 <input
-//                   type="text"
-//                   value={formData.location}
-//                   onChange={(e) =>
-//                     handleInputChange("location", e.target.value)
-//                   }
-//                   onBlur={() => handleBlur("location")}
-//                   onKeyPress={handleKeyPress}
-//                   placeholder="Enter farm address or location"
-//                   disabled={loading}
-//                   className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-//                     "location"
-//                   )}`}
-//                 />
-//               </div>
-//               {isFieldInvalid("location") && (
-//                 <p className="text-xs text-red-500 mt-1">
-//                   Location is required
-//                 </p>
-//               )}
-//             </div>
-
-//             {/* Farm Image */}
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-gray-700">
-//                 Farm Picture
-//                 <span className="text-gray-400 font-normal text-xs ml-1">
-//                   (Optional)
-//                 </span>
-//               </label>
-//               <div
-//                 onClick={() => !loading && fileInputRef.current?.click()}
-//                 className={`border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
-//                   loading ? "opacity-50 cursor-not-allowed" : ""
-//                 } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
-//               >
-//                 {imagePreview ? (
-//                   <div className="space-y-3">
-//                     <img
-//                       src={imagePreview}
-//                       alt="Farm preview"
-//                       className="w-28 h-28 mx-auto object-cover rounded-lg border-2 border-gray-200"
-//                     />
-//                     <p className="text-sm text-gray-600 font-medium">
-//                       {loading ? "Uploading..." : "Click to change image"}
-//                     </p>
-//                   </div>
-//                 ) : (
-//                   <div className="space-y-3">
-//                     <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-//                       <Camera className="w-7 h-7 text-orange-500" />
-//                     </div>
-//                     <div>
-//                       <p className="text-sm font-semibold text-gray-700">
-//                         Click to upload farm image
-//                       </p>
-//                       <p className="text-xs text-gray-500 mt-1">
-//                         PNG, JPG (Max 10MB)
-//                       </p>
-//                     </div>
-//                   </div>
-//                 )}
-//                 <input
-//                   ref={fileInputRef}
-//                   type="file"
-//                   accept="image/*"
-//                   onChange={handleImageUpload}
-//                   disabled={loading}
-//                   className="hidden"
-//                 />
-//               </div>
-//             </div>
-
-//             {/* Description */}
-//             <div className="space-y-2">
-//               <label className="text-sm font-semibold text-gray-700">
-//                 Description
-//                 <span className="text-gray-400 font-normal text-xs ml-1">
-//                   (Optional)
-//                 </span>
-//               </label>
-//               <textarea
-//                 value={formData.description}
-//                 onChange={(e) =>
-//                   handleInputChange("description", e.target.value)
-//                 }
-//                 placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
-//                 rows={4}
-//                 disabled={loading}
-//                 className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400"
-//               />
-//             </div>
-//           </div>
-//         </div>
-
-//         {/* Footer */}
-//         <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50">
-//           <div className="flex justify-end gap-3">
-//             <button
-//               type="button"
-//               onClick={onClose}
-//               disabled={loading}
-//               className="px-5 py-2.5 border-2 border-orange-500 text-orange-500 rounded-xl hover:bg-orange-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-//             >
-//               Cancel
-//             </button>
-//             <button
-//               type="button"
-//               onClick={handleSubmit}
-//               disabled={loading}
-//               className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-//             >
-//               <Plus className="w-4 h-4" />
-//               {loading ? "Adding..." : "Add Farm"}
-//             </button>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

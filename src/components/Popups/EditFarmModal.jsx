@@ -180,7 +180,7 @@ export default function EditFarmModal({
           <button
             onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
-            disabled={loading}
+            disabled={isloading}
           >
             <X className="w-5 h-5" />
           </button>
@@ -220,7 +220,7 @@ export default function EditFarmModal({
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
-                    disabled={loading}
+                    disabled={isloading}
                   />
                 </label>
               </div>
@@ -242,7 +242,7 @@ export default function EditFarmModal({
                   onBlur={() => handleBlur("farmName")}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter farm name"
-                  disabled={loading}
+                  disabled={isloading}
                   className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
                     "farmName"
                   )}`}
@@ -263,7 +263,7 @@ export default function EditFarmModal({
                   onBlur={() => handleBlur("location")}
                   onKeyPress={handleKeyPress}
                   placeholder="Enter location"
-                  disabled={loading}
+                  disabled={isloading}
                   className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
                     "location"
                   )}`}
@@ -283,7 +283,7 @@ export default function EditFarmModal({
               onChange={(e) => handleInputChange("description", e.target.value)}
               rows={5}
               placeholder="Enter farm description..."
-              disabled={loading}
+              disabled={isloading}
               className="w-full px-4 py-2.5 border-2 border-gray-300 focus:border-orange-500 rounded-lg focus:outline-none bg-white resize-none transition-all"
             />
           </div>
@@ -295,17 +295,17 @@ export default function EditFarmModal({
             type="button"
             onClick={onClose}
             className="flex-1 px-5 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            disabled={loading}
+            disabled={isloading}
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={loading}
+            disabled={isloading}
             className="flex-1 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-bold hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
-            {loading ? (
+            {isloading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Adding...
