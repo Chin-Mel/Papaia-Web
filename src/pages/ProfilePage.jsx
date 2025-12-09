@@ -99,6 +99,12 @@ export default function ProfilePage() {
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">Profile</h1>
+            <p className="text-slate-600">
+              Manage your account information and preferences
+            </p>
+          </div>
           {/* Header Section */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -187,23 +193,15 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Quick Actions & Links */}
+            {/* Account Settings */}
             <div className="space-y-4">
-              <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
-                <h3 className="text-lg font-bold text-slate-900 mb-4">
-                  Quick Actions
-                </h3>
-
-                <div className="space-y-3">
-                  <button
-                    onClick={() => navigate("/billing")}
-                    className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-3 transition-all shadow-lg shadow-orange-500/20 hover:shadow-xl active:scale-95"
-                  >
-                    <FileText className="w-5 h-5" />
-                    <span>Manage Billing</span>
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={() => navigate("/billing")}
+                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-3 transition-all shadow-lg shadow-orange-500/20 hover:shadow-xl active:scale-95"
+              >
+                <FileText className="w-5 h-5" />
+                <span>Manage Billing</span>
+              </button>
 
               <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
                 <h3 className="text-lg font-bold text-slate-900 mb-4">
