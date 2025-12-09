@@ -156,82 +156,105 @@ export default function EditFarmModal({
   const getBorderClass = (field) =>
     focusedField === field ? "border-orange-500" : "border-gray-300";
 
+  // Inside the return statement - replace everything inside return():
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto flex flex-col"
+        className="bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+        style={{ maxWidth: "calc(768px - 10px)" }}
       >
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-xl p-5 relative flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 p-3.5 flex items-center gap-2.5 relative">
+          <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
               src={PapayaLogo}
               alt="Papaia Logo"
-              className="w-5 h-7"
+              className="w-4 h-6"
               loading="eager"
               decoding="async"
             />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Add a Farm</h2>
-            <p className="text-white/90 text-sm">Create a new farm profile</p>
+          <div className="flex-1">
+            <h2 className="text-lg font-bold text-white">Edit Farm</h2>
+            <p className="text-white/90 text-xs">Update farm information</p>
           </div>
           <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
-            disabled={isloading}
+            onClick={handleClose}
+            disabled={isLoading}
+            type="button"
+            className="text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5 flex-shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 space-y-5">
-          {/* Top row: Image left + Name/Location right */}
-          <div className="flex gap-5 items-start">
-            {/* Left column: Farm Image */}
-            <div className="w-1/3">
-              <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Farm Picture{" "}
-                <span className="text-gray-400 text-xs">(Optional)</span>
+        <div className="flex-1">
+          <div className="p-5 space-y-2.5">
+            {/* Farm Image at Top */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700 block">
+                Farm Picture
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  (Optional)
+                </span>
               </label>
-              <div className="relative">
+              <div
+                onClick={() =>
+                  !isLoading &&
+                  document.getElementById("farmImageInput")?.click()
+                }
+                className={`border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
+                  isLoading ? "opacity-50 cursor-not-allowed" : ""
+                } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
+                style={{ height: "115px" }}
+              >
                 {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Farm preview"
-                    className="w-full h-56 object-cover rounded-lg border-2 border-gray-300"
-                  />
+                  <div className="flex items-center justify-center h-full">
+                    <img
+                      src={imagePreview}
+                      alt="Farm preview"
+                      className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                    />
+                    <p className="text-xs text-gray-600 font-medium ml-3">
+                      {isLoading ? "Uploading..." : "Click to change"}
+                    </p>
+                  </div>
                 ) : (
-                  <div className="w-full h-56 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                    <div className="text-center">
-                      <Camera className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500 text-sm">No image selected</p>
+                  <div className="flex items-center justify-center gap-3 h-full">
+                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                      <Upload className="w-5 h-5 text-orange-500" />
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-semibold text-gray-700">
+                        Click to upload
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        PNG, JPG (Max 10MB)
+                      </p>
                     </div>
                   </div>
                 )}
-                <label className="absolute bottom-3 right-3 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-lg text-sm font-medium">
-                  <Camera className="w-4 h-4" />
-                  {imagePreview ? "Change" : "Upload"}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    disabled={isloading}
-                  />
-                </label>
+                <input
+                  id="farmImageInput"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  disabled={isLoading}
+                  className="hidden"
+                />
               </div>
             </div>
 
-            {/* Right column: Name + Location */}
-            <div className="flex-1 space-y-4">
+            {/* Name and Location Side by Side */}
+            <div className="flex gap-3">
               {/* Farm Name */}
-              <div className="space-y-2">
-                <label className="block text-gray-700 font-medium">
-                  Farm Name <span className="text-red-500">*</span>
+              <div className="flex-1 space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Farm Name
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -239,20 +262,22 @@ export default function EditFarmModal({
                   onChange={(e) =>
                     handleInputChange("farmName", e.target.value)
                   }
-                  onBlur={() => handleBlur("farmName")}
-                  onKeyPress={handleKeyPress}
+                  onFocus={() => setFocusedField("farmName")}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="Enter farm name"
-                  disabled={isloading}
-                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
+                  disabled={isLoading}
+                  style={{ width: "100%" }}
+                  className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getBorderClass(
                     "farmName"
-                  )}`}
+                  )} focus:border-orange-500 focus:border-2 focus:ring-orange-400`}
                 />
               </div>
 
               {/* Farm Location */}
-              <div className="space-y-2">
-                <label className="block text-gray-700 font-medium">
-                  Location <span className="text-red-500">*</span>
+              <div className="flex-1 space-y-1.5">
+                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                  Location/Address
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -260,63 +285,74 @@ export default function EditFarmModal({
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
                   }
-                  onBlur={() => handleBlur("location")}
-                  onKeyPress={handleKeyPress}
+                  onFocus={() => setFocusedField("location")}
+                  onBlur={() => setFocusedField(null)}
                   placeholder="Enter location"
-                  disabled={isloading}
-                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
+                  disabled={isLoading}
+                  style={{ width: "100%" }}
+                  className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getBorderClass(
                     "location"
-                  )}`}
+                  )} focus:border-orange-500 focus:border-2 focus:ring-orange-400`}
                 />
               </div>
             </div>
-          </div>
 
-          {/* Description full width */}
-          <div className="space-y-2">
-            <label className="block text-gray-700 font-medium">
-              Description{" "}
-              <span className="text-gray-400 text-sm">(Optional)</span>
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => handleInputChange("description", e.target.value)}
-              rows={5}
-              placeholder="Enter farm description..."
-              disabled={isloading}
-              className="w-full px-4 py-2.5 border-2 border-gray-300 focus:border-orange-500 rounded-lg focus:outline-none bg-white resize-none transition-all"
-            />
+            {/* Description Below */}
+            <div className="space-y-1.5">
+              <label className="text-sm font-semibold text-gray-700">
+                Description
+                <span className="text-gray-400 font-normal text-xs ml-1">
+                  (Optional)
+                </span>
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
+                onFocus={() => setFocusedField("description")}
+                onBlur={() => setFocusedField(null)}
+                placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
+                disabled={isLoading}
+                style={{ width: "100%", height: "95px" }}
+                className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 overflow-y-auto ${getBorderClass(
+                  "description"
+                )} focus:border-orange-500 focus:border-2 focus:ring-orange-400`}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Modal Footer (Buttons) */}
-        <div className="p-5 border-t border-gray-200 flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 px-5 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            disabled={isloading}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isloading}
-            className="flex-1 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-bold hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-          >
-            {isloading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Adding...
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4" />
-                Add Farm
-              </>
-            )}
-          </button>
+        {/* Modal Footer */}
+        <div className="px-5 py-3 bg-white">
+          <div className="flex justify-end gap-2.5">
+            <button
+              type="button"
+              onClick={handleClose}
+              disabled={isLoading}
+              className="px-4 py-2 border-2 border-orange-500 text-orange-500 rounded-xl hover:bg-orange-50 transition-all font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isLoading || !saveEnabled}
+              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white rounded-xl transition-all flex items-center gap-2 font-semibold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>

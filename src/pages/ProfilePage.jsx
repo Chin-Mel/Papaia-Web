@@ -121,9 +121,6 @@ export default function ProfilePage() {
                 <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
                   {getFullName()}
                 </h2>
-                <p className="text-slate-600 text-sm sm:text-base mb-3">
-                  @{userData?.username || "N/A"}
-                </p>
                 <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-100">
                   <FileCheck className="w-4 h-4" />
                   <span>Enterprise Plan</span>
