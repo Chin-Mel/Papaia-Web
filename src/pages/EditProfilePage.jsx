@@ -386,10 +386,7 @@ export default function EditProfilePage() {
                     Saving...
                   </>
                 ) : (
-                  <>
-                    <Save size={18} />
-                    Save Changes
-                  </>
+                  <>Save Changes</>
                 )}
               </button>
             </div>
@@ -457,7 +454,6 @@ export default function EditProfilePage() {
                 disabled={loading}
                 className="w-full sm:w-auto md:w-auto flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
               >
-                <Shield size={18} />
                 Change Password
               </button>
             </div>
@@ -482,7 +478,7 @@ export default function EditProfilePage() {
               <button
                 onClick={() => setShowDeactivateAccountModal(true)}
                 disabled={loading}
-                className="w-full sm:w-auto md:w-auto flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto md:w-auto flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
               >
                 Deactivate Account
               </button>

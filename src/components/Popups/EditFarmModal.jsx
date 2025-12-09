@@ -194,58 +194,40 @@ export default function EditFarmModal({
         <div className="flex-1">
           <div className="p-5 space-y-2.5">
             {/* Farm Image at Top */}
-            <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-gray-700 block">
-                Farm Picture
-                <span className="text-gray-400 font-normal text-xs ml-1">
-                  (Optional)
-                </span>
-              </label>
-              <div
+            <div
+              className="relative w-full rounded-xl overflow-hidden"
+              style={{ height: "120px" }}
+            >
+              {imagePreview ? (
+                <img
+                  src={imagePreview}
+                  alt="Farm preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                  <Upload className="w-8 h-8 text-orange-400" />
+                </div>
+              )}
+              {/* Change Image Button */}
+              <button
                 onClick={() =>
                   !isLoading &&
                   document.getElementById("farmImageInput")?.click()
                 }
-                className={`border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
-                  isLoading ? "opacity-50 cursor-not-allowed" : ""
-                } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
-                style={{ height: "115px" }}
+                className="absolute top-2 right-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1 text-sm"
               >
-                {imagePreview ? (
-                  <div className="flex items-center justify-center h-full">
-                    <img
-                      src={imagePreview}
-                      alt="Farm preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
-                    />
-                    <p className="text-xs text-gray-600 font-medium ml-3">
-                      {isLoading ? "Uploading..." : "Click to change"}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-3 h-full">
-                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                      <Upload className="w-5 h-5 text-orange-500" />
-                    </div>
-                    <div className="text-left">
-                      <p className="text-xs font-semibold text-gray-700">
-                        Click to upload
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        PNG, JPG (Max 10MB)
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <input
-                  id="farmImageInput"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={isLoading}
-                  className="hidden"
-                />
-              </div>
+                <Upload className="w-4 h-4" />
+                Change Image
+              </button>
+              <input
+                id="farmImageInput"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                disabled={isLoading}
+                className="hidden"
+              />
             </div>
 
             {/* Name and Location Side by Side */}
@@ -314,7 +296,7 @@ export default function EditFarmModal({
                 onBlur={() => setFocusedField(null)}
                 placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
                 disabled={isLoading}
-                style={{ width: "100%", height: "95px" }}
+                style={{ width: "100%", height: "100px" }}
                 className={`px-3.5 py-2 border rounded-xl focus:outline-none focus:ring-2 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 overflow-y-auto ${getBorderClass(
                   "description"
                 )} focus:border-orange-500 focus:border-2 focus:ring-orange-400`}
