@@ -9,24 +9,69 @@ import {
   FileCheck,
   Shield,
 } from "lucide-react";
-import Footer from "../components/Footer/Footer";
+import { useNavigate } from "react-router-dom";
+import { getLoggedInUser } from "../utils/security";
 import HeaderMain from "../components/Header/HeaderMain";
+import Footer from "../components/Footer/Footer";
+import UserAvatar from "../components/UserAvatar";
+import TermsModal from "../components/Popups/TermsModal";
+import PrivacyModal from "../components/Popups/PrivacyModal";
 
 export default function ProfilePage() {
-  // Mock user data for demonstration
-  const [userData] = useState({
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    middleName: "Smith",
-    username: "johndoe",
-    email: "john.doe@example.com",
-    contactNumber: "+63 912 345 6789",
-    profilePicture: null,
-  });
-
+  const navigate = useNavigate();
+  // Initialize with cached data immediately - no loading state needed!
+  const [userData, setUserData] = useState(() => getLoggedInUser());
+  const [farmCount, setFarmCount] = useState(0);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!userData || !token) {
+      return;
+    }
+
+    // Fetch fresh data in the background without showing loading
+    const fetchFreshData = async () => {
+      try {
+        const [userRes, farmRes] = await Promise.all([
+          fetch(`https://papaiaapi.onrender.com/api/user/${userData.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          const user = userData.user || userData;
+          setUserData(user);
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+
+        if (farmRes.ok) {
+          const farmData = await farmRes.json();
+          setFarmCount(farmData.farmCount ?? 0);
+        }
+      } catch (err) {
+        console.error("Error fetching data:", err);
+      }
+    };
+
+    fetchFreshData();
+
+    const handleUserUpdate = () => {
+      const updatedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      if (updatedUser.id) {
+        setUserData(updatedUser);
+      }
+    };
+
+    window.addEventListener("userUpdated", handleUserUpdate);
+    return () => window.removeEventListener("userUpdated", handleUserUpdate);
+  }, [userData?.id]);
 
   const renderField = (value) => (
     <span className={value ? "text-slate-800" : "text-slate-400 italic"}>
@@ -47,18 +92,10 @@ export default function ProfilePage() {
     return userData.username || "N/A";
   };
 
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
+  // No loading state - show content immediately!
+  // No loading state - show content immediately!
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
-      {/* Header */}
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -75,8 +112,12 @@ export default function ProfilePage() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="relative flex-shrink-0">
-                <div className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-slate-100 rounded-full text-5xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold">
-                  {getInitials(getFullName())}
+                <div className="w-24 h-24 sm:w-28 sm:h-28 border-4 border-slate-100 rounded-full text-5xl">
+                  <UserAvatar
+                    name={getFullName()}
+                    profileImageUrl={userData?.profilePicture}
+                    className="w-full h-full"
+                  />
                 </div>
               </div>
 
@@ -93,7 +134,11 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <button className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl active:scale-95">
+              <button
+                onClick={() => navigate("/edit-profile")}
+                disabled={!userData?.id}
+                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 <Edit3 className="w-4 h-4" />
                 Edit Profile
               </button>
@@ -151,10 +196,10 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Account Settings - Grouped Buttons */}
+            {/* Account Settings */}
             <div className="flex flex-col gap-4">
               <button
-                onClick={() => alert("Navigate to billing")}
+                onClick={() => navigate("/billing")}
                 className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 py-3 rounded-lg text-sm font-semibold flex items-center justify-center gap-3 transition-all shadow-lg shadow-orange-500/20 hover:shadow-xl active:scale-95"
               >
                 <FileText className="w-5 h-5" />
@@ -169,7 +214,7 @@ export default function ProfilePage() {
                 <div className="space-y-2">
                   <button
                     onClick={() => setShowTermsModal(true)}
-                    className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors border border-slate-200"
+                    className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors border border-slate-200 mb-4"
                   >
                     <FileText className="w-4 h-4 text-slate-500" />
                     <span>Terms & Conditions</span>
@@ -189,54 +234,21 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* Simple Modal Overlays */}
+      {/* Modals */}
       {showTermsModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowTermsModal(false)}
-        >
-          <div
-            className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold mb-4">Terms & Conditions</h2>
-            <p className="text-slate-600 mb-4">
-              Terms and conditions content goes here...
-            </p>
-            <button
-              onClick={() => setShowTermsModal(false)}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <TermsModal
+          isOpen={showTermsModal}
+          onClose={() => setShowTermsModal(false)}
+        />
       )}
 
       {showPrivacyModal && (
-        <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
-          onClick={() => setShowPrivacyModal(false)}
-        >
-          <div
-            className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-2xl font-bold mb-4">Privacy Policy</h2>
-            <p className="text-slate-600 mb-4">
-              Privacy policy content goes here...
-            </p>
-            <button
-              onClick={() => setShowPrivacyModal(false)}
-              className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <PrivacyModal
+          isOpen={showPrivacyModal}
+          onClose={() => setShowPrivacyModal(false)}
+        />
       )}
 
-      {/* Footer */}
       <Footer />
     </div>
   );
