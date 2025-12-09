@@ -1,13 +1,15 @@
 // NewPasswordModal.jsx - Matched to OTP Modal Dimensions
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import EyeIcon from "../../assets/eye-icon.png";
 import EyeOffIcon from "../../assets/eye-off-icon.png";
 import { useAlert } from "../../AlertContext";
 
-export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
+export default function NewPasswordModal({ user_Id }) {
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
 
   // Form state
   const [newPassword, setNewPassword] = useState("");
@@ -93,7 +95,15 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
       const data = await response.json();
 
       if (response.ok) {
-        onPasswordSaved();
+        showAlert(
+          "success",
+          "Password Updated Successfully. You can now login using your new password.",
+          3000
+        );
+        // Delay navigation to allow alert to be seen
+        setTimeout(() => {
+          navigate("/sign-in");
+        }, 3000);
       } else {
         showAlert(
           "error",

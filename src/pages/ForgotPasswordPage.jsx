@@ -204,16 +204,7 @@ export default function ForgotPasswordPage() {
 
         {/* New Password Modal */}
         {showNewPasswordModal && verifiedUserId && (
-          <NewPasswordModal
-            user_Id={verifiedUserId}
-            onPasswordSaved={() => {
-              showAlert(
-                "success",
-                "Password Updated Successfully. You can now login using your new password."
-              );
-              window.location.href = "/sign-in";
-            }}
-          />
+          <NewPasswordModal user_Id={verifiedUserId} />
         )}
       </div>
 
