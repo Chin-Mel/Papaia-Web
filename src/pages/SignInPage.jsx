@@ -322,7 +322,7 @@ export default function SignInPage() {
                 <img
                   src={papaiaLogo}
                   alt="Papaia Logo"
-                  className="w-7 h-7 sm:w-8 sm:h-10 md:w-9 md:h-11"
+                  className="w-4 h-6 sm:w-5 sm:h-7 md:w-6 md:h-8"
                 />
               </div>
 
