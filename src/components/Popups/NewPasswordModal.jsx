@@ -1,4 +1,4 @@
-// NewPasswordModal.jsx - Optimized Version
+// NewPasswordModal.jsx - Fixed Width Version
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -120,31 +120,31 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-        {/* Header - Shorter */}
+      <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+        {/* Header */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
           style={{
             backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
         >
-          <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
+          <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl mb-2 ring-4 ring-white/30">
             <img
               src={PapayaLogo}
               alt="Papaia Logo"
-              className="w-7 h-9 object-contain"
+              className="w-6 h-8 object-contain"
             />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-center">
+          <h2 className="text-lg sm:text-xl font-bold text-center">
             Create New Password
           </h2>
-          <p className="text-sm text-center opacity-90 mt-1">
+          <p className="text-xs sm:text-sm text-center opacity-90 mt-1">
             Set a secure password for your account
           </p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSavePassword} className="p-6 sm:p-8 space-y-5">
+        <div className="p-6 sm:p-8 space-y-5">
           {/* Security Badge */}
           <div className="flex items-center justify-center gap-2 mb-2">
             <svg
@@ -235,7 +235,8 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
           {/* Reset Button */}
           <button
-            type="submit"
+            type="button"
+            onClick={handleSavePassword}
             disabled={loading}
             className="w-full flex justify-center items-center gap-2 bg-[#F97316] hover:bg-orange-600 text-white font-semibold py-3 rounded-lg shadow-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -251,7 +252,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
               </>
             )}
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

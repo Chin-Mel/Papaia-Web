@@ -401,16 +401,17 @@ export default function FarmTeams({
                 <div className="sm:hidden">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
-                      <img
-                        src={farmer.profilePicture || defaultUserPic}
-                        alt={farmerName}
-                        className={`w-12 h-12 rounded-full object-cover border-2 ${
-                          isArchived || isInactive
-                            ? "grayscale border-gray-300"
-                            : "border-gray-200"
+                      <div
+                        className={`w-12 h-12 ${
+                          isArchived || isInactive ? "grayscale" : ""
                         }`}
-                        onError={(e) => (e.target.src = defaultUserPic)}
-                      />
+                      >
+                        <UserAvatar
+                          name={farmerName}
+                          profileImageUrl={farmer.profilePicture}
+                          className="w-full h-full"
+                        />
+                      </div>
                       <div
                         className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                           isArchived

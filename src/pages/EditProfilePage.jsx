@@ -345,7 +345,7 @@ export default function EditProfilePage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="relative">
-                <div className="w-24 h-24">
+                <div className="w-24 h-24 text-5xl">
                   <UserAvatar
                     name={`${userData?.firstName || ""} ${
                       userData?.lastName || ""

@@ -128,7 +128,7 @@ export default function ProfilePage() {
             <div>
               <div className="bg-white rounded-lg shadow-sm p-6 h-full flex flex-col items-center">
                 <div className="relative mb-4">
-                  <div className="w-28 h-28 sm:w-32 sm:h-32 border-4 border-gray-100 rounded-full">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 border-4 border-gray-100 rounded-full text-5xl sm:text-6xl">
                     <UserAvatar
                       name={getFullName()}
                       profileImageUrl={userData?.profilePicture}
