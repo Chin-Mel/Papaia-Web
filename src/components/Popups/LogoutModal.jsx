@@ -60,16 +60,8 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
         {/* Icon */}
         <div className="flex justify-center mb-6">
-          <div
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-colors ${
-              isLoggingOut ? "bg-orange-100" : "bg-red-100"
-            }`}
-          >
-            {isLoggingOut ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
-            ) : (
-              <LogOut className="w-8 h-8 text-red-500" />
-            )}
+          <div className="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center">
+            <LogOut className="w-8 h-8 text-red-500" />
           </div>
         </div>
 
@@ -99,17 +91,8 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
             disabled={isLoggingOut}
             className="flex-1 py-3 px-4 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
           >
-            {isLoggingOut ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                Logging out...
-              </>
-            ) : (
-              <>
-                <LogOut className="w-4 h-4" />
-                Logout
-              </>
-            )}
+            <LogOut className="w-4 h-4" />
+            {isLoggingOut ? "Logging out..." : "Logout"}
           </button>
         </div>
       </div>
