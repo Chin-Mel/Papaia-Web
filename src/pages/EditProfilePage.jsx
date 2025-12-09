@@ -6,8 +6,8 @@ import {
   Shield,
   Save,
   AlertCircle,
-  ChevronDown,
   Camera,
+  Calendar,
 } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
 import FooterMain from "../components/Footer/Footer";
@@ -28,9 +28,7 @@ export default function EditProfilePage() {
     const user = getLoggedInUser();
     return {
       firstName: user?.firstName || "",
-      middleName: user?.middleName || "",
       lastName: user?.lastName || "",
-      suffix: user?.suffix || "",
       username: user?.username || "",
       email: user?.email || "",
       contactNumber: user?.contactNumber || "",
@@ -76,9 +74,7 @@ export default function EditProfilePage() {
           setUserData(freshUser);
           setFormValues({
             firstName: freshUser.firstName || "",
-            middleName: freshUser.middleName || "",
             lastName: freshUser.lastName || "",
-            suffix: freshUser.suffix || "",
             username: freshUser.username || "",
             email: freshUser.email || "",
             contactNumber: freshUser.contactNumber || "",
@@ -236,9 +232,7 @@ export default function EditProfilePage() {
 
       setFormValues({
         firstName: mergedData.firstName || "",
-        middleName: mergedData.middleName || "",
         lastName: mergedData.lastName || "",
-        suffix: mergedData.suffix || "",
         username: mergedData.username || "",
         email: mergedData.email || "",
         contactNumber: mergedData.contactNumber || "",
@@ -277,6 +271,12 @@ export default function EditProfilePage() {
     return userData.username || "User";
   };
 
+  const getJoinedDate = () => {
+    if (!userData?.createdAt) return "October 2025";
+    const date = new Date(userData.createdAt);
+    return date.toLocaleString("default", { month: "long", year: "numeric" });
+  };
+
   // Show error state if authentication fails
   if (error) {
     return (
@@ -310,7 +310,7 @@ export default function EditProfilePage() {
 
   // No loading state - show content immediately!
   return (
-    <div className="bg-gray-50 min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <HeaderMain />
       <input
         type="file"
@@ -320,12 +320,23 @@ export default function EditProfilePage() {
         style={{ display: "none" }}
       />
 
-      <main className="flex-1 w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
-              <div className="relative">
-                <div className="w-24 h-24 text-5xl">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto">
+          {/* Page Title */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Edit Profile
+            </h1>
+            <p className="text-slate-600">
+              Update your personal information and account settings
+            </p>
+          </div>
+
+          {/* Profile Header Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 sm:p-8 mb-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="relative mb-4">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 border-4 border-slate-100 rounded-full text-6xl">
                   <UserAvatar
                     name={getFullName()}
                     profileImageUrl={getProfilePictureUrl()}
@@ -334,31 +345,40 @@ export default function EditProfilePage() {
                 </div>
                 <button
                   onClick={handleCameraClick}
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition border-2 border-white"
+                  className="absolute bottom-1 right-1 w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center shadow-lg hover:bg-orange-600 transition border-3 border-white"
                   title="Change profile picture"
                 >
-                  <Camera className="w-4 h-4 text-white" />
+                  <Camera className="w-5 h-5 text-white" />
                 </button>
               </div>
 
-              <div className="flex-1 text-center sm:text-left">
-                <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                  {getFullName()}
-                </h1>
-                <p className="text-gray-600 mb-2">Farm Owner</p>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+                {getFullName()}
+              </h2>
+              <p className="text-slate-600 text-base mb-2">Farm Owner</p>
+              <div className="flex items-center gap-2 text-slate-500 text-sm">
+                <Calendar className="w-4 h-4" />
+                <span>Joined {getJoinedDate()}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-              <h2 className="text-2xl font-bold text-gray-800">
-                Personal Information
-              </h2>
+          {/* Personal Information Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <User className="w-5 h-5 text-orange-500" />
+                  Personal Information
+                </h3>
+                <p className="text-sm text-slate-600 mt-1">
+                  Update your personal details
+                </p>
+              </div>
               <button
                 onClick={handleSaveChanges}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 text-sm font-semibold transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <>
@@ -374,82 +394,68 @@ export default function EditProfilePage() {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <InputField
                 label="First Name"
                 value={formValues.firstName}
-                placeholder="First Name"
+                placeholder="Enter first name"
                 onChange={(val) => handleChange("firstName", val)}
-              />
-              <InputField
-                label="Middle Name"
-                value={formValues.middleName}
-                placeholder="Middle Name"
-                optional
-                onChange={(val) => handleChange("middleName", val)}
+                icon={User}
               />
               <InputField
                 label="Last Name"
                 value={formValues.lastName}
-                placeholder="Last Name"
+                placeholder="Enter last name"
                 onChange={(val) => handleChange("lastName", val)}
-              />
-              <ProfileSelect
-                label="Suffix"
-                value={formValues.suffix}
-                onChange={(val) => handleChange("suffix", val)}
-                options={[
-                  { value: "", label: "Select Suffix (Optional)" },
-                  { value: "Jr.", label: "Jr." },
-                  { value: "Sr.", label: "Sr." },
-                  { value: "II", label: "II" },
-                  { value: "III", label: "III" },
-                  { value: "IV", label: "IV" },
-                  { value: "V", label: "V" },
-                ]}
+                icon={User}
               />
               <InputField
                 label="Username"
                 value={formValues.username}
-                placeholder="Username"
+                placeholder="Enter username"
                 onChange={(val) => handleChange("username", val)}
+                icon={User}
               />
               <InputField
                 label="Email Address"
                 type="email"
                 icon={Mail}
                 value={formValues.email}
-                placeholder="Email"
+                placeholder="Enter email address"
                 onChange={(val) => handleChange("email", val)}
               />
-              <InputField
-                label="Contact Number"
-                type="tel"
-                icon={Phone}
-                value={formValues.contactNumber}
-                placeholder="Contact Number"
-                onChange={(val) => handleChange("contactNumber", val)}
-              />
+              <div className="sm:col-span-2">
+                <InputField
+                  label="Contact Number"
+                  type="tel"
+                  icon={Phone}
+                  value={formValues.contactNumber}
+                  placeholder="Enter contact number"
+                  onChange={(val) => handleChange("contactNumber", val)}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 pb-4 border-b border-gray-200">
+          {/* Security & Privacy Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
+            <h2 className="text-xl font-bold text-slate-900 mb-4 pb-4 border-b border-slate-200 flex items-center gap-2">
+              <Shield className="w-5 h-5 text-orange-500" />
               Security & Privacy
             </h2>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-gray-50 rounded-xl border border-gray-200">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-slate-50 rounded-xl border border-slate-200">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                <h3 className="text-lg font-semibold text-slate-800 mb-1">
                   Change Password
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-600">
                   Update your account password to keep it secure
                 </p>
               </div>
               <button
                 onClick={() => setShowChangePasswordModal(true)}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md whitespace-nowrap"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-orange-500 text-white rounded-lg font-semibold hover:bg-orange-600 transition-colors disabled:opacity-50 shadow-sm hover:shadow-md whitespace-nowrap"
               >
                 <Shield size={18} />
                 Change Password
@@ -457,16 +463,18 @@ export default function EditProfilePage() {
             </div>
           </div>
 
+          {/* Danger Zone Card */}
           <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-6">
-            <h2 className="text-2xl font-bold text-red-700 mb-4 pb-4 border-b border-red-200">
+            <h2 className="text-xl font-bold text-red-700 mb-4 pb-4 border-b border-red-200 flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
               Danger Zone
             </h2>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-red-50 rounded-xl border border-red-200">
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                <h3 className="text-lg font-semibold text-slate-800 mb-1">
                   Deactivate Account
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-slate-600">
                   Temporarily disable your account. You can reactivate it
                   anytime.
                 </p>
@@ -474,7 +482,7 @@ export default function EditProfilePage() {
               <button
                 onClick={() => setShowDeactivateAccountModal(true)}
                 disabled={loading}
-                className="px-6 py-3 border-2 border-red-500 text-red-600 rounded-lg font-semibold hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 whitespace-nowrap"
+                className="w-full sm:w-auto px-6 py-3 border-2 border-red-500 text-red-600 rounded-lg font-semibold hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50 whitespace-nowrap"
               >
                 Deactivate Account
               </button>
@@ -510,77 +518,23 @@ const InputField = ({
   type = "text",
   icon: Icon = User,
 }) => (
-  <div className="flex flex-col">
-    <label className="text-sm font-semibold text-gray-700 mb-2">
-      {label}{" "}
+  <div className="space-y-2">
+    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+      <Icon className="w-4 h-4 text-slate-400" />
+      {label}
       {optional && (
-        <span className="text-gray-400 font-normal">(Optional)</span>
+        <span className="text-slate-400 font-normal">(Optional)</span>
       )}
     </label>
-    <div className="relative flex items-center">
-      <div className="absolute left-3 text-gray-400">
-        <Icon size={18} />
-      </div>
-      <input
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full border border-gray-300 rounded-lg p-3 pl-10 text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-      />
-    </div>
+    <input
+      type={type}
+      value={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full px-4 py-3 bg-slate-50/50 border border-slate-200 rounded-lg text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+    />
   </div>
 );
-
-const ProfileSelect = ({ label, value, onChange, options }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const displayValue = value || options[0]?.label || "Select";
-
-  return (
-    <div className="flex flex-col" ref={dropdownRef}>
-      <label className="text-sm font-semibold text-gray-700 mb-2">
-        {label}
-      </label>
-      <div className="relative">
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg flex justify-between items-center text-sm hover:bg-gray-50 bg-white transition-all cursor-pointer text-gray-800"
-        >
-          <span className="truncate">{displayValue}</span>
-          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
-        </button>
-        {isOpen && (
-          <ul className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
-            {options.map((option) => (
-              <li
-                key={option.value}
-                onClick={() => {
-                  onChange(option.value);
-                  setIsOpen(false);
-                }}
-                className="px-4 py-2 cursor-pointer hover:bg-orange-500 hover:text-white text-sm whitespace-nowrap transition-colors"
-              >
-                {option.label}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
 
 // import React, { useState, useEffect, useRef } from "react";
 // import {
