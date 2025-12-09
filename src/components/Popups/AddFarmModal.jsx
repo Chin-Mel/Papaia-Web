@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { X, MapPin, Camera, Plus } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import { useAlert } from "../../AlertContext";
 
 export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
   });
   const fileInputRef = useRef(null);
   const modalRef = useRef(null);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,7 +47,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     const file = event.target.files[0];
     if (file) {
       if (file.size > 10 * 1024 * 1024) {
-        alert("Image exceeds 10 MB");
+        showAlert("error", "Image exceeds 10 MB");
         return;
       }
 
@@ -63,7 +65,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
     });
 
     if (!formData.farmName.trim() || !formData.location.trim()) {
-      alert("Please fill in all required fields.");
+      showAlert("error", "Please fill in all required fields.");
       return;
     }
 
@@ -78,7 +80,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
 
     try {
       await onSubmit(farmData);
-      alert("Farm Added Successfully!");
       setFormData({
         farmName: "",
         location: "",
@@ -92,7 +93,10 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
       });
       onClose();
     } catch (error) {
-      alert(error.message || "Failed to add farm. Please try again.");
+      showAlert(
+        "error",
+        error.message || "Failed to add farm. Please try again."
+      );
     } finally {
       setLoading(false);
     }

@@ -56,10 +56,7 @@ export default function ToggleFarmStatusModal({
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        const successMsg = isActive
-          ? "Farm Deactivated Successfully!"
-          : "Farm Reactivated Successfully!";
-        setAlert({ type: "success", message: successMsg });
+        setTimeout(() => onClose(), 500);
         if (window.clearFarmCache) window.clearFarmCache();
         if (window.refreshActivities) window.refreshActivities();
         if (onStatusToggled) onStatusToggled(data.newStatus);

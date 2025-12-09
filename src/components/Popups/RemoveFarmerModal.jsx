@@ -60,7 +60,6 @@ export default function RemoveFarmerModal({
     setIsLoading(true);
     try {
       await onConfirmRemove();
-      showAlert("success", "Farmer Removed Successfully!");
       onClose();
     } catch (error) {
       showAlert("error", "Failed to remove farmer. Please try again.");

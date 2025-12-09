@@ -46,7 +46,6 @@ export default function RestoreFarmerModal({
     setIsRestoring(true);
     try {
       await onConfirm();
-      showAlert("success", "Farmer Restored Successfully!");
       onClose();
     } catch (error) {
       const errorMessage = error.message?.toLowerCase() || "";

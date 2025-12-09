@@ -22,6 +22,7 @@ import RecentScans from "./RecentScans";
 import FarmTeams from "./FarmTeams";
 import FarmAnalyticsSummary from "./FarmAnalyticsSummary";
 import ScansBreakdown from "./ScansBreakdown";
+import { nav } from "framer-motion/client";
 
 export default function FarmDashboardPage() {
   const { id: farmId } = useParams();
@@ -191,14 +192,21 @@ export default function FarmDashboardPage() {
   };
 
   const handleFarmUpdated = async () => {
+    await refreshFarmData();
     setIsEditFarmModalOpen(false);
     showAlert("success", "Farm Updated Successfully!");
-    await refreshFarmData();
   };
 
-  const handleStatusToggled = (newStatus) => {
+  const handleStatusToggled = async (newStatus) => {
     setFarmData((prev) => ({ ...prev, status: newStatus }));
-    navigate("/dashboard", { state: { refreshFarms: true } });
+    await refreshFarmData();
+    showAlert(
+      "success",
+      newStatus === "active"
+        ? "Farm Activated Successfully!"
+        : "Farm Deactivated Successfully!"
+    );
+    navigate("/dashboard");
   };
 
   const handleRestore = async () => {

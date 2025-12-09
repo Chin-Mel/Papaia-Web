@@ -122,9 +122,9 @@ export default function HeaderMain() {
           <div className="flex items-center gap-6">
             <Link to="/dashboard">
               <img
-                src={papaiaLogo}
+                src={PapaiaLogo}
                 alt="Papaia Logo"
-                className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9"
+                className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9 object-contain"
               />
             </Link>
 

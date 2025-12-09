@@ -137,9 +137,6 @@ export default function AddFarmerModal({
         return;
       }
 
-      // Success
-      showAlert("success", "Farmer Added Successfully!");
-
       // Call the callback to refresh farmer list
       if (onFarmerAdded) {
         onFarmerAdded(data.farmer);
