@@ -321,7 +321,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
             <div className="border-b border-gray-200 pb-2">
               {chartData.length > 0 ? (
                 <>
-                  <ResponsiveContainer width="100%" height={230}>
+                  <ResponsiveContainer width="100%" height={250}>
                     <PieChart>
                       <Pie
                         data={chartData}
@@ -378,7 +378,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                             </text>
                           );
                         }}
-                        outerRadius={150}
+                        outerRadius={110}
                         innerRadius={0}
                         fill="#8884d8"
                         dataKey="value"
@@ -436,7 +436,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                 const color = diseaseColors[disease] || "#64748b";
 
                 return (
-                  <div key={disease} className="flex items-center gap-1 py-2">
+                  <div key={disease} className="flex items-center gap-1 py-1">
                     <div
                       className="w-2 h-2 rounded-sm flex-shrink-0"
                       style={{ backgroundColor: color }}

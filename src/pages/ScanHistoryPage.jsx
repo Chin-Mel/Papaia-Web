@@ -128,6 +128,90 @@ const DiseaseCheckboxes = ({ selectedDiseases, onChange }) => {
   );
 };
 
+const StatusFilterDropdown = ({
+  value,
+  onChange,
+  selectedDiseases,
+  onDiseaseChange,
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const diseases = ["Anthracnose", "Powdery Mildew", "Ring Spot Virus"];
+
+  return (
+    <div className="flex flex-col space-y-2" ref={dropdownRef}>
+      <label className="text-xs sm:text-sm font-medium text-gray-700">
+        Status
+      </label>
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg flex justify-between items-center text-xs sm:text-sm hover:bg-gray-100 bg-white transition-all"
+        >
+          <span className="truncate">{value}</span>
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
+        </button>
+
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+            {/* Main status options */}
+            {["All Status", "Healthy", "Disease Detected"].map((status) => (
+              <div
+                key={status}
+                className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm"
+                onClick={() => {
+                  onChange(status);
+                  setIsOpen(status !== "Disease Detected"); // keep open for disease selection
+                }}
+              >
+                {status}
+              </div>
+            ))}
+
+            {/* Nested disease checkboxes */}
+            {value === "Disease Detected" && (
+              <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg space-y-2">
+                {diseases.map((disease) => (
+                  <label
+                    key={disease}
+                    className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedDiseases.includes(disease)}
+                      onChange={() => {
+                        const newSelected = selectedDiseases.includes(disease)
+                          ? selectedDiseases.filter((d) => d !== disease)
+                          : [...selectedDiseases, disease];
+                        onDiseaseChange(newSelected);
+                      }}
+                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <span className="text-xs sm:text-sm text-gray-700">
+                      {disease}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const StatusBadge = ({ status, prediction }) => {
   const actualStatus = status || getStatus(prediction);
   const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
@@ -404,72 +488,83 @@ export default function ScanHistoryPage() {
   }, [fetchData, checkForNewScans]);
 
   const filteredScans = useMemo(() => {
-    let filtered = allScans;
+    return allScans.filter((scan) => {
+      const { timestamp, prediction, status, farmId, farmerName } = scan;
 
-    // Date Range Filter
-    if (filters.dateRange !== "All Time") {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const cutoff =
-        filters.dateRange === "Today"
-          ? today
-          : filters.dateRange === "Last 7 days"
-          ? new Date(today.getTime() - 7 * 86400000)
-          : new Date(today.getTime() - 30 * 86400000);
+      // 1. Date Range Filter
+      if (filters.dateRange !== "All Time") {
+        const now = new Date();
+        const today = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate()
+        );
+        const cutoff =
+          filters.dateRange === "Today"
+            ? today
+            : filters.dateRange === "Last 7 days"
+            ? new Date(today.getTime() - 7 * 86400000)
+            : new Date(today.getTime() - 30 * 86400000);
 
-      filtered = filtered.filter((s) => {
-        if (!s.timestamp) return false;
         try {
-          const [datePart, timePart, period] = s.timestamp.split(/\s+/);
+          const [datePart, timePart, period] = timestamp.split(/\s+/);
           const [month, day, year] = datePart.split("/");
           const [hours, minutes] = timePart.split(":");
           let hour24 = parseInt(hours, 10);
           if (period === "PM" && hour24 !== 12) hour24 += 12;
           if (period === "AM" && hour24 === 12) hour24 = 0;
           const scanDate = new Date(year, month - 1, day, hour24, minutes);
-          return scanDate >= cutoff;
+          if (scanDate < cutoff) return false;
         } catch {
           return false;
         }
-      });
-    }
-
-    // Status Filter
-    if (filters.status !== "All Status") {
-      if (filters.status === "Healthy") {
-        filtered = filtered.filter(
-          (s) => s.prediction?.toLowerCase() === "healthy"
-        );
-      } else if (filters.status === "Disease Detected") {
-        filtered = filtered.filter(
-          (s) => s.prediction?.toLowerCase() !== "healthy"
-        );
       }
-    }
 
-    // Disease Type Filter (applies even if status is "All Status")
-    if (filters.selectedDiseases.length > 0) {
-      filtered = filtered.filter((s) =>
-        filters.selectedDiseases
-          .map((d) => d.toLowerCase())
-          .includes(s.prediction?.toLowerCase())
-      );
-    }
+      // 2. Status Filter
+      if (filters.status !== "All Status") {
+        if (
+          filters.status === "Healthy" &&
+          prediction.toLowerCase() !== "healthy"
+        ) {
+          return false;
+        }
+        if (
+          filters.status === "Disease Detected" &&
+          prediction.toLowerCase() === "healthy"
+        ) {
+          return false;
+        }
+      }
 
-    // Farm Filter
-    if (filters.farmId !== "all") {
-      filtered = filtered.filter((s) => s.farmId === filters.farmId);
-    }
+      // 3. Disease Filter (only applies when Disease Detected)
+      if (
+        filters.selectedDiseases.length > 0 &&
+        filters.status === "Disease Detected"
+      ) {
+        const predictionLower = prediction.toLowerCase();
+        const selectedLower = filters.selectedDiseases.map((d) =>
+          d.toLowerCase()
+        );
+        if (!selectedLower.includes(predictionLower)) return false;
+      }
 
-    // Farmer Name Search Filter
-    if (filters.farmerSearch.trim()) {
-      const searchTerm = filters.farmerSearch.toLowerCase().trim();
-      filtered = filtered.filter((s) =>
-        s.farmerName.toLowerCase().includes(searchTerm)
-      );
-    }
+      // 4. Farm Filter
+      if (filters.farmId !== "all" && scan.farmId !== filters.farmId) {
+        return false;
+      }
 
-    return filtered;
+      // 5. Farmer Name Search
+      if (
+        filters.farmerSearch.trim() &&
+        !farmerName
+          .toLowerCase()
+          .includes(filters.farmerSearch.toLowerCase().trim())
+      ) {
+        return false;
+      }
+
+      return true;
+    });
   }, [allScans, filters]);
 
   const paginatedScans = useMemo(() => {
@@ -579,90 +674,14 @@ export default function ScanHistoryPage() {
                   Status
                 </label>
                 <div className="relative">
-                  <FilterDropdown
-                    label=""
+                  <StatusFilterDropdown
                     value={filters.status}
                     onChange={(v) => handleFilterChange("status", v)}
-                    options={["All Status", "Healthy", "Disease Detected"]}
+                    selectedDiseases={filters.selectedDiseases}
+                    onDiseaseChange={(d) =>
+                      handleFilterChange("selectedDiseases", d)
+                    }
                   />
-                  {/* Disease checkboxes inside the dropdown */}
-                  {filters.status === "Disease Detected" && (
-                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50">
-                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
-                        <input
-                          type="checkbox"
-                          checked={filters.selectedDiseases.includes(
-                            "Anthracnose"
-                          )}
-                          onChange={() => {
-                            const newSelected =
-                              filters.selectedDiseases.includes("Anthracnose")
-                                ? filters.selectedDiseases.filter(
-                                    (d) => d !== "Anthracnose"
-                                  )
-                                : [...filters.selectedDiseases, "Anthracnose"];
-                            handleFilterChange("selectedDiseases", newSelected);
-                          }}
-                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Anthracnose
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
-                        <input
-                          type="checkbox"
-                          checked={filters.selectedDiseases.includes(
-                            "Powdery Mildew"
-                          )}
-                          onChange={() => {
-                            const newSelected =
-                              filters.selectedDiseases.includes(
-                                "Powdery Mildew"
-                              )
-                                ? filters.selectedDiseases.filter(
-                                    (d) => d !== "Powdery Mildew"
-                                  )
-                                : [
-                                    ...filters.selectedDiseases,
-                                    "Powdery Mildew",
-                                  ];
-                            handleFilterChange("selectedDiseases", newSelected);
-                          }}
-                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Powdery Mildew
-                        </span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
-                        <input
-                          type="checkbox"
-                          checked={filters.selectedDiseases.includes(
-                            "Ring Spot Virus"
-                          )}
-                          onChange={() => {
-                            const newSelected =
-                              filters.selectedDiseases.includes(
-                                "Ring Spot Virus"
-                              )
-                                ? filters.selectedDiseases.filter(
-                                    (d) => d !== "Ring Spot Virus"
-                                  )
-                                : [
-                                    ...filters.selectedDiseases,
-                                    "Ring Spot Virus",
-                                  ];
-                            handleFilterChange("selectedDiseases", newSelected);
-                          }}
-                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                        />
-                        <span className="text-sm text-gray-700">
-                          Ring Spot Virus
-                        </span>
-                      </label>
-                    </div>
-                  )}
                 </div>
               </div>
 
