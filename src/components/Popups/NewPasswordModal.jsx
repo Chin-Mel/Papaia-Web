@@ -1,4 +1,4 @@
-// NewPasswordModal.jsx - Proper Width
+// NewPasswordModal.jsx - Matched to OTP Modal Dimensions
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -119,9 +119,9 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
   };
 
   return (
-    <div className="flex justify-center items-center z-50 px-4 min-h-screen py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-        {/* Header */}
+    <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+        {/* Header - Matched to OTP Modal */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
           style={{
@@ -138,30 +138,13 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           <h2 className="text-lg sm:text-xl font-bold text-center">
             Create New Password
           </h2>
-          <p className="text-sm text-center opacity-90 mt-1">
-            Set a secure password for your account
-          </p>
         </div>
 
-        {/* Form */}
+        {/* Form - Matched padding to OTP Modal */}
         <div className="bg-white p-6 sm:p-8">
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <svg
-              className="w-5 h-5 text-green-600"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p className="text-green-700 font-semibold text-sm">
-              Security Verified
-            </p>
-          </div>
+          <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
+            Set a secure password for your account
+          </p>
 
           {/* New Password Field */}
           <div className="space-y-2 mb-5">

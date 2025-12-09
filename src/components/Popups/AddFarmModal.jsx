@@ -170,7 +170,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 className={`border-2 border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
                   loading ? "opacity-50 cursor-not-allowed" : ""
                 } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
-                style={{ height: "110px" }}
+                style={{ height: "115px" }}
               >
                 {imagePreview ? (
                   <div className="flex items-center justify-center h-full">
@@ -276,7 +276,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 }
                 placeholder="Describe your farm, crops, farming practices, or any other relevant information..."
                 disabled={loading}
-                style={{ width: "100%", height: "90px" }}
+                style={{ width: "100%", height: "95px" }}
                 className="px-3.5 py-2 border border-gray-300 focus:border-orange-500 focus:border-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 overflow-y-auto"
               />
             </div>
@@ -284,7 +284,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         </div>
 
         {/* Modal Footer - Compact Buttons */}
-        <div className="px-5 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="px-5 py-3 bg-white">
           <div className="flex justify-end gap-2.5">
             <button
               type="button"
