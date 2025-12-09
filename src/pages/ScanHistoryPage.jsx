@@ -128,7 +128,7 @@ const DiseaseCheckboxes = ({ selectedDiseases, onChange }) => {
   );
 };
 
-const StatusFilterDropdown = ({
+const StatusDropdown = ({
   value,
   onChange,
   selectedDiseases,
@@ -147,7 +147,20 @@ const StatusFilterDropdown = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const diseases = ["Anthracnose", "Powdery Mildew", "Ring Spot Virus"];
+  const toggleDisease = (disease) => {
+    const newSelected = selectedDiseases.includes(disease)
+      ? selectedDiseases.filter((d) => d !== disease)
+      : [...selectedDiseases, disease];
+    onDiseaseChange(newSelected);
+  };
+
+  const handleAllDiseases = () => {
+    if (selectedDiseases.length === 3) {
+      onDiseaseChange([]);
+    } else {
+      onDiseaseChange(["Anthracnose", "Powdery Mildew", "Ring Spot Virus"]);
+    }
+  };
 
   return (
     <div className="flex flex-col space-y-2" ref={dropdownRef}>
@@ -165,44 +178,52 @@ const StatusFilterDropdown = ({
 
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
-            {/* Main status options */}
+            {/* Main Status Options */}
             {["All Status", "Healthy", "Disease Detected"].map((status) => (
               <div
                 key={status}
                 className="px-3 sm:px-4 py-2 cursor-pointer hover:bg-green-700 hover:text-white text-xs sm:text-sm"
                 onClick={() => {
                   onChange(status);
-                  setIsOpen(status !== "Disease Detected"); // keep open for disease selection
+                  if (status !== "Disease Detected") onDiseaseChange([]);
                 }}
               >
                 {status}
               </div>
             ))}
 
-            {/* Nested disease checkboxes */}
+            {/* Nested Disease Checkboxes */}
             {value === "Disease Detected" && (
               <div className="p-3 border-t border-gray-200 bg-gray-50 rounded-b-lg space-y-2">
-                {diseases.map((disease) => (
-                  <label
-                    key={disease}
-                    className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedDiseases.includes(disease)}
-                      onChange={() => {
-                        const newSelected = selectedDiseases.includes(disease)
-                          ? selectedDiseases.filter((d) => d !== disease)
-                          : [...selectedDiseases, disease];
-                        onDiseaseChange(newSelected);
-                      }}
-                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
-                    <span className="text-xs sm:text-sm text-gray-700">
-                      {disease}
-                    </span>
-                  </label>
-                ))}
+                <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selectedDiseases.length === 3}
+                    onChange={handleAllDiseases}
+                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <span className="text-xs sm:text-sm text-gray-700">
+                    All Diseases
+                  </span>
+                </label>
+                {["Anthracnose", "Powdery Mildew", "Ring Spot Virus"].map(
+                  (disease) => (
+                    <label
+                      key={disease}
+                      className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDiseases.includes(disease)}
+                        onChange={() => toggleDisease(disease)}
+                        className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                      />
+                      <span className="text-xs sm:text-sm text-gray-700">
+                        {disease}
+                      </span>
+                    </label>
+                  )
+                )}
               </div>
             )}
           </div>
@@ -489,7 +510,7 @@ export default function ScanHistoryPage() {
 
   const filteredScans = useMemo(() => {
     return allScans.filter((scan) => {
-      const { timestamp, prediction, status, farmId, farmerName } = scan;
+      const { timestamp, prediction, farmId, farmerName } = scan;
 
       // 1. Date Range Filter
       if (filters.dateRange !== "All Time") {
@@ -521,27 +542,24 @@ export default function ScanHistoryPage() {
       }
 
       // 2. Status Filter
+      const predictionLower = prediction?.toLowerCase() || "";
       if (filters.status !== "All Status") {
-        if (
-          filters.status === "Healthy" &&
-          prediction.toLowerCase() !== "healthy"
-        ) {
+        if (filters.status === "Healthy" && predictionLower !== "healthy") {
           return false;
         }
         if (
           filters.status === "Disease Detected" &&
-          prediction.toLowerCase() === "healthy"
+          predictionLower === "healthy"
         ) {
           return false;
         }
       }
 
-      // 3. Disease Filter (only applies when Disease Detected)
+      // 3. Disease Filter
       if (
         filters.selectedDiseases.length > 0 &&
-        filters.status === "Disease Detected"
+        predictionLower !== "healthy"
       ) {
-        const predictionLower = prediction.toLowerCase();
         const selectedLower = filters.selectedDiseases.map((d) =>
           d.toLowerCase()
         );
@@ -557,7 +575,7 @@ export default function ScanHistoryPage() {
       if (
         filters.farmerSearch.trim() &&
         !farmerName
-          .toLowerCase()
+          ?.toLowerCase()
           .includes(filters.farmerSearch.toLowerCase().trim())
       ) {
         return false;
@@ -670,11 +688,8 @@ export default function ScanHistoryPage() {
 
               {/* Status Filter */}
               <div className="flex flex-col space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700">
-                  Status
-                </label>
                 <div className="relative">
-                  <StatusFilterDropdown
+                  <StatusDropdown
                     value={filters.status}
                     onChange={(v) => handleFilterChange("status", v)}
                     selectedDiseases={filters.selectedDiseases}
