@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { RefreshCw, X, Eye, EyeOff } from "lucide-react";
 import { useAlert } from "../../AlertContext";
 
@@ -15,6 +16,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   const [newPasswordError, setNewPasswordError] = useState(false);
   const [confirmPasswordError, setConfirmPasswordError] = useState(false);
   const modalRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -34,7 +36,7 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
     setNewPasswordError(false);
     setConfirmPasswordError(false);
 
-    // Validation
+    // Basic validation
     if (!currentPassword.trim()) {
       setCurrentPasswordError(true);
       showAlert("error", "Please enter your current password");
@@ -47,33 +49,13 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
       return;
     }
 
-    if (newPassword.length < 8) {
-      setNewPasswordError(true);
-      showAlert("error", "Password must be at least 8 characters long");
-      return;
-    }
-
     if (!confirmPassword.trim()) {
       setConfirmPasswordError(true);
       showAlert("error", "Please confirm your new password");
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      setConfirmPasswordError(true);
-      showAlert("error", "Passwords do not match");
-      return;
-    }
-
-    if (currentPassword === newPassword) {
-      setNewPasswordError(true);
-      showAlert(
-        "error",
-        "New password must be different from current password"
-      );
-      return;
-    }
-
+    // Remove length, match, and difference checks
     setIsLoading(true);
 
     try {
@@ -99,13 +81,10 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           "success",
           "Password updated successfully! You will be redirected to login."
         );
-        setTimeout(() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          window.location.href = "/sign-in";
-        }, 3000);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
       } else {
-        // Handle specific error from backend
         if (
           response.status === 401 ||
           data.error?.includes("current password")

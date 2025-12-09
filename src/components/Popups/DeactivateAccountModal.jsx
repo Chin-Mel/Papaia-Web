@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { AlertTriangle, X } from "lucide-react";
 import { useAlert } from "../../AlertContext";
+import { useNavigate } from "react-router-dom";
 
 export default function DeactivateAccountModal({ isOpen, onClose }) {
   const { showAlert } = useAlert();
@@ -9,6 +10,7 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
   const [acknowledged, setAcknowledged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,12 +45,9 @@ export default function DeactivateAccountModal({ isOpen, onClose }) {
         }
 
         showAlert("success", "Account deactivated successfully!");
-
-        setTimeout(() => {
-          localStorage.removeItem("token");
-          localStorage.removeItem("user");
-          window.location.href = "/sign-in";
-        }, 3000);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/sign-in");
       } else {
         const errorText = await response.text();
         let errorMessage;
