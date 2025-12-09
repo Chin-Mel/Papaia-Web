@@ -4,7 +4,7 @@ import { ChevronDown, LogOut, Bell } from "lucide-react";
 import { getLoggedInUser } from "../../utils/security";
 import { useNotifications } from "../../NotificationContext";
 
-import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
+import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
 import defaultUser from "../../assets/default-user.png";
 
