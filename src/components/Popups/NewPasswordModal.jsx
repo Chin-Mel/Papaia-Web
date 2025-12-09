@@ -119,7 +119,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 px-4">
+    <div className="flex justify-center items-center z-50 px-4 min-h-screen py-12 pt-16 sm:pt-20">
       <div className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
         {/* Header */}
         <div
