@@ -110,7 +110,7 @@ export default function ManageBillingPage() {
     <div className="min-h-screen bg-gray-50">
       <HeaderMain />
 
-      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+      <main className="pt-10 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="mb-6 sm:mb-8 text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1">

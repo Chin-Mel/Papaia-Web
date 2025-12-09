@@ -81,13 +81,9 @@ export default function ProfilePage() {
 
   const getFullName = () => {
     if (!userData) return "N/A";
-    const { firstName, lastName, middleName, suffix } = userData;
+    const { firstName, lastName } = userData;
     if (firstName && lastName) {
-      let fullName = middleName
-        ? `${firstName} ${middleName} ${lastName}`
-        : `${firstName} ${lastName}`;
-      if (suffix) fullName += ` ${suffix}`;
-      return fullName;
+      return `${firstName} ${lastName}`;
     }
     return userData.username || "N/A";
   };
