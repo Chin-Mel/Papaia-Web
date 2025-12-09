@@ -18,8 +18,10 @@ export default function ToggleFarmStatusModal({
   onStatusToggled,
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  const [alert, setAlert] = useState({ type: "", message: "" });
   const modalRef = useRef(null);
+
+  // Capture the initial status when modal opens
+  const [initialStatus, setInitialStatus] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -27,19 +29,23 @@ export default function ToggleFarmStatusModal({
     };
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   useEffect(() => {
+    if (isOpen && farmData) {
+      // Capture the status when modal opens
+      setInitialStatus(farmData.status);
+    }
     if (!isOpen) {
       setIsLoading(false);
-      setAlert({ type: "", message: "" });
+      setInitialStatus(null);
     }
-  }, [isOpen]);
+  }, [isOpen, farmData]);
 
   const handleToggleStatus = async () => {
     if (!farmData) return;
     setIsLoading(true);
-    const isActive = farmData.status === "active";
+    const wasActive = initialStatus === "active";
 
     try {
       const response = await fetch(
@@ -56,24 +62,35 @@ export default function ToggleFarmStatusModal({
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        setTimeout(() => onClose(), 500);
+        // Close immediately on success
+        onClose();
+
+        // Clear cache and refresh
         if (window.clearFarmCache) window.clearFarmCache();
         if (window.refreshActivities) window.refreshActivities();
-        if (onStatusToggled) onStatusToggled(data.newStatus);
-        setTimeout(() => onClose(), 1000);
+
+        // Notify parent with new status
+        if (onStatusToggled) {
+          onStatusToggled(data.newStatus);
+        }
       } else {
         throw new Error(data.message || "Failed to toggle farm status");
       }
     } catch (error) {
-      setAlert({ type: "error", message: error.message });
-      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
+      // On error, keep modal open and show error in parent
+      onClose();
+      if (onStatusToggled) {
+        onStatusToggled(null, error.message);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen || !farmData) return null;
-  const isActive = farmData.status === "active";
+  if (!isOpen || !farmData || !initialStatus) return null;
+
+  // Use the captured initial status for consistent UI
+  const isActive = initialStatus === "active";
   const actionText = isActive ? "Deactivate" : "Reactivate";
 
   return (
@@ -110,32 +127,18 @@ export default function ToggleFarmStatusModal({
         </div>
 
         <div className="overflow-y-auto flex-1">
-          {alert.message && (
-            <div className="mx-5 mt-5">
-              <div
-                className={`p-3 rounded-lg ${
-                  alert.type === "error"
-                    ? "bg-red-50 text-red-800 border border-red-200"
-                    : "bg-green-50 text-green-800 border border-green-200"
-                }`}
-              >
-                <p className="text-sm font-medium">{alert.message}</p>
-              </div>
-            </div>
-          )}
-
-          <div className="p-5 space-y-5">
-            <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
-                  <Leaf className="w-6 h-6 text-white" />
+          <div className="p-4 space-y-3">
+            <div className="bg-green-50 rounded-xl p-3 border-2 border-green-200">
+              <div className="flex items-start gap-2.5">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md">
+                  <Leaf className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-gray-900 text-lg truncate">
+                  <h3 className="font-bold text-gray-900 text-base truncate">
                     {farmData.farmName}
                   </h3>
-                  <div className="flex items-center gap-1.5 text-gray-600 text-sm mb-2">
-                    <MapPin className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5 text-gray-600 text-xs mb-1.5">
+                    <MapPin className="w-3 h-3 text-green-600 flex-shrink-0" />
                     <span className="truncate">
                       {farmData.location || "No location"}
                     </span>
@@ -146,12 +149,12 @@ export default function ToggleFarmStatusModal({
                     </span>
                     <div className="flex items-center gap-1.5">
                       {isActive ? (
-                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-red-500" />
+                        <XCircle className="w-3.5 h-3.5 text-red-500" />
                       )}
                       <span
-                        className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                           isActive
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
@@ -166,26 +169,26 @@ export default function ToggleFarmStatusModal({
             </div>
 
             <div
-              className={`rounded-xl p-4 border-2 ${
+              className={`rounded-xl p-3 border-2 ${
                 isActive
                   ? "bg-amber-50 border-amber-200"
                   : "bg-green-50 border-green-200"
               }`}
             >
               <h4
-                className={`font-bold mb-3 flex items-center gap-2 ${
+                className={`font-bold mb-2 flex items-center gap-2 text-sm ${
                   isActive ? "text-amber-900" : "text-green-900"
                 }`}
               >
                 {isActive ? (
-                  <AlertTriangle className="w-5 h-5 text-amber-600" />
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
                 ) : (
-                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <CheckCircle className="w-4 h-4 text-green-600" />
                 )}
                 What happens?
               </h4>
               <ul
-                className={`space-y-2 text-sm ${
+                className={`space-y-1.5 text-xs ${
                   isActive ? "text-amber-800" : "text-green-800"
                 }`}
               >
@@ -232,7 +235,7 @@ export default function ToggleFarmStatusModal({
             </div>
           </div>
 
-          <div className="p-5 border-t-2 border-gray-100 flex gap-3">
+          <div className="p-4 border-t-2 border-gray-100 flex gap-3">
             <button
               onClick={onClose}
               className="flex-1 px-5 py-2.5 border-2 border-gray-300 bg-white text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all"

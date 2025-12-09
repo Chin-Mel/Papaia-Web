@@ -129,13 +129,13 @@ export default function FarmerDetailModal({
           </div>
         )}
 
-        <div className="p-6">
-          <div className="flex items-start gap-4 mb-6">
+        <div className="p-5">
+          <div className="flex items-start gap-3 mb-4">
             <div className="relative">
               <img
                 src={profilePicture}
                 alt="Profile"
-                className={`w-20 h-20 rounded-full object-cover border-4 shadow-lg ${
+                className={`w-16 h-16 rounded-full object-cover border-3 shadow-lg ${
                   isArchived ? "border-gray-300 grayscale" : "border-green-100"
                 }`}
                 onError={(e) => {
@@ -144,27 +144,27 @@ export default function FarmerDetailModal({
                 loading="eager"
               />
               <div
-                className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-3 border-white shadow-md ${
+                className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md ${
                   isArchived ? "bg-red-500" : "bg-green-500"
                 }`}
               >
-                <CheckCircle className="w-4 h-4 text-white" />
+                <CheckCircle className="w-3 h-3 text-white" />
               </div>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <h3
-                className={`text-xl font-bold mb-1 ${
+                className={`text-lg font-bold mb-0.5 ${
                   isArchived ? "text-gray-600" : "text-gray-900"
                 }`}
               >
                 {fullName}
               </h3>
               <p
-                className={`text-sm mb-2 ${
+                className={`text-xs mb-1.5 ${
                   isArchived ? "text-gray-400" : "text-gray-500"
                 }`}
               >
-                Farmer ID:{" "}
+                ID:{" "}
                 <span
                   className={`font-semibold ${
                     isArchived ? "text-gray-500" : "text-gray-700"
@@ -174,14 +174,14 @@ export default function FarmerDetailModal({
                 </span>
               </p>
               <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                   isArchived
                     ? "bg-red-100 text-red-700"
                     : "bg-green-100 text-green-700"
                 }`}
               >
                 <div
-                  className={`w-2 h-2 rounded-full ${
+                  className={`w-1.5 h-1.5 rounded-full ${
                     isArchived ? "bg-red-500" : "bg-green-500"
                   }`}
                 ></div>
@@ -190,71 +190,9 @@ export default function FarmerDetailModal({
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 pb-2 border-b border-gray-200">
-              <User
-                className={`w-5 h-5 ${
-                  isArchived ? "text-gray-400" : "text-orange-500"
-                }`}
-              />
-              <h4
-                className={`font-bold ${
-                  isArchived ? "text-gray-600" : "text-gray-900"
-                }`}
-              >
-                Personal Information
-              </h4>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <p
-                  className={`text-xs font-medium mb-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  First Name
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {firstName || "N/A"}
-                </p>
-              </div>
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
-                }`}
-              >
-                <p
-                  className={`text-xs font-medium mb-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Last Name
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {lastName || "N/A"}
-                </p>
-              </div>
-            </div>
-
+          <div className="space-y-2.5">
             <div
-              className={`p-3 rounded-xl border ${
+              className={`p-2.5 rounded-lg border ${
                 isArchived
                   ? "bg-gray-100 border-gray-300"
                   : "bg-gray-50 border-gray-200"
@@ -269,7 +207,7 @@ export default function FarmerDetailModal({
                 Contact Number
               </p>
               <p
-                className={`font-semibold ${
+                className={`text-sm font-semibold ${
                   isArchived ? "text-gray-600" : "text-gray-900"
                 }`}
               >
@@ -277,37 +215,35 @@ export default function FarmerDetailModal({
               </p>
             </div>
 
-            {hasAddress && (
-              <div
-                className={`p-3 rounded-xl border ${
-                  isArchived
-                    ? "bg-gray-100 border-gray-300"
-                    : "bg-gray-50 border-gray-200"
+            <div
+              className={`p-2.5 rounded-lg border ${
+                isArchived
+                  ? "bg-gray-100 border-gray-300"
+                  : "bg-gray-50 border-gray-200"
+              }`}
+            >
+              <p
+                className={`text-xs font-medium mb-1 ${
+                  isArchived ? "text-gray-400" : "text-gray-500"
                 }`}
               >
-                <p
-                  className={`text-xs font-medium mb-1 ${
-                    isArchived ? "text-gray-400" : "text-gray-500"
-                  }`}
-                >
-                  Address
-                </p>
-                <p
-                  className={`font-semibold ${
-                    isArchived ? "text-gray-600" : "text-gray-900"
-                  }`}
-                >
-                  {fullAddress}
-                </p>
-              </div>
-            )}
+                Address
+              </p>
+              <p
+                className={`text-sm font-semibold ${
+                  isArchived ? "text-gray-600" : "text-gray-900"
+                }`}
+              >
+                {hasAddress ? fullAddress : "No address"}
+              </p>
+            </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-4">
             {isArchived ? (
               <button
                 onClick={onRestoreFarmer}
-                className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                className="w-full px-5 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-bold hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
               >
                 <RotateCcw className="w-4 h-4" />
                 Restore Farmer
@@ -315,7 +251,7 @@ export default function FarmerDetailModal({
             ) : (
               <button
                 onClick={onRemoveFarmer}
-                className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex items-center justify-center gap-2"
+                className="w-full px-5 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold hover:from-red-600 hover:to-red-700 transition-all shadow-lg flex items-center justify-center gap-2 text-sm"
               >
                 <Trash2 className="w-4 h-4" />
                 Remove Farmer

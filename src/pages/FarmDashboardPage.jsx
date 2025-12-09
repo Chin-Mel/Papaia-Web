@@ -111,43 +111,10 @@ export default function FarmDashboardPage() {
     setTeamsRefreshTrigger((prev) => prev + 1);
   };
 
-  const handleViewFarmer = async (farmerId, isArchived = false) => {
-    try {
-      if (isArchived) {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await response.json();
-        if (data.status === "success") {
-          const archivedFarmer = data.removedFarmers.find(
-            (f) => f.id === farmerId
-          );
-          if (archivedFarmer) {
-            setSelectedFarmer({ ...archivedFarmer, isArchived: true });
-            setIsFarmerDetailModalOpen(true);
-          }
-        }
-      } else {
-        const response = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/farmer/${farmerId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-        const data = await response.json();
-        if (data.status === "success") {
-          setSelectedFarmer({ ...data.farmer, isArchived: false });
-          setIsFarmerDetailModalOpen(true);
-        }
-      }
-    } catch {}
+  const handleViewFarmer = (farmerData) => {
+    // Data is already complete, just set it and open modal
+    setSelectedFarmer(farmerData);
+    setIsFarmerDetailModalOpen(true);
   };
 
   const handleRemoveFarmerFromDetail = () => {
@@ -197,16 +164,33 @@ export default function FarmDashboardPage() {
     showAlert("success", "Farm Updated Successfully!");
   };
 
-  const handleStatusToggled = async (newStatus) => {
-    setFarmData((prev) => ({ ...prev, status: newStatus }));
-    await refreshFarmData();
-    showAlert(
-      "success",
-      newStatus === "active"
-        ? "Farm Activated Successfully!"
-        : "Farm Deactivated Successfully!"
-    );
-    navigate("/dashboard");
+  const handleStatusToggled = async (newStatus, errorMessage) => {
+    if (errorMessage) {
+      // Show error alert
+      showAlert("error", errorMessage);
+      return;
+    }
+
+    if (newStatus) {
+      // Update local state immediately
+      setFarmData((prev) => ({ ...prev, status: newStatus }));
+
+      // Show success alert
+      showAlert(
+        "success",
+        newStatus === "active"
+          ? "Farm Activated Successfully!"
+          : "Farm Deactivated Successfully!"
+      );
+
+      // Navigate to dashboard only if deactivated
+      if (newStatus === "inactive") {
+        navigate("/dashboard");
+      } else {
+        // Stay on page and refresh data
+        await refreshFarmData();
+      }
+    }
   };
 
   const handleRestore = async () => {

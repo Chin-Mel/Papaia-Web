@@ -128,6 +128,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
       >
+        {/* Modal Header */}
         <div className="bg-gradient-to-r from-green-700 to-orange-500 p-5 flex items-center gap-3 relative">
           <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
@@ -152,105 +153,114 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           </button>
         </div>
 
+        {/* Modal Body */}
         <div className="overflow-y-auto flex-1">
           <div className="p-6 space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                  Farm Name
-                  <span className="text-red-500">*</span>
+            {/* Top row: Image left + Name/Location right */}
+            <div className="flex gap-4 items-start">
+              {/* Left column: Farm Image */}
+              <div className="w-1/3">
+                <label className="text-sm font-semibold text-gray-700">
+                  Farm Picture
+                  <span className="text-gray-400 font-normal text-xs ml-1">
+                    (Optional)
+                  </span>
                 </label>
-                <input
-                  type="text"
-                  value={formData.farmName}
-                  onChange={(e) =>
-                    handleInputChange("farmName", e.target.value)
-                  }
-                  onBlur={() => handleBlur("farmName")}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Enter your farm name"
-                  disabled={loading}
-                  className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                    "farmName"
-                  )}`}
-                />
+                <div
+                  onClick={() => !loading && fileInputRef.current?.click()}
+                  className={`border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
+                    loading ? "opacity-50 cursor-not-allowed" : ""
+                  } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
+                >
+                  {imagePreview ? (
+                    <div className="space-y-3">
+                      <img
+                        src={imagePreview}
+                        alt="Farm preview"
+                        className="w-28 h-28 mx-auto object-cover rounded-lg border-2 border-gray-200"
+                      />
+                      <p className="text-sm text-gray-600 font-medium">
+                        {loading ? "Uploading..." : "Click to change image"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
+                        <Camera className="w-7 h-7 text-orange-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-700">
+                          Click to upload farm image
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          PNG, JPG (Max 10MB)
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={loading}
+                    className="hidden"
+                  />
+                </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
-                  Location/Address
-                  <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
+              {/* Right column: Name + Location */}
+              <div className="flex-1 space-y-4">
+                {/* Farm Name */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                    Farm Name
+                    <span className="text-red-500">*</span>
+                  </label>
                   <input
                     type="text"
-                    value={formData.location}
+                    value={formData.farmName}
                     onChange={(e) =>
-                      handleInputChange("location", e.target.value)
+                      handleInputChange("farmName", e.target.value)
                     }
-                    onBlur={() => handleBlur("location")}
+                    onBlur={() => handleBlur("farmName")}
                     onKeyPress={handleKeyPress}
-                    placeholder="Enter farm location"
+                    placeholder="Enter your farm name"
                     disabled={loading}
-                    className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
-                      "location"
+                    className={`w-full px-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                      "farmName"
                     )}`}
                   />
+                </div>
+
+                {/* Farm Location */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+                    Location/Address
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-5 h-5 text-orange-500" />
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) =>
+                        handleInputChange("location", e.target.value)
+                      }
+                      onBlur={() => handleBlur("location")}
+                      onKeyPress={handleKeyPress}
+                      placeholder="Enter farm location"
+                      disabled={loading}
+                      className={`w-full pl-11 pr-4 py-2.5 border rounded-xl focus:outline-none focus:ring-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-gray-800 placeholder-gray-400 ${getInputBorderClass(
+                        "location"
+                      )}`}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                Farm Picture
-                <span className="text-gray-400 font-normal text-xs ml-1">
-                  (Optional)
-                </span>
-              </label>
-              <div
-                onClick={() => !loading && fileInputRef.current?.click()}
-                className={`border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-orange-400 hover:bg-orange-50/30 transition-all ${
-                  loading ? "opacity-50 cursor-not-allowed" : ""
-                } ${imagePreview ? "bg-gray-50" : "bg-white"}`}
-              >
-                {imagePreview ? (
-                  <div className="space-y-3">
-                    <img
-                      src={imagePreview}
-                      alt="Farm preview"
-                      className="w-28 h-28 mx-auto object-cover rounded-lg border-2 border-gray-200"
-                    />
-                    <p className="text-sm text-gray-600 font-medium">
-                      {loading ? "Uploading..." : "Click to change image"}
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto">
-                      <Camera className="w-7 h-7 text-orange-500" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-700">
-                        Click to upload farm image
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        PNG, JPG (Max 10MB)
-                      </p>
-                    </div>
-                  </div>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={loading}
-                  className="hidden"
-                />
-              </div>
-            </div>
-
+            {/* Description full width below */}
             <div className="space-y-2">
               <label className="text-sm font-semibold text-gray-700">
                 Description
@@ -272,6 +282,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           </div>
         </div>
 
+        {/* Modal Footer (Buttons) */}
         <div className="p-6 pt-4 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-end gap-3">
             <button

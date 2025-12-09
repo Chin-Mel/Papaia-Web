@@ -60,8 +60,7 @@ export default function FarmTeams({
   onViewFarmer,
   refreshTrigger,
 }) {
-  const [farmers, setFarmers] = useState([]);
-  const [archivedFarmers, setArchivedFarmers] = useState([]);
+  const [allFarmersData, setAllFarmersData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -69,73 +68,6 @@ export default function FarmTeams({
   const [currentPage, setCurrentPage] = useState(1);
   const farmersPerPage = 5;
   const abortControllerRef = useRef(null);
-
-  const fetchActiveFarmers = useCallback(async () => {
-    const response = await fetch(
-      `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.status === "success") {
-      const farmersList = data.farmers || [];
-
-      const farmersWithDetails = await Promise.all(
-        farmersList.map(async (farmer) => {
-          try {
-            const detailResponse = await fetch(
-              `https://papaiaapi.onrender.com/api/owner/farmer/${farmer.id}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              }
-            );
-
-            const detailData = await detailResponse.json();
-
-            if (detailData.status === "success" && detailData.farmer) {
-              return { ...detailData.farmer, isArchived: false };
-            }
-
-            return { ...farmer, isArchived: false };
-          } catch {
-            return { ...farmer, isArchived: false };
-          }
-        })
-      );
-
-      return farmersWithDetails;
-    }
-    return [];
-  }, [farmId]);
-
-  const fetchArchivedFarmers = useCallback(async () => {
-    const response = await fetch(
-      `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    if (data.status === "success" && data.removedFarmers) {
-      return data.removedFarmers.map((farmer) => ({
-        ...farmer,
-        isArchived: true,
-        status: "archived",
-      }));
-    }
-    return [];
-  }, [farmId]);
 
   const fetchAllFarmers = useCallback(
     async (silent = false) => {
@@ -153,13 +85,70 @@ export default function FarmTeams({
       }
 
       try {
-        const [active, archived] = await Promise.all([
-          fetchActiveFarmers(),
-          fetchArchivedFarmers(),
-        ]);
+        // Fetch active farmers with full details
+        const activeFarmersResponse = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
-        setFarmers(active);
-        setArchivedFarmers(archived);
+        const activeFarmersData = await activeFarmersResponse.json();
+
+        // Fetch archived farmers
+        const archivedFarmersResponse = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        const archivedFarmersData = await archivedFarmersResponse.json();
+
+        // Get full details for active farmers in parallel
+        const activeFarmersList = activeFarmersData.farmers || [];
+        const farmersWithDetails = await Promise.all(
+          activeFarmersList.map(async (farmer) => {
+            try {
+              const detailResponse = await fetch(
+                `https://papaiaapi.onrender.com/api/owner/farmer/${farmer.id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                }
+              );
+
+              const detailData = await detailResponse.json();
+
+              if (detailData.status === "success" && detailData.farmer) {
+                return { ...detailData.farmer, isArchived: false };
+              }
+
+              return { ...farmer, isArchived: false };
+            } catch {
+              return { ...farmer, isArchived: false };
+            }
+          })
+        );
+
+        // Format archived farmers
+        const archivedFarmersFormatted =
+          archivedFarmersData.status === "success" &&
+          archivedFarmersData.removedFarmers
+            ? archivedFarmersData.removedFarmers.map((farmer) => ({
+                ...farmer,
+                isArchived: true,
+                status: "archived",
+              }))
+            : [];
+
+        // Combine all farmers
+        setAllFarmersData([...farmersWithDetails, ...archivedFarmersFormatted]);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Error fetching farmers:", error);
@@ -171,14 +160,14 @@ export default function FarmTeams({
         }
       }
     },
-    [farmId, fetchActiveFarmers, fetchArchivedFarmers, isInitialLoad]
+    [farmId, isInitialLoad]
   );
 
   // Initial fetch and polling
   useEffect(() => {
     fetchAllFarmers();
 
-    // Poll every 10 seconds
+    // Poll every 2 seconds
     const interval = setInterval(() => fetchAllFarmers(true), 2000);
 
     return () => {
@@ -218,9 +207,7 @@ export default function FarmTeams({
     return addressParts.length > 0 ? addressParts.join(", ") : "No address";
   }, []);
 
-  const allFarmers = [...farmers, ...archivedFarmers];
-
-  const filteredFarmers = allFarmers.filter((farmer) => {
+  const filteredFarmers = allFarmersData.filter((farmer) => {
     const searchLower = searchQuery.toLowerCase().trim();
     const farmerStatus = (farmer.status || "active").toLowerCase();
     const matchesStatus =
@@ -292,6 +279,17 @@ export default function FarmTeams({
     [totalPages]
   );
 
+  // Handle view farmer - pass complete data immediately
+  const handleViewFarmer = useCallback(
+    (farmer) => {
+      onViewFarmer(farmer);
+    },
+    [onViewFarmer]
+  );
+
+  const activeFarmers = allFarmersData.filter((f) => !f.isArchived);
+  const archivedFarmers = allFarmersData.filter((f) => f.isArchived);
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-20">
@@ -315,9 +313,9 @@ export default function FarmTeams({
               Farm Team
             </h2>
             <p className="text-xs sm:text-sm text-gray-600">
-              {allFarmers.length}{" "}
-              {allFarmers.length === 1 ? "member" : "members"} ({farmers.length}{" "}
-              active, {archivedFarmers.length} archived)
+              {allFarmersData.length}{" "}
+              {allFarmersData.length === 1 ? "member" : "members"} (
+              {activeFarmers.length} active, {archivedFarmers.length} archived)
             </p>
           </div>
         </div>
@@ -363,7 +361,7 @@ export default function FarmTeams({
             <User className="w-8 h-8 text-gray-400" />
           </div>
           <p className="text-sm sm:text-base text-gray-500 mb-1">
-            {allFarmers.length === 0
+            {allFarmersData.length === 0
               ? "No farmers added yet"
               : "No farmers match your search"}
           </p>
@@ -455,7 +453,7 @@ export default function FarmTeams({
                     {farmerAddress}
                   </p>
                   <button
-                    onClick={() => onViewFarmer(farmer.id, isArchived)}
+                    onClick={() => handleViewFarmer(farmer)}
                     className="text-green-600 hover:text-green-700 font-medium text-sm"
                   >
                     View Details →
@@ -530,7 +528,7 @@ export default function FarmTeams({
 
                   <div className="col-span-2">
                     <button
-                      onClick={() => onViewFarmer(farmer.id, isArchived)}
+                      onClick={() => handleViewFarmer(farmer)}
                       className="text-green-600 hover:text-green-700 font-medium text-sm"
                     >
                       View Details →
