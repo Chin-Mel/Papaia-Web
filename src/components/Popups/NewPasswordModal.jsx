@@ -100,10 +100,7 @@ export default function NewPasswordModal({ user_Id }) {
           "Password Updated Successfully. You can now login using your new password.",
           3000
         );
-        // Delay navigation to allow alert to be seen
-        setTimeout(() => {
-          navigate("/sign-in");
-        }, 3000);
+        navigate("/sign-in");
       } else {
         showAlert(
           "error",
