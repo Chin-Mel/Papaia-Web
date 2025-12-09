@@ -441,18 +441,19 @@ export default function ScanHistoryPage() {
           (s) => s.prediction?.toLowerCase() === "healthy"
         );
       } else if (filters.status === "Disease Detected") {
-        filtered = filtered.filter((s) => {
-          const pred = s.prediction?.toLowerCase();
-          return pred && pred !== "healthy";
-        });
-
-        // Disease Type Filter (only when Disease Detected is selected)
-        if (filters.selectedDiseases.length > 0) {
-          filtered = filtered.filter((s) =>
-            filters.selectedDiseases.includes(s.prediction)
-          );
-        }
+        filtered = filtered.filter(
+          (s) => s.prediction?.toLowerCase() !== "healthy"
+        );
       }
+    }
+
+    // Disease Type Filter (applies even if status is "All Status")
+    if (filters.selectedDiseases.length > 0) {
+      filtered = filtered.filter((s) =>
+        filters.selectedDiseases
+          .map((d) => d.toLowerCase())
+          .includes(s.prediction?.toLowerCase())
+      );
     }
 
     // Farm Filter
@@ -563,7 +564,8 @@ export default function ScanHistoryPage() {
           </div>
 
           <div className="w-full bg-white rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 mb-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 items-start">
+              {/* Date Range Filter */}
               <FilterDropdown
                 label="Date Range"
                 value={filters.dateRange}
@@ -571,26 +573,100 @@ export default function ScanHistoryPage() {
                 options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
               />
 
+              {/* Status Filter */}
               <div className="flex flex-col space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-gray-700">
                   Status
                 </label>
-                <FilterDropdown
-                  label=""
-                  value={filters.status}
-                  onChange={(v) => handleFilterChange("status", v)}
-                  options={["All Status", "Healthy", "Disease Detected"]}
-                />
-                {filters.status === "Disease Detected" && (
-                  <DiseaseCheckboxes
-                    selectedDiseases={filters.selectedDiseases}
-                    onChange={(diseases) =>
-                      handleFilterChange("selectedDiseases", diseases)
-                    }
+                <div className="relative">
+                  <FilterDropdown
+                    label=""
+                    value={filters.status}
+                    onChange={(v) => handleFilterChange("status", v)}
+                    options={["All Status", "Healthy", "Disease Detected"]}
                   />
-                )}
+                  {/* Disease checkboxes inside the dropdown */}
+                  {filters.status === "Disease Detected" && (
+                    <div className="absolute top-full mt-1 left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg p-2 z-50">
+                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
+                        <input
+                          type="checkbox"
+                          checked={filters.selectedDiseases.includes(
+                            "Anthracnose"
+                          )}
+                          onChange={() => {
+                            const newSelected =
+                              filters.selectedDiseases.includes("Anthracnose")
+                                ? filters.selectedDiseases.filter(
+                                    (d) => d !== "Anthracnose"
+                                  )
+                                : [...filters.selectedDiseases, "Anthracnose"];
+                            handleFilterChange("selectedDiseases", newSelected);
+                          }}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          Anthracnose
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
+                        <input
+                          type="checkbox"
+                          checked={filters.selectedDiseases.includes(
+                            "Powdery Mildew"
+                          )}
+                          onChange={() => {
+                            const newSelected =
+                              filters.selectedDiseases.includes(
+                                "Powdery Mildew"
+                              )
+                                ? filters.selectedDiseases.filter(
+                                    (d) => d !== "Powdery Mildew"
+                                  )
+                                : [
+                                    ...filters.selectedDiseases,
+                                    "Powdery Mildew",
+                                  ];
+                            handleFilterChange("selectedDiseases", newSelected);
+                          }}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          Powdery Mildew
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded">
+                        <input
+                          type="checkbox"
+                          checked={filters.selectedDiseases.includes(
+                            "Ring Spot Virus"
+                          )}
+                          onChange={() => {
+                            const newSelected =
+                              filters.selectedDiseases.includes(
+                                "Ring Spot Virus"
+                              )
+                                ? filters.selectedDiseases.filter(
+                                    (d) => d !== "Ring Spot Virus"
+                                  )
+                                : [
+                                    ...filters.selectedDiseases,
+                                    "Ring Spot Virus",
+                                  ];
+                            handleFilterChange("selectedDiseases", newSelected);
+                          }}
+                          className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                        />
+                        <span className="text-sm text-gray-700">
+                          Ring Spot Virus
+                        </span>
+                      </label>
+                    </div>
+                  )}
+                </div>
               </div>
 
+              {/* Farmer Name Filter */}
               <div className="flex flex-col space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-gray-700">
                   Farmer Name
@@ -606,6 +682,7 @@ export default function ScanHistoryPage() {
                 />
               </div>
 
+              {/* Farm Filter */}
               <FilterDropdown
                 label="Farm"
                 value={

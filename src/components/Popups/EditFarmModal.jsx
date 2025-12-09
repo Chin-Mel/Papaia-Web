@@ -60,13 +60,13 @@ export default function EditFarmModal({
 
     if (!file.type.startsWith("image/")) {
       setAlert({ type: "error", message: "Please select a valid image file" });
-      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
+      setAlert({ type: "", message: "" });
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
       setAlert({ type: "error", message: "Image size must be less than 10MB" });
-      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
+      setAlert({ type: "", message: "" });
       return;
     }
 
@@ -122,13 +122,13 @@ export default function EditFarmModal({
         setAlert({ type: "success", message: "Farm Updated Successfully!" });
         if (onFarmUpdated)
           onFarmUpdated(data.farm || { ...farmData, ...trimmedData });
-        setTimeout(() => handleClose(), 1000);
+        handleClose();
       } else {
         throw new Error(data.message || "Failed to update farm");
       }
     } catch (error) {
       setAlert({ type: "error", message: error.message });
-      setTimeout(() => setAlert({ type: "", message: "" }), 3000);
+      setAlert({ type: "", message: "" });
     } finally {
       setIsLoading(false);
     }
@@ -193,6 +193,9 @@ export default function EditFarmModal({
         {/* Modal Body */}
         <div className="flex-1">
           <div className="p-5 space-y-2.5">
+            <label className="text-sm font-medium text-gray-700">
+              Farm Image
+            </label>
             {/* Farm Image at Top */}
             <div
               className="relative w-full rounded-xl overflow-hidden"
@@ -215,7 +218,7 @@ export default function EditFarmModal({
                   !isLoading &&
                   document.getElementById("farmImageInput")?.click()
                 }
-                className="absolute top-2 right-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1 text-sm"
+                className="absolute bottom-2 right-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1 text-sm"
               >
                 <Upload className="w-4 h-4" />
                 Change Image
@@ -283,9 +286,6 @@ export default function EditFarmModal({
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Description
-                <span className="text-gray-400 font-normal text-xs ml-1">
-                  (Optional)
-                </span>
               </label>
               <textarea
                 value={formData.description}
