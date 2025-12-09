@@ -1,4 +1,4 @@
-// NewPasswordModal.jsx - Fixed Width Version
+// NewPasswordModal.jsx - Proper Width
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -120,7 +120,8 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+      {/* Keep max-w-lg to match OTP modal */}
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
         {/* Header */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
@@ -138,15 +139,15 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           <h2 className="text-lg sm:text-xl font-bold text-center">
             Create New Password
           </h2>
-          <p className="text-xs sm:text-sm text-center opacity-90 mt-1">
+          <p className="text-sm text-center opacity-90 mt-1">
             Set a secure password for your account
           </p>
         </div>
 
         {/* Form */}
-        <div className="p-6 sm:p-8 space-y-5">
+        <div className="bg-white p-6 sm:p-8">
           {/* Security Badge */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-2 mb-6">
             <svg
               className="w-5 h-5 text-green-600"
               fill="currentColor"
@@ -164,7 +165,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           </div>
 
           {/* New Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-5">
             <label className="text-gray-700 text-sm font-medium block">
               New Password <span className="text-red-500">*</span>
             </label>
@@ -199,7 +200,7 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
           </div>
 
           {/* Confirm Password Field */}
-          <div className="space-y-2">
+          <div className="space-y-2 mb-6">
             <label className="text-gray-700 text-sm font-medium block">
               Confirm New Password <span className="text-red-500">*</span>
             </label>
