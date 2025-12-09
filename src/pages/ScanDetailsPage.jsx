@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 import { ArrowLeft } from "lucide-react";
-
+import UserAvatar from "../components/UserAvatar";
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const detailsCache = new Map();
 
@@ -481,36 +481,19 @@ export default function ScanDetailsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
-                      {scanDetails.profilePicture ? (
-                        <img
-                          src={scanDetails.profilePicture}
-                          alt="Farmer"
-                          className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                          onError={(e) => {
-                            e.target.style.display = "none";
-                            e.target.nextSibling.style.display = "flex";
-                          }}
+                      <div className="w-12 h-12 flex-shrink-0">
+                        <UserAvatar
+                          name={
+                            scanDetails.farmerName ||
+                            (farmerDetails
+                              ? getFarmerFullName(farmerDetails)
+                              : null) ||
+                            scanDetails.idNumber ||
+                            "Farmer"
+                          }
+                          profileImageUrl={scanDetails.profilePicture}
+                          className="w-full h-full"
                         />
-                      ) : null}
-                      <div
-                        className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0"
-                        style={{
-                          display: scanDetails.profilePicture ? "none" : "flex",
-                        }}
-                      >
-                        <svg
-                          className="w-6 h-6 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">

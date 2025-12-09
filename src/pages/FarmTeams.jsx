@@ -8,7 +8,7 @@ import {
   ChevronRight,
   Users,
 } from "lucide-react";
-import defaultUserPic from "../assets/default-user.png";
+import UserAvatar from "../components/UserAvatar";
 
 function StatusDropdown({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -464,16 +464,17 @@ export default function FarmTeams({
                 <div className="hidden sm:grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
-                      <img
-                        src={farmer.profilePicture || defaultUserPic}
-                        alt={farmerName}
-                        className={`w-10 h-10 rounded-full object-cover border-2 ${
-                          isArchived || isInactive
-                            ? "grayscale border-gray-300"
-                            : "border-gray-200"
+                      <div
+                        className={`w-10 h-10 ${
+                          isArchived || isInactive ? "grayscale" : ""
                         }`}
-                        onError={(e) => (e.target.src = defaultUserPic)}
-                      />
+                      >
+                        <UserAvatar
+                          name={farmerName}
+                          profileImageUrl={farmer.profilePicture}
+                          className="w-full h-full"
+                        />
+                      </div>
                       <div
                         className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
                           isArchived

@@ -174,34 +174,17 @@ export default function EditFarmModal({
             />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Edit Farm Details</h2>
-            <p className="text-white/90 text-sm">
-              Update your farm information
-            </p>
+            <h2 className="text-xl font-bold text-white">Add a Farm</h2>
+            <p className="text-white/90 text-sm">Create a new farm profile</p>
           </div>
           <button
-            onClick={handleClose}
+            onClick={onClose}
             className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
-            disabled={isLoading}
+            disabled={loading}
           >
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Alert */}
-        {alert.message && (
-          <div className="mx-5 mt-5">
-            <div
-              className={`p-3 rounded-lg ${
-                alert.type === "error"
-                  ? "bg-red-50 text-red-800 border border-red-200"
-                  : "bg-green-50 text-green-800 border border-green-200"
-              }`}
-            >
-              <p className="text-sm font-medium">{alert.message}</p>
-            </div>
-          </div>
-        )}
 
         {/* Modal Body */}
         <div className="p-5 space-y-5">
@@ -210,7 +193,7 @@ export default function EditFarmModal({
             {/* Left column: Farm Image */}
             <div className="w-1/3">
               <label className="text-sm font-semibold text-gray-700 mb-2 block">
-                Farm Image{" "}
+                Farm Picture{" "}
                 <span className="text-gray-400 text-xs">(Optional)</span>
               </label>
               <div className="relative">
@@ -223,20 +206,21 @@ export default function EditFarmModal({
                 ) : (
                   <div className="w-full h-56 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
                     <div className="text-center">
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-2" />
+                      <Camera className="w-10 h-10 text-gray-400 mx-auto mb-2" />
                       <p className="text-gray-500 text-sm">No image selected</p>
                     </div>
                   </div>
                 )}
                 <label className="absolute bottom-3 right-3 bg-orange-500 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-orange-600 transition-colors flex items-center gap-2 shadow-lg text-sm font-medium">
-                  <Upload className="w-4 h-4" />
+                  <Camera className="w-4 h-4" />
                   {imagePreview ? "Change" : "Upload"}
                   <input
+                    ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={handleImageChange}
+                    onChange={handleImageUpload}
                     className="hidden"
-                    disabled={isLoading}
+                    disabled={loading}
                   />
                 </label>
               </div>
@@ -247,8 +231,7 @@ export default function EditFarmModal({
               {/* Farm Name */}
               <div className="space-y-2">
                 <label className="block text-gray-700 font-medium">
-                  Farm Name{" "}
-                  <span className="text-gray-400 text-sm">(Optional)</span>
+                  Farm Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -256,11 +239,11 @@ export default function EditFarmModal({
                   onChange={(e) =>
                     handleInputChange("farmName", e.target.value)
                   }
-                  onFocus={() => setFocusedField("farmName")}
-                  onBlur={() => setFocusedField(null)}
+                  onBlur={() => handleBlur("farmName")}
+                  onKeyPress={handleKeyPress}
                   placeholder="Enter farm name"
-                  disabled={isLoading}
-                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getBorderClass(
+                  disabled={loading}
+                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
                     "farmName"
                   )}`}
                 />
@@ -269,8 +252,7 @@ export default function EditFarmModal({
               {/* Farm Location */}
               <div className="space-y-2">
                 <label className="block text-gray-700 font-medium">
-                  Location{" "}
-                  <span className="text-gray-400 text-sm">(Optional)</span>
+                  Location <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -278,11 +260,11 @@ export default function EditFarmModal({
                   onChange={(e) =>
                     handleInputChange("location", e.target.value)
                   }
-                  onFocus={() => setFocusedField("location")}
-                  onBlur={() => setFocusedField(null)}
+                  onBlur={() => handleBlur("location")}
+                  onKeyPress={handleKeyPress}
                   placeholder="Enter location"
-                  disabled={isLoading}
-                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getBorderClass(
+                  disabled={loading}
+                  className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white transition-all ${getInputBorderClass(
                     "location"
                   )}`}
                 />
@@ -299,14 +281,10 @@ export default function EditFarmModal({
             <textarea
               value={formData.description}
               onChange={(e) => handleInputChange("description", e.target.value)}
-              onFocus={() => setFocusedField("description")}
-              onBlur={() => setFocusedField(null)}
               rows={5}
               placeholder="Enter farm description..."
-              disabled={isLoading}
-              className={`w-full px-4 py-2.5 border-2 rounded-lg focus:outline-none bg-white resize-none transition-all ${getBorderClass(
-                "description"
-              )}`}
+              disabled={loading}
+              className="w-full px-4 py-2.5 border-2 border-gray-300 focus:border-orange-500 rounded-lg focus:outline-none bg-white resize-none transition-all"
             />
           </div>
         </div>
@@ -314,26 +292,28 @@ export default function EditFarmModal({
         {/* Modal Footer (Buttons) */}
         <div className="p-5 border-t border-gray-200 flex gap-3">
           <button
-            onClick={handleClose}
+            type="button"
+            onClick={onClose}
             className="flex-1 px-5 py-2.5 border border-gray-300 bg-white text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-            disabled={isLoading}
+            disabled={loading}
           >
             Cancel
           </button>
           <button
-            onClick={handleSave}
-            disabled={isLoading || !saveEnabled}
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
             className="flex-1 px-5 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-bold hover:from-orange-600 hover:to-orange-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
           >
-            {isLoading ? (
+            {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Saving
+                Adding...
               </>
             ) : (
               <>
-                <Save className="w-4 h-4" />
-                Save Changes
+                <Plus className="w-4 h-4" />
+                Add Farm
               </>
             )}
           </button>

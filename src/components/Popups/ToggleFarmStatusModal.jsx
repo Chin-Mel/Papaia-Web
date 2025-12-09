@@ -99,7 +99,7 @@ export default function ToggleFarmStatusModal({
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
       >
-        <div className="bg-gradient-to-r from-green-600 to-orange-500 rounded-t-2xl p-5 relative">
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 rounded-t-2xl p-5 relative">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-md">
               {isActive ? (

@@ -6,7 +6,7 @@ import { useNotifications } from "../../NotificationContext";
 
 import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
-import defaultUser from "../../assets/default-user.png";
+import UserAvatar from "../UserAvatar";
 
 import ProfileDropdown from "../Popups/ProfileDropdown";
 import NotificationDropdown from "../Popups/NotificationDropdown";
@@ -64,10 +64,6 @@ export default function HeaderMain() {
     setIsMenuOpen(false);
 
     window.location.href = "/sign-in";
-  };
-
-  const getProfilePictureUrl = () => {
-    return userData?.profilePicture || defaultUser;
   };
 
   const getDisplayName = () => {
@@ -193,14 +189,11 @@ export default function HeaderMain() {
                   }`}
                 onClick={handleProfileClick}
               >
-                <div className="w-8 h-8 rounded-full overflow-hidden border border-gray-200">
-                  <img
-                    src={getProfilePictureUrl()}
-                    alt="User Avatar"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = defaultUser;
-                    }}
+                <div className="w-8 h-8">
+                  <UserAvatar
+                    name={getDisplayName()}
+                    profileImageUrl={userData?.profilePicture}
+                    className="w-full h-full"
                   />
                 </div>
                 <ChevronDown className="w-4 h-4 text-gray-500" />
@@ -253,16 +246,14 @@ export default function HeaderMain() {
               onClick={handleMobileProfileClick}
               className="w-full flex items-center gap-3 px-2 py-2 rounded-md hover:bg-gray-50 transition-colors text-left"
             >
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex-shrink-0">
-                <img
-                  src={getProfilePictureUrl()}
-                  alt="User Avatar"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = defaultUser;
-                  }}
+              <div className="w-10 h-10 flex-shrink-0">
+                <UserAvatar
+                  name={getDisplayName()}
+                  profileImageUrl={userData?.profilePicture}
+                  className="w-full h-full"
                 />
               </div>
+
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-gray-800 text-base truncate">
                   {getDisplayName()}

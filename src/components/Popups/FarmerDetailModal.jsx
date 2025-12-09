@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useMemo, useState } from "react";
 import { useAlert } from "../../AlertContext";
-import defaultUserPic from "../../assets/default-user.png";
+import UserAvatar from "../UserAvatar";
 
 // Farmer Detail Modal
 export default function FarmerDetailModal({
@@ -62,7 +62,7 @@ export default function FarmerDetailModal({
       fullAddress,
       idNumber: farmer.idNumber || "N/A",
       contactNumber: farmer.contactNumber || "N/A",
-      profilePicture: farmer.profilePicture || defaultUserPic,
+      profilePicture: farmer.profilePicture || null,
     };
   }, [farmer]);
 
@@ -132,17 +132,14 @@ export default function FarmerDetailModal({
         <div className="p-5">
           <div className="flex items-start gap-3 mb-4">
             <div className="relative">
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className={`w-16 h-16 rounded-full object-cover border-3 shadow-lg ${
-                  isArchived ? "border-gray-300 grayscale" : "border-green-100"
-                }`}
-                onError={(e) => {
-                  e.target.src = defaultUserPic;
-                }}
-                loading="eager"
-              />
+              <div className="w-16 h-16">
+                <UserAvatar
+                  name={fullName}
+                  profileImageUrl={profilePicture}
+                  className="w-full h-full"
+                />
+              </div>
+
               <div
                 className={`absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center border-2 border-white shadow-md ${
                   isArchived ? "bg-red-500" : "bg-green-500"

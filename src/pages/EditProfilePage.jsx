@@ -14,9 +14,9 @@ import FooterMain from "../components/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import ChangePasswordModal from "../components/Popups/ChangePasswordModal";
 import DeactivateAccountModal from "../components/Popups/DeactivateAccountModal";
-import defaultUserPic from "../assets/default-user.png";
 import { getLoggedInUser } from "../utils/security";
 import { useAlert } from "../AlertContext";
+import UserAvatar from "../components/UserAvatar";
 
 export default function EditProfilePage() {
   const { showAlert } = useAlert();
@@ -275,11 +275,7 @@ export default function EditProfilePage() {
 
   const getProfilePictureUrl = () => {
     if (previewUrl) return previewUrl;
-    const pic = userData?.profilePicture;
-    if (pic && typeof pic === "string") {
-      return `${pic}${pic.includes("?") ? "&" : "?"}t=${Date.now()}`;
-    }
-    return defaultUserPic;
+    return userData?.profilePicture || null;
   };
 
   const handleClearAndLogin = () => {
@@ -349,14 +345,15 @@ export default function EditProfilePage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
               <div className="relative">
-                <img
-                  src={getProfilePictureUrl()}
-                  alt={`${userData?.firstName || ""} ${
-                    userData?.lastName || ""
-                  }`}
-                  className="w-24 h-24 rounded-full border-2 border-gray-200 object-cover"
-                  onError={(e) => (e.currentTarget.src = defaultUserPic)}
-                />
+                <div className="w-24 h-24">
+                  <UserAvatar
+                    name={`${userData?.firstName || ""} ${
+                      userData?.lastName || ""
+                    }`}
+                    profileImageUrl={getProfilePictureUrl()}
+                    className="w-full h-full"
+                  />
+                </div>
                 <button
                   onClick={handleCameraClick}
                   className="absolute bottom-0 right-0 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md hover:bg-orange-600 transition border-2 border-white"

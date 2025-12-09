@@ -87,35 +87,35 @@ export default function RestoreFarmerModal({
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl max-w-lg w-full"
       >
-        <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] p-6 relative">
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl ring-4 ring-white/30">
-              <RotateCcw className="w-8 h-8 text-green-600" />
+        <div className="bg-gradient-to-r from-green-700 to-orange-500 p-5 relative rounded-t-2xl">
+          <div className="flex justify-center mb-3">
+            <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl ring-4 ring-white/30">
+              <RotateCcw className="w-7 h-7 text-green-600" />
             </div>
           </div>
-          <h2 className="text-xl font-bold text-white text-center">
+          <h2 className="text-lg font-bold text-white text-center">
             Restore Farmer?
           </h2>
           <button
             onClick={onClose}
             disabled={isRestoring}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors disabled:opacity-50"
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors disabled:opacity-50 bg-white/10 hover:bg-white/20 rounded-lg p-1.5"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
-          <p className="text-sm text-gray-600 text-center mb-6">
+        <div className="p-5">
+          <p className="text-sm text-gray-600 text-center mb-5">
             This will restore{" "}
             <span className="font-semibold text-gray-900">{formatName}</span>{" "}
             back to active status.
           </p>
 
-          <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-4 mb-6 border border-green-200">
+          <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-xl p-3.5 mb-5 border border-green-200">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
-                <UserPlus className="w-6 h-6 text-white" />
+              <div className="w-11 h-11 bg-gradient-to-br from-green-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                <UserPlus className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-base text-slate-900">
@@ -128,18 +128,18 @@ export default function RestoreFarmerModal({
             </div>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2.5">
             <button
               onClick={onClose}
               disabled={isRestoring}
-              className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50"
+              className="flex-1 px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold disabled:opacity-50"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirm}
               disabled={isRestoring}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-md disabled:opacity-70 flex items-center justify-center gap-2"
+              className="flex-1 px-5 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl transition-all font-semibold shadow-lg disabled:opacity-70 flex items-center justify-center gap-2"
             >
               {isRestoring ? (
                 <>

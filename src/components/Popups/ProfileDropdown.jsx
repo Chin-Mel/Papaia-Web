@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { CreditCard, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import defaultUserPic from "../../assets/default-user.png";
 import { getLoggedInUser } from "../../utils/security";
+import UserAvatar from "../UserAvatar";
 
 export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
   const navigate = useNavigate();
@@ -38,10 +38,6 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
         document.removeEventListener("mousedown", handleClickOutside);
     }
   }, [isOpen, onClose]);
-
-  const getProfilePictureUrl = () => {
-    return userData?.profilePicture || defaultUserPic;
-  };
 
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
@@ -90,14 +86,11 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
         }}
       >
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 flex-shrink-0">
-            <img
-              src={getProfilePictureUrl()}
-              alt={getDisplayName()}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = defaultUserPic;
-              }}
+          <div className="w-12 h-12 flex-shrink-0">
+            <UserAvatar
+              name={getDisplayName()}
+              profileImageUrl={userData?.profilePicture}
+              className="w-full h-full"
             />
           </div>
 

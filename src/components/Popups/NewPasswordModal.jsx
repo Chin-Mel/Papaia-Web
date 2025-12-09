@@ -120,10 +120,10 @@ export default function NewPasswordModal({ user_Id, onPasswordSaved }) {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
-      <div className="w-full max-w-md sm:max-w-lg md:max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-        {/* Header */}
+      <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
+        {/* Header - Shorter */}
         <div
-          className="flex flex-col items-center justify-center text-white p-6"
+          className="flex flex-col items-center justify-center text-white p-4"
           style={{
             backgroundImage: "linear-gradient(to right, #00712D, #F97316)",
           }}
