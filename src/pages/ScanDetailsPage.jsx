@@ -24,19 +24,9 @@ export default function ScanDetailsPage() {
 
   const preloadedScanData = location.state?.scanData;
 
-  // DEBUG: Log what we received
-  console.log("=== SCAN DETAILS PAGE LOADED ===");
-  console.log("Preloaded scan data:", preloadedScanData);
-  console.log(
-    "Profile picture from preload:",
-    preloadedScanData?.profilePicture
-  );
-
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
-  const [farmerProfilePicture, setFarmerProfilePicture] = useState(
-    preloadedScanData?.profilePicture || null
-  );
+  const [farmerProfilePicture, setFarmerProfilePicture] = useState(null);
   const [isLoading, setIsLoading] = useState(!preloadedScanData);
   const abortControllerRef = useRef(null);
 
@@ -49,12 +39,6 @@ export default function ScanDetailsPage() {
     }
 
     if (preloadedScanData) {
-      console.log("Using preloaded data");
-      console.log(
-        "Profile picture before normalization:",
-        preloadedScanData.profilePicture
-      );
-
       const normalizedScan = {
         ...preloadedScanData,
         prediction:
@@ -65,31 +49,12 @@ export default function ScanDetailsPage() {
         suggestions: preloadedScanData.suggestions || "",
         farmId: preloadedScanData.farmId || farmId,
         idNumber: preloadedScanData.idNumber || "Unknown",
-        profilePicture: preloadedScanData.profilePicture || null,
       };
 
-      console.log("Normalized scan:", normalizedScan);
-      console.log(
-        "Profile picture after normalization:",
-        normalizedScan.profilePicture
-      );
-
       setScanDetails(normalizedScan);
-
-      // Set profile picture from preloaded data
-      if (preloadedScanData.profilePicture) {
-        console.log(
-          "Setting farmer profile picture:",
-          preloadedScanData.profilePicture
-        );
-        setFarmerProfilePicture(preloadedScanData.profilePicture);
-      } else {
-        console.log("No profile picture in preloaded data");
-      }
-
       setIsLoading(false);
 
-      // Fetch additional details in background (farm info)
+      // Fetch profile picture and farm details in background
       fetchAdditionalDetails(token, normalizedScan);
       return;
     }
@@ -99,7 +64,6 @@ export default function ScanDetailsPage() {
       return;
     }
 
-    console.log("Fetching scan details from API");
     fetchScanDetails(token);
 
     return () => {
@@ -118,65 +82,56 @@ export default function ScanDetailsPage() {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Fetch farm details
+      // Fetch farm details and farmer profile picture in parallel
+      const promises = [];
+
+      // Farm details
       if (farmId) {
-        try {
-          const farmsRes = await fetch(`${API_BASE}/farms`, {
+        promises.push(
+          fetch(`${API_BASE}/farms`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
             signal: controller.signal,
-          });
-
-          if (farmsRes.ok) {
-            const farmsData = await farmsRes.json();
-            if (farmsData.status === "success") {
-              const farm = farmsData.farms.find((f) => f.id === farmId);
-              setFarmDetails(farm);
-            }
-          }
-        } catch {}
-      }
-
-      // Only fetch farmer profile picture if we don't already have it
-      console.log("Checking if need to fetch profile picture");
-      console.log("Current profile picture:", scanData.profilePicture);
-
-      if (!scanData.profilePicture && scanData.idNumber && farmId) {
-        console.log("Fetching farmer profile picture from API");
-        try {
-          const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          });
-
-          if (farmersRes.ok) {
-            const farmersData = await farmersRes.json();
-            if (farmersData.status === "success") {
-              const farmer = farmersData.farmers.find(
-                (f) => f.idNumber === scanData.idNumber
-              );
-              if (farmer && farmer.profilePicture) {
-                console.log(
-                  "Found profile picture from farmers API:",
-                  farmer.profilePicture
-                );
-                setFarmerProfilePicture(farmer.profilePicture);
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((farmsData) => {
+              if (farmsData?.status === "success") {
+                const farm = farmsData.farms.find((f) => f.id === farmId);
+                if (farm) setFarmDetails(farm);
               }
-            }
-          }
-        } catch (err) {
-          console.error("Error fetching farmer profile:", err);
-        }
-      } else {
-        console.log(
-          "Skipping farmer fetch - already have profile picture or missing data"
+            })
+            .catch(() => {})
         );
       }
+
+      // Farmer profile picture
+      if (scanData.idNumber && farmId) {
+        promises.push(
+          fetch(`${API_BASE}/farmers/${farmId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          })
+            .then((res) => (res.ok ? res.json() : null))
+            .then((farmersData) => {
+              if (farmersData?.status === "success") {
+                const farmer = farmersData.farmers.find(
+                  (f) => f.idNumber === scanData.idNumber
+                );
+                if (farmer?.profilePicture) {
+                  setFarmerProfilePicture(farmer.profilePicture);
+                }
+              }
+            })
+            .catch(() => {})
+        );
+      }
+
+      await Promise.all(promises);
     } catch (err) {
       if (err.name !== "AbortError") {
         console.error("Failed to fetch additional details:", err);
@@ -253,15 +208,9 @@ export default function ScanDetailsPage() {
         suggestions: specificScan.suggestions || "",
         farmId: specificScan.farmId || farmId,
         idNumber: specificScan.idNumber || "Unknown",
-        profilePicture: specificScan.profilePicture || null,
       };
 
       setScanDetails(normalizedScan);
-
-      // Set profile picture if available in the API response
-      if (specificScan.profilePicture) {
-        setFarmerProfilePicture(specificScan.profilePicture);
-      }
 
       let farm = null;
       if (farmsRes && farmsRes.ok) {
@@ -272,9 +221,9 @@ export default function ScanDetailsPage() {
         }
       }
 
-      // Only fetch farmers if we don't have profile picture from the scan data
-      let profilePic = specificScan.profilePicture || null;
-      if (!profilePic && normalizedScan.idNumber && farmId) {
+      // Fetch farmer profile picture
+      let profilePic = null;
+      if (normalizedScan.idNumber && farmId) {
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
             headers: {
@@ -290,7 +239,7 @@ export default function ScanDetailsPage() {
               const farmer = farmersData.farmers.find(
                 (f) => f.idNumber === normalizedScan.idNumber
               );
-              if (farmer && farmer.profilePicture) {
+              if (farmer?.profilePicture) {
                 profilePic = farmer.profilePicture;
                 setFarmerProfilePicture(profilePic);
               }
@@ -456,11 +405,6 @@ export default function ScanDetailsPage() {
   const isHealthy = statusInfo.status === "healthy";
 
   const farmerName = scanDetails.farmerName || scanDetails.idNumber || "Farmer";
-
-  // DEBUG: Log what we're about to render
-  console.log("=== RENDERING ===");
-  console.log("Farmer name:", farmerName);
-  console.log("Farmer profile picture state:", farmerProfilePicture);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
