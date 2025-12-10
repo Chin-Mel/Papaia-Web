@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Plus, Leaf, MapPin } from "lucide-react";
 import HeaderMain from "../components/Header/HeaderMain";
@@ -13,8 +13,9 @@ import DefaultFarmImage from "../assets/MainBackground.png";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
-// Persistent cache that survives component unmounts
+// Persistent cache with memory limit
 const persistentCache = new Map();
+const MAX_CACHE_SIZE = 50;
 
 const cachedFetch = async (url, cacheKey, ttl = 300000) => {
   const cached = persistentCache.get(cacheKey);
@@ -24,7 +25,7 @@ const cachedFetch = async (url, cacheKey, ttl = 300000) => {
 
   const token = localStorage.getItem("token");
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
 
   try {
     const response = await fetch(url, {
@@ -34,6 +35,13 @@ const cachedFetch = async (url, cacheKey, ttl = 300000) => {
     clearTimeout(timeoutId);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+
+    // Limit cache size
+    if (persistentCache.size >= MAX_CACHE_SIZE) {
+      const firstKey = persistentCache.keys().next().value;
+      persistentCache.delete(firstKey);
+    }
+
     persistentCache.set(cacheKey, { data, timestamp: Date.now() });
     return data;
   } catch (error) {
@@ -79,6 +87,7 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   };
 };
 
+// Memoized StatCard component
 const StatCard = ({ title, value, icon, bgColor }) => (
   <div className="p-3 sm:p-4 lg:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg transition-all duration-300">
     <div>
@@ -102,8 +111,12 @@ const StatCard = ({ title, value, icon, bgColor }) => (
   </div>
 );
 
+// Memoized FarmCard component
 const FarmCard = ({ farm, isMobile }) => {
-  const healthStatus = getHealthStatus(farm.health, farm.hasScans);
+  const healthStatus = useMemo(
+    () => getHealthStatus(farm.health, farm.hasScans),
+    [farm.health, farm.hasScans]
+  );
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -199,8 +212,12 @@ export default function DashboardPage() {
     todayScans: 0,
   });
   const hasInitiallyLoaded = useRef(false);
+  const isFetching = useRef(false);
 
   const fetchDashboardStats = useCallback(async (forceRefresh = false) => {
+    if (isFetching.current && !forceRefresh) return;
+    isFetching.current = true;
+
     try {
       if (forceRefresh) {
         persistentCache.delete("farm_count");
@@ -234,7 +251,11 @@ export default function DashboardPage() {
         totalFarms: farmCountData.farmCount || 0,
         todayScans: todayScansCount,
       });
-    } catch {}
+    } catch {
+      // Silent fail
+    } finally {
+      isFetching.current = false;
+    }
   }, []);
 
   const fetchFarmHealth = useCallback(async (farmId) => {
@@ -255,6 +276,9 @@ export default function DashboardPage() {
 
   const fetchFarms = useCallback(
     async (forceRefresh = false) => {
+      if (isFetching.current && !forceRefresh) return;
+      isFetching.current = true;
+
       try {
         if (!hasInitiallyLoaded.current || forceRefresh) {
           setLoadingFarms(true);
@@ -294,18 +318,20 @@ export default function DashboardPage() {
 
           setFarms(sortedFarms);
 
-          const healthPromises = sortedFarms.map((farm) =>
-            fetchFarmHealth(farm.id)
-          );
-          const healthResults = await Promise.all(healthPromises);
-
-          setFarms((prev) =>
-            prev.map((f, index) => ({
-              ...f,
-              health: healthResults[index].health,
-              hasScans: healthResults[index].hasScans,
-            }))
-          );
+          // Fetch health data in background without blocking UI
+          Promise.all(sortedFarms.map((farm) => fetchFarmHealth(farm.id)))
+            .then((healthResults) => {
+              setFarms((prev) =>
+                prev.map((f, index) => ({
+                  ...f,
+                  health: healthResults[index].health,
+                  hasScans: healthResults[index].hasScans,
+                }))
+              );
+            })
+            .catch(() => {
+              // Silent fail for health data
+            });
         } else {
           setFarms([]);
         }
@@ -314,6 +340,7 @@ export default function DashboardPage() {
       } finally {
         setLoadingFarms(false);
         hasInitiallyLoaded.current = true;
+        isFetching.current = false;
       }
     },
     [fetchFarmHealth]
@@ -339,9 +366,8 @@ export default function DashboardPage() {
   // Listen for farm updates from FarmDashboard
   useEffect(() => {
     const handleFarmUpdate = () => {
-      // Clear cache and refresh to get latest data
       persistentCache.delete("owner_farms");
-      fetchFarms(false); // Don't show loading spinner
+      fetchFarms(false);
     };
 
     window.addEventListener("farmUpdated", handleFarmUpdate);
@@ -385,26 +411,29 @@ export default function DashboardPage() {
     }
   };
 
-  const stats = [
-    {
-      title: "All Farmers",
-      value: dashboardStats.totalFarmers,
-      icon: FarmersCount,
-      bgColor: "bg-[#DCFCE7]",
-    },
-    {
-      title: "All Farms",
-      value: dashboardStats.totalFarms,
-      icon: FarmsCount,
-      bgColor: "bg-[#FEF9C3]",
-    },
-    {
-      title: "Today's Scans",
-      value: dashboardStats.todayScans,
-      icon: ScansCount,
-      bgColor: "bg-[#DBEAFE]",
-    },
-  ];
+  const stats = useMemo(
+    () => [
+      {
+        title: "All Farmers",
+        value: dashboardStats.totalFarmers,
+        icon: FarmersCount,
+        bgColor: "bg-[#DCFCE7]",
+      },
+      {
+        title: "All Farms",
+        value: dashboardStats.totalFarms,
+        icon: FarmsCount,
+        bgColor: "bg-[#FEF9C3]",
+      },
+      {
+        title: "Today's Scans",
+        value: dashboardStats.todayScans,
+        icon: ScansCount,
+        bgColor: "bg-[#DBEAFE]",
+      },
+    ],
+    [dashboardStats]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">

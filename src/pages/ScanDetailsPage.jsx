@@ -26,7 +26,9 @@ export default function ScanDetailsPage() {
 
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
-  const [farmerProfilePicture, setFarmerProfilePicture] = useState(null);
+  const [farmerProfilePicture, setFarmerProfilePicture] = useState(
+    preloadedScanData?.profilePicture || null
+  );
   const [isLoading, setIsLoading] = useState(!preloadedScanData);
   const abortControllerRef = useRef(null);
 
@@ -49,18 +51,19 @@ export default function ScanDetailsPage() {
         suggestions: preloadedScanData.suggestions || "",
         farmId: preloadedScanData.farmId || farmId,
         idNumber: preloadedScanData.idNumber || "Unknown",
+        profilePicture: preloadedScanData.profilePicture || null,
       };
 
       setScanDetails(normalizedScan);
 
-      // Set initial profile picture from preloaded data if available
+      // Set profile picture from preloaded data
       if (preloadedScanData.profilePicture) {
         setFarmerProfilePicture(preloadedScanData.profilePicture);
       }
 
       setIsLoading(false);
 
-      // Fetch fresh profile picture and other details in background
+      // Fetch additional details in background (farm info)
       fetchAdditionalDetails(token, normalizedScan);
       return;
     }
@@ -88,28 +91,29 @@ export default function ScanDetailsPage() {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      const [farmsRes] = await Promise.all([
-        farmId
-          ? fetch(`${API_BASE}/farms`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              signal: controller.signal,
-            })
-          : Promise.resolve(null),
-      ]);
+      // Fetch farm details
+      if (farmId) {
+        try {
+          const farmsRes = await fetch(`${API_BASE}/farms`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          });
 
-      if (farmsRes && farmsRes.ok) {
-        const farmsData = await farmsRes.json();
-        if (farmsData.status === "success") {
-          const farm = farmsData.farms.find((f) => f.id === farmId);
-          setFarmDetails(farm);
-        }
+          if (farmsRes.ok) {
+            const farmsData = await farmsRes.json();
+            if (farmsData.status === "success") {
+              const farm = farmsData.farms.find((f) => f.id === farmId);
+              setFarmDetails(farm);
+            }
+          }
+        } catch {}
       }
 
-      // Fetch farmer profile picture separately
-      if (scanData.idNumber && farmId) {
+      // Only fetch farmer profile picture if we don't already have it
+      if (!scanData.profilePicture && scanData.idNumber && farmId) {
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
             headers: {
@@ -208,9 +212,15 @@ export default function ScanDetailsPage() {
         suggestions: specificScan.suggestions || "",
         farmId: specificScan.farmId || farmId,
         idNumber: specificScan.idNumber || "Unknown",
+        profilePicture: specificScan.profilePicture || null,
       };
 
       setScanDetails(normalizedScan);
+
+      // Set profile picture if available in the API response
+      if (specificScan.profilePicture) {
+        setFarmerProfilePicture(specificScan.profilePicture);
+      }
 
       let farm = null;
       if (farmsRes && farmsRes.ok) {
@@ -221,8 +231,9 @@ export default function ScanDetailsPage() {
         }
       }
 
-      let profilePic = null;
-      if (normalizedScan.idNumber && farmId) {
+      // Only fetch farmers if we don't have profile picture from the scan data
+      let profilePic = specificScan.profilePicture || null;
+      if (!profilePic && normalizedScan.idNumber && farmId) {
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
             headers: {
@@ -543,30 +554,23 @@ export default function ScanDetailsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 flex-shrink-0">
+                      <div className="w-12 h-12 flex-shrink-0 relative">
                         {farmerProfilePicture ? (
                           <img
                             src={farmerProfilePicture}
                             alt="Farmer Profile"
                             className="w-full h-full object-cover rounded-full"
                             onError={(e) => {
-                              // Hide the img and show UserAvatar fallback
                               e.target.style.display = "none";
-                              const fallback = e.target.nextElementSibling;
-                              if (fallback) fallback.style.display = "block";
+                              setFarmerProfilePicture(null);
                             }}
                           />
-                        ) : null}
-                        <div
-                          style={{
-                            display: farmerProfilePicture ? "none" : "block",
-                          }}
-                        >
+                        ) : (
                           <UserAvatar
                             name={farmerName}
                             className="w-full h-full"
                           />
-                        </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
