@@ -22,7 +22,6 @@ export default function ScanDetailsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get preloaded data from navigation state
   const preloadedScanData = location.state?.scanData;
 
   const [scanDetails, setScanDetails] = useState(null);
@@ -39,7 +38,6 @@ export default function ScanDetailsPage() {
       return;
     }
 
-    // If we have preloaded data, use it immediately
     if (preloadedScanData) {
       const normalizedScan = {
         ...preloadedScanData,
@@ -51,17 +49,16 @@ export default function ScanDetailsPage() {
         suggestions: preloadedScanData.suggestions || "",
         farmId: preloadedScanData.farmId || farmId,
         idNumber: preloadedScanData.idNumber || "Unknown",
+        profilePicture: preloadedScanData.profilePicture || null,
       };
 
       setScanDetails(normalizedScan);
       setIsLoading(false);
 
-      // Fetch additional details in background if needed
       fetchAdditionalDetails(token, normalizedScan);
       return;
     }
 
-    // If no preloaded data, fetch everything
     if (!scanId) {
       setIsLoading(false);
       return;
@@ -85,7 +82,6 @@ export default function ScanDetailsPage() {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      // Fetch farm and farmer details in background
       const [farmsRes] = await Promise.all([
         farmId
           ? fetch(`${API_BASE}/farms`, {
@@ -122,7 +118,13 @@ export default function ScanDetailsPage() {
               const farmer = farmersData.farmers.find(
                 (f) => f.idNumber === scanData.idNumber
               );
-              setFarmerDetails(farmer);
+              if (farmer) {
+                setFarmerDetails({
+                  ...farmer,
+                  profilePicture:
+                    farmer.profilePicture || scanData.profilePicture || null,
+                });
+              }
             }
           }
         } catch {}
@@ -360,7 +362,6 @@ export default function ScanDetailsPage() {
     return suggestions
       .split("\n")
       .map((line) => {
-        // Remove markdown asterisks, hyphens, bullets and trim whitespace
         return line.replace(/^[\*\-\•]\s*/, "").trim();
       })
       .filter((line) => line.length > 0);
@@ -407,6 +408,16 @@ export default function ScanDetailsPage() {
   );
 
   const isHealthy = statusInfo.status === "healthy";
+
+  // Get profile picture from either preloaded data, farmer details, or fall back to null
+  const profilePicture =
+    farmerDetails?.profilePicture || scanDetails.profilePicture || null;
+
+  const farmerName =
+    scanDetails.farmerName ||
+    (farmerDetails ? getFarmerFullName(farmerDetails) : null) ||
+    scanDetails.idNumber ||
+    "Farmer";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -547,35 +558,29 @@ export default function ScanDetailsPage() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 flex-shrink-0">
-                        {farmerDetails?.profileImage ? (
-                          // Show actual farmer photo
+                        {profilePicture ? (
                           <img
-                            src={farmerDetails.profileImage}
+                            src={profilePicture}
                             alt="Farmer Profile"
                             className="w-full h-full object-cover rounded-full"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                              e.target.nextSibling.style.display = "block";
+                            }}
                           />
-                        ) : (
-                          // Use UserAvatar fallback
+                        ) : null}
+                        <div
+                          style={{ display: profilePicture ? "none" : "block" }}
+                        >
                           <UserAvatar
-                            name={
-                              scanDetails.farmerName ||
-                              (farmerDetails
-                                ? getFarmerFullName(farmerDetails)
-                                : null) ||
-                              scanDetails.idNumber ||
-                              "Farmer"
-                            }
+                            name={farmerName}
                             className="w-full h-full"
                           />
-                        )}
+                        </div>
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
-                          {scanDetails.farmerName ||
-                            (farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : null) ||
-                            scanDetails.idNumber}
+                          {farmerName}
                         </div>
                         <div className="text-sm text-gray-600">Farmer</div>
                       </div>
@@ -594,7 +599,6 @@ export default function ScanDetailsPage() {
               </div>
             )}
 
-            {/* Only show Suggested Treatment if there are suggestions from API */}
             {apiSuggestions.length > 0 && (
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                 <div className="px-6 py-4 bg-white border-b border-gray-100">
