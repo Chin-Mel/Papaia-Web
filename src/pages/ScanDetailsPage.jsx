@@ -26,7 +26,7 @@ export default function ScanDetailsPage() {
 
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
-  const [farmerDetails, setFarmerDetails] = useState(null);
+  const [farmerProfilePicture, setFarmerProfilePicture] = useState(null);
   const [isLoading, setIsLoading] = useState(!preloadedScanData);
   const abortControllerRef = useRef(null);
 
@@ -49,12 +49,18 @@ export default function ScanDetailsPage() {
         suggestions: preloadedScanData.suggestions || "",
         farmId: preloadedScanData.farmId || farmId,
         idNumber: preloadedScanData.idNumber || "Unknown",
-        profilePicture: preloadedScanData.profilePicture || null,
       };
 
       setScanDetails(normalizedScan);
+
+      // Set initial profile picture from preloaded data if available
+      if (preloadedScanData.profilePicture) {
+        setFarmerProfilePicture(preloadedScanData.profilePicture);
+      }
+
       setIsLoading(false);
 
+      // Fetch fresh profile picture and other details in background
       fetchAdditionalDetails(token, normalizedScan);
       return;
     }
@@ -102,6 +108,7 @@ export default function ScanDetailsPage() {
         }
       }
 
+      // Fetch farmer profile picture separately
       if (scanData.idNumber && farmId) {
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
@@ -118,12 +125,8 @@ export default function ScanDetailsPage() {
               const farmer = farmersData.farmers.find(
                 (f) => f.idNumber === scanData.idNumber
               );
-              if (farmer) {
-                setFarmerDetails({
-                  ...farmer,
-                  profilePicture:
-                    farmer.profilePicture || scanData.profilePicture || null,
-                });
+              if (farmer && farmer.profilePicture) {
+                setFarmerProfilePicture(farmer.profilePicture);
               }
             }
           }
@@ -153,7 +156,7 @@ export default function ScanDetailsPage() {
       if (cached && Date.now() - cached.timestamp < 30000) {
         setScanDetails(cached.scan);
         setFarmDetails(cached.farm);
-        setFarmerDetails(cached.farmer);
+        setFarmerProfilePicture(cached.profilePicture);
         setIsLoading(false);
         return;
       }
@@ -218,7 +221,7 @@ export default function ScanDetailsPage() {
         }
       }
 
-      let farmer = null;
+      let profilePic = null;
       if (normalizedScan.idNumber && farmId) {
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
@@ -232,10 +235,13 @@ export default function ScanDetailsPage() {
           if (farmersRes.ok) {
             const farmersData = await farmersRes.json();
             if (farmersData.status === "success") {
-              farmer = farmersData.farmers.find(
+              const farmer = farmersData.farmers.find(
                 (f) => f.idNumber === normalizedScan.idNumber
               );
-              setFarmerDetails(farmer);
+              if (farmer && farmer.profilePicture) {
+                profilePic = farmer.profilePicture;
+                setFarmerProfilePicture(profilePic);
+              }
             }
           }
         } catch {}
@@ -244,7 +250,7 @@ export default function ScanDetailsPage() {
       detailsCache.set(cacheKey, {
         scan: normalizedScan,
         farm,
-        farmer,
+        profilePicture: profilePic,
         timestamp: Date.now(),
       });
 
@@ -345,18 +351,6 @@ export default function ScanDetailsPage() {
     }
   };
 
-  const getFarmerFullName = (farmer) => {
-    if (!farmer) return null;
-
-    let fullName = "";
-    if (farmer.firstname) fullName += farmer.firstname;
-    if (farmer.middlename) fullName += ` ${farmer.middlename}`;
-    if (farmer.lastname) fullName += ` ${farmer.lastname}`;
-    if (farmer.suffix) fullName += ` ${farmer.suffix}`;
-
-    return fullName.trim() || farmer.fullName || farmer.name || null;
-  };
-
   const parseSuggestions = (suggestions) => {
     if (!suggestions) return [];
     return suggestions
@@ -409,15 +403,7 @@ export default function ScanDetailsPage() {
 
   const isHealthy = statusInfo.status === "healthy";
 
-  // Get profile picture from either preloaded data, farmer details, or fall back to null
-  const profilePicture =
-    farmerDetails?.profilePicture || scanDetails.profilePicture || null;
-
-  const farmerName =
-    scanDetails.farmerName ||
-    (farmerDetails ? getFarmerFullName(farmerDetails) : null) ||
-    scanDetails.idNumber ||
-    "Farmer";
+  const farmerName = scanDetails.farmerName || scanDetails.idNumber || "Farmer";
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -558,19 +544,23 @@ export default function ScanDetailsPage() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 flex-shrink-0">
-                        {profilePicture ? (
+                        {farmerProfilePicture ? (
                           <img
-                            src={profilePicture}
+                            src={farmerProfilePicture}
                             alt="Farmer Profile"
                             className="w-full h-full object-cover rounded-full"
                             onError={(e) => {
+                              // Hide the img and show UserAvatar fallback
                               e.target.style.display = "none";
-                              e.target.nextSibling.style.display = "block";
+                              const fallback = e.target.nextElementSibling;
+                              if (fallback) fallback.style.display = "block";
                             }}
                           />
                         ) : null}
                         <div
-                          style={{ display: profilePicture ? "none" : "block" }}
+                          style={{
+                            display: farmerProfilePicture ? "none" : "block",
+                          }}
                         >
                           <UserAvatar
                             name={farmerName}
