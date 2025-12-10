@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
 import { ArrowLeft } from "lucide-react";
 import UserAvatar from "../components/UserAvatar";
+
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
-const detailsCache = new Map();
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center py-12">
@@ -19,11 +19,17 @@ const LoadingSpinner = () => (
 export default function ScanDetailsPage() {
   const { farmId, scanId } = useParams();
   const navigate = useNavigate();
-  const [scanDetails, setScanDetails] = useState(null);
-  const [farmDetails, setFarmDetails] = useState(null);
-  const [farmerDetails, setFarmerDetails] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const abortControllerRef = useRef(null);
+  const location = useLocation();
+
+  // Get pre-fetched data from navigation state
+  const preFetchedData = location.state?.scanData;
+  const preFetchedFarm = location.state?.farmData;
+  const preFetchedFarmer = location.state?.farmerData;
+
+  const [scanDetails, setScanDetails] = useState(preFetchedData || null);
+  const [farmDetails, setFarmDetails] = useState(preFetchedFarm || null);
+  const [farmerDetails, setFarmerDetails] = useState(preFetchedFarmer || null);
+  const [isLoading, setIsLoading] = useState(!preFetchedData);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -33,34 +39,21 @@ export default function ScanDetailsPage() {
       return;
     }
 
+    // If we have pre-fetched data, no need to fetch again
+    if (preFetchedData) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Fallback: Fetch data if not provided (e.g., direct URL access)
     if (!scanId) {
       setIsLoading(false);
       return;
     }
 
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
     const fetchScanDetails = async () => {
       try {
         setIsLoading(true);
-
-        const cacheKey = `scan-${scanId}`;
-        const cached = detailsCache.get(cacheKey);
-
-        if (cached && Date.now() - cached.timestamp < 30000) {
-          setScanDetails(cached.scan);
-          setFarmDetails(cached.farm);
-          setFarmerDetails(cached.farmer);
-          setIsLoading(false);
-          return;
-        }
-
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const [historyRes, farmsRes] = await Promise.all([
           fetch(`${API_BASE}/predictions-history/${farmId}/${scanId}`, {
@@ -68,7 +61,6 @@ export default function ScanDetailsPage() {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-            signal: controller.signal,
           }),
           farmId
             ? fetch(`${API_BASE}/farms`, {
@@ -76,12 +68,9 @@ export default function ScanDetailsPage() {
                   Authorization: `Bearer ${token}`,
                   "Content-Type": "application/json",
                 },
-                signal: controller.signal,
               })
             : Promise.resolve(null),
         ]);
-
-        clearTimeout(timeoutId);
 
         if (!historyRes.ok) {
           setIsLoading(false);
@@ -129,7 +118,6 @@ export default function ScanDetailsPage() {
                 Authorization: `Bearer ${token}`,
                 "Content-Type": "application/json",
               },
-              signal: controller.signal,
             });
 
             if (farmersRes.ok) {
@@ -144,29 +132,14 @@ export default function ScanDetailsPage() {
           } catch {}
         }
 
-        detailsCache.set(cacheKey, {
-          scan: normalizedScan,
-          farm,
-          farmer,
-          timestamp: Date.now(),
-        });
-
         setIsLoading(false);
       } catch (err) {
-        if (err.name !== "AbortError") {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     fetchScanDetails();
-
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, [scanId, farmId, navigate]);
+  }, [scanId, farmId, navigate, preFetchedData]);
 
   const getStatusInfo = (prediction) => {
     if (!prediction) {

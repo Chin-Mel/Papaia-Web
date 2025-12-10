@@ -10,7 +10,7 @@ import ClockIcon from "../assets/sh-clock-icon.png";
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const DEBOUNCE_DELAY = 500;
-const POLL_INTERVAL = 5000; // 5 seconds
+const POLL_INTERVAL = 5000;
 
 const DISEASE_CONFIG = {
   Healthy: { color: "#22C55E", bgColor: "#22C55E" },
@@ -223,6 +223,8 @@ const ViewDetailsButton = ({
   scanId,
   farmId,
   scanData,
+  farmData,
+  farmerData,
 }) => {
   const actualStatus = status || getStatus(prediction);
   const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
@@ -230,8 +232,13 @@ const ViewDetailsButton = ({
 
   const handleClick = (e) => {
     e.preventDefault();
+    // Pass all pre-fetched data to the details page
     navigate(`/scan-history-details/${farmId}/${scanId}`, {
-      state: { scanData },
+      state: {
+        scanData,
+        farmData,
+        farmerData,
+      },
     });
   };
 
@@ -251,6 +258,7 @@ export default function ScanHistoryPage() {
   const [farms, setFarms] = useState([]);
   const [allFarmers, setAllFarmers] = useState([]);
   const [allScans, setAllScans] = useState([]);
+  const [farmersDataMap, setFarmersDataMap] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     dateRange: "All Time",
@@ -275,11 +283,11 @@ export default function ScanHistoryPage() {
       const cacheKey = "scan_history_data";
       const cached = dataCache.get(cacheKey);
 
-      // Check cache freshness (20 seconds)
       if (cached && Date.now() - cached.timestamp < 20000) {
         setFarms(cached.farms);
         setAllScans(cached.scans);
         setAllFarmers(cached.farmers);
+        setFarmersDataMap(cached.farmersDataMap);
         if (initialLoadRef.current) {
           setIsLoading(false);
           initialLoadRef.current = false;
@@ -287,7 +295,6 @@ export default function ScanHistoryPage() {
         return;
       }
 
-      // Debounce rapid calls
       const now = Date.now();
       if (now - lastFetchTime < DEBOUNCE_DELAY) {
         return;
@@ -302,7 +309,6 @@ export default function ScanHistoryPage() {
       abortControllerRef.current = controller;
 
       try {
-        // Only show loading on initial load
         if (!silent && initialLoadRef.current) {
           setIsLoading(true);
         }
@@ -366,6 +372,11 @@ export default function ScanHistoryPage() {
                     farmersData[farmer.idNumber] = {
                       name: name,
                       profilePicture: farmer.profilePicture || null,
+                      firstname: farmer.firstname,
+                      middlename: farmer.middlename,
+                      lastname: farmer.lastname,
+                      suffix: farmer.suffix,
+                      idNumber: farmer.idNumber,
                     };
                     allFarmersSet.add(
                       JSON.stringify({
@@ -425,7 +436,6 @@ export default function ScanHistoryPage() {
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             });
 
-          // Only update state if data has changed
           setFarms((prev) => {
             if (JSON.stringify(prev) !== JSON.stringify(farmsList)) {
               return farmsList;
@@ -447,10 +457,13 @@ export default function ScanHistoryPage() {
             return prev;
           });
 
+          setFarmersDataMap(farmersData);
+
           dataCache.set(cacheKey, {
             farms: farmsList,
             scans: processed,
             farmers: uniqueFarmers,
+            farmersDataMap: farmersData,
             timestamp: Date.now(),
           });
 
@@ -459,10 +472,12 @@ export default function ScanHistoryPage() {
           setFarms(farmsList);
           setAllScans([]);
           setAllFarmers([]);
+          setFarmersDataMap({});
           dataCache.set(cacheKey, {
             farms: farmsList,
             scans: [],
             farmers: [],
+            farmersDataMap: {},
             timestamp: Date.now(),
           });
           lastScanCount = 0;
@@ -470,6 +485,7 @@ export default function ScanHistoryPage() {
           setFarms([]);
           setAllScans([]);
           setAllFarmers([]);
+          setFarmersDataMap({});
           lastScanCount = 0;
         }
       } catch (err) {
@@ -477,6 +493,7 @@ export default function ScanHistoryPage() {
           setFarms([]);
           setAllScans([]);
           setAllFarmers([]);
+          setFarmersDataMap({});
         }
       } finally {
         if (!silent && initialLoadRef.current) {
@@ -509,7 +526,7 @@ export default function ScanHistoryPage() {
         const scansArray = await scansRes.json();
         if (Array.isArray(scansArray) && scansArray.length !== lastScanCount) {
           dataCache.delete("scan_history_data");
-          fetchData(true); // Silent update
+          fetchData(true);
         }
       }
     } catch {}
@@ -765,99 +782,108 @@ export default function ScanHistoryPage() {
                     </div>
                   </div>
                 ) : (
-                  scanData.map((record) => (
-                    <div
-                      key={record.id}
-                      className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                        <img
-                          src={
-                            record.imageUrl ||
-                            "https://via.placeholder.com/80x80?text=No+Image"
-                          }
-                          alt={record.farmName}
-                          className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.src =
-                              "https://via.placeholder.com/80x80?text=No+Image";
-                          }}
-                        />
+                  scanData.map((record) => {
+                    // Get farm and farmer data for this record
+                    const farmData = farms.find((f) => f.id === record.farmId);
+                    const farmerData = farmersDataMap[record.idNumber];
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                              {record.farmName}
-                            </h3>
-                            <StatusBadge
-                              status={record.status}
-                              prediction={record.prediction}
-                            />
-                          </div>
+                    return (
+                      <div
+                        key={record.id}
+                        className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                          <img
+                            src={
+                              record.imageUrl ||
+                              "https://via.placeholder.com/80x80?text=No+Image"
+                            }
+                            alt={record.farmName}
+                            className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
+                            loading="lazy"
+                            onError={(e) => {
+                              e.target.src =
+                                "https://via.placeholder.com/80x80?text=No+Image";
+                            }}
+                          />
 
-                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
-                            {record.description && (
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-3 h-3 rounded-full flex-shrink-0"
-                                  style={{
-                                    backgroundColor:
-                                      DISEASE_CONFIG[record.prediction]
-                                        ?.bgColor ||
-                                      DISEASE_CONFIG.Healthy.bgColor,
-                                  }}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                {record.farmName}
+                              </h3>
+                              <StatusBadge
+                                status={record.status}
+                                prediction={record.prediction}
+                              />
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
+                              {record.description && (
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-3 h-3 rounded-full flex-shrink-0"
+                                    style={{
+                                      backgroundColor:
+                                        DISEASE_CONFIG[record.prediction]
+                                          ?.bgColor ||
+                                        DISEASE_CONFIG.Healthy.bgColor,
+                                    }}
+                                  />
+                                  <p
+                                    className="font-medium truncate"
+                                    style={{
+                                      color:
+                                        DISEASE_CONFIG[record.prediction]
+                                          ?.color ||
+                                        DISEASE_CONFIG.Healthy.color,
+                                    }}
+                                  >
+                                    {record.description}
+                                  </p>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <img
+                                  src={UserIcon}
+                                  alt="User"
+                                  className="h-3 w-3"
                                 />
-                                <p
-                                  className="font-medium truncate"
-                                  style={{
-                                    color:
-                                      DISEASE_CONFIG[record.prediction]
-                                        ?.color || DISEASE_CONFIG.Healthy.color,
-                                  }}
-                                >
-                                  {record.description}
-                                </p>
+                                <span className="truncate">
+                                  {record.farmerName}
+                                </span>
                               </div>
-                            )}
-                            <div className="flex items-center gap-1 text-gray-600">
-                              <img
-                                src={UserIcon}
-                                alt="User"
-                                className="h-3 w-3"
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <img
+                                  src={CalendarIcon}
+                                  alt="Date"
+                                  className="h-3 w-3"
+                                />
+                                <span>{formatDate(record.timestamp)}</span>
+                              </div>
+                              <div className="flex items-center gap-1 text-gray-600">
+                                <img
+                                  src={ClockIcon}
+                                  alt="Time"
+                                  className="h-3 w-3"
+                                />
+                                <span>{formatTime(record.timestamp)}</span>
+                              </div>
+                              <ViewDetailsButton
+                                status={record.status}
+                                prediction={record.prediction}
+                                scanId={record.id}
+                                farmId={record.farmId}
+                                scanData={record}
+                                farmData={farmData}
+                                farmerData={farmerData}
                               />
-                              <span className="truncate">
-                                {record.farmerName}
-                              </span>
                             </div>
-                            <div className="flex items-center gap-1 text-gray-600">
-                              <img
-                                src={CalendarIcon}
-                                alt="Date"
-                                className="h-3 w-3"
-                              />
-                              <span>{formatDate(record.timestamp)}</span>
-                            </div>
-                            <div className="flex items-center gap-1 text-gray-600">
-                              <img
-                                src={ClockIcon}
-                                alt="Time"
-                                className="h-3 w-3"
-                              />
-                              <span>{formatTime(record.timestamp)}</span>
-                            </div>
-                            <ViewDetailsButton
-                              status={record.status}
-                              prediction={record.prediction}
-                              scanId={record.id}
-                              farmId={record.farmId}
-                              scanData={record}
-                            />
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
