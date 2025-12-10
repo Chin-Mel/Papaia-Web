@@ -273,7 +273,6 @@ export default function ScanDetailsPage() {
 
   const statusInfo = getStatusInfo(scanDetails.prediction);
   const dateTime = formatDateTime(scanDetails.timestamp);
-  const treatmentSuggestions = getTreatmentSuggestions(scanDetails.prediction);
   const apiSuggestions = parseSuggestions(scanDetails.suggestions);
   const confidencePercentage = Math.min(
     100,
