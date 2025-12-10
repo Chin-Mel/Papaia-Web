@@ -56,7 +56,7 @@ export default function ScanDetailsPage() {
         setIsLoading(true);
 
         const [historyRes, farmsRes] = await Promise.all([
-          fetch(`${API_BASE}/predictions-history/${farmId}/${scanId}`, {
+          fetch(`${API_BASE}/identification-history/${farmId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -77,10 +77,8 @@ export default function ScanDetailsPage() {
           return;
         }
 
-        const scanData = await historyRes.json();
-        const specificScan = Array.isArray(scanData)
-          ? scanData.find((scan) => scan.id === scanId)
-          : scanData;
+        const historyData = await historyRes.json();
+        const specificScan = historyData.find((scan) => scan.id === scanId);
 
         if (!specificScan) {
           setIsLoading(false);

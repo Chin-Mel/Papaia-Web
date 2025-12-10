@@ -301,96 +301,78 @@ export default function ScanHistoryPage() {
 
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        const [farmsRes, scansRes] = await Promise.all([
-          fetch(`${API_BASE}/farms`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          }),
-          fetch(`${API_BASE}/identification-history`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          }),
-        ]);
+        // 1️⃣ Fetch farms
+        const farmsRes = await fetch(`${API_BASE}/farms`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          signal: controller.signal,
+        });
 
         clearTimeout(timeoutId);
 
-        const [farmsData, scansArray] = await Promise.all([
-          farmsRes.ok ? farmsRes.json() : { status: "error", farms: [] },
-          scansRes.ok ? scansRes.json() : [],
-        ]);
+        const farmsData = farmsRes.ok
+          ? await farmsRes.json()
+          : { status: "error", farms: [] };
 
         const farmsList =
           farmsData.status === "success" ? farmsData.farms || [] : [];
 
-        if (Array.isArray(scansArray) && farmsList.length > 0) {
-          const farmMap = Object.fromEntries(
-            farmsList.map((f) => [f.id, f.farmName])
-          );
-
-          const processed = scansArray
-            .map((scan) => {
-              const predictionValue = scan.result || scan.prediction;
-              const status = getStatus(predictionValue);
-
-              return {
-                ...scan,
-                prediction: predictionValue,
-                farmName: farmMap[scan.farmId] || "Unknown Farm",
-                status,
-                description: predictionValue || "Unknown",
-                farmerName:
-                  scan.farmerName || scan.idNumber || "Unknown Farmer",
-                profilePicture: scan.profilePicture || null,
-              };
-            })
-            .sort((a, b) => {
-              const parseTimestamp = (timestamp) => {
-                if (!timestamp) return new Date(0);
-                try {
-                  const [datePart, timePart, period] = timestamp.split(/\s+/);
-                  const [month, day, year] = datePart.split("/");
-                  const [hours, minutes] = timePart.split(":");
-                  let hour24 = parseInt(hours);
-                  if (period === "PM" && hour24 !== 12) hour24 += 12;
-                  if (period === "AM" && hour24 === 12) hour24 = 0;
-                  return new Date(year, month - 1, day, hour24, minutes);
-                } catch {
-                  return new Date(timestamp);
-                }
-              };
-              return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
-            });
-
-          setFarms(farmsList);
-          setAllScans(processed);
-
-          dataCache.set(cacheKey, {
-            farms: farmsList,
-            scans: processed,
-            timestamp: Date.now(),
-          });
-
-          lastScanCount = processed.length;
-        } else if (farmsList.length > 0) {
-          setFarms(farmsList);
-          setAllScans([]);
-          dataCache.set(cacheKey, {
-            farms: farmsList,
-            scans: [],
-            timestamp: Date.now(),
-          });
-          lastScanCount = 0;
-        } else {
+        if (farmsList.length === 0) {
           setFarms([]);
           setAllScans([]);
-          lastScanCount = 0;
+          return;
         }
+
+        // 2️⃣ Fetch ALL identification-history per farm (parallel)
+        const scanRequests = farmsList.map((farm) =>
+          fetch(`${API_BASE}/identification-history/${farm.id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }).then((res) => res.json())
+        );
+
+        const scansByFarm = await Promise.all(scanRequests);
+
+        // Combine & tag scans with their farmId
+        const combinedScans = scansByFarm.flatMap((scans, i) =>
+          scans.map((scan) => ({
+            ...scan,
+            farmId: farmsList[i].id,
+          }))
+        );
+
+        // 3️⃣ Process & sort scans
+        const processed = combinedScans
+          .map((scan) => {
+            const predictionValue = scan.result || scan.prediction;
+            return {
+              ...scan,
+              prediction: predictionValue,
+              farmName:
+                farmsList.find((f) => f.id === scan.farmId)?.farmName ||
+                "Unknown Farm",
+              status: getStatus(predictionValue),
+              description: predictionValue || "Unknown",
+              farmerName: scan.farmerName || scan.idNumber || "Unknown Farmer",
+              profilePicture: scan.profilePicture || null,
+            };
+          })
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        setFarms(farmsList);
+        setAllScans(processed);
+
+        dataCache.set(cacheKey, {
+          farms: farmsList,
+          scans: processed,
+          timestamp: Date.now(),
+        });
+
+        lastScanCount = processed.length;
       } catch (err) {
         if (err.name !== "AbortError") {
           setFarms([]);
