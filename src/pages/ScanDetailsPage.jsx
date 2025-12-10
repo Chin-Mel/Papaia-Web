@@ -110,6 +110,28 @@ export default function ScanDetailsPage() {
           }
         }
 
+        let farmer = null;
+        if (normalizedScan.idNumber && farmId) {
+          try {
+            const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            });
+
+            if (farmersRes.ok) {
+              const farmersData = await farmersRes.json();
+              if (farmersData.status === "success") {
+                farmer = farmersData.farmers.find(
+                  (f) => f.idNumber === normalizedScan.idNumber
+                );
+                setFarmerDetails(farmer);
+              }
+            }
+          } catch {}
+        }
+
         setIsLoading(false);
       } catch (err) {
         setIsLoading(false);
