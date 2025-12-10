@@ -7,8 +7,6 @@ import UserAvatar from "../components/UserAvatar";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const detailsCache = new Map();
-const response = await fetch(`${API_BASE}/identification-history/${farmId}`);
-const data = await response.json();
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center py-12">
@@ -75,10 +73,34 @@ export default function ScanDetailsPage() {
     };
   }, [scanId, farmId, navigate, preloadedScanData]);
 
-  const specificScan = data.find((item) => item.id === id);
-  if (specificScan) {
-    setScanDetails(specificScan);
-  }
+  useEffect(() => {
+    if (!farmId || !scanId) return;
+
+    const fetchFromIdentificationHistory = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/identification-history/${farmId}`);
+        const allScans = await res.json();
+
+        const match = allScans.find((item) => item.id === scanId);
+        if (match) {
+          setScanDetails({
+            ...match,
+            prediction: match.prediction,
+            confidence: match.confidence,
+            imageUrl: match.imageUrl,
+            suggestions: match.suggestions,
+            farmerName: match.farmerName,
+            profilePicture: match.profilePicture,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch farmer history:", err);
+      }
+    };
+
+    fetchFromIdentificationHistory();
+  }, [farmId, scanId]);
+
   const fetchAdditionalDetails = async (token, scanData) => {
     try {
       if (abortControllerRef.current) {
