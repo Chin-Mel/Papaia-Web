@@ -110,7 +110,7 @@ export function NotificationProvider({ children }) {
 
     const interval = setInterval(() => {
       fetchNotifications(true);
-    }, 10000);
+    }, 5000);
 
     return () => {
       isMountedRef.current = false;
