@@ -547,22 +547,27 @@ export default function ScanDetailsPage() {
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 flex-shrink-0">
-                        <UserAvatar
-                          name={
-                            scanDetails.farmerName ||
-                            (farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : null) ||
-                            scanDetails.idNumber ||
-                            "Farmer"
-                          }
-                          profileImageUrl={
-                            farmerDetails?.profileImage ||
-                            farmerDetails?.imageUrl ||
-                            null
-                          }
-                          className="w-full h-full"
-                        />
+                        {farmerDetails?.profileImage ? (
+                          // Show actual farmer photo
+                          <img
+                            src={farmerDetails.profileImage}
+                            alt="Farmer Profile"
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          // Use UserAvatar fallback
+                          <UserAvatar
+                            name={
+                              scanDetails.farmerName ||
+                              (farmerDetails
+                                ? getFarmerFullName(farmerDetails)
+                                : null) ||
+                              scanDetails.idNumber ||
+                              "Farmer"
+                            }
+                            className="w-full h-full"
+                          />
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
