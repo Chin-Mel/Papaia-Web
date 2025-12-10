@@ -554,23 +554,12 @@ export default function ScanDetailsPage() {
                 <div className="p-6">
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 flex-shrink-0 relative">
-                        {farmerProfilePicture ? (
-                          <img
-                            src={farmerProfilePicture}
-                            alt="Farmer Profile"
-                            className="w-full h-full object-cover rounded-full"
-                            onError={(e) => {
-                              e.target.style.display = "none";
-                              setFarmerProfilePicture(null);
-                            }}
-                          />
-                        ) : (
-                          <UserAvatar
-                            name={farmerName}
-                            className="w-full h-full"
-                          />
-                        )}
+                      <div className="w-12 h-12 flex-shrink-0">
+                        <UserAvatar
+                          name={farmerName}
+                          profileImageUrl={farmerProfilePicture}
+                          className="w-full h-full"
+                        />
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
