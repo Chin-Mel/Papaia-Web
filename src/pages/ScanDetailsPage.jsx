@@ -546,9 +546,18 @@ export default function ScanDetailsPage() {
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 flex-shrink-0">
                         <UserAvatar
-                          name={farmerName}
+                          name={
+                            scanDetails.farmerName ||
+                            (farmerDetails
+                              ? getFarmerFullName(farmerDetails)
+                              : null) ||
+                            scanDetails.idNumber ||
+                            "Farmer"
+                          }
                           profileImageUrl={
-                            farmerProfilePicture || scanDetails.profilePicture
+                            farmerDetails?.profileImage ||
+                            farmerDetails?.profilePicture ||
+                            null
                           }
                           className="w-full h-full"
                         />
