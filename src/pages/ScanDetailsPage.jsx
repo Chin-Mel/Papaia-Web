@@ -86,9 +86,9 @@ export default function ScanDetailsPage() {
           setIsLoading(false);
           return;
         }
-
         const normalizedScan = {
           ...specificScan,
+
           prediction:
             specificScan.result || specificScan.prediction || "Unknown",
           confidence: specificScan.confidence || 0,
@@ -97,6 +97,20 @@ export default function ScanDetailsPage() {
           suggestions: specificScan.suggestions || "",
           farmId: specificScan.farmId || farmId,
           idNumber: specificScan.idNumber || "Unknown",
+
+          // 🔥 NEW: Normalize profile picture (supports both formats)
+          profilePicture:
+            typeof specificScan.profilePicture === "string"
+              ? specificScan.profilePicture
+              : specificScan.profilePicture?.profilePicture || null,
+
+          // 🔥 NEW: Normalize farmerName (supports both formats)
+          farmerName:
+            typeof specificScan.farmerName === "string"
+              ? specificScan.farmerName
+              : specificScan.profilePicture?.farmerName ||
+                specificScan.profilePicture?.profilePicture?.farmerName ||
+                null,
         };
 
         setScanDetails(normalizedScan);
@@ -108,28 +122,6 @@ export default function ScanDetailsPage() {
             farm = farmsData.farms.find((f) => f.id === farmId);
             setFarmDetails(farm);
           }
-        }
-
-        let farmer = null;
-        if (normalizedScan.idNumber && farmId) {
-          try {
-            const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            });
-
-            if (farmersRes.ok) {
-              const farmersData = await farmersRes.json();
-              if (farmersData.status === "success") {
-                farmer = farmersData.farmers.find(
-                  (f) => f.idNumber === normalizedScan.idNumber
-                );
-                setFarmerDetails(farmer);
-              }
-            }
-          } catch {}
         }
 
         setIsLoading(false);
@@ -237,56 +229,6 @@ export default function ScanDetailsPage() {
     if (farmer.suffix) fullName += ` ${farmer.suffix}`;
 
     return fullName.trim() || farmer.fullName || farmer.name || null;
-  };
-
-  const treatmentMap = {
-    healthy: [
-      "Continue regular monitoring of plant health",
-      "Maintain proper watering schedule",
-      "Ensure adequate sunlight and air circulation",
-      "Apply balanced fertilizer as needed",
-    ],
-    "ring spot": [
-      "Apply copper-based fungicide (Copper sulfate) immediately",
-      "Remove and destroy all infected plant parts",
-      "Improve air circulation between plants",
-      "Reduce overhead watering to minimize moisture",
-    ],
-    anthracnose: [
-      "Apply copper-based fungicide immediately",
-      "Remove and destroy all infected plant parts",
-      "Improve air circulation between plants",
-      "Reduce overhead watering to minimize moisture",
-      "Apply preventive fungicide sprays during wet seasons",
-    ],
-    "powdery mildew": [
-      "Apply sulfur-based or potassium bicarbonate fungicide",
-      "Improve air circulation around plants",
-      "Avoid overhead watering",
-      "Remove infected leaves and dispose properly",
-      "Apply preventive treatments during favorable conditions",
-    ],
-  };
-
-  const getTreatmentSuggestions = (prediction) => {
-    if (!prediction) return [];
-
-    const predLower = prediction.toLowerCase();
-
-    if (predLower === "healthy") return treatmentMap.healthy;
-
-    for (const key in treatmentMap) {
-      if (key !== "healthy" && predLower.includes(key)) {
-        return treatmentMap[key];
-      }
-    }
-
-    return [
-      "Consult with agricultural extension officer for specific treatment",
-      "Remove and destroy infected plant parts",
-      "Apply appropriate fungicide or treatment",
-      "Monitor plant health closely",
-    ];
   };
 
   const parseSuggestions = (suggestions) => {
@@ -497,7 +439,7 @@ export default function ScanDetailsPage() {
                   <ul className="space-y-2 list-disc list-inside">
                     {(apiSuggestions.length > 0
                       ? apiSuggestions
-                      : treatmentSuggestions
+                      : ["No treatment suggestions available."]
                     ).map((suggestion, idx) => (
                       <li
                         key={idx}
