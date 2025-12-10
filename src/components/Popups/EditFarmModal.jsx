@@ -208,7 +208,10 @@ export default function EditFarmModal({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                <div
+                  className="w-full h-full flex flex-col items-center justify-center 
+                    border-2 border-dashed border-gray-300 rounded-xl bg-gray-50"
+                >
                   <Upload className="w-8 h-8 text-orange-400" />
                 </div>
               )}
