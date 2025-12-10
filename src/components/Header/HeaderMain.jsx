@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, LogOut, Bell } from "lucide-react";
 import { getLoggedInUser } from "../../utils/security";
 import { useNotifications } from "../../NotificationContext";
+import { ChevronUp } from "lucide-react";
 
 import PapaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 import hamburgerMenuIcon from "../../assets/burger-bar.png";
@@ -196,7 +197,11 @@ export default function HeaderMain() {
                     className="w-full h-full"
                   />
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-500" />
+                {isProfileOpen ? (
+                  <ChevronUp className="w-4 h-4 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
+                )}
               </button>
               {isProfileOpen && (
                 <ProfileDropdown

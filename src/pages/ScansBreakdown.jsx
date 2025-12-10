@@ -159,8 +159,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     setFilterActive(true);
   }, [dateRange]);
 
-  // ADD THIS ENTIRE BLOCK:
-  // Detect filter changes and show loading
   useEffect(() => {
     const filterChanged =
       lastFilterRef.current.timeFilter !== timeFilter ||
