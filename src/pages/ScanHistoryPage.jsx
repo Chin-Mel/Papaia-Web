@@ -761,24 +761,6 @@ export default function ScanHistoryPage() {
                                 <span>{formatTime(record.timestamp)}</span>
                               </div>
                               <div className="flex items-center gap-2">
-                                {record.profilePicture ? (
-                                  <img
-                                    src={record.profilePicture}
-                                    alt={record.farmerName}
-                                    className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                                    onError={(e) => {
-                                      e.target.src = UserIcon;
-                                    }}
-                                  />
-                                ) : (
-                                  <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <img
-                                      src={UserIcon}
-                                      alt="Default"
-                                      className="h-3 w-3"
-                                    />
-                                  </div>
-                                )}
                                 <ViewDetailsButton
                                   status={record.status}
                                   prediction={record.prediction}

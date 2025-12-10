@@ -110,28 +110,6 @@ export default function ScanDetailsPage() {
           }
         }
 
-        let farmer = null;
-        if (normalizedScan.idNumber && farmId) {
-          try {
-            const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-            });
-
-            if (farmersRes.ok) {
-              const farmersData = await farmersRes.json();
-              if (farmersData.status === "success") {
-                farmer = farmersData.farmers.find(
-                  (f) => f.idNumber === normalizedScan.idNumber
-                );
-                setFarmerDetails(farmer);
-              }
-            }
-          } catch {}
-        }
-
         setIsLoading(false);
       } catch (err) {
         setIsLoading(false);
@@ -458,9 +436,6 @@ export default function ScanDetailsPage() {
                         <UserAvatar
                           name={
                             scanDetails.farmerName ||
-                            (farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : null) ||
                             scanDetails.idNumber ||
                             "Farmer"
                           }
@@ -468,14 +443,9 @@ export default function ScanDetailsPage() {
                           className="w-full h-full"
                         />
                       </div>
-                      a
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
-                          {scanDetails.farmerName ||
-                            (farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : null) ||
-                            scanDetails.idNumber}
+                          {scanDetails.farmerName || scanDetails.idNumber}
                         </div>
                         <div className="text-sm text-gray-600">Farmer</div>
                       </div>
