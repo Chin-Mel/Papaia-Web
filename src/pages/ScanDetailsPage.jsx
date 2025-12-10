@@ -608,7 +608,6 @@ export default function ScanDetailsPage() {
           </div>
         </div>
       </main>
-
       <FooterMain />
     </div>
   );
