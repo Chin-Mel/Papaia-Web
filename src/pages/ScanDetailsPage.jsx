@@ -556,7 +556,11 @@ export default function ScanDetailsPage() {
                             scanDetails.idNumber ||
                             "Farmer"
                           }
-                          profileImageUrl={scanDetails.profilePicture}
+                          profileImageUrl={
+                            farmerDetails?.profileImage ||
+                            farmerDetails?.imageUrl ||
+                            null
+                          }
                           className="w-full h-full"
                         />
                       </div>
