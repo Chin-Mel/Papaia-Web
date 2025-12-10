@@ -201,7 +201,7 @@ export default function FarmAnalytics({
         fetchFarmHealth(true);
         fetchAnalytics(true);
       }
-    }, 2000);
+    }, 3000);
 
     return () => {
       if (pollIntervalRef.current) {
@@ -220,33 +220,24 @@ export default function FarmAnalytics({
         if (range === "Last 7 days") return 7;
         if (range === "Last 11 days") return 11;
         if (range === "Last 14 days") return 14;
-        if (range === "Last 30 days") return 30;
-        if (range === "Last 60 days") return 60;
-        if (range === "Last 90 days") return 90;
         return 11;
 
       case "Weekly":
         if (range === "Last 4 weeks") return 4;
         if (range === "Last 9 weeks") return 9;
         if (range === "Last 12 weeks") return 12;
-        if (range === "Last 26 weeks") return 26;
-        if (range === "Last 52 weeks") return 52;
         return 9;
 
       case "Monthly":
         if (range === "Last 3 months") return 3;
         if (range === "Last 6 months") return 6;
         if (range === "Last 12 months") return 12;
-        if (range === "Last 24 months") return 24;
-        if (range === "Last 36 months") return 36;
         return 12;
 
       case "Yearly":
         if (range === "Last 3 years") return 3;
         if (range === "Last 5 years") return 5;
         if (range === "Last 7 years") return 7;
-        if (range === "Last 10 years") return 10;
-        if (range === "Last 15 years") return 15;
         return 7;
 
       default:
@@ -269,6 +260,7 @@ export default function FarmAnalytics({
             period: date.toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
+              year: "numeric",
             }),
             totalPredictions: 0,
             Healthy: 0,
