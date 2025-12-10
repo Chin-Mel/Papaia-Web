@@ -24,6 +24,14 @@ export default function ScanDetailsPage() {
 
   const preloadedScanData = location.state?.scanData;
 
+  // DEBUG: Log what we received
+  console.log("=== SCAN DETAILS PAGE LOADED ===");
+  console.log("Preloaded scan data:", preloadedScanData);
+  console.log(
+    "Profile picture from preload:",
+    preloadedScanData?.profilePicture
+  );
+
   const [scanDetails, setScanDetails] = useState(null);
   const [farmDetails, setFarmDetails] = useState(null);
   const [farmerProfilePicture, setFarmerProfilePicture] = useState(
@@ -41,6 +49,12 @@ export default function ScanDetailsPage() {
     }
 
     if (preloadedScanData) {
+      console.log("Using preloaded data");
+      console.log(
+        "Profile picture before normalization:",
+        preloadedScanData.profilePicture
+      );
+
       const normalizedScan = {
         ...preloadedScanData,
         prediction:
@@ -54,11 +68,23 @@ export default function ScanDetailsPage() {
         profilePicture: preloadedScanData.profilePicture || null,
       };
 
+      console.log("Normalized scan:", normalizedScan);
+      console.log(
+        "Profile picture after normalization:",
+        normalizedScan.profilePicture
+      );
+
       setScanDetails(normalizedScan);
 
       // Set profile picture from preloaded data
       if (preloadedScanData.profilePicture) {
+        console.log(
+          "Setting farmer profile picture:",
+          preloadedScanData.profilePicture
+        );
         setFarmerProfilePicture(preloadedScanData.profilePicture);
+      } else {
+        console.log("No profile picture in preloaded data");
       }
 
       setIsLoading(false);
@@ -73,6 +99,7 @@ export default function ScanDetailsPage() {
       return;
     }
 
+    console.log("Fetching scan details from API");
     fetchScanDetails(token);
 
     return () => {
@@ -113,7 +140,11 @@ export default function ScanDetailsPage() {
       }
 
       // Only fetch farmer profile picture if we don't already have it
+      console.log("Checking if need to fetch profile picture");
+      console.log("Current profile picture:", scanData.profilePicture);
+
       if (!scanData.profilePicture && scanData.idNumber && farmId) {
+        console.log("Fetching farmer profile picture from API");
         try {
           const farmersRes = await fetch(`${API_BASE}/farmers/${farmId}`, {
             headers: {
@@ -130,11 +161,21 @@ export default function ScanDetailsPage() {
                 (f) => f.idNumber === scanData.idNumber
               );
               if (farmer && farmer.profilePicture) {
+                console.log(
+                  "Found profile picture from farmers API:",
+                  farmer.profilePicture
+                );
                 setFarmerProfilePicture(farmer.profilePicture);
               }
             }
           }
-        } catch {}
+        } catch (err) {
+          console.error("Error fetching farmer profile:", err);
+        }
+      } else {
+        console.log(
+          "Skipping farmer fetch - already have profile picture or missing data"
+        );
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -415,6 +456,11 @@ export default function ScanDetailsPage() {
   const isHealthy = statusInfo.status === "healthy";
 
   const farmerName = scanDetails.farmerName || scanDetails.idNumber || "Farmer";
+
+  // DEBUG: Log what we're about to render
+  console.log("=== RENDERING ===");
+  console.log("Farmer name:", farmerName);
+  console.log("Farmer profile picture state:", farmerProfilePicture);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
