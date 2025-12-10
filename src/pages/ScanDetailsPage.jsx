@@ -29,7 +29,7 @@ export default function ScanDetailsPage() {
   const [farmerProfilePicture, setFarmerProfilePicture] = useState(null);
   const [isLoading, setIsLoading] = useState(!preloadedScanData);
   const abortControllerRef = useRef(null);
-
+  const [farmerDetails, setFarmerDetails] = useState(null);
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -122,8 +122,9 @@ export default function ScanDetailsPage() {
                 const farmer = farmersData.farmers.find(
                   (f) => f.idNumber === scanData.idNumber
                 );
-                if (farmer?.profilePicture) {
-                  setFarmerProfilePicture(farmer.profilePicture);
+                if (farmer) {
+                  setFarmerDetails(farmer);
+                  setFarmerProfilePicture(farmer.profilePicture || null);
                 }
               }
             })
@@ -239,8 +240,9 @@ export default function ScanDetailsPage() {
               const farmer = farmersData.farmers.find(
                 (f) => f.idNumber === normalizedScan.idNumber
               );
-              if (farmer?.profilePicture) {
-                profilePic = farmer.profilePicture;
+              if (farmer) {
+                setFarmerDetails(farmer); // save entire farmer details
+                profilePic = farmer.profilePicture || null;
                 setFarmerProfilePicture(profilePic);
               }
             }
@@ -547,17 +549,14 @@ export default function ScanDetailsPage() {
                       <div className="w-12 h-12 flex-shrink-0">
                         <UserAvatar
                           name={
-                            scanDetails.farmerName ||
-                            (farmerDetails
+                            farmerDetails
                               ? getFarmerFullName(farmerDetails)
-                              : null) ||
-                            scanDetails.idNumber ||
-                            "Farmer"
+                              : scanDetails.farmerName ||
+                                scanDetails.idNumber ||
+                                "Farmer"
                           }
                           profileImageUrl={
-                            farmerDetails?.profileImage ||
-                            farmerDetails?.profilePicture ||
-                            null
+                            farmerDetails?.profilePicture || null
                           }
                           className="w-full h-full"
                         />
