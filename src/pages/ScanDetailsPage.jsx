@@ -7,6 +7,8 @@ import UserAvatar from "../components/UserAvatar";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const detailsCache = new Map();
+const response = await fetch(`${API_BASE}/identification-history/${farmId}`);
+const data = await response.json();
 
 const LoadingSpinner = () => (
   <div className="flex justify-center items-center py-12">
@@ -73,6 +75,10 @@ export default function ScanDetailsPage() {
     };
   }, [scanId, farmId, navigate, preloadedScanData]);
 
+  const specificScan = data.find((item) => item.id === id);
+  if (specificScan) {
+    setScanDetails(specificScan);
+  }
   const fetchAdditionalDetails = async (token, scanData) => {
     try {
       if (abortControllerRef.current) {
@@ -548,16 +554,8 @@ export default function ScanDetailsPage() {
                     <div className="flex items-start gap-3">
                       <div className="w-12 h-12 flex-shrink-0">
                         <UserAvatar
-                          name={
-                            farmerDetails
-                              ? getFarmerFullName(farmerDetails)
-                              : scanDetails.farmerName ||
-                                scanDetails.idNumber ||
-                                "Farmer"
-                          }
-                          profileImageUrl={
-                            farmerDetails?.profilePicture || null
-                          }
+                          name={scanDetails?.farmerName || "Unknown Farmer"}
+                          profileImageUrl={scanDetails?.profilePicture || null}
                           className="w-full h-full"
                         />
                       </div>
