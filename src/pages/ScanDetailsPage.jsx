@@ -468,6 +468,7 @@ export default function ScanDetailsPage() {
                           className="w-full h-full"
                         />
                       </div>
+                      a
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">
                           {scanDetails.farmerName ||

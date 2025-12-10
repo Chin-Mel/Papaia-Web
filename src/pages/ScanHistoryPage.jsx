@@ -819,30 +819,87 @@ export default function ScanHistoryPage() {
                             </div>
 
                             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
-                              {record.description && (
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className="w-3 h-3 rounded-full flex-shrink-0"
-                                    style={{
-                                      backgroundColor:
-                                        DISEASE_CONFIG[record.prediction]
-                                          ?.bgColor ||
-                                        DISEASE_CONFIG.Healthy.bgColor,
-                                    }}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
+                                {record.description && (
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="w-3 h-3 rounded-full flex-shrink-0"
+                                      style={{
+                                        backgroundColor:
+                                          DISEASE_CONFIG[record.prediction]
+                                            ?.bgColor ||
+                                          DISEASE_CONFIG.Healthy.bgColor,
+                                      }}
+                                    />
+                                    <p
+                                      className="font-medium truncate"
+                                      style={{
+                                        color:
+                                          DISEASE_CONFIG[record.prediction]
+                                            ?.color ||
+                                          DISEASE_CONFIG.Healthy.color,
+                                      }}
+                                    >
+                                      {record.description}
+                                    </p>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <img
+                                    src={UserIcon}
+                                    alt="User"
+                                    className="h-3 w-3"
                                   />
-                                  <p
-                                    className="font-medium truncate"
-                                    style={{
-                                      color:
-                                        DISEASE_CONFIG[record.prediction]
-                                          ?.color ||
-                                        DISEASE_CONFIG.Healthy.color,
-                                    }}
-                                  >
-                                    {record.description}
-                                  </p>
+                                  <span className="truncate">
+                                    {record.farmerName}
+                                  </span>
                                 </div>
-                              )}
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <img
+                                    src={CalendarIcon}
+                                    alt="Date"
+                                    className="h-3 w-3"
+                                  />
+                                  <span>{formatDate(record.timestamp)}</span>
+                                </div>
+                                <div className="flex items-center gap-1 text-gray-600">
+                                  <img
+                                    src={ClockIcon}
+                                    alt="Time"
+                                    className="h-3 w-3"
+                                  />
+                                  <span>{formatTime(record.timestamp)}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {record.profilePicture ? (
+                                    <img
+                                      src={record.profilePicture}
+                                      alt={record.farmerName}
+                                      className="w-6 h-6 rounded-full object-cover border border-gray-200"
+                                      onError={(e) => {
+                                        e.target.src = UserIcon;
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                                      <img
+                                        src={UserIcon}
+                                        alt="Default"
+                                        className="h-3 w-3"
+                                      />
+                                    </div>
+                                  )}
+                                  <ViewDetailsButton
+                                    status={record.status}
+                                    prediction={record.prediction}
+                                    scanId={record.id}
+                                    farmId={record.farmId}
+                                    scanData={record}
+                                    farmData={farmData}
+                                    farmerData={farmerData}
+                                  />
+                                </div>
+                              </div>
                               <div className="flex items-center gap-1 text-gray-600">
                                 <img
                                   src={UserIcon}
