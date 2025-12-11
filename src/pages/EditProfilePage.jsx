@@ -54,13 +54,18 @@ export default function EditProfilePage() {
       return;
     }
 
+    if (!userData.id) {
+      setError("User ID not found");
+      return;
+    }
+
     // Fetch fresh data in the background
     const fetchFreshData = async () => {
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const res = await fetch(`${API_BASE}/user/profile`, {
+        const res = await fetch(`${API_BASE}/user/${userData.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Cache-Control": "no-cache",
@@ -83,7 +88,10 @@ export default function EditProfilePage() {
             contactNumber: freshUser.contactNumber || "",
           });
 
-          localStorage.setItem("user", JSON.stringify(freshUser));
+          // Update localStorage with fresh data
+          const storedUser = getLoggedInUser();
+          const updatedUser = { ...storedUser, ...freshUser };
+          localStorage.setItem("user", JSON.stringify(updatedUser));
           setError(null);
         }
       } catch (err) {
@@ -92,7 +100,7 @@ export default function EditProfilePage() {
     };
 
     fetchFreshData();
-  }, []);
+  }, [userData?.id]);
 
   const handleProfilePictureSelect = (e) => {
     const file = e.target.files[0];
@@ -122,41 +130,16 @@ export default function EditProfilePage() {
   };
 
   const handleSaveChanges = async () => {
-    if (!formValues.firstName?.trim()) {
-      showAlert("error", "First name is required");
-      return;
-    }
-
-    if (!formValues.lastName?.trim()) {
-      showAlert("error", "Last name is required");
-      return;
-    }
-
-    if (!formValues.username?.trim()) {
-      showAlert("error", "Username is required");
-      return;
-    }
-
-    if (!formValues.email?.trim()) {
-      showAlert("error", "Email is required");
-      return;
-    }
-
-    if (!formValues.contactNumber?.trim()) {
-      showAlert("error", "Contact number is required");
-      return;
-    }
-
     setLoading(true);
 
     try {
       const token = localStorage.getItem("token");
 
-      if (!token) {
+      if (!userData?.id || !token) {
         throw new Error("Authentication error. Please log in again.");
       }
 
-      let updatedProfilePicture = userData?.profilePicture;
+      let updatedProfilePicture = userData.profilePicture;
 
       // Upload profile picture first if selected
       if (selectedImage) {
@@ -173,23 +156,34 @@ export default function EditProfilePage() {
           const data = await res.json();
           updatedProfilePicture = data.profilePicture;
         } else {
-          throw new Error("Failed to upload profile picture");
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(
+            errorData.message || "Failed to upload profile picture"
+          );
         }
       }
 
-      // Prepare updated data - only fields that changed
-      const updatedData = {
-        firstName: formValues.firstName.trim(),
-        lastName: formValues.lastName.trim(),
-        username: formValues.username.trim(),
-        email: formValues.email.trim(),
-        contactNumber: formValues.contactNumber.trim(),
-      };
+      // Prepare update data - only send fields that changed
+      const updatedData = {};
+
+      if (formValues.firstName.trim() !== userData.firstName) {
+        updatedData.firstName = formValues.firstName.trim();
+      }
+      if (formValues.lastName.trim() !== userData.lastName) {
+        updatedData.lastName = formValues.lastName.trim();
+      }
+      if (formValues.username.trim() !== userData.username) {
+        updatedData.username = formValues.username.trim();
+      }
+      if (formValues.email.trim() !== userData.email) {
+        updatedData.email = formValues.email.trim();
+      }
+      if (formValues.contactNumber.trim() !== userData.contactNumber) {
+        updatedData.contactNumber = formValues.contactNumber.trim();
+      }
 
       // Check if any data actually changed
-      const hasChanges = Object.keys(updatedData).some(
-        (key) => updatedData[key] !== userData?.[key]
-      );
+      const hasChanges = Object.keys(updatedData).length > 0;
 
       if (!hasChanges && !selectedImage) {
         showAlert("info", "No changes detected");
@@ -197,32 +191,38 @@ export default function EditProfilePage() {
         return;
       }
 
-      // Update profile data
-      const res = await fetch(`${API_BASE}/user/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updatedData),
-      });
+      // Update profile data if there are changes
+      if (hasChanges) {
+        console.log("Updating user with data:", updatedData);
+        console.log("User ID:", userData.id);
 
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(
-          errorData.error ||
-            errorData.message ||
-            `Failed to update profile (Status: ${res.status})`
-        );
+        const res = await fetch(`${API_BASE}/user/${userData.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updatedData),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          console.error("Update error response:", errorData);
+          throw new Error(
+            errorData.error ||
+              errorData.message ||
+              `Failed to update profile (Status: ${res.status})`
+          );
+        }
+
+        const responseData = await res.json();
+        console.log("Update response:", responseData);
       }
-
-      const responseData = await res.json();
-      const updatedUser = responseData.user || responseData;
 
       // Merge all updates
       const mergedData = {
         ...userData,
-        ...updatedUser,
+        ...updatedData,
         profilePicture: updatedProfilePicture,
       };
 
@@ -249,7 +249,7 @@ export default function EditProfilePage() {
       window.dispatchEvent(new Event("userUpdated"));
       showAlert("success", "Profile updated successfully!");
 
-      // Navigate back to profile page
+      // Navigate back to profile page after a short delay
       setTimeout(() => {
         navigate("/profile");
       }, 500);
@@ -384,7 +384,7 @@ export default function EditProfilePage() {
                   Personal Information
                 </h3>
                 <p className="text-sm text-slate-600 mt-1">
-                  Update your personal details
+                  Update your personal details (all fields optional)
                 </p>
               </div>
               <button
