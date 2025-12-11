@@ -18,11 +18,13 @@ import { getLoggedInUser } from "../utils/security";
 import { useAlert } from "../AlertContext";
 import UserAvatar from "../components/UserAvatar";
 
+const API_BASE = "https://papaiaapi.onrender.com/api";
+
 export default function EditProfilePage() {
   const { showAlert } = useAlert();
   const navigate = useNavigate();
 
-  // Initialize with cached data immediately - no loading state needed!
+  // Initialize with cached data immediately
   const [userData, setUserData] = useState(() => getLoggedInUser());
   const [formValues, setFormValues] = useState(() => {
     const user = getLoggedInUser();
@@ -52,20 +54,21 @@ export default function EditProfilePage() {
       return;
     }
 
-    if (!userData.id) {
-      setError("User ID not found in stored data");
-      return;
-    }
-
-    // Fetch fresh data in the background without showing loading
+    // Fetch fresh data in the background
     const fetchFreshData = async () => {
       try {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${userData.id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const res = await fetch(`${API_BASE}/user/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache",
+          },
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
 
         if (res.ok) {
           const data = await res.json();
@@ -84,12 +87,12 @@ export default function EditProfilePage() {
           setError(null);
         }
       } catch (err) {
-        console.error("Error fetching user data:", err);
+        console.debug("Error fetching user data:", err);
       }
     };
 
     fetchFreshData();
-  }, [userData?.id]);
+  }, []);
 
   const handleProfilePictureSelect = (e) => {
     const file = e.target.files[0];
@@ -149,23 +152,22 @@ export default function EditProfilePage() {
     try {
       const token = localStorage.getItem("token");
 
-      if (!userData?.id || !token) {
+      if (!token) {
         throw new Error("Authentication error. Please log in again.");
       }
 
-      let updatedProfilePicture = userData.profilePicture;
+      let updatedProfilePicture = userData?.profilePicture;
+
+      // Upload profile picture first if selected
       if (selectedImage) {
         const formData = new FormData();
         formData.append("profilePicture", selectedImage);
 
-        const res = await fetch(
-          "https://papaiaapi.onrender.com/api/profile-picture",
-          {
-            method: "PUT",
-            headers: { Authorization: `Bearer ${token}` },
-            body: formData,
-          }
-        );
+        const res = await fetch(`${API_BASE}/profile-picture`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
 
         if (res.ok) {
           const data = await res.json();
@@ -175,61 +177,66 @@ export default function EditProfilePage() {
         }
       }
 
-      const updatedData = {};
-      Object.keys(formValues).forEach((key) => {
-        let newValue = formValues[key];
-        if (typeof newValue === "string") {
-          newValue = newValue.trim();
-        }
-        const oldValue = userData[key];
-        if (newValue !== oldValue) {
-          updatedData[key] = newValue;
-        }
-      });
+      // Prepare updated data - only fields that changed
+      const updatedData = {
+        firstName: formValues.firstName.trim(),
+        lastName: formValues.lastName.trim(),
+        username: formValues.username.trim(),
+        email: formValues.email.trim(),
+        contactNumber: formValues.contactNumber.trim(),
+      };
 
-      if (Object.keys(updatedData).length === 0 && !selectedImage) {
+      // Check if any data actually changed
+      const hasChanges = Object.keys(updatedData).some(
+        (key) => updatedData[key] !== userData?.[key]
+      );
+
+      if (!hasChanges && !selectedImage) {
         showAlert("info", "No changes detected");
         setLoading(false);
         return;
       }
 
-      if (Object.keys(updatedData).length > 0) {
-        const res = await fetch(
-          `https://papaiaapi.onrender.com/api/user/${userData.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(updatedData),
-          }
-        );
+      // Update profile data
+      const res = await fetch(`${API_BASE}/user/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
 
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(
-            errorData.error ||
-              errorData.message ||
-              `Failed to update profile (Status: ${res.status})`
-          );
-        }
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(
+          errorData.error ||
+            errorData.message ||
+            `Failed to update profile (Status: ${res.status})`
+        );
       }
 
+      const responseData = await res.json();
+      const updatedUser = responseData.user || responseData;
+
+      // Merge all updates
       const mergedData = {
         ...userData,
-        ...updatedData,
+        ...updatedUser,
         profilePicture: updatedProfilePicture,
       };
 
       setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
+
+      // Reset image selection
       setSelectedImage(null);
       setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
+      // Update form values with saved data
       setFormValues({
         firstName: mergedData.firstName || "",
         lastName: mergedData.lastName || "",
@@ -238,10 +245,16 @@ export default function EditProfilePage() {
         contactNumber: mergedData.contactNumber || "",
       });
 
+      // Dispatch event to update other components
       window.dispatchEvent(new Event("userUpdated"));
       showAlert("success", "Profile updated successfully!");
-      navigate("/profile");
+
+      // Navigate back to profile page
+      setTimeout(() => {
+        navigate("/profile");
+      }, 500);
     } catch (err) {
+      console.error("Save error:", err);
       showAlert(
         "error",
         err.message || "Error updating profile. Please try again."
@@ -308,7 +321,6 @@ export default function EditProfilePage() {
     );
   }
 
-  // No loading state - show content immediately!
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <HeaderMain />
@@ -386,7 +398,10 @@ export default function EditProfilePage() {
                     Saving...
                   </>
                 ) : (
-                  <>Save Changes</>
+                  <>
+                    <Save className="w-4 h-4" />
+                    Save Changes
+                  </>
                 )}
               </button>
             </div>

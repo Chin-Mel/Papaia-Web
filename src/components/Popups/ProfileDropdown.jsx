@@ -41,12 +41,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
 
   const getDisplayName = () => {
     if (userData?.firstName && userData?.lastName) {
-      const middleInitial = userData.middleName
-        ? `${userData.middleName.charAt(0)}. `
-        : "";
-      const suffix = userData.suffix ? ` ${userData.suffix}` : "";
-
-      return `${userData.firstName} ${middleInitial}${userData.lastName}${suffix}`;
+      return `${userData.firstName} ${userData.lastName}`;
     }
     return userData?.username || "Unknown User";
   };
