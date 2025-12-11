@@ -13,9 +13,6 @@ const cleanText = (text) => {
     .trim();
 };
 
-const summaryCache = new Map();
-const CACHE_TTL = 30000;
-
 export default function FarmAnalyticsSummary({
   farmId,
   timeFilter,
@@ -25,8 +22,7 @@ export default function FarmAnalyticsSummary({
   const [loading, setLoading] = useState(true);
 
   const abortControllerRef = useRef(null);
-  const hasInitialLoad = useRef(false);
-  const pollIntervalRef = useRef(null);
+  const initialLoadRef = useRef(true);
 
   const getApiEndpoints = useCallback((filter, range) => {
     const endpoints = {
@@ -55,112 +51,89 @@ export default function FarmAnalyticsSummary({
     return endpoints[filter]?.[range] || endpoints.Daily["Last 11 days"];
   }, []);
 
-  const fetchData = useCallback(
-    async (silent = false) => {
-      if (!farmId) return;
+  const fetchData = useCallback(async () => {
+    if (!farmId) return;
 
-      const cacheKey = `summary_${farmId}_${timeFilter}_${dateRange}`;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-      if (!silent) {
-        const cached = summaryCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-          setSummaryData(cached.data);
-          setLoading(false);
-          hasInitialLoad.current = true;
-          return;
-        }
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+
+    const token = localStorage.getItem("token");
+    const headers = { Authorization: `Bearer ${token}` };
+
+    const endpoint = getApiEndpoints(timeFilter, dateRange);
+
+    try {
+      setLoading(true);
+
+      const summaryResponse = await fetch(
+        `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+        { headers, signal: abortController.signal }
+      );
+
+      if (!summaryResponse.ok) {
+        setSummaryData(null);
+        return;
       }
 
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      const abortController = new AbortController();
-      abortControllerRef.current = abortController;
-
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const endpoint = getApiEndpoints(timeFilter, dateRange);
-
-      try {
-        if (!silent && !hasInitialLoad.current) {
-          setLoading(true);
-        }
-
-        const timeoutId = setTimeout(() => abortController.abort(), 5000);
-
-        const summaryResponse = await fetch(
-          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
-          { headers, signal: abortController.signal }
-        );
-
-        clearTimeout(timeoutId);
-
-        if (!summaryResponse.ok) {
-          if (!silent) {
-            setSummaryData(null);
-          }
-          return;
-        }
-
-        const summaryResult = await summaryResponse.json();
-
-        summaryCache.set(cacheKey, {
-          data: summaryResult,
-          timestamp: Date.now(),
-        });
-
-        setSummaryData((prev) => {
-          if (JSON.stringify(prev) !== JSON.stringify(summaryResult)) {
-            return summaryResult;
-          }
-          return prev;
-        });
-      } catch (error) {
-        if (error.name !== "AbortError" && !silent) {
-          setSummaryData(null);
-        }
-      } finally {
-        if (!silent && !hasInitialLoad.current) {
-          setLoading(false);
-          hasInitialLoad.current = true;
-        }
-      }
-    },
-    [farmId, timeFilter, dateRange, getApiEndpoints]
-  );
+      const summaryResult = await summaryResponse.json();
+      setSummaryData(summaryResult);
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      setSummaryData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [farmId, timeFilter, dateRange, getApiEndpoints]);
 
   useEffect(() => {
-    const isSilent = hasInitialLoad.current;
-    fetchData(isSilent);
-
-    pollIntervalRef.current = setInterval(() => {
-      if (!document.hidden) {
-        fetchData(true);
-      }
-    }, 10000);
+    fetchData();
 
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
-      }
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
       }
     };
   }, [fetchData]);
 
   const FIXED_HEIGHT = "420px";
 
-  const LoadingSpinner = () => (
-    <div className="flex justify-center items-center py-12">
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+  if (loading) {
+    return (
+      <div
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
+        <div className="flex items-center justify-center flex-1">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (!summaryData) {
+    return (
+      <div
+        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="w-5 h-5 text-green-700" />
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
+            Summary ({dateRange})
+          </h2>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <p className="text-gray-500 text-center text-sm sm:text-base">
+            No scans available
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -173,9 +146,13 @@ export default function FarmAnalyticsSummary({
           Summary ({dateRange})
         </h2>
       </div>
-      {loading && !hasInitialLoad.current ? (
+
+      {loading ? (
         <div className="flex items-center justify-center flex-1">
-          <LoadingSpinner />
+          <div className="relative w-12 h-12">
+            <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+          </div>
         </div>
       ) : !summaryData ? (
         <div className="flex-1 flex flex-col items-center justify-center">
