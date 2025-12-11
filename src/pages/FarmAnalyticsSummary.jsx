@@ -100,40 +100,14 @@ export default function FarmAnalyticsSummary({
   }, [fetchData]);
 
   const FIXED_HEIGHT = "420px";
-
-  if (loading) {
-    return (
-      <div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center justify-center flex-1">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-        </div>
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
       </div>
-    );
-  }
-
-  if (!summaryData) {
-    return (
-      <div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-green-700" />
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Summary ({dateRange})
-          </h2>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <p className="text-gray-500 text-center text-sm sm:text-base">
-            No scans available
-          </p>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 
   return (
     <div
@@ -148,12 +122,7 @@ export default function FarmAnalyticsSummary({
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center flex-1">
-          <div className="relative w-12 h-12">
-            <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
-          </div>
-        </div>
+        <LoadingSpinner />
       ) : !summaryData ? (
         <div className="flex-1 flex flex-col items-center justify-center">
           <p className="text-gray-500 text-center text-sm sm:text-base">
