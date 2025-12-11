@@ -34,9 +34,12 @@ export default function ProfilePage() {
     const fetchFreshData = async () => {
       try {
         const [userRes, farmRes] = await Promise.all([
-          fetch(`https://papaiaapi.onrender.com/api/user/${userData.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
+          fetch(
+            `https://papaiaapi.onrender.com/api/user/${userData.idNumber}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          ),
           fetch("https://papaiaapi.onrender.com/api/owner/count-farms", {
             headers: { Authorization: `Bearer ${token}` },
           }),
@@ -69,7 +72,7 @@ export default function ProfilePage() {
 
     window.addEventListener("userUpdated", handleUserUpdate);
     return () => window.removeEventListener("userUpdated", handleUserUpdate);
-  }, [userData?.id]);
+  }, [userData?.idNumber]);
 
   const renderField = (value) => (
     <span className={value ? "text-slate-800" : "text-slate-400 italic"}>
@@ -123,7 +126,7 @@ export default function ProfilePage() {
 
               <button
                 onClick={() => navigate("/edit-profile")}
-                disabled={!userData?.id}
+                disabled={!userData?.idNumber}
                 className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-5 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition-all shadow-lg shadow-orange-500/30 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Edit3 className="w-4 h-4" />

@@ -170,16 +170,18 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 style={{ height: "115px" }}
               >
                 {imagePreview ? (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="relative w-full h-full rounded-xl overflow-hidden">
                     <img
                       src={imagePreview}
                       alt="Farm preview"
-                      className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                      className="w-full h-full object-cover"
                       loading="eager"
                     />
-                    <p className="text-xs text-gray-600 font-medium ml-3">
-                      {loading ? "Uploading..." : "Click to change"}
-                    </p>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-xs text-white font-semibold">
+                        {loading ? "Uploading..." : "Click to change"}
+                      </p>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-3 h-full">
