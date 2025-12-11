@@ -248,6 +248,14 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     calculateDiseaseDistribution(recentScans);
   const totalScans = recentScans.length;
   const mostCommonDiseases = getMostCommonDiseases(counts);
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    </div>
+  );
 
   if (loading && !recentScans.length) {
     return (
@@ -262,15 +270,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       </div>
     );
   }
-
-  const LoadingSpinner = () => (
-    <div className="flex justify-center items-center py-12">
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
-        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
-      </div>
-    </div>
-  );
   return (
     <div
       className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"

@@ -281,6 +281,15 @@ export default function FarmTeams({
   const activeFarmers = allFarmersData.filter((f) => !f.isArchived);
   const archivedFarmers = allFarmersData.filter((f) => f.isArchived);
 
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-20">
