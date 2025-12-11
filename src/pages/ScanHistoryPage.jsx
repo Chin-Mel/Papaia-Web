@@ -1,16 +1,13 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import FooterMain from "../components/Footer/Footer";
 import HeaderMain from "../components/Header/HeaderMain";
-import UserIcon from "../assets/sh-user-icon.png";
-import CalendarIcon from "../assets/sh-calendar-icon.png";
-import ClockIcon from "../assets/sh-clock-icon.png";
 
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
-const DEBOUNCE_DELAY = 500;
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 5000; // 5 seconds
+const DEBOUNCE_DELAY = 500; // 500ms debounce
 
 const DISEASE_CONFIG = {
   Healthy: { color: "#22C55E", bgColor: "#22C55E" },
@@ -32,14 +29,11 @@ const STATUS_CONFIG = {
   },
 };
 
-const dataCache = new Map();
-let lastScanCount = 0;
-let lastFetchTime = 0;
-
 const getStatus = (prediction) => {
   if (!prediction) return "healthy";
   const p = prediction.toLowerCase();
-  return p === "healthy" ? "healthy" : "disease-detected";
+  if (p === "healthy") return "healthy";
+  return "disease-detected";
 };
 
 const LoadingSpinner = () => (
@@ -226,27 +220,24 @@ const ViewDetailsButton = ({
 }) => {
   const actualStatus = status || getStatus(prediction);
   const config = STATUS_CONFIG[actualStatus] || STATUS_CONFIG.healthy;
-  const navigate = useNavigate();
-
-  const handleClick = (e) => {
-    e.preventDefault();
-    navigate(`/scan-history-details/${farmId}/${scanId}`, {
-      state: { scanData, farmData },
-    });
-  };
 
   return (
-    <button
-      onClick={handleClick}
-      className={`${config.color} text-xs sm:text-sm font-medium transition-colors hover:underline cursor-pointer`}
+    <Link
+      to={`/scan-history-details/${farmId}/${scanId}`}
+      state={{
+        scanData: scanData,
+        farmData: farmData,
+      }}
+      className={`${config.color} text-xs sm:text-sm font-medium transition-colors hover:underline`}
     >
       View Details
-    </button>
+    </Link>
   );
 };
 
 export default function ScanHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [scanData, setScanData] = useState([]);
   const [farms, setFarms] = useState([]);
   const [allScans, setAllScans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -262,30 +253,31 @@ export default function ScanHistoryPage() {
   const token = localStorage.getItem("token");
   const abortControllerRef = useRef(null);
   const pollIntervalRef = useRef(null);
-  const initialLoadRef = useRef(true);
+  const hasInitialLoad = useRef(false);
+  const lastFetchTime = useRef(0);
+  const dataHashRef = useRef("");
 
   useEffect(() => {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
+  // Generate hash of data for comparison
+  const generateDataHash = useCallback((data) => {
+    return JSON.stringify({
+      scanCount: data.scans?.length || 0,
+      farmCount: data.farms?.length || 0,
+      latestScan: data.scans?.[0]?.id || null,
+    });
+  }, []);
+
   const fetchData = useCallback(
     async (silent = false) => {
-      const cacheKey = "scan_history_data";
-      const cached = dataCache.get(cacheKey);
-
-      if (cached && Date.now() - cached.timestamp < 20000) {
-        setFarms(cached.farms);
-        setAllScans(cached.scans);
-        if (initialLoadRef.current) {
-          setIsLoading(false);
-          initialLoadRef.current = false;
-        }
+      // Debounce rapid calls
+      const now = Date.now();
+      if (now - lastFetchTime.current < DEBOUNCE_DELAY) {
         return;
       }
-
-      const now = Date.now();
-      if (now - lastFetchTime < DEBOUNCE_DELAY) return;
-      lastFetchTime = now;
+      lastFetchTime.current = now;
 
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -294,134 +286,164 @@ export default function ScanHistoryPage() {
       const controller = new AbortController();
       abortControllerRef.current = controller;
 
-      try {
-        if (!silent && initialLoadRef.current) {
-          setIsLoading(true);
-        }
+      if (!silent && !hasInitialLoad.current) {
+        setIsLoading(true);
+      }
 
+      try {
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        // 1️⃣ Fetch farms
-        const farmsRes = await fetch(`${API_BASE}/farms`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-
-        const farmsData = farmsRes.ok
-          ? await farmsRes.json()
-          : { status: "error", farms: [] };
-
-        const farmsList =
-          farmsData.status === "success" ? farmsData.farms || [] : [];
-
-        if (farmsList.length === 0) {
-          setFarms([]);
-          setAllScans([]);
-          return;
-        }
-
-        // 2️⃣ Fetch ALL identification-history per farm (parallel)
-        const scanRequests = farmsList.map((farm) =>
-          fetch(`${API_BASE}/identification-history/${farm.id}`, {
+        // API 1: Fetch farms
+        // API 2: Fetch identification history (scans)
+        const [farmsRes, scansRes] = await Promise.all([
+          fetch(`${API_BASE}/farms`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
             },
-          }).then((res) => res.json())
-        );
+            signal: controller.signal,
+          }),
+          fetch(`${API_BASE}/identification-history`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+          }),
+        ]);
 
-        const scansByFarm = await Promise.all(scanRequests);
+        clearTimeout(timeoutId);
 
-        // Combine & tag scans with their farmId
-        const combinedScans = scansByFarm.flatMap((scans, i) =>
-          scans.map((scan) => ({
-            ...scan,
-            farmId: farmsList[i].id,
-          }))
-        );
+        const [farmsData, scansArray] = await Promise.all([
+          farmsRes.ok ? farmsRes.json() : { status: "error", farms: [] },
+          scansRes.ok ? scansRes.json() : [],
+        ]);
 
-        // 3️⃣ Process & sort scans
-        const processed = combinedScans
-          .map((scan) => {
-            const predictionValue = scan.result || scan.prediction;
-            return {
-              ...scan,
-              prediction: predictionValue,
-              farmName:
-                farmsList.find((f) => f.id === scan.farmId)?.farmName ||
-                "Unknown Farm",
-              status: getStatus(predictionValue),
-              description: predictionValue || "Unknown",
-              farmerName: scan.farmerName || scan.idNumber || "Unknown Farmer",
-              profilePicture: scan.profilePicture || null,
-            };
-          })
-          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        const farmsList =
+          farmsData.status === "success" ? farmsData.farms || [] : [];
 
-        setFarms(farmsList);
-        setAllScans(processed);
+        if (Array.isArray(scansArray) && farmsList.length > 0) {
+          const farmMap = Object.fromEntries(
+            farmsList.map((f) => [f.id, f.farmName])
+          );
+          const farmersData = {};
 
-        dataCache.set(cacheKey, {
-          farms: farmsList,
-          scans: processed,
-          timestamp: Date.now(),
-        });
+          // API 3: Fetch farmers for each farm
+          const farmersPromises = farmsList.map(async (farm) => {
+            try {
+              const farmersRes = await fetch(`${API_BASE}/farmers/${farm.id}`, {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                signal: controller.signal,
+              });
 
-        lastScanCount = processed.length;
+              if (farmersRes.ok) {
+                const data = await farmersRes.json();
+                if (data.status === "success" && data.farmers) {
+                  data.farmers.forEach((farmer) => {
+                    let fullName = "";
+                    if (farmer.firstname) fullName += farmer.firstname;
+                    if (farmer.middlename) fullName += ` ${farmer.middlename}`;
+                    if (farmer.lastname) fullName += ` ${farmer.lastname}`;
+                    if (farmer.suffix) fullName += ` ${farmer.suffix}`;
+                    const name = fullName.trim() || farmer.idNumber;
+                    farmersData[farmer.idNumber] = {
+                      name: name,
+                      profilePicture: farmer.profilePicture || "",
+                    };
+                  });
+                }
+              }
+            } catch {}
+          });
+
+          await Promise.all(farmersPromises);
+
+          const processed = scansArray
+            .map((scan) => {
+              const predictionValue = scan.result || scan.prediction;
+              const status = getStatus(predictionValue);
+              const farmerData = farmersData[scan.idNumber];
+
+              return {
+                ...scan,
+                prediction: predictionValue,
+                farmName: farmMap[scan.farmId] || "Unknown Farm",
+                status,
+                description: predictionValue || "Unknown",
+                idNumber: scan.idNumber || "Unknown Farmer",
+                farmerName:
+                  scan.farmerName ||
+                  farmerData?.name ||
+                  scan.idNumber ||
+                  "Unknown Farmer",
+                profilePicture:
+                  scan.profilePicture || farmerData?.profilePicture || "",
+              };
+            })
+            .sort((a, b) => {
+              const parseTimestamp = (timestamp) => {
+                if (!timestamp) return new Date(0);
+                try {
+                  const [datePart, timePart, period] = timestamp.split(/\s+/);
+                  const [month, day, year] = datePart.split("/");
+                  const [hours, minutes] = timePart.split(":");
+                  let hour24 = parseInt(hours);
+                  if (period === "PM" && hour24 !== 12) hour24 += 12;
+                  if (period === "AM" && hour24 === 12) hour24 = 0;
+                  return new Date(year, month - 1, day, hour24, minutes);
+                } catch {
+                  return new Date(timestamp);
+                }
+              };
+              return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
+            });
+
+          // Check if data actually changed
+          const newHash = generateDataHash({
+            farms: farmsList,
+            scans: processed,
+          });
+
+          if (newHash !== dataHashRef.current || !silent) {
+            dataHashRef.current = newHash;
+            setFarms(farmsList);
+            setAllScans(processed);
+          }
+        } else if (farmsList.length > 0) {
+          setFarms(farmsList);
+          setAllScans([]);
+        } else {
+          setFarms([]);
+          setAllScans([]);
+        }
       } catch (err) {
-        if (err.name !== "AbortError") {
+        if (err.name !== "AbortError" && !silent) {
           setFarms([]);
           setAllScans([]);
         }
       } finally {
-        if (!silent && initialLoadRef.current) {
+        if (!silent && !hasInitialLoad.current) {
           setIsLoading(false);
-          initialLoadRef.current = false;
+          hasInitialLoad.current = true;
         }
       }
     },
-    [token]
+    [token, generateDataHash]
   );
 
-  const checkForNewScans = useCallback(async () => {
-    if (document.hidden) return;
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const scansRes = await fetch(`${API_BASE}/identification-history`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (scansRes.ok) {
-        const scansArray = await scansRes.json();
-        if (Array.isArray(scansArray) && scansArray.length !== lastScanCount) {
-          dataCache.delete("scan_history_data");
-          fetchData(true);
-        }
-      }
-    } catch {}
-  }, [token, fetchData]);
-
+  // Initial load and polling
   useEffect(() => {
-    fetchData();
+    const isSilent = hasInitialLoad.current;
+    fetchData(isSilent);
 
-    pollIntervalRef.current = setInterval(
-      () => checkForNewScans(),
-      POLL_INTERVAL
-    );
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        fetchData(true);
+      }
+    }, POLL_INTERVAL);
 
     return () => {
       if (abortControllerRef.current) {
@@ -431,12 +453,13 @@ export default function ScanHistoryPage() {
         clearInterval(pollIntervalRef.current);
       }
     };
-  }, [fetchData, checkForNewScans]);
+  }, [fetchData]);
 
   const filteredScans = useMemo(() => {
     return allScans.filter((scan) => {
       const { timestamp, prediction, farmId, farmerName } = scan;
 
+      // Date Range Filter
       if (filters.dateRange !== "All Time") {
         const now = new Date();
         const today = new Date(
@@ -465,6 +488,7 @@ export default function ScanHistoryPage() {
         }
       }
 
+      // Status Filter
       const predictionLower = prediction?.toLowerCase() || "";
       if (filters.status !== "All Status") {
         if (filters.status === "Healthy" && predictionLower !== "healthy") {
@@ -478,6 +502,7 @@ export default function ScanHistoryPage() {
         }
       }
 
+      // Disease Filter
       if (
         filters.selectedDiseases.length > 0 &&
         predictionLower !== "healthy"
@@ -488,10 +513,12 @@ export default function ScanHistoryPage() {
         if (!selectedLower.includes(predictionLower)) return false;
       }
 
+      // Farm Filter
       if (filters.farmId !== "all" && scan.farmId !== filters.farmId) {
         return false;
       }
 
+      // Farmer Name Search
       if (
         filters.farmerSearch.trim() &&
         !farmerName
@@ -575,6 +602,10 @@ export default function ScanHistoryPage() {
     filteredScans.length
   );
 
+  useEffect(() => {
+    setScanData(paginatedScans);
+  }, [paginatedScans]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <HeaderMain />
@@ -600,14 +631,18 @@ export default function ScanHistoryPage() {
                 options={["All Time", "Today", "Last 7 days", "Last 30 days"]}
               />
 
-              <StatusDropdown
-                value={filters.status}
-                onChange={(v) => handleFilterChange("status", v)}
-                selectedDiseases={filters.selectedDiseases}
-                onDiseaseChange={(d) =>
-                  handleFilterChange("selectedDiseases", d)
-                }
-              />
+              <div className="flex flex-col space-y-2">
+                <div className="relative">
+                  <StatusDropdown
+                    value={filters.status}
+                    onChange={(v) => handleFilterChange("status", v)}
+                    selectedDiseases={filters.selectedDiseases}
+                    onDiseaseChange={(d) =>
+                      handleFilterChange("selectedDiseases", d)
+                    }
+                  />
+                </div>
+              </div>
 
               <div className="flex flex-col space-y-2">
                 <label className="text-xs sm:text-sm font-medium text-gray-700">
@@ -648,7 +683,7 @@ export default function ScanHistoryPage() {
               </div>
             ) : (
               <div className="divide-y divide-gray-200">
-                {paginatedScans.length === 0 ? (
+                {scanData.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="text-gray-500 text-sm">
                       {allScans.length === 0
@@ -657,107 +692,90 @@ export default function ScanHistoryPage() {
                     </div>
                   </div>
                 ) : (
-                  paginatedScans.map((record) => {
-                    const farmData = farms.find((f) => f.id === record.farmId);
+                  scanData.map((record) => (
+                    <div
+                      key={record.id}
+                      className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                        <img
+                          src={
+                            record.imageUrl ||
+                            "https://via.placeholder.com/80x80?text=No+Image"
+                          }
+                          alt={record.farmName}
+                          className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.src =
+                              "https://via.placeholder.com/80x80?text=No+Image";
+                          }}
+                        />
 
-                    return (
-                      <div
-                        key={record.id}
-                        className="p-3 sm:p-4 lg:p-6 hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                          <img
-                            src={
-                              record.imageUrl ||
-                              "https://via.placeholder.com/80x80?text=No+Image"
-                            }
-                            alt={record.farmName}
-                            className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
-                            loading="lazy"
-                            onError={(e) => {
-                              e.target.src =
-                                "https://via.placeholder.com/80x80?text=No+Image";
-                            }}
-                          />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                            <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                              {record.farmName}
+                            </h3>
+                            <StatusBadge
+                              status={record.status}
+                              prediction={record.prediction}
+                            />
+                          </div>
 
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
-                              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                {record.farmName}
-                              </h3>
-                              <StatusBadge
-                                status={record.status}
-                                prediction={record.prediction}
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
-                              {record.description && (
-                                <div className="flex items-center gap-2">
-                                  <div
-                                    className="w-3 h-3 rounded-full flex-shrink-0"
-                                    style={{
-                                      backgroundColor:
-                                        DISEASE_CONFIG[record.prediction]
-                                          ?.bgColor ||
-                                        DISEASE_CONFIG.Healthy.bgColor,
-                                    }}
-                                  />
-                                  <p
-                                    className="font-medium truncate"
-                                    style={{
-                                      color:
-                                        DISEASE_CONFIG[record.prediction]
-                                          ?.color ||
-                                        DISEASE_CONFIG.Healthy.color,
-                                    }}
-                                  >
-                                    {record.description}
-                                  </p>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <img
-                                  src={UserIcon}
-                                  alt="User"
-                                  className="h-3 w-3"
-                                />
-                                <span className="truncate">
-                                  {record.farmerName}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <img
-                                  src={CalendarIcon}
-                                  alt="Date"
-                                  className="h-3 w-3"
-                                />
-                                <span>{formatDate(record.timestamp)}</span>
-                              </div>
-                              <div className="flex items-center gap-1 text-gray-600">
-                                <img
-                                  src={ClockIcon}
-                                  alt="Time"
-                                  className="h-3 w-3"
-                                />
-                                <span>{formatTime(record.timestamp)}</span>
-                              </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 text-xs sm:text-sm mb-2 items-center">
+                            {record.description && (
                               <div className="flex items-center gap-2">
-                                <ViewDetailsButton
-                                  status={record.status}
-                                  prediction={record.prediction}
-                                  scanId={record.id}
-                                  farmId={record.farmId}
-                                  scanData={record}
-                                  farmData={farmData}
+                                <div
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
+                                  style={{
+                                    backgroundColor:
+                                      DISEASE_CONFIG[record.prediction]
+                                        ?.bgColor ||
+                                      DISEASE_CONFIG.Healthy.bgColor,
+                                  }}
                                 />
+                                <p
+                                  className="font-medium truncate"
+                                  style={{
+                                    color:
+                                      DISEASE_CONFIG[record.prediction]
+                                        ?.color || DISEASE_CONFIG.Healthy.color,
+                                  }}
+                                >
+                                  {record.description}
+                                </p>
                               </div>
+                            )}
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <span>👤</span>
+                              <span className="truncate">
+                                {record.farmerName}
+                              </span>
                             </div>
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <span>📅</span>
+                              <span>{formatDate(record.timestamp)}</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-gray-600">
+                              <span>🕒</span>
+                              <span>{formatTime(record.timestamp)}</span>
+                            </div>
+                            <ViewDetailsButton
+                              status={record.status}
+                              prediction={record.prediction}
+                              scanId={record.id}
+                              farmId={record.farmId}
+                              scanData={record}
+                              farmData={farms.find(
+                                (f) => f.id === record.farmId
+                              )}
+                            />
                           </div>
                         </div>
                       </div>
-                    );
-                  })
+                    </div>
+                  ))
                 )}
               </div>
             )}

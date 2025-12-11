@@ -39,97 +39,31 @@ export default function ScanDetailsPage() {
       return;
     }
 
-    // If we have pre-fetched data, no need to fetch again
-    if (preFetchedData) {
+    // Use pre-fetched data from navigation state
+    if (preFetchedData && preFetchedFarm) {
+      const normalizedScan = {
+        ...preFetchedData,
+        prediction:
+          preFetchedData.result || preFetchedData.prediction || "Unknown",
+        confidence: preFetchedData.confidence || 0,
+        imageUrl: preFetchedData.imageUrl || "",
+        timestamp: preFetchedData.timestamp || new Date().toISOString(),
+        suggestions: preFetchedData.suggestions || "",
+        farmId: preFetchedData.farmId || farmId,
+        idNumber: preFetchedData.idNumber || "Unknown",
+        profilePicture: preFetchedData.profilePicture || null,
+        farmerName: preFetchedData.farmerName || null,
+      };
+
+      setScanDetails(normalizedScan);
+      setFarmDetails(preFetchedFarm);
       setIsLoading(false);
       return;
     }
 
-    // Fallback: Fetch data if not provided (e.g., direct URL access)
-    if (!scanId) {
-      setIsLoading(false);
-      return;
-    }
-
-    const fetchScanDetails = async () => {
-      try {
-        setIsLoading(true);
-
-        const [historyRes, farmsRes] = await Promise.all([
-          fetch(`${API_BASE}/identification-history/${farmId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }),
-          farmId
-            ? fetch(`${API_BASE}/farms`, {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                  "Content-Type": "application/json",
-                },
-              })
-            : Promise.resolve(null),
-        ]);
-
-        if (!historyRes.ok) {
-          setIsLoading(false);
-          return;
-        }
-
-        const historyData = await historyRes.json();
-        const specificScan = historyData.find((scan) => scan.id === scanId);
-
-        if (!specificScan) {
-          setIsLoading(false);
-          return;
-        }
-        const normalizedScan = {
-          ...specificScan,
-
-          prediction:
-            specificScan.result || specificScan.prediction || "Unknown",
-          confidence: specificScan.confidence || 0,
-          imageUrl: specificScan.imageUrl || "",
-          timestamp: specificScan.timestamp || new Date().toISOString(),
-          suggestions: specificScan.suggestions || "",
-          farmId: specificScan.farmId || farmId,
-          idNumber: specificScan.idNumber || "Unknown",
-
-          // 🔥 NEW: Normalize profile picture (supports both formats)
-          profilePicture:
-            typeof specificScan.profilePicture === "string"
-              ? specificScan.profilePicture
-              : specificScan.profilePicture?.profilePicture || null,
-
-          // 🔥 NEW: Normalize farmerName (supports both formats)
-          farmerName:
-            typeof specificScan.farmerName === "string"
-              ? specificScan.farmerName
-              : specificScan.profilePicture?.farmerName ||
-                specificScan.profilePicture?.profilePicture?.farmerName ||
-                null,
-        };
-
-        setScanDetails(normalizedScan);
-
-        let farm = null;
-        if (farmsRes && farmsRes.ok) {
-          const farmsData = await farmsRes.json();
-          if (farmsData.status === "success") {
-            farm = farmsData.farms.find((f) => f.id === farmId);
-            setFarmDetails(farm);
-          }
-        }
-
-        setIsLoading(false);
-      } catch (err) {
-        setIsLoading(false);
-      }
-    };
-
-    fetchScanDetails();
-  }, [scanId, farmId, navigate, preFetchedData]);
+    // Fallback: redirect to scan history if no data provided
+    navigate("/scan-history", { replace: true });
+  }, [scanId, farmId, navigate, preFetchedData, preFetchedFarm]);
 
   const getStatusInfo = (prediction) => {
     if (!prediction) {
@@ -400,7 +334,7 @@ export default function ScanDetailsPage() {
                             scanDetails.idNumber ||
                             "Farmer"
                           }
-                          src={scanDetails.profilePicture}
+                          src={scanDetails.profilePicture} // ✅ Profile picture is used here!
                           className="w-full h-full"
                         />
                       </div>
