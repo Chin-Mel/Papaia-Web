@@ -285,7 +285,7 @@ export default function FarmTeams({
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-20">
         <div className="flex justify-center items-center h-40">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+          <LoadingSpinner />
         </div>
       </div>
     );

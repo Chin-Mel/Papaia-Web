@@ -14,7 +14,7 @@ const cleanText = (text) => {
 };
 
 const summaryCache = new Map();
-const CACHE_TTL = 30000; // 30 seconds
+const CACHE_TTL = 30000;
 
 export default function FarmAnalyticsSummary({
   farmId,
@@ -61,7 +61,6 @@ export default function FarmAnalyticsSummary({
 
       const cacheKey = `summary_${farmId}_${timeFilter}_${dateRange}`;
 
-      // Check cache first
       if (!silent) {
         const cached = summaryCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -107,7 +106,6 @@ export default function FarmAnalyticsSummary({
 
         const summaryResult = await summaryResponse.json();
 
-        // Update cache
         summaryCache.set(cacheKey, {
           data: summaryResult,
           timestamp: Date.now(),
@@ -137,7 +135,6 @@ export default function FarmAnalyticsSummary({
     const isSilent = hasInitialLoad.current;
     fetchData(isSilent);
 
-    // Poll every 10 seconds for updates
     pollIntervalRef.current = setInterval(() => {
       if (!document.hidden) {
         fetchData(true);
@@ -156,6 +153,15 @@ export default function FarmAnalyticsSummary({
 
   const FIXED_HEIGHT = "420px";
 
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    </div>
+  );
+
   return (
     <div
       className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
@@ -167,10 +173,9 @@ export default function FarmAnalyticsSummary({
           Summary ({dateRange})
         </h2>
       </div>
-
       {loading && !hasInitialLoad.current ? (
         <div className="flex items-center justify-center flex-1">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+          <LoadingSpinner />
         </div>
       ) : !summaryData ? (
         <div className="flex-1 flex flex-col items-center justify-center">

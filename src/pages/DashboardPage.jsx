@@ -130,6 +130,7 @@ const FarmCard = ({ farm, isMobile }) => {
   return (
     <Link
       to={`/farm-dashboard/${farm.id}`}
+      state={{ farmData: farm }}
       className={`backdrop-blur-sm border border-slate-200/60 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
         farm.isActive ? "bg-white/80" : "bg-slate-200/50"
       }`}

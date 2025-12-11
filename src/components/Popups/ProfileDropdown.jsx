@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { CreditCard, LogOut } from "lucide-react";
+import { FileCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getLoggedInUser } from "../../utils/security";
 import UserAvatar from "../UserAvatar";

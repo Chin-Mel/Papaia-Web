@@ -439,7 +439,14 @@ export default function FarmAnalytics({
     },
     [diseaseColors]
   );
-
+  const LoadingSpinner = () => (
+    <div className="flex justify-center items-center py-12">
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-4 border-emerald-200 rounded-full"></div>
+        <div className="absolute inset-0 border-4 border-emerald-600 rounded-full border-t-transparent animate-spin"></div>
+      </div>
+    </div>
+  );
   const CustomTooltip = useCallback(
     ({ active, payload, label }) => {
       if (active && payload && payload.length) {
@@ -570,9 +577,7 @@ export default function FarmAnalytics({
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center flex-1">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-        </div>
+        <LoadingSpinner />
       ) : error ? (
         <div className="flex items-center justify-center flex-1 text-red-500 text-sm">
           <div className="text-center">

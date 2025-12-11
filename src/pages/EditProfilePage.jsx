@@ -5,6 +5,7 @@ import {
   User,
   Shield,
   AlertCircle,
+  FileCheck,
   Camera,
   Calendar,
 } from "lucide-react";

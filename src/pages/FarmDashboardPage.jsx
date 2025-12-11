@@ -71,6 +71,14 @@ export default function FarmDashboardPage() {
   useEffect(() => {
     if (!farmId) return;
 
+    // Check if farm data was passed from navigation state
+    const navigationFarmData = location.state?.farmData;
+    if (navigationFarmData) {
+      setFarmData(navigationFarmData);
+      setLoading(false);
+      return;
+    }
+
     const fetchFarmData = async () => {
       try {
         const response = await fetch(
@@ -92,7 +100,7 @@ export default function FarmDashboardPage() {
     };
 
     fetchFarmData();
-  }, [farmId]);
+  }, [farmId, location.state]);
 
   const isActive = farmData?.status === "active";
 
