@@ -51,13 +51,15 @@ const StepCard = memoAbout(({ number, title, description }) => (
 
 const DeveloperCard = memoAbout(({ name, role, image, description }) => (
   <div className="text-center">
-    <img
-      src={image}
-      alt={name}
-      className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover mx-auto mb-4 sm:mb-6"
-      width="128"
-      height="128"
-    />
+    <div className="w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-4 sm:mb-6 overflow-hidden rounded-full">
+      <img
+        src={image}
+        alt={name}
+        className="w-full h-full object-cover"
+        width="128"
+        height="128"
+      />
+    </div>
     <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2">{name}</h3>
     <p className="text-[#FF8C42] font-medium mb-3 sm:mb-4">{role}</p>
     <p className="text-sm text-[#4A7C59] leading-relaxed max-w-xs mx-auto">

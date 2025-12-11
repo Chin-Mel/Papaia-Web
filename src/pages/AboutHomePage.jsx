@@ -256,7 +256,11 @@ export default function AboutHomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
               {developers.map((dev, index) => (
                 <div key={index} className="text-center">
-                  <img src={dev.image} alt={dev.name} />
+                  <img
+                    src={dev.image}
+                    alt={dev.name}
+                    className="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover mx-auto mb-4"
+                  />
                   <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2">
                     {dev.name}
                   </h3>
