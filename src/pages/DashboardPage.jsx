@@ -115,7 +115,7 @@ const StatCard = ({ title, value, icon, bgColor }) => (
         src={icon}
         alt={title}
         className="w-6 h-6 lg:w-7 lg:h-7 object-contain"
-        loading="lazy"
+        loading="eager"
       />
     </div>
   </div>
@@ -143,7 +143,7 @@ const FarmCard = ({ farm, isMobile }) => {
           className={`w-full ${
             isMobile ? "h-28 sm:h-36" : "h-40"
           } object-cover ${!farm.isActive ? "opacity-50 grayscale" : ""}`}
-          loading="lazy"
+          loading="eager"
           onError={() => setImageError(true)}
         />
         {healthStatus && (

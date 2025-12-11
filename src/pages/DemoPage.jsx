@@ -13,8 +13,8 @@ export default function DemoPage() {
       title: "Web Dashboard Tutorial",
       description:
         "Learn how to use Papaia's web dashboard to manage your farms, analyze disease patterns, and track crop health from your desktop.",
-      embedUrl: "https://www.youtube.com/embed/BVfViC1UjBk?si=duAbdBcisa9cl64C",
-      watchUrl: "https://www.youtube.com/watch?v=BVfViC1UjBk",
+      embedUrl: "https://www.youtube.com/embed/i59JKkt8x6A?si=DsGwMZYvlTNdX4dZ",
+      watchUrl: "https://youtu.be/i59JKkt8x6A",
       duration: "8:45",
       features: [
         "Add and manage farms",
