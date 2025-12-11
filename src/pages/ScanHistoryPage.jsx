@@ -6,8 +6,8 @@ import HeaderMain from "../components/Header/HeaderMain";
 
 const RESULTS_PER_PAGE = 5;
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
-const POLL_INTERVAL = 5000; // 5 seconds
-const DEBOUNCE_DELAY = 500; // 500ms debounce
+const POLL_INTERVAL = 5000;
+const DEBOUNCE_DELAY = 500;
 
 const DISEASE_CONFIG = {
   Healthy: { color: "#22C55E", bgColor: "#22C55E" },
@@ -261,7 +261,6 @@ export default function ScanHistoryPage() {
     if (!token) navigate("/sign-in", { replace: true });
   }, [token, navigate]);
 
-  // Generate hash of data for comparison
   const generateDataHash = useCallback((data) => {
     return JSON.stringify({
       scanCount: data.scans?.length || 0,
@@ -272,7 +271,6 @@ export default function ScanHistoryPage() {
 
   const fetchData = useCallback(
     async (silent = false) => {
-      // Debounce rapid calls
       const now = Date.now();
       if (now - lastFetchTime.current < DEBOUNCE_DELAY) {
         return;
@@ -293,8 +291,6 @@ export default function ScanHistoryPage() {
       try {
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        // API 1: Fetch farms
-        // API 2: Fetch identification history (scans)
         const [farmsRes, scansRes] = await Promise.all([
           fetch(`${API_BASE}/farms`, {
             headers: {
@@ -328,7 +324,6 @@ export default function ScanHistoryPage() {
           );
           const farmersData = {};
 
-          // API 3: Fetch farmers for each farm
           const farmersPromises = farmsList.map(async (farm) => {
             try {
               const farmersRes = await fetch(`${API_BASE}/farmers/${farm.id}`, {
@@ -401,7 +396,6 @@ export default function ScanHistoryPage() {
               return parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp);
             });
 
-          // Check if data actually changed
           const newHash = generateDataHash({
             farms: farmsList,
             scans: processed,
@@ -434,7 +428,6 @@ export default function ScanHistoryPage() {
     [token, generateDataHash]
   );
 
-  // Initial load and polling
   useEffect(() => {
     const isSilent = hasInitialLoad.current;
     fetchData(isSilent);
@@ -459,7 +452,6 @@ export default function ScanHistoryPage() {
     return allScans.filter((scan) => {
       const { timestamp, prediction, farmId, farmerName } = scan;
 
-      // Date Range Filter
       if (filters.dateRange !== "All Time") {
         const now = new Date();
         const today = new Date(
@@ -488,7 +480,6 @@ export default function ScanHistoryPage() {
         }
       }
 
-      // Status Filter
       const predictionLower = prediction?.toLowerCase() || "";
       if (filters.status !== "All Status") {
         if (filters.status === "Healthy" && predictionLower !== "healthy") {
@@ -502,7 +493,6 @@ export default function ScanHistoryPage() {
         }
       }
 
-      // Disease Filter
       if (
         filters.selectedDiseases.length > 0 &&
         predictionLower !== "healthy"
@@ -513,12 +503,10 @@ export default function ScanHistoryPage() {
         if (!selectedLower.includes(predictionLower)) return false;
       }
 
-      // Farm Filter
       if (filters.farmId !== "all" && scan.farmId !== filters.farmId) {
         return false;
       }
 
-      // Farmer Name Search
       if (
         filters.farmerSearch.trim() &&
         !farmerName
@@ -705,7 +693,7 @@ export default function ScanHistoryPage() {
                           }
                           alt={record.farmName}
                           className="w-full sm:w-20 h-40 sm:h-20 rounded-lg object-cover flex-shrink-0"
-                          loading="lazy"
+                          loading="eager"
                           onError={(e) => {
                             e.target.src =
                               "https://via.placeholder.com/80x80?text=No+Image";

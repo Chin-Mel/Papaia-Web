@@ -1,4 +1,3 @@
-// SignUpPage.jsx - Enhanced Responsive Version
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import FooterStart from "../components/Footer/FooterStart";
@@ -20,11 +19,9 @@ import { useAlert } from "../AlertContext";
 export default function SignUpPage() {
   const { showAlert } = useAlert();
 
-  // Role selection state
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [selectedRole, setSelectedRole] = useState(null);
 
-  // Form state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -33,17 +30,14 @@ export default function SignUpPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
 
-  // Modal state
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
-  // Touched state for validation
   const [touched, setTouched] = useState({
     firstName: false,
     lastName: false,
@@ -54,7 +48,6 @@ export default function SignUpPage() {
     confirmPassword: false,
   });
 
-  // Preload images
   useEffect(() => {
     const images = [
       MainBackground,
@@ -74,14 +67,12 @@ export default function SignUpPage() {
   }, []);
 
   useEffect(() => {
-    // Check email format if email field has been touched and has value
     if (touched.email && email.trim()) {
       if (!validateEmail(email.trim())) {
         showAlert("error", "Invalid email format.");
       }
     }
 
-    // Check password match if both password fields have been touched and have values
     if (
       touched.password &&
       touched.confirmPassword &&
@@ -101,18 +92,15 @@ export default function SignUpPage() {
     touched.confirmPassword,
   ]);
 
-  // Handle role selection
   const handleRoleSelect = (role) => {
     setSelectedRole(role);
     setShowRoleModal(false);
   };
 
-  // Validation helpers
   const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
   const validatePhoneNumber = (value) =>
     /^[0-9]{10,11}$/.test(value.replace(/[\s-]/g, ""));
 
-  // Get border class based on validation
   const getBorderClass = (fieldName, value) => {
     if (touched[fieldName] && !value.trim()) {
       return "border-red-500 border-2";
@@ -120,12 +108,10 @@ export default function SignUpPage() {
     return "border-gray-300 focus:border-orange-500 focus:border-2";
   };
 
-  // Handle field blur
   const handleBlur = (fieldName) => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
 
-  // Handle field change
   const handleFieldChange = (fieldName, value, setter) => {
     setter(value);
     if (touched[fieldName]) {
@@ -133,12 +119,10 @@ export default function SignUpPage() {
     }
   };
 
-  // Handle modal agree - check the checkbox
   const handleModalAgree = () => {
     setIsChecked(true);
   };
 
-  // Register user API call
   const registerUser = async (userData) => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 20000);
@@ -180,11 +164,9 @@ export default function SignUpPage() {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark all fields as touched
     setTouched({
       firstName: true,
       lastName: true,
@@ -203,7 +185,6 @@ export default function SignUpPage() {
     const pwd = password.trim();
     const confirmPwd = confirmPassword.trim();
 
-    // Validate required fields
     if (
       !firstNameVal ||
       !lastNameVal ||
@@ -217,19 +198,16 @@ export default function SignUpPage() {
       return;
     }
 
-    // Validate email format
     if (!validateEmail(emailVal)) {
       showAlert("error", "Invalid email format.");
       return;
     }
 
-    // Validate phone number format
     if (!validatePhoneNumber(phoneNumberVal)) {
       showAlert("error", "Invalid phone number.");
       return;
     }
 
-    // Check if passwords match
     if (pwd !== confirmPwd) {
       showAlert("error", "Passwords do not match.");
       return;
@@ -301,7 +279,6 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col">
       <HeaderStart />
 
-      {/* User Role Modal - Overlay */}
       {showRoleModal && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40"></div>
       )}
@@ -327,6 +304,7 @@ export default function SignUpPage() {
                     src={papaiaLogo}
                     alt="Papaia Logo"
                     className="w-4 h-6 sm:w-5 sm:h-7 md:w-6 md:h-8"
+                    loading="eager"
                   />
                 </div>
                 <h1 className="text-2xl font-bold text-white mb-1">Welcome!</h1>
@@ -337,12 +315,15 @@ export default function SignUpPage() {
             </div>
 
             <div className="p-8">
-              {/* ROW 1 — First, Last, Username */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {/* First Name */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={UserIcon} className="w-4 h-4" alt="" />
+                    <img
+                      src={UserIcon}
+                      className="w-4 h-4"
+                      alt=""
+                      loading="eager"
+                    />
                     First Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -366,7 +347,6 @@ export default function SignUpPage() {
                   />
                 </div>
 
-                {/* Last Name */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={UserIcon} className="w-4 h-4" alt="" />
@@ -389,7 +369,6 @@ export default function SignUpPage() {
                   />
                 </div>
 
-                {/* Username */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={UserIcon} className="w-4 h-4" alt="" />
@@ -413,9 +392,7 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* ROW 2 — Email + Phone */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mt-4">
-                {/* Email */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={MailIcon} className="w-4 h-4" alt="" />
@@ -438,7 +415,6 @@ export default function SignUpPage() {
                   />
                 </div>
 
-                {/* Phone Number */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={PhoneIcon} className="w-4 h-4" alt="" />
@@ -466,9 +442,7 @@ export default function SignUpPage() {
                 </div>
               </div>
 
-              {/* ROW 3 — Password + Confirm Password */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                {/* Password */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={LockIcon} className="w-4 h-4" alt="" />
@@ -505,12 +479,12 @@ export default function SignUpPage() {
                         src={showPassword ? EyeOffIcon : EyeIcon}
                         className="w-5 h-5"
                         alt=""
+                        loading="eager"
                       />
                     </button>
                   </div>
                 </div>
 
-                {/* Confirm Password */}
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                     <img src={LockIcon} className="w-4 h-4" alt="" />
@@ -549,6 +523,7 @@ export default function SignUpPage() {
                         src={showConfirmPassword ? EyeOffIcon : EyeIcon}
                         className="w-5 h-5"
                         alt=""
+                        loading="eager"
                       />
                     </button>
                   </div>

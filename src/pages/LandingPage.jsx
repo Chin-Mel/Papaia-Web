@@ -1,4 +1,3 @@
-// LandingPage.jsx
 import { useNavigate } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
@@ -8,13 +7,12 @@ import MobileIconPNG from "../assets/mobile-icon.png";
 import ArrowIconPNG from "../assets/arrow-icon.png";
 import MainBackground from "../assets/MainBackground.png";
 
-// Optimized icon components with proper alt text
 const AnalyticsIcon = () => (
   <img
     src={AnalyticsIconPNG}
     alt="Crop analytics"
     className="w-6 h-6 sm:w-8 sm:h-8"
-    loading="lazy"
+    loading="eager"
   />
 );
 
@@ -23,7 +21,7 @@ const DiseaseIcon = () => (
     src={DiseaseIconPNG}
     alt="Disease identification"
     className="w-6 h-6 sm:w-8 sm:h-8"
-    loading="lazy"
+    loading="eager"
   />
 );
 
@@ -32,7 +30,7 @@ const MobileIcon = () => (
     src={MobileIconPNG}
     alt="Mobile control"
     className="w-5 h-8 sm:w-7 sm:h-10"
-    loading="lazy"
+    loading="eager"
   />
 );
 
@@ -42,6 +40,7 @@ const ArrowIcon = () => (
     alt=""
     className="w-5 h-5 sm:w-6 sm:h-6"
     aria-hidden="true"
+    loading="eager"
   />
 );
 
@@ -82,9 +81,7 @@ export default function LandingPage() {
       <HeaderStart />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[90vh] sm:h-[100vh] flex items-center justify-center overflow-hidden">
-          {/* Background Image */}
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 brightness-110"
             style={{ backgroundImage: `url(${MainBackground})` }}
@@ -92,7 +89,6 @@ export default function LandingPage() {
             aria-label="Agricultural background"
           />
 
-          {/* Hero Content */}
           <div className="relative z-10 w-full max-w-5xl mx-4 sm:mx-6 lg:mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-12 lg:py-16 text-center mt-8 sm:mt-16 lg:mt-20 rounded-2xl sm:rounded-3xl lg:rounded-[40px] backdrop-blur-sm bg-white/20 border border-white/10">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 leading-tight">
               <span className="text-[#2D5016]">Welcome to </span>
@@ -115,7 +111,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Features Section */}
         <section className="bg-[#F0FDF4] py-12 sm:py-16 lg:py-20">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -158,8 +153,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* CTA Section */}
         <section className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-12 text-center">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#4A7C59] mb-4 sm:mb-6">

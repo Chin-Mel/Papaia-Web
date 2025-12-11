@@ -1,4 +1,3 @@
-// PricingHomePage.jsx - Optimized Version
 import { Check, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import HeaderStart from "../components/Header/HeaderStart";
@@ -82,13 +81,13 @@ export default function PricingHomePage() {
       <HeaderStart />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
               alt="Agricultural background"
               className="w-full h-full object-cover"
+              loading="eager"
             />
           </div>
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
@@ -104,7 +103,6 @@ export default function PricingHomePage() {
           </div>
         </section>
 
-        {/* Pricing Plans */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-12">
@@ -122,7 +120,6 @@ export default function PricingHomePage() {
                   key={index}
                   className="relative bg-white rounded-2xl shadow-lg overflow-hidden transition-transform hover:scale-105 flex flex-col"
                 >
-                  {/* Header */}
                   <div
                     className={`bg-gradient-to-r ${plan.color} p-6 text-white`}
                   >
@@ -134,7 +131,6 @@ export default function PricingHomePage() {
                     <p className="text-sm text-white/90">{plan.description}</p>
                   </div>
 
-                  {/* Content */}
                   <div className="p-6 flex-1 flex flex-col">
                     <div className="space-y-3 mb-6 flex-1">
                       {plan.features.map((feature, i) => (
@@ -155,7 +151,6 @@ export default function PricingHomePage() {
                       ))}
                     </div>
 
-                    {/* Button */}
                     <button
                       className={`w-full py-3 rounded-lg font-semibold transition-all active:scale-95 ${
                         plan.name === "Free"
@@ -174,7 +169,6 @@ export default function PricingHomePage() {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-12 sm:py-16 bg-gradient-to-r from-green-600 to-orange-500">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">

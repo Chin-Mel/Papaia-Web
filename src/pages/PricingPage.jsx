@@ -84,6 +84,7 @@ export default function PricingPage() {
               src={HeroBackground}
               alt="Background plants"
               className="w-full h-full object-cover"
+              loading="eager"
             />
           </div>
           <div className="relative max-w-7xl mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">

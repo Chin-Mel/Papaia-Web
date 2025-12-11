@@ -50,13 +50,13 @@ export default function DemoPage() {
       <HeaderStart />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[40vh] sm:h-[45vh] md:h-[55vh] lg:h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
               alt="Agricultural background"
               className="w-full h-full object-cover"
+              loading="eager"
             />
           </div>
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center">
@@ -72,7 +72,6 @@ export default function DemoPage() {
           </div>
         </section>
 
-        {/* Introduction */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
@@ -88,8 +87,6 @@ export default function DemoPage() {
             </div>
           </div>
         </section>
-
-        {/* Tutorial Videos */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="space-y-16">
@@ -102,7 +99,6 @@ export default function DemoPage() {
                     key={tutorial.id}
                     className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center"
                   >
-                    {/* Video Section */}
                     <div className={isEven ? "lg:order-1" : "lg:order-2"}>
                       <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-gray-900">
                         <div className="aspect-video">
@@ -120,7 +116,6 @@ export default function DemoPage() {
                       </div>
                     </div>
 
-                    {/* Content Section */}
                     <div className={isEven ? "lg:order-2" : "lg:order-1"}>
                       <div className="flex items-center gap-3 mb-4">
                         <div

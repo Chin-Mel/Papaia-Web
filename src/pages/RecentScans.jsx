@@ -3,7 +3,7 @@ import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const DEBOUNCE_DELAY = 500;
-const POLL_INTERVAL = 5000; // 5 seconds
+const POLL_INTERVAL = 5000;
 
 const dataCache = new Map();
 let lastScanCount = 0;
@@ -75,7 +75,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
-  // Track when user manually changes date range (skip initial load)
   useEffect(() => {
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
@@ -84,7 +83,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     setFilterActive(true);
   }, [dateRange]);
 
-  // Track filter changes
   useEffect(() => {
     const filterChanged =
       lastFilterRef.current.timeFilter !== timeFilter ||
@@ -103,7 +101,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}_${filterActive}`;
       const cached = dataCache.get(cacheKey);
 
-      // Check cache freshness (20 seconds)
       if (cached && Date.now() - cached.timestamp < 20000) {
         setRecentScans(cached.scans);
         if (!silent && loading) {
@@ -112,7 +109,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         return;
       }
 
-      // Debounce rapid calls
       const now = Date.now();
       if (now - lastFetchTime < DEBOUNCE_DELAY) {
         return;
@@ -150,18 +146,15 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         const allScans = await response.json();
         const scansArray = Array.isArray(allScans) ? allScans : [];
 
-        // Only filter by date range if user has actively selected a range
         const filteredScans = filterActive
           ? filterScansByDateRange(scansArray, timeFilter, dateRange)
           : scansArray;
 
-        // Only update state if data has changed
         setRecentScans((prev) => {
           if (prev.length !== filteredScans.length) {
             return filteredScans;
           }
 
-          // If lengths are same, check if content is different
           const isDifferent = filteredScans.some(
             (scan, index) =>
               scan.id !== prev[index]?.id ||
@@ -171,7 +164,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           return isDifferent ? filteredScans : prev;
         });
 
-        // Update cache
         dataCache.set(cacheKey, {
           scans: filteredScans,
           timestamp: Date.now(),
@@ -221,7 +213,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         const allScans = await response.json();
         const scansArray = Array.isArray(allScans) ? allScans : [];
 
-        // Only filter by date range if user has actively selected a range
         const filteredScans = filterActive
           ? filterScansByDateRange(scansArray, timeFilter, dateRange)
           : scansArray;
@@ -229,7 +220,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         if (filteredScans.length !== lastScanCount) {
           const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}_${filterActive}`;
           dataCache.delete(cacheKey);
-          fetchData(true); // Silent update
+          fetchData(true);
         }
       }
     } catch {}
@@ -242,7 +233,6 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     filterActive,
   ]);
 
-  // Initial fetch
   useEffect(() => {
     fetchData();
 
@@ -417,6 +407,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                           e.target.src =
                             "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect fill='%23e5e7eb' width='56' height='56'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
                         }}
+                        loading="eager"
                       />
 
                       <div className="flex-1 min-w-0 flex justify-between items-start">
@@ -488,6 +479,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
                 src={selectedScan.imageUrl}
                 alt="Scan"
                 className="w-full h-64 object-cover rounded-lg"
+                loading="eager"
               />
               <div>
                 <p className="text-sm text-gray-600">Prediction</p>

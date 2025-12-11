@@ -1,4 +1,3 @@
-// SignInPage.jsx - Enhanced Responsive Version
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import FooterStart from "../components/Footer/FooterStart";
@@ -16,23 +15,19 @@ export default function SignInPage() {
   const { showAlert } = useAlert();
   const navigate = useNavigate();
 
-  // Form state
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Validation state
   const [touched, setTouched] = useState({
     usernameOrEmail: false,
     password: false,
   });
 
-  // Reactivation state
   const [showReactivationModal, setShowReactivationModal] = useState(false);
   const [deactivatedUserToken, setDeactivatedUserToken] = useState(null);
 
-  // Preload images for better performance
   useEffect(() => {
     const images = [
       papaiaLogo,
@@ -49,10 +44,8 @@ export default function SignInPage() {
     });
   }, []);
 
-  // Validation helper
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  // Get border class based on validation state
   const getFieldBorderClass = (fieldName, value) => {
     if (touched[fieldName] && !value.trim()) {
       return "border-red-500 border-2";
@@ -60,12 +53,10 @@ export default function SignInPage() {
     return "border-gray-300 focus:border-orange-500 focus:border-2";
   };
 
-  // Handle field blur to mark as touched
   const handleBlur = (fieldName) => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
 
-  // Handle field change to clear touched state
   const handleFieldChange = (fieldName, value) => {
     if (fieldName === "usernameOrEmail") {
       setUsernameOrEmail(value);
@@ -73,13 +64,11 @@ export default function SignInPage() {
       setPassword(value);
     }
 
-    // Clear touched state when user starts typing
     if (touched[fieldName]) {
       setTouched((prev) => ({ ...prev, [fieldName]: false }));
     }
   };
 
-  // Handle account reactivation
   const handleReactivate = async () => {
     if (!deactivatedUserToken) {
       showAlert("error", "Unable to reactivate. Please try logging in again.");
@@ -90,7 +79,6 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
-      // Call reactivation API
       const reactivateResponse = await fetch(
         "https://papaiaapi.onrender.com/api/reactivate",
         {
@@ -105,7 +93,6 @@ export default function SignInPage() {
         throw new Error("Failed to reactivate account.");
       }
 
-      // Re-login after successful reactivation
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
@@ -124,7 +111,6 @@ export default function SignInPage() {
 
       const loginData = await loginResponse.json();
 
-      // Store credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
       }
@@ -135,10 +121,8 @@ export default function SignInPage() {
 
       window.dispatchEvent(new Event("userUpdated"));
 
-      // Show success message
       showAlert("success", "Account reactivated successfully!");
 
-      // Navigate to dashboard
       navigate("/dashboard", { replace: true });
     } catch (err) {
       showAlert("error", "Failed to reactivate account. Please try again.");
@@ -149,18 +133,15 @@ export default function SignInPage() {
     }
   };
 
-  // Handle cancel reactivation
   const handleCancelReactivation = () => {
     setShowReactivationModal(false);
     setDeactivatedUserToken(null);
     setLoading(false);
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark all fields as touched
     setTouched({
       usernameOrEmail: true,
       password: true,
@@ -169,13 +150,11 @@ export default function SignInPage() {
     const trimmedEmail = usernameOrEmail.trim();
     const trimmedPassword = password.trim();
 
-    // Validate required fields
     if (!trimmedEmail || !trimmedPassword) {
       showAlert("error", "Please fill in all required fields.");
       return;
     }
 
-    // Validate email format if @ is present
     if (trimmedEmail.includes("@") && !validateEmail(trimmedEmail)) {
       showAlert("error", "Invalid email/username or password.");
       return;
@@ -185,11 +164,9 @@ export default function SignInPage() {
     setShowReactivationModal(false);
 
     try {
-      // Set up request timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      // Call login API
       const loginResponse = await fetch(
         "https://papaiaapi.onrender.com/api/login",
         {
@@ -205,7 +182,6 @@ export default function SignInPage() {
 
       clearTimeout(timeoutId);
 
-      // Handle failed login
       if (!loginResponse.ok) {
         const errorData = await loginResponse.json().catch(() => ({}));
 
@@ -226,7 +202,6 @@ export default function SignInPage() {
 
       const loginData = await loginResponse.json();
 
-      // Check if account is deactivated
       if (
         loginData.user?.status &&
         loginData.user.status.toLowerCase() === "deactivate"
@@ -237,7 +212,6 @@ export default function SignInPage() {
         return;
       }
 
-      // Check email verification
       if (loginData.user?.emailVerified === false) {
         showAlert(
           "error",
@@ -247,7 +221,6 @@ export default function SignInPage() {
         return;
       }
 
-      // Check if user is a farmer
       if (
         loginData.user?.role &&
         loginData.user.role.toLowerCase() === "farmer"
@@ -260,7 +233,6 @@ export default function SignInPage() {
         return;
       }
 
-      // Check if user has owner role
       const allowedRoles = ["owner"];
       if (
         loginData.user?.role &&
@@ -274,7 +246,6 @@ export default function SignInPage() {
         return;
       }
 
-      // Store user credentials
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
       }
@@ -285,7 +256,6 @@ export default function SignInPage() {
 
       window.dispatchEvent(new Event("userUpdated"));
 
-      // Show success message and redirect
       showAlert("success", "Login Successful!");
 
       navigate("/dashboard", { replace: true });
@@ -323,6 +293,7 @@ export default function SignInPage() {
                   src={papaiaLogo}
                   alt="Papaia Logo"
                   className="w-4 h-6 sm:w-5 sm:h-7 md:w-6 md:h-8"
+                  loading="eager"
                 />
               </div>
 
@@ -385,6 +356,7 @@ export default function SignInPage() {
                           src={UserIcon}
                           alt="Username"
                           className="w-4 h-4"
+                          loading="eager"
                         />
                         Username or Email *
                       </label>
@@ -410,6 +382,7 @@ export default function SignInPage() {
                           src={LockIcon}
                           alt="Password"
                           className="w-4 h-4"
+                          loading="eager"
                         />
                         Password *
                       </label>
@@ -437,6 +410,7 @@ export default function SignInPage() {
                             src={showPassword ? EyeOffIcon : EyeIcon}
                             alt={showPassword ? "Hide" : "Show"}
                             className="w-5 h-5"
+                            loading="eager"
                           />
                         </button>
                       </div>
@@ -460,6 +434,7 @@ export default function SignInPage() {
                         src={LoginIcon}
                         alt="Login"
                         className="w-4 h-4 sm:w-5 sm:h-5"
+                        loading="eager"
                       />
                       {loading ? "Logging in..." : "Login to Farm"}
                     </button>

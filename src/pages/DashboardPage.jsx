@@ -13,7 +13,6 @@ import DefaultFarmImage from "../assets/MainBackground.png";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 
-// Persistent cache with memory limit
 const persistentCache = new Map();
 const MAX_CACHE_SIZE = 50;
 
@@ -46,7 +45,6 @@ const cachedFetch = async (
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    // Limit cache size
     if (persistentCache.size >= MAX_CACHE_SIZE) {
       const firstKey = persistentCache.keys().next().value;
       persistentCache.delete(firstKey);
@@ -97,7 +95,6 @@ const getHealthStatus = (healthPercentage, hasScans) => {
   };
 };
 
-// Memoized StatCard component
 const StatCard = ({ title, value, icon, bgColor }) => (
   <div className="p-3 sm:p-4 lg:p-5 bg-white/80 backdrop-blur-sm border border-slate-200/60 rounded-xl flex justify-between items-center shadow-md hover:shadow-lg transition-all duration-300">
     <div>
@@ -121,7 +118,6 @@ const StatCard = ({ title, value, icon, bgColor }) => (
   </div>
 );
 
-// Memoized FarmCard component
 const FarmCard = ({ farm, isMobile }) => {
   const healthStatus = useMemo(
     () => getHealthStatus(farm.health, farm.hasScans),
@@ -226,7 +222,6 @@ export default function DashboardPage() {
   const pollIntervalRef = useRef(null);
   const debounceTimeoutRef = useRef(null);
 
-  // Debounced fetch for dashboard stats
   const debouncedFetchStats = useCallback(async (silent = true) => {
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
@@ -269,7 +264,6 @@ export default function DashboardPage() {
           todayScans: todayScansCount,
         });
       } catch {
-        // Silent fail
       } finally {
         isFetching.current = false;
       }
@@ -319,7 +313,6 @@ export default function DashboardPage() {
         todayScans: todayScansCount,
       });
     } catch {
-      // Silent fail
     } finally {
       isFetching.current = false;
     }
@@ -348,7 +341,6 @@ export default function DashboardPage() {
       isFetching.current = true;
 
       try {
-        // Only show loading spinner on initial load
         if (!hasInitiallyLoaded.current && !silent) {
           setLoadingFarms(true);
         }
@@ -388,7 +380,6 @@ export default function DashboardPage() {
 
           setFarms(sortedFarms);
 
-          // Fetch health data in background without blocking UI
           Promise.all(
             sortedFarms.map((farm) => fetchFarmHealth(farm.id, silent))
           )
@@ -401,9 +392,7 @@ export default function DashboardPage() {
                 }))
               );
             })
-            .catch(() => {
-              // Silent fail for health data
-            });
+            .catch(() => {});
         } else {
           setFarms([]);
         }
@@ -418,17 +407,13 @@ export default function DashboardPage() {
     [fetchFarmHealth]
   );
 
-  // Start polling for real-time updates
   useEffect(() => {
-    // Initial fetch
     if (!hasInitiallyLoaded.current) {
       fetchFarms();
       fetchDashboardStats();
     }
 
-    // Set up polling every 8 seconds
     pollIntervalRef.current = setInterval(() => {
-      // Silent background updates
       fetchFarms(false, true);
       debouncedFetchStats(true);
     }, 8000);
@@ -443,7 +428,6 @@ export default function DashboardPage() {
     };
   }, [fetchFarms, fetchDashboardStats, debouncedFetchStats]);
 
-  // Handle explicit refresh requests
   useEffect(() => {
     if (location.state?.refreshFarms) {
       fetchFarms(true);
@@ -452,7 +436,6 @@ export default function DashboardPage() {
     }
   }, [location, fetchFarms, fetchDashboardStats]);
 
-  // Listen for farm updates from FarmDashboard
   useEffect(() => {
     const handleFarmUpdate = () => {
       persistentCache.delete("owner_farms");
@@ -530,7 +513,6 @@ export default function DashboardPage() {
       <HeaderMain />
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
-          {/* Mobile Layout */}
           <div className="block lg:hidden">
             <div className="mb-4">
               <RecentActivities limit={5} />
@@ -573,7 +555,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Desktop Layout */}
           <div className="hidden lg:flex gap-6">
             <div className="w-[330px] flex-shrink-0">
               <RecentActivities limit={5} />

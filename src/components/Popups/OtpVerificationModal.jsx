@@ -1,4 +1,3 @@
-// OtpVerificationModal.jsx - Optimized Version
 import { useState, useEffect, useRef } from "react";
 import { FiInfo } from "react-icons/fi";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -7,21 +6,16 @@ import { useAlert } from "../../AlertContext";
 export default function OtpVerificationModal({ email, onSuccess }) {
   const { showAlert } = useAlert();
 
-  // OTP state
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [touched, setTouched] = useState([false, false, false, false]);
 
-  // Timer state
-  const [countdown, setCountdown] = useState(180); // 3 minutes
+  const [countdown, setCountdown] = useState(180);
 
-  // Loading states
   const [isResending, setIsResending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Refs for input focus
   const inputRefs = useRef([]);
 
-  // Countdown timer
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
@@ -29,27 +23,22 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     }
   }, [countdown]);
 
-  // Handle OTP input change
   const handleChange = (value, index) => {
-    // Only allow digits
     if (/^[0-9]?$/.test(value)) {
       const newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
 
-      // Mark as touched
       const newTouched = [...touched];
       newTouched[index] = false;
       setTouched(newTouched);
 
-      // Auto-focus next input
       if (value && index < otp.length - 1) {
         inputRefs.current[index + 1].focus();
       }
     }
   };
 
-  // Handle backspace
   const handleKeyDown = (e, index) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1].focus();
@@ -59,14 +48,12 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     }
   };
 
-  // Handle input blur
   const handleBlur = (index) => {
     const newTouched = [...touched];
     newTouched[index] = true;
     setTouched(newTouched);
   };
 
-  // Get border class for each input
   const getBorderClass = (index) => {
     if (touched[index] && !otp[index]) {
       return "border-red-500 border-2";
@@ -74,14 +61,11 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     return "border-[#8B4513] focus:border-orange-500 focus:border-2";
   };
 
-  // Handle OTP verification
   const handleVerify = async () => {
-    // Mark all as touched
     setTouched([true, true, true, true]);
 
     const enteredOtp = otp.join("");
 
-    // Validate complete OTP
     if (enteredOtp.length !== 4) {
       showAlert("error", "Please fill in all required fields.");
       return;
@@ -105,7 +89,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
         showAlert("success", "OTP Verification Successful!");
         onSuccess(data.userId);
       } else {
-        // Handle specific error cases
         if (data?.message?.toLowerCase().includes("expired")) {
           showAlert("error", "Expired OTP.");
         } else if (
@@ -135,7 +118,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     }
   };
 
-  // Handle resend OTP
   const handleResend = async () => {
     if (countdown > 0 || isResending) return;
 
@@ -155,7 +137,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
 
       if (response.ok) {
         showAlert("success", "A new OTP has been sent to your email.");
-        setCountdown(180); // Reset to 3 minutes
+        setCountdown(180);
         setOtp(["", "", "", ""]);
         setTouched([false, false, false, false]);
         inputRefs.current[0].focus();
@@ -175,7 +157,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
     }
   };
 
-  // Format countdown time
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -185,7 +166,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
       <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-        {/* Header - Shorter */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
           style={{
@@ -197,6 +177,7 @@ export default function OtpVerificationModal({ email, onSuccess }) {
               src={PapayaLogo}
               alt="Papaia Logo"
               className="w-6 h-8 object-contain"
+              loading="eager"
             />
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-center">
@@ -204,13 +185,11 @@ export default function OtpVerificationModal({ email, onSuccess }) {
           </h2>
         </div>
 
-        {/* Form */}
         <div className="bg-white p-6 sm:p-8">
           <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
             Enter the 4 digit code sent to your email to continue
           </p>
 
-          {/* OTP Inputs */}
           <div className="flex justify-center gap-3 sm:gap-4 mb-6">
             {otp.map((digit, index) => (
               <input
@@ -230,7 +209,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             ))}
           </div>
 
-          {/* Countdown / Resend */}
           <div className="mb-6 text-center">
             {countdown > 0 ? (
               <p className="text-gray-600 text-sm">
@@ -253,7 +231,6 @@ export default function OtpVerificationModal({ email, onSuccess }) {
             )}
           </div>
 
-          {/* Verify Button */}
           <button
             onClick={handleVerify}
             disabled={isLoading || isResending}

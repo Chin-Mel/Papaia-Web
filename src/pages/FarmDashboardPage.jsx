@@ -34,7 +34,6 @@ export default function FarmDashboardPage() {
   const [dateRange, setDateRange] = useState("Last 11 days");
   const [teamsRefreshTrigger, setTeamsRefreshTrigger] = useState(0);
 
-  // Modal states
   const [isAddFarmerModalOpen, setIsAddFarmerModalOpen] = useState(false);
   const [isFarmerDetailModalOpen, setIsFarmerDetailModalOpen] = useState(false);
   const [isRemoveFarmerModalOpen, setIsRemoveFarmerModalOpen] = useState(false);
@@ -47,7 +46,6 @@ export default function FarmDashboardPage() {
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const timeFilters = ["Daily", "Weekly", "Monthly", "Yearly"];
 
-  // Refresh farm data function
   const refreshFarmData = useCallback(async () => {
     if (!farmId) return;
 
@@ -70,7 +68,6 @@ export default function FarmDashboardPage() {
     }
   }, [farmId]);
 
-  // Fetch farm data on mount
   useEffect(() => {
     if (!farmId) return;
 
@@ -99,7 +96,6 @@ export default function FarmDashboardPage() {
 
   const isActive = farmData?.status === "active";
 
-  // Handlers
   const handleAddFarmer = () => {
     if (!isActive) return;
     setIsAddFarmerModalOpen(true);
@@ -112,7 +108,6 @@ export default function FarmDashboardPage() {
   };
 
   const handleViewFarmer = (farmerData) => {
-    // Data is already complete, just set it and open modal
     setSelectedFarmer(farmerData);
     setIsFarmerDetailModalOpen(true);
   };
@@ -166,16 +161,13 @@ export default function FarmDashboardPage() {
 
   const handleStatusToggled = async (newStatus, errorMessage) => {
     if (errorMessage) {
-      // Show error alert
       showAlert("error", errorMessage);
       return;
     }
 
     if (newStatus) {
-      // Update local state immediately
       setFarmData((prev) => ({ ...prev, status: newStatus }));
 
-      // Show success alert
       showAlert(
         "success",
         newStatus === "active"
@@ -183,11 +175,9 @@ export default function FarmDashboardPage() {
           : "Farm Deactivated Successfully!"
       );
 
-      // Navigate to dashboard only if deactivated
       if (newStatus === "inactive") {
         navigate("/dashboard");
       } else {
-        // Stay on page and refresh data
         await refreshFarmData();
       }
     }
@@ -232,7 +222,6 @@ export default function FarmDashboardPage() {
   const goBack = () =>
     navigate("/dashboard", { state: { refreshFarms: false } });
 
-  // Not found state
   if (!loading && !farmData) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -264,7 +253,6 @@ export default function FarmDashboardPage() {
 
       <main className="flex-1 overflow-x-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6">
         <div className="w-full max-w-8xl mx-auto">
-          {/* Header Section */}
           {farmData && (
             <>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -340,7 +328,6 @@ export default function FarmDashboardPage() {
                 </div>
               </div>
 
-              {/* Inactive Farm Banner */}
               {!isActive && (
                 <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 p-4 sm:p-5 rounded-xl mb-4 shadow-sm">
                   <div className="flex items-start gap-3">
@@ -362,7 +349,6 @@ export default function FarmDashboardPage() {
                 </div>
               )}
 
-              {/* Description */}
               <div className="mb-4">
                 <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                   {farmData.description || "No description available"}
@@ -371,7 +357,6 @@ export default function FarmDashboardPage() {
             </>
           )}
 
-          {/* Analytics & Breakdown */}
           <div
             className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 ${
               !isActive ? "pointer-events-none" : ""
@@ -394,8 +379,6 @@ export default function FarmDashboardPage() {
               />
             </div>
           </div>
-
-          {/* Summary & Recent Scans */}
           <div
             className={`grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 pb-4 ${
               !isActive ? "pointer-events-none" : ""
@@ -417,7 +400,6 @@ export default function FarmDashboardPage() {
             </div>
           </div>
 
-          {/* Farm Teams */}
           <div className={`pb-4 ${!isActive ? "pointer-events-none" : ""}`}>
             <FarmTeams
               farmId={farmId}
@@ -431,7 +413,6 @@ export default function FarmDashboardPage() {
 
       <Footer />
 
-      {/* Modals */}
       {farmData && isActive && (
         <>
           <AddFarmerModal

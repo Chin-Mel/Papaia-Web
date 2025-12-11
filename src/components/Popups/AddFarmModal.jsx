@@ -129,7 +129,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
         className="bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
         style={{ maxWidth: "calc(768px - 10px)" }}
       >
-        {/* Modal Header - Smaller */}
         <div className="bg-gradient-to-r from-green-700 to-orange-500 p-3.5 flex items-center gap-2.5 relative">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
@@ -154,10 +153,8 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           </button>
         </div>
 
-        {/* Modal Body - Vertical Layout */}
         <div className="flex-1">
           <div className="p-5 space-y-2.5">
-            {/* Farm Image at Top */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700 block">
                 Farm Picture
@@ -178,6 +175,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                       src={imagePreview}
                       alt="Farm preview"
                       className="w-20 h-20 object-cover rounded-lg border-2 border-gray-200"
+                      loading="eager"
                     />
                     <p className="text-xs text-gray-600 font-medium ml-3">
                       {loading ? "Uploading..." : "Click to change"}
@@ -209,9 +207,7 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               </div>
             </div>
 
-            {/* Name and Location Side by Side */}
             <div className="flex gap-3">
-              {/* Farm Name */}
               <div className="flex-1 space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                   Farm Name
@@ -234,7 +230,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
                 />
               </div>
 
-              {/* Farm Location */}
               <div className="flex-1 space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                   Location/Address
@@ -261,7 +256,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
               </div>
             </div>
 
-            {/* Description Below - Fixed Height with Scroll */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Description
@@ -283,7 +277,6 @@ export default function AddFarmModal({ isOpen, onClose, onSubmit }) {
           </div>
         </div>
 
-        {/* Modal Footer - Compact Buttons */}
         <div className="px-5 py-3 bg-white">
           <div className="flex justify-end gap-2.5">
             <button

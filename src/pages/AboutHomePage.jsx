@@ -1,4 +1,3 @@
-// AboutHomePage.jsx
 import HeaderStart from "../components/Header/HeaderStart";
 import FooterStart from "../components/Footer/FooterStart";
 import EyeIcon from "../assets/eye-icon-about.png";
@@ -91,18 +90,16 @@ export default function AboutHomePage() {
       <HeaderStart />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
-          {/* Background image */}
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
               alt="Agricultural background"
               className="w-full h-full object-cover"
+              loading="eager"
             />
           </div>
 
-          {/* Centered content */}
           <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center mt-5">
             <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
@@ -116,7 +113,6 @@ export default function AboutHomePage() {
           </div>
         </section>
 
-        {/* System Overview */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
@@ -133,7 +129,6 @@ export default function AboutHomePage() {
           </div>
         </section>
 
-        {/* Vision & Mission */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
@@ -144,7 +139,7 @@ export default function AboutHomePage() {
                       src={EyeIcon}
                       alt=""
                       className="w-5 sm:w-7 h-5 sm:h-6"
-                      loading="lazy"
+                      loading="eager"
                     />
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-[#2D5016]">
@@ -165,7 +160,7 @@ export default function AboutHomePage() {
                       src={TargetIcon}
                       alt=""
                       className="w-5 sm:w-6 h-5 sm:h-6"
-                      loading="lazy"
+                      loading="eager"
                     />
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-[#2D5016]">
@@ -182,7 +177,6 @@ export default function AboutHomePage() {
           </div>
         </section>
 
-        {/* Key Features */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -203,7 +197,7 @@ export default function AboutHomePage() {
                       src={feature.icon}
                       alt=""
                       className="w-5 sm:w-8 h-5 sm:h-8"
-                      loading="lazy"
+                      loading="eager"
                     />
                   </div>
                   <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2 sm:mb-4">
@@ -218,7 +212,6 @@ export default function AboutHomePage() {
           </div>
         </section>
 
-        {/* How to Use */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -250,7 +243,6 @@ export default function AboutHomePage() {
           </div>
         </section>
 
-        {/* Meet the Team */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 lg:px-20">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -265,12 +257,7 @@ export default function AboutHomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
               {developers.map((dev, index) => (
                 <div key={index} className="text-center">
-                  <img
-                    src={dev.image}
-                    alt={dev.name}
-                    className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover mx-auto mb-4 sm:mb-6"
-                    loading="lazy"
-                  />
+                  <img src={dev.image} alt={dev.name} loading="eager" />
                   <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2">
                     {dev.name}
                   </h3>

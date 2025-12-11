@@ -1,11 +1,9 @@
-// TermsModal.jsx - Display Only Version (No Agree/Disagree Buttons)
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 
 export default function TermsModal({ isOpen, onClose }) {
   const modalRef = useRef(null);
 
-  // Handle click outside to close modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -22,7 +20,6 @@ export default function TermsModal({ isOpen, onClose }) {
     };
   }, [isOpen, onClose]);
 
-  // Handle escape key
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -47,7 +44,6 @@ export default function TermsModal({ isOpen, onClose }) {
         ref={modalRef}
         className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden max-h-[85vh] flex flex-col"
       >
-        {/* Header with Close Button */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4 text-center relative">
           <h3 className="text-xl sm:text-2xl font-bold text-white">
             Terms & Conditions
@@ -64,7 +60,6 @@ export default function TermsModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Content with Scrollbar */}
         <div className="p-6 overflow-y-auto flex-1">
           <div className="text-gray-700 space-y-4 text-sm leading-relaxed">
             <p>

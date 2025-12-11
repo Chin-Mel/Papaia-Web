@@ -1,4 +1,3 @@
-//new
 import { useState, useEffect, useRef } from "react";
 import { X, Save, Upload, Loader2, Leaf } from "lucide-react";
 import PapayaLogo from "../../assets/ic_papaia_logo_no_word.png";
@@ -156,8 +155,6 @@ export default function EditFarmModal({
   const getBorderClass = (field) =>
     focusedField === field ? "border-orange-500" : "border-gray-300";
 
-  // Inside the return statement - replace everything inside return():
-
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
@@ -165,7 +162,6 @@ export default function EditFarmModal({
         className="bg-white rounded-2xl shadow-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
         style={{ maxWidth: "calc(768px - 10px)" }}
       >
-        {/* Modal Header */}
         <div className="bg-gradient-to-r from-green-700 to-orange-500 p-3.5 flex items-center gap-2.5 relative">
           <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center flex-shrink-0">
             <img
@@ -190,13 +186,11 @@ export default function EditFarmModal({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="flex-1">
           <div className="p-5 space-y-2.5">
             <label className="text-sm font-medium text-gray-700">
               Farm Image
             </label>
-            {/* Farm Image at Top */}
             <div
               className="relative w-full rounded-xl overflow-hidden"
               style={{ height: "120px" }}
@@ -206,6 +200,7 @@ export default function EditFarmModal({
                   src={imagePreview}
                   alt="Farm preview"
                   className="w-full h-full object-cover"
+                  loading="eager"
                 />
               ) : (
                 <div
@@ -215,7 +210,6 @@ export default function EditFarmModal({
                   <Upload className="w-8 h-8 text-orange-400" />
                 </div>
               )}
-              {/* Change Image Button */}
               <button
                 onClick={() =>
                   !isLoading &&
@@ -236,9 +230,7 @@ export default function EditFarmModal({
               />
             </div>
 
-            {/* Name and Location Side by Side */}
             <div className="flex gap-3">
-              {/* Farm Name */}
               <div className="flex-1 space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                   Farm Name
@@ -261,7 +253,6 @@ export default function EditFarmModal({
                 />
               </div>
 
-              {/* Farm Location */}
               <div className="flex-1 space-y-1.5">
                 <label className="text-sm font-semibold text-gray-700 flex items-center gap-1">
                   Location/Address
@@ -285,7 +276,6 @@ export default function EditFarmModal({
               </div>
             </div>
 
-            {/* Description Below */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold text-gray-700">
                 Description
@@ -308,7 +298,6 @@ export default function EditFarmModal({
           </div>
         </div>
 
-        {/* Modal Footer */}
         <div className="px-5 py-3 bg-white">
           <div className="flex justify-end gap-2.5">
             <button

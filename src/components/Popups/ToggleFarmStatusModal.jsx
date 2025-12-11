@@ -20,7 +20,6 @@ export default function ToggleFarmStatusModal({
   const [isLoading, setIsLoading] = useState(false);
   const modalRef = useRef(null);
 
-  // Capture the initial status when modal opens
   const [initialStatus, setInitialStatus] = useState(null);
 
   useEffect(() => {
@@ -33,7 +32,6 @@ export default function ToggleFarmStatusModal({
 
   useEffect(() => {
     if (isOpen && farmData) {
-      // Capture the status when modal opens
       setInitialStatus(farmData.status);
     }
     if (!isOpen) {
@@ -62,14 +60,11 @@ export default function ToggleFarmStatusModal({
       const data = await response.json();
 
       if (response.ok && data.status === "success") {
-        // Close immediately on success
         onClose();
 
-        // Clear cache and refresh
         if (window.clearFarmCache) window.clearFarmCache();
         if (window.refreshActivities) window.refreshActivities();
 
-        // Notify parent with new status
         if (onStatusToggled) {
           onStatusToggled(data.newStatus);
         }
@@ -77,7 +72,6 @@ export default function ToggleFarmStatusModal({
         throw new Error(data.message || "Failed to toggle farm status");
       }
     } catch (error) {
-      // On error, keep modal open and show error in parent
       onClose();
       if (onStatusToggled) {
         onStatusToggled(null, error.message);
@@ -89,7 +83,6 @@ export default function ToggleFarmStatusModal({
 
   if (!isOpen || !farmData || !initialStatus) return null;
 
-  // Use the captured initial status for consistent UI
   const isActive = initialStatus === "active";
   const actionText = isActive ? "Deactivate" : "Reactivate";
 

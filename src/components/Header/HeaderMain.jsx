@@ -122,6 +122,7 @@ export default function HeaderMain() {
                 src={PapaiaLogo}
                 alt="Papaia Logo"
                 className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9 object-contain"
+                loading="eager"
               />
             </Link>
 
@@ -222,6 +223,7 @@ export default function HeaderMain() {
                 src={hamburgerMenuIcon}
                 alt="Menu"
                 className="w-6 h-6 sm:w-7 sm:h-7"
+                loading="eager"
               />
             </button>
           </div>

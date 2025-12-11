@@ -1,4 +1,3 @@
-// ForgotPasswordPage.jsx - Optimized Version
 import { useState } from "react";
 import { MdEmail } from "react-icons/md";
 import HeaderStart from "../components/Header/HeaderStart";
@@ -12,23 +11,19 @@ import { useAlert } from "../AlertContext";
 export default function ForgotPasswordPage() {
   const { showAlert } = useAlert();
 
-  // Form state
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [touched, setTouched] = useState(false);
 
-  // Modal states
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [showNewPasswordModal, setShowNewPasswordModal] = useState(false);
   const [verifiedUserId, setVerifiedUserId] = useState(null);
 
-  // Email validation
   const validateEmail = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(value.trim());
   };
 
-  // Get border class based on validation
   const getBorderClass = () => {
     if (touched && !email.trim()) {
       return "border-red-500 border-2";
@@ -36,12 +31,10 @@ export default function ForgotPasswordPage() {
     return "border-gray-300 focus:border-orange-500 focus:border-2";
   };
 
-  // Handle field blur
   const handleBlur = () => {
     setTouched(true);
   };
 
-  // Handle field change
   const handleEmailChange = (value) => {
     setEmail(value);
     if (touched) {
@@ -49,22 +42,18 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Mark as touched
     setTouched(true);
 
     const trimmedEmail = email.trim();
 
-    // Validate required field
     if (!trimmedEmail) {
       showAlert("error", "Please fill in the required field.");
       return;
     }
 
-    // Validate email format
     if (!validateEmail(trimmedEmail)) {
       showAlert("error", "Invalid email.");
       return;
@@ -88,7 +77,6 @@ export default function ForgotPasswordPage() {
         showAlert("success", "OTP Sent. Please check your Email!");
         setShowOtpModal(true);
       } else {
-        // Handle specific error cases
         if (
           data?.message?.toLowerCase().includes("farmer") ||
           data?.role === "farmer"
@@ -126,7 +114,6 @@ export default function ForgotPasswordPage() {
       >
         {!showOtpModal && !showNewPasswordModal && (
           <div className="relative z-10 w-full max-w-md mx-auto mt-16 sm:mt-20 rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.15)] overflow-hidden">
-            {/* Header */}
             <div
               className="flex flex-col items-center justify-center text-white p-6"
               style={{
@@ -138,6 +125,7 @@ export default function ForgotPasswordPage() {
                   src={PapayaLogo}
                   alt="Papaia Logo"
                   className="w-7 h-9 object-contain"
+                  loading="eager"
                 />
               </div>
 
@@ -149,7 +137,6 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-8">
               <div className="space-y-2">
                 <label
@@ -190,7 +177,6 @@ export default function ForgotPasswordPage() {
           </div>
         )}
 
-        {/* OTP Verification Modal */}
         {showOtpModal && (
           <OtpVerificationModal
             email={email}
@@ -202,7 +188,6 @@ export default function ForgotPasswordPage() {
           />
         )}
 
-        {/* New Password Modal */}
         {showNewPasswordModal && verifiedUserId && (
           <NewPasswordModal user_Id={verifiedUserId} />
         )}

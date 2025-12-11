@@ -1,4 +1,3 @@
-// NewPasswordModal.jsx - Matched to OTP Modal Dimensions
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
@@ -11,22 +10,18 @@ export default function NewPasswordModal({ user_Id }) {
   const { showAlert } = useAlert();
   const navigate = useNavigate();
 
-  // Form state
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Password visibility
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Touched state
   const [touched, setTouched] = useState({
     newPassword: false,
     confirmPassword: false,
   });
 
-  // Get border class based on validation
   const getBorderClass = (fieldName, value) => {
     if (touched[fieldName] && !value.trim()) {
       return "border-red-500 border-2";
@@ -34,12 +29,10 @@ export default function NewPasswordModal({ user_Id }) {
     return "border-gray-300 focus:border-orange-500 focus:border-2";
   };
 
-  // Handle field blur
   const handleBlur = (fieldName) => {
     setTouched((prev) => ({ ...prev, [fieldName]: true }));
   };
 
-  // Handle field change
   const handleFieldChange = (fieldName, value) => {
     if (fieldName === "newPassword") {
       setNewPassword(value);
@@ -47,31 +40,26 @@ export default function NewPasswordModal({ user_Id }) {
       setConfirmPassword(value);
     }
 
-    // Clear touched state when user starts typing
     if (touched[fieldName]) {
       setTouched((prev) => ({ ...prev, [fieldName]: false }));
     }
   };
 
-  // Handle save password
   const handleSavePassword = async (e) => {
     if (e) {
       e.preventDefault();
     }
 
-    // Mark all as touched
     setTouched({
       newPassword: true,
       confirmPassword: true,
     });
 
-    // Validate required fields
     if (!newPassword || !confirmPassword) {
       showAlert("error", "Please fill in all required fields.");
       return;
     }
 
-    // Check if passwords match
     if (newPassword !== confirmPassword) {
       showAlert("error", "Passwords do not match.");
       return;
@@ -117,7 +105,6 @@ export default function NewPasswordModal({ user_Id }) {
     }
   };
 
-  // Handle Enter key press
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -128,7 +115,6 @@ export default function NewPasswordModal({ user_Id }) {
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-12 pt-16 sm:pt-20">
       <div className="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
-        {/* Header - Matched to OTP Modal */}
         <div
           className="flex flex-col items-center justify-center text-white p-4"
           style={{
@@ -140,6 +126,7 @@ export default function NewPasswordModal({ user_Id }) {
               src={PapayaLogo}
               alt="Papaia Logo"
               className="w-6 h-8 object-contain"
+              loading="eager"
             />
           </div>
           <h2 className="text-lg sm:text-xl font-bold text-center">
@@ -147,13 +134,11 @@ export default function NewPasswordModal({ user_Id }) {
           </h2>
         </div>
 
-        {/* Form - Matched padding to OTP Modal */}
         <div className="bg-white p-6 sm:p-8">
           <p className="text-base sm:text-lg text-center text-[#00712D] mb-6 font-medium">
             Set a secure password for your account
           </p>
 
-          {/* New Password Field */}
           <div className="space-y-2 mb-5">
             <label className="text-gray-700 text-sm font-medium block">
               New Password <span className="text-red-500">*</span>
@@ -183,12 +168,12 @@ export default function NewPasswordModal({ user_Id }) {
                   src={showNewPassword ? EyeOffIcon : EyeIcon}
                   alt=""
                   className="w-5 h-5"
+                  loading="eager"
                 />
               </button>
             </div>
           </div>
 
-          {/* Confirm Password Field */}
           <div className="space-y-2 mb-6">
             <label className="text-gray-700 text-sm font-medium block">
               Confirm New Password <span className="text-red-500">*</span>
@@ -218,12 +203,12 @@ export default function NewPasswordModal({ user_Id }) {
                   src={showConfirmPassword ? EyeOffIcon : EyeIcon}
                   alt=""
                   className="w-5 h-5"
+                  loading="eager"
                 />
               </button>
             </div>
           </div>
 
-          {/* Reset Button */}
           <button
             type="button"
             onClick={handleSavePassword}

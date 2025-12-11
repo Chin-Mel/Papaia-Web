@@ -296,7 +296,6 @@ export default function EditProfilePage() {
     navigate("/login");
   };
 
-  // Show error state if authentication fails
   if (error) {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -327,7 +326,6 @@ export default function EditProfilePage() {
     );
   }
 
-  // No loading state - show content immediately!
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <HeaderMain />
@@ -341,7 +339,6 @@ export default function EditProfilePage() {
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Page Title */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">
               Edit Profile
@@ -351,7 +348,6 @@ export default function EditProfilePage() {
             </p>
           </div>
 
-          {/* Profile Header Card */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 sm:p-8 mb-6">
             <div className="flex flex-col items-center text-center">
               <div className="relative mb-4">
@@ -382,7 +378,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          {/* Personal Information Card */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-slate-200">
               <div>
@@ -453,7 +448,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          {/* Security & Privacy Card */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
             <h2 className="text-xl font-bold text-slate-900 mb-4 pb-4 border-b border-slate-200 flex items-center gap-2">
               <Shield className="w-5 h-5 text-orange-500" />
@@ -478,7 +472,6 @@ export default function EditProfilePage() {
             </div>
           </div>
 
-          {/* Danger Zone Card */}
           <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-6">
             <h2 className="text-xl font-bold text-red-700 mb-4 pb-4 border-b border-red-200 flex items-center gap-2">
               <AlertCircle className="w-5 h-5" />

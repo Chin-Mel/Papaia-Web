@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom"; // Removed BrowserRouter
+import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import { Navigate } from "react-router-dom";
 import GlobalAlert from "./components/GlobalAlert";
@@ -24,11 +24,9 @@ import ManageBillingPage from "./pages/ManageBillingPage";
 
 function App() {
   return (
-    //<AuthProvider>
     <>
       <GlobalAlert />
       <Routes>
-        {/* Public Routes */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
@@ -37,7 +35,6 @@ function App() {
         <Route path="/pricing-home" element={<PricingHomePage />} />
         <Route path="/demo" element={<DemoPage />} />
 
-        {/* Protected Routes */}
         <Route
           path="/dashboard"
           element={

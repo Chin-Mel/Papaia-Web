@@ -22,7 +22,6 @@ export default function ResetPasswordFlow({ userId }) {
       );
 
       if (res.ok) {
-        // ✅ Directly redirect to login page
         window.location.href = "/signin";
       } else {
         const data = await res.json();

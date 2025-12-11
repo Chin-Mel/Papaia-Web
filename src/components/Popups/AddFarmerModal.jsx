@@ -76,10 +76,8 @@ export default function AddFarmerModal({
       const data = await response.json();
 
       if (!response.ok) {
-        // Handle specific error cases
         const errorMessage = data?.message?.toLowerCase() || "";
 
-        // Case 1: Farmer is already added to this farm
         if (
           errorMessage.includes("already added") ||
           errorMessage.includes("already assigned") ||
@@ -93,7 +91,6 @@ export default function AddFarmerModal({
           return;
         }
 
-        // Case 2: Farmer is currently active in another farm
         if (
           errorMessage.includes("another farm") ||
           errorMessage.includes("different farm") ||
@@ -107,7 +104,6 @@ export default function AddFarmerModal({
           return;
         }
 
-        // Case 3: Farmer has been restored and is still active elsewhere
         if (
           errorMessage.includes("restored") ||
           errorMessage.includes("active")
@@ -120,7 +116,6 @@ export default function AddFarmerModal({
           return;
         }
 
-        // Case 4: Invalid farmer ID (doesn't exist in system)
         if (
           errorMessage.includes("not found") ||
           errorMessage.includes("invalid") ||
@@ -131,18 +126,15 @@ export default function AddFarmerModal({
           return;
         }
 
-        // Default error: Invalid farmer ID
         showAlert("error", "Invalid farmer ID");
         setIsLoading(false);
         return;
       }
 
-      // Call the callback to refresh farmer list
       if (onFarmerAdded) {
         onFarmerAdded(data.farmer);
       }
 
-      // Close modal after successful addition
       onClose();
     } catch (err) {
       console.error("Add farmer error:", err);

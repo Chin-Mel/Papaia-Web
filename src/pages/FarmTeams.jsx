@@ -85,7 +85,6 @@ export default function FarmTeams({
       }
 
       try {
-        // Fetch active farmers with full details
         const activeFarmersResponse = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers/${farmId}`,
           {
@@ -97,7 +96,6 @@ export default function FarmTeams({
 
         const activeFarmersData = await activeFarmersResponse.json();
 
-        // Fetch archived farmers
         const archivedFarmersResponse = await fetch(
           `https://papaiaapi.onrender.com/api/owner/farmers_backup/${farmId}`,
           {
@@ -109,7 +107,6 @@ export default function FarmTeams({
 
         const archivedFarmersData = await archivedFarmersResponse.json();
 
-        // Get full details for active farmers in parallel
         const activeFarmersList = activeFarmersData.farmers || [];
         const farmersWithDetails = await Promise.all(
           activeFarmersList.map(async (farmer) => {
@@ -136,7 +133,6 @@ export default function FarmTeams({
           })
         );
 
-        // Format archived farmers
         const archivedFarmersFormatted =
           archivedFarmersData.status === "success" &&
           archivedFarmersData.removedFarmers
@@ -147,7 +143,6 @@ export default function FarmTeams({
               }))
             : [];
 
-        // Combine all farmers
         setAllFarmersData([...farmersWithDetails, ...archivedFarmersFormatted]);
       } catch (error) {
         if (error.name !== "AbortError") {
@@ -163,11 +158,9 @@ export default function FarmTeams({
     [farmId, isInitialLoad]
   );
 
-  // Initial fetch and polling
   useEffect(() => {
     fetchAllFarmers();
 
-    // Poll every 2 seconds
     const interval = setInterval(() => fetchAllFarmers(true), 2000);
 
     return () => {
@@ -178,7 +171,6 @@ export default function FarmTeams({
     };
   }, [fetchAllFarmers]);
 
-  // Refresh when refreshTrigger changes
   useEffect(() => {
     if (refreshTrigger) {
       fetchAllFarmers(true);
@@ -279,7 +271,6 @@ export default function FarmTeams({
     [totalPages]
   );
 
-  // Handle view farmer - pass complete data immediately
   const handleViewFarmer = useCallback(
     (farmer) => {
       onViewFarmer(farmer);
@@ -302,7 +293,6 @@ export default function FarmTeams({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 mb-20">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 pb-4 border-b border-gray-200">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-50 rounded-lg">
@@ -345,7 +335,6 @@ export default function FarmTeams({
         </div>
       </div>
 
-      {/* Table Header - Desktop */}
       <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 mb-3 text-gray-600 text-xs font-semibold uppercase bg-gray-50 px-4 py-3 rounded-lg">
         <div className="col-span-3">Farmer</div>
         <div className="col-span-2">Farmer ID</div>
@@ -354,7 +343,6 @@ export default function FarmTeams({
         <div className="col-span-2">Actions</div>
       </div>
 
-      {/* Farmers List */}
       {currentFarmers.length === 0 ? (
         <div className="text-center py-8 sm:py-12">
           <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -397,7 +385,6 @@ export default function FarmTeams({
                     : "border-gray-200 hover:border-green-300 hover:shadow-md"
                 }`}
               >
-                {/* Mobile Layout */}
                 <div className="sm:hidden">
                   <div className="flex items-start gap-3 mb-3">
                     <div className="relative">
@@ -461,7 +448,6 @@ export default function FarmTeams({
                   </button>
                 </div>
 
-                {/* Desktop Layout */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 items-center">
                   <div className="col-span-3 flex items-center gap-3">
                     <div className="relative">
@@ -543,7 +529,6 @@ export default function FarmTeams({
         </div>
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-200">
           <div className="text-sm text-gray-600 font-medium">

@@ -7,9 +7,6 @@
   }
 }
 
-/* Remove all @font-face blocks - we're using Google Fonts now */
-
-/* Universal reset */
 html,
 body {
   margin: 0;
@@ -19,20 +16,18 @@ body {
   font-family: "Inter", sans-serif;
 }
 
-/* Hide scrollbar but allow scrolling */
 ::-webkit-scrollbar {
-  display: none; /* Chrome, Safari */
+  display: none;
 }
 
 html {
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
 
 body {
-  overflow-y: auto; /* vertical scroll only when needed */
+  overflow-y: auto;
 }
 
-/* Global modal styles */
 .modal-open {
   overflow: hidden;
 }

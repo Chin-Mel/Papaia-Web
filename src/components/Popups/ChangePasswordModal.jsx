@@ -31,12 +31,10 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
   }, [isOpen]);
 
   const handleUpdatePassword = async () => {
-    // Reset errors
     setCurrentPasswordError(false);
     setNewPasswordError(false);
     setConfirmPasswordError(false);
 
-    // Basic validation
     if (!currentPassword.trim()) {
       setCurrentPasswordError(true);
       showAlert("error", "Please enter your current password");
@@ -55,7 +53,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
       return;
     }
 
-    // Remove length, match, and difference checks
     setIsLoading(true);
 
     try {
@@ -123,7 +120,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col"
       >
-        {/* Header */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
@@ -146,10 +142,8 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           </button>
         </div>
 
-        {/* Body */}
         <div className="overflow-y-auto flex-1">
           <div className="px-6 py-6 space-y-4">
-            {/* Current Password */}
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Current Password
@@ -183,7 +177,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* New Password */}
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 New Password
@@ -222,7 +215,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
               )}
             </div>
 
-            {/* Confirm New Password */}
             <div>
               <label className="block text-gray-700 text-sm font-medium mb-2">
                 Confirm New Password
@@ -261,7 +253,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
               )}
             </div>
 
-            {/* Info Box */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <p className="text-xs text-blue-800">
                 <strong>Note:</strong> After changing your password, you'll be
@@ -271,7 +262,6 @@ export default function ChangePasswordModal({ isOpen, onClose }) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex gap-3 px-6 pb-6 pt-2 border-t border-gray-100">
           <button
             onClick={handleClose}

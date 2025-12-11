@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { BarChart3 } from "lucide-react";
 
-// Function to clean text - remove emojis and asterisks
 const cleanText = (text) => {
   if (!text) return "";
   return text
@@ -25,7 +24,6 @@ export default function FarmAnalyticsSummary({
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
 
-  // Map timeFilter and dateRange to API endpoints
   const getApiEndpoints = useCallback((filter, range) => {
     const endpoints = {
       Daily: {
@@ -91,7 +89,6 @@ export default function FarmAnalyticsSummary({
     }
   }, [farmId, timeFilter, dateRange, getApiEndpoints]);
 
-  // Fetch data when dependencies change
   useEffect(() => {
     fetchData();
 
@@ -143,7 +140,6 @@ export default function FarmAnalyticsSummary({
       className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
       style={{ height: FIXED_HEIGHT }}
     >
-      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <BarChart3 className="w-5 h-5 text-green-700" />
         <h2 className="text-lg sm:text-xl font-bold text-gray-800">
@@ -151,9 +147,7 @@ export default function FarmAnalyticsSummary({
         </h2>
       </div>
 
-      {/* Summary Content */}
       <div className="space-y-4 flex-1 overflow-y-auto">
-        {/* AI-Generated Summary */}
         {summaryData?.summary && (
           <div className="pb-4">
             <p className="text-sm sm:text-base text-gray-700 leading-relaxed">

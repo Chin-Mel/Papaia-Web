@@ -21,7 +21,6 @@ export default function ScanDetailsPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get pre-fetched data from navigation state
   const preFetchedData = location.state?.scanData;
   const preFetchedFarm = location.state?.farmData;
   const preFetchedFarmer = location.state?.farmerData;
@@ -39,7 +38,6 @@ export default function ScanDetailsPage() {
       return;
     }
 
-    // Use pre-fetched data from navigation state
     if (preFetchedData && preFetchedFarm) {
       const normalizedScan = {
         ...preFetchedData,
@@ -61,7 +59,6 @@ export default function ScanDetailsPage() {
       return;
     }
 
-    // Fallback: redirect to scan history if no data provided
     navigate("/scan-history", { replace: true });
   }, [scanId, farmId, navigate, preFetchedData, preFetchedFarm]);
 
@@ -245,7 +242,7 @@ export default function ScanDetailsPage() {
                   }
                   alt="Scan"
                   className="w-full h-80 object-cover rounded-lg mb-4 border border-gray-200"
-                  loading="lazy"
+                  loading="eager"
                   onError={(e) => {
                     e.target.src =
                       "https://via.placeholder.com/400x300?text=No+Image";

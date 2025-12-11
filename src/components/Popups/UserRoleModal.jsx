@@ -30,7 +30,6 @@ export default function UserRoleModal({ isOpen, onSelect }) {
     alert("Link copied to clipboard!");
   };
 
-  // App Installation Modal
   if (showAppModal) {
     return (
       <div className="fixed inset-0 z-50 pt-16 flex items-center justify-center p-4">
@@ -86,11 +85,9 @@ export default function UserRoleModal({ isOpen, onSelect }) {
     );
   }
 
-  // Role Selection Modal
   return (
     <div className="fixed inset-0 z-40 pt-16 flex items-center justify-center p-4">
       <div className="bg-gradient-to-br from-green-50 to-orange-50 rounded-3xl shadow-2xl w-full max-w-3xl p-6 sm:p-8 relative">
-        {/* Back Button - Top Left */}
         <button
           onClick={handleGoBack}
           className="absolute top-4 left-4 text-gray-600 hover:text-gray-800 transition-colors"
@@ -98,7 +95,6 @@ export default function UserRoleModal({ isOpen, onSelect }) {
           <ArrowLeft className="w-6 h-6" />
         </button>
 
-        {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-[#2D5016] mb-2">
             Welcome to Papaia
@@ -108,26 +104,20 @@ export default function UserRoleModal({ isOpen, onSelect }) {
           </p>
         </div>
 
-        {/* Role Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          {/* Farm Owner Card */}
           <div className="bg-white rounded-2xl border-3 border-orange-400 p-5 sm:p-6 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-200">
-            {/* Icon */}
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
               <User className="w-7 h-7 sm:w-8 sm:h-8 text-orange-500" />
             </div>
 
-            {/* Title */}
             <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2 sm:mb-3">
               I am a Farm Owner
             </h3>
 
-            {/* Description */}
             <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
               Manage your farm operations and team
             </p>
 
-            {/* Button */}
             <button
               onClick={handleOwnerClick}
               className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95 text-sm sm:text-base"
@@ -136,24 +126,19 @@ export default function UserRoleModal({ isOpen, onSelect }) {
             </button>
           </div>
 
-          {/* Farmer Card */}
           <div className="bg-white rounded-2xl border-3 border-green-600 p-5 sm:p-6 flex flex-col items-center text-center shadow-lg hover:shadow-xl transition-all duration-200">
-            {/* Icon */}
             <div className="w-14 h-14 sm:w-16 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
               <Sprout className="w-7 h-7 sm:w-8 sm:h-8 text-green-600" />
             </div>
 
-            {/* Title */}
             <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2 sm:mb-3">
               I am a Farmer
             </h3>
 
-            {/* Description */}
             <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
               Join your farm team and track activities
             </p>
 
-            {/* Button */}
             <button
               onClick={handleFarmerClick}
               className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-2.5 sm:py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg active:scale-95 text-sm sm:text-base"

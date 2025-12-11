@@ -1,9 +1,7 @@
-// Security utility functions
-
 /**
- * Sanitize user input to prevent XSS attacks
- * @param {string} input - User input to sanitize
- * @returns {string} - Sanitized input
+ *
+ * @param {string} input
+ * @returns {string}
  */
 export function sanitizeInput(input) {
   if (typeof input !== "string") return input;
@@ -18,13 +16,13 @@ export function sanitizeInput(input) {
 }
 
 /**
- * Secure API call with JWT from localStorage
- * @param {string} url - API endpoint
- * @param {Object} options - Fetch options
- * @returns {Promise} - API response
+ *
+ * @param {string} url
+ * @param {Object} options
+ * @returns {Promise}
  */
 export async function secureApiCall(url, options = {}) {
-  const token = localStorage.getItem("token"); // JWT from login
+  const token = localStorage.getItem("token");
 
   const defaultOptions = {
     headers: {
@@ -47,7 +45,6 @@ export async function secureApiCall(url, options = {}) {
 
     if (!response.ok) {
       if (response.status === 401) {
-        // Unauthorized → clear token & redirect
         localStorage.removeItem("token");
         window.location.href = "/sign-in";
         throw new Error("Authentication required");
@@ -66,17 +63,11 @@ export async function secureApiCall(url, options = {}) {
   }
 }
 
-/**
- * Validate email format
- */
 export function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-/**
- * Validate password strength
- */
 export function validatePassword(password) {
   const minLength = 8;
   const hasUpperCase = /[A-Z]/.test(password);
@@ -109,9 +100,6 @@ export function validatePassword(password) {
   };
 }
 
-/**
- * Clear sensitive data from localStorage and sessionStorage
- */
 export function clearSensitiveData() {
   const safeKeys = ["theme", "language", "ui-preferences"];
 
@@ -128,27 +116,18 @@ export function clearSensitiveData() {
   });
 }
 
-/**
- * Logout function - clear token and redirect
- */
 export function secureLogout() {
-  // Clear token + other data
   localStorage.removeItem("token");
   clearSensitiveData();
 
-  // Redirect to login page
   window.location.href = "/sign-in";
 }
 
 export const getLoggedInUser = () => {
-  const user = localStorage.getItem("user"); // or "authUser" depending on your app
+  const user = localStorage.getItem("user");
   return user ? JSON.parse(user) : null;
 };
 
-/**
- *
- * Confirm destructive action with user
- */
 export function confirmDestructiveAction(action, itemName) {
   return new Promise((resolve) => {
     const confirmed = window.confirm(

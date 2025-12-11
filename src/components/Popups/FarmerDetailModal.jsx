@@ -13,7 +13,6 @@ import { useEffect, useRef, useMemo, useState } from "react";
 import { useAlert } from "../../AlertContext";
 import UserAvatar from "../UserAvatar";
 
-// Farmer Detail Modal
 export default function FarmerDetailModal({
   isOpen,
   onClose,

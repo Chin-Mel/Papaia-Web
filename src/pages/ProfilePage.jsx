@@ -19,7 +19,6 @@ import PrivacyModal from "../components/Popups/PrivacyModal";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  // Initialize with cached data immediately - no loading state needed!
   const [userData, setUserData] = useState(() => getLoggedInUser());
   const [farmCount, setFarmCount] = useState(0);
   const [showTermsModal, setShowTermsModal] = useState(false);
@@ -32,7 +31,6 @@ export default function ProfilePage() {
       return;
     }
 
-    // Fetch fresh data in the background without showing loading
     const fetchFreshData = async () => {
       try {
         const [userRes, farmRes] = await Promise.all([
@@ -88,15 +86,12 @@ export default function ProfilePage() {
     return userData.username || "N/A";
   };
 
-  // No loading state - show content immediately!
-  // No loading state - show content immediately!
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex flex-col">
       <HeaderMain />
 
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-6xl mx-auto">
-          {/* Page Title */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-slate-900 mb-2">Profile</h1>
             <p className="text-slate-600">
@@ -104,7 +99,6 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          {/* Header Section */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6 mb-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="relative flex-shrink-0">
@@ -138,9 +132,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Personal Information */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl shadow-sm border border-slate-200/60 p-6">
                 <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -189,7 +181,6 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Account Settings */}
             <div className="flex flex-col gap-4">
               <button
                 onClick={() => navigate("/billing")}
@@ -227,7 +218,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* Modals */}
       {showTermsModal && (
         <TermsModal
           isOpen={showTermsModal}

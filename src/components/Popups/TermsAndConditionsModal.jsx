@@ -1,10 +1,8 @@
-// TermsAndConditionsModal.jsx - Optimized Version
 import { useEffect, useRef } from "react";
 
 export default function TermsAndConditionsModal({ isOpen, onClose, onAgree }) {
   const modalRef = useRef(null);
 
-  // Handle click outside to close modal
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
@@ -36,7 +34,6 @@ export default function TermsAndConditionsModal({ isOpen, onClose, onAgree }) {
         ref={modalRef}
         className="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.35)] overflow-hidden max-h-[85vh] flex flex-col"
       >
-        {/* Header - Shorter */}
         <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] px-6 py-4 text-center">
           <h3 className="text-xl sm:text-2xl font-bold text-white">
             Terms & Conditions
@@ -46,7 +43,6 @@ export default function TermsAndConditionsModal({ isOpen, onClose, onAgree }) {
           </p>
         </div>
 
-        {/* Content with Scrollbar */}
         <div className="p-6 overflow-y-auto flex-1">
           <div className="text-gray-700 space-y-4 text-sm leading-relaxed">
             <p>
@@ -310,7 +306,6 @@ export default function TermsAndConditionsModal({ isOpen, onClose, onAgree }) {
           </div>
         </div>
 
-        {/* Buttons */}
         <div className="p-6 pt-0 flex gap-3">
           <button
             onClick={onClose}

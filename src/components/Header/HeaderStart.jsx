@@ -1,4 +1,3 @@
-// HeaderStart.jsx - Optimized Version
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
@@ -46,7 +45,6 @@ export default function HeaderStart() {
         }}
       >
         <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-full flex items-center justify-between">
-          {/* Logo Section */}
           <Link
             to="/"
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
@@ -56,6 +54,7 @@ export default function HeaderStart() {
                 src={PapaiaLogo}
                 alt="Papaia Logo"
                 className="w-5 h-7 sm:w-6 sm:h-8 md:w-7 md:h-9 object-contain"
+                loading="eager"
               />
             </div>
             <span className="text-base sm:text-lg font-bold text-green-900">
@@ -63,7 +62,6 @@ export default function HeaderStart() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden lg:flex gap-5" role="navigation">
             {navItems.map((item) => (
               <Link
@@ -80,7 +78,6 @@ export default function HeaderStart() {
             ))}
           </nav>
 
-          {/* Mobile Menu Toggle */}
           <button
             className="lg:hidden text-black hover:text-white hover:bg-gradient-to-r hover:from-[#4A7C59] hover:to-[#2D5016] rounded-md p-1.5 transition-all duration-200"
             onClick={handleMenuToggle}
@@ -92,7 +89,6 @@ export default function HeaderStart() {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       {isMenuOpen && (
         <div className="lg:hidden absolute top-14 sm:top-16 left-0 w-full bg-white shadow-lg border-t border-gray-200">
           <nav

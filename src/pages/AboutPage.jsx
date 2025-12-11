@@ -12,7 +12,6 @@ import EstomoImage from "../assets/estomo.jpg";
 import DuarteImage from "../assets/duarte.png";
 import IgotImage from "../assets/igot.png";
 
-// Memoized Feature Card
 const FeatureCard = memoAbout(({ icon, title, description }) => (
   <div className="text-center p-4 sm:p-6">
     <div className="w-16 sm:w-20 h-16 sm:h-20 rounded-full bg-[#16A34A]/10 flex items-center justify-center mx-auto mb-4 sm:mb-6">
@@ -20,7 +19,7 @@ const FeatureCard = memoAbout(({ icon, title, description }) => (
         src={icon}
         alt=""
         className="w-5 sm:w-8 h-5 sm:h-8"
-        loading="lazy"
+        loading="eager"
         width="32"
         height="32"
       />
@@ -34,7 +33,6 @@ const FeatureCard = memoAbout(({ icon, title, description }) => (
   </div>
 ));
 
-// Memoized Step Card
 const StepCard = memoAbout(({ number, title, description }) => (
   <div className="text-center">
     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#FF8C42] flex items-center justify-center mx-auto mb-4 sm:mb-6">
@@ -51,14 +49,13 @@ const StepCard = memoAbout(({ number, title, description }) => (
   </div>
 ));
 
-// Memoized Developer Card
 const DeveloperCard = memoAbout(({ name, role, image, description }) => (
   <div className="text-center">
     <img
       src={image}
       alt={name}
       className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover mx-auto mb-4 sm:mb-6"
-      loading="lazy"
+      loading="eager"
       width="128"
       height="128"
     />
@@ -70,7 +67,6 @@ const DeveloperCard = memoAbout(({ name, role, image, description }) => (
   </div>
 ));
 
-// Memoized Vision/Mission Card
 const VisionMissionCard = memoAbout(({ icon, title, description, bgColor }) => (
   <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-lg">
     <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -81,7 +77,7 @@ const VisionMissionCard = memoAbout(({ icon, title, description, bgColor }) => (
           src={icon}
           alt=""
           className="w-5 sm:w-7 h-5 sm:h-6"
-          loading="lazy"
+          loading="eager"
           width="28"
           height="24"
         />
@@ -95,7 +91,6 @@ const VisionMissionCard = memoAbout(({ icon, title, description, bgColor }) => (
 ));
 
 export default function AboutPage() {
-  // Preload critical images
   useEffectAbout(() => {
     const images = [
       HeroBackground,
@@ -193,7 +188,6 @@ export default function AboutPage() {
       <HeaderMain />
 
       <main>
-        {/* Hero Section */}
         <section className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
@@ -218,7 +212,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* System Overview */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center max-w-4xl mx-auto">
@@ -235,7 +228,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Vision & Mission */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
@@ -256,7 +248,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Key Features */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -282,7 +273,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* How to Use */}
         <section className="py-12 sm:py-16 bg-gray-50">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">
@@ -307,7 +297,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Meet the Team */}
         <section className="py-12 sm:py-16 bg-white">
           <div className="max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 lg:px-20">
             <div className="text-center mb-10 sm:mb-12 lg:mb-16">

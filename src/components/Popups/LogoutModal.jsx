@@ -25,7 +25,6 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose, isLoggingOut]);
 
-  // Reset loading state when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsLoggingOut(false);
@@ -36,15 +35,12 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
     setIsLoggingOut(true);
     try {
       await onConfirmLogout();
-      // Modal will close when redirect happens
     } catch (error) {
-      // If logout fails, reset loading state
       setIsLoggingOut(false);
     }
   };
 
   const handleBackdropClick = (e) => {
-    // Prevent closing if logging out
     if (e.target === e.currentTarget && !isLoggingOut) {
       onClose();
     }
@@ -58,14 +54,12 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
       onClick={handleBackdropClick}
     >
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-        {/* Icon */}
         <div className="flex justify-center mb-6">
           <div className="w-16 h-16 rounded-full bg-red-200 flex items-center justify-center">
             <LogOut className="w-8 h-8 text-red-500" />
           </div>
         </div>
 
-        {/* Message */}
         <div className="text-center mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-3">
             {isLoggingOut ? "Logging Out..." : "Logout"}
@@ -77,7 +71,6 @@ export default function LogoutModal({ isOpen, onClose, onConfirmLogout }) {
           </p>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-3">
           <button
             onClick={onClose}

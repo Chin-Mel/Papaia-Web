@@ -4,7 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import ScrollToTop from "./components/ScrollToTop";
 import { NotificationProvider } from "./NotificationContext";
-import { AlertProvider } from "./AlertContext"; // <- import this
+import { AlertProvider } from "./AlertContext";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

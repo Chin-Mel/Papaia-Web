@@ -5,7 +5,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(false);
-  //const [animationKey, setAnimationKey] = useState(0);
   const [filterActive, setFilterActive] = useState(false);
   const abortControllerRef = useRef(null);
   const initialLoadRef = useRef(true);
@@ -13,7 +12,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
   const lastFilterRef = useRef({ timeFilter, dateRange });
   const [animationKey, setAnimationKey] = useState(0);
 
-  // Disease colors mapping
   const diseaseColors = {
     Healthy: "#10b981",
     "Ring Spot Virus": "#ea580c",
@@ -21,7 +19,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     "Powdery Mildew": "#3b82f6",
   };
 
-  // Helper function to get number of periods based on date range
   const getPeriodsFromRange = (range, filter) => {
     switch (filter) {
       case "Daily":
@@ -49,7 +46,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     }
   };
 
-  // Filter scans based on date range
   const filterScansByDateRange = useCallback((allScans, filter, range) => {
     const periods = getPeriodsFromRange(range, filter);
     const now = new Date();
@@ -95,7 +91,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     });
   }, []);
 
-  // Calculate disease distribution for pie chart
   const calculateDiseaseDistribution = useCallback((scans) => {
     const allDiseases = [
       "Healthy",
@@ -105,19 +100,16 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     ];
     const counts = {};
 
-    // Initialize all diseases with 0
     allDiseases.forEach((disease) => {
       counts[disease] = 0;
     });
 
-    // Count occurrences
     scans.forEach((scan) => {
       if (counts.hasOwnProperty(scan.prediction)) {
         counts[scan.prediction]++;
       }
     });
 
-    // Convert to array format for pie chart, filter out zero values for chart
     const chartData = allDiseases
       .filter((disease) => counts[disease] > 0)
       .map((disease) => ({
@@ -126,7 +118,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         color: diseaseColors[disease],
       }));
 
-    // Create list of diseases with zero cases
     const zeroCases = allDiseases
       .filter((disease) => counts[disease] === 0)
       .map((disease) => disease);
@@ -134,9 +125,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     return { chartData, zeroCases, counts };
   }, []);
 
-  // Get most common disease(s)
   const getMostCommonDiseases = useCallback((counts) => {
-    // Filter out Healthy and diseases with 0 count
     const diseaseEntries = Object.entries(counts)
       .filter(([disease, count]) => disease !== "Healthy" && count > 0)
       .sort((a, b) => b[1] - a[1]);
@@ -149,8 +138,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
       .map(([disease]) => disease);
   }, []);
 
-  // Track when user manually changes date range (skip initial load)
-  // Track when user manually changes date range (skip initial load)
   useEffect(() => {
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
@@ -174,7 +161,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     async (silent = false) => {
       if (!farmId) return;
 
-      // Cancel previous request
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -204,18 +190,15 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         const scansData = await response.json();
         const allScans = Array.isArray(scansData) ? scansData : [];
 
-        // Only filter by date range if user has actively selected a range
         const filteredScans = filterActive
           ? filterScansByDateRange(allScans, timeFilter, dateRange)
           : allScans;
 
         setRecentScans((prevScans) => {
-          // Compare lengths and content
           if (prevScans.length !== filteredScans.length) {
             return filteredScans;
           }
 
-          // If lengths are same, check if content is different
           const isDifferent = filteredScans.some(
             (scan, index) =>
               scan.id !== prevScans[index]?.id ||
@@ -224,8 +207,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
 
           return isDifferent ? filteredScans : prevScans;
         });
-
-        //setRecentScans(filteredScans);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error("Error fetching data:", error);
@@ -240,14 +221,11 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
     [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]
   );
 
-  // Initial load and polling
   useEffect(() => {
     if (!farmId) return;
 
-    // Initial fetch
     fetchData(false);
 
-    // Set up polling - fetch every 3 seconds in background
     pollIntervalRef.current = setInterval(() => {
       if (!document.hidden) {
         fetchData(true);
@@ -310,12 +288,10 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         </div>
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Scrollable Container */}
           <div
             className="flex-1 overflow-y-auto pr-2 space-y-4"
             style={{ scrollbarWidth: "thin" }}
           >
-            {/* Pie Chart Section */}
             <div className="border-b border-gray-200 pb-2">
               {chartData.length > 0 ? (
                 <>
@@ -410,9 +386,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               )}
             </div>
 
-            {/* Disease Statistics List */}
             <div className="space-y-3">
-              {/* Most Common Disease */}
               {mostCommonDiseases.length > 0 && (
                 <div className="bg-amber-50/50 border-l-4 border-amber-500 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -429,7 +403,6 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
                 </div>
               )}
 
-              {/* All Diseases List */}
               {Object.entries(counts).map(([disease, count]) => {
                 const color = diseaseColors[disease] || "#64748b";
 

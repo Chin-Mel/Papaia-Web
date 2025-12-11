@@ -26,28 +26,26 @@ export default function SecureInput({
     const newValue = e.target.value;
     setDisplayValue(newValue);
 
-    // Validate input
     let valid = true;
-    
+
     if (required && !newValue.trim()) {
       valid = false;
     }
-    
+
     if (minLength && newValue.length < minLength) {
       valid = false;
     }
-    
+
     if (maxLength && newValue.length > maxLength) {
       valid = false;
     }
-    
+
     if (pattern && newValue && !new RegExp(pattern).test(newValue)) {
       valid = false;
     }
 
     setIsValid(valid);
 
-    // Call parent onChange with sanitized value
     if (onChange) {
       const sanitizedValue = sanitizeInput(newValue);
       onChange({
@@ -78,7 +76,9 @@ export default function SecureInput({
       maxLength={maxLength}
       minLength={minLength}
       pattern={pattern}
-      className={`${className} ${!isValid ? 'border-red-500 focus:ring-red-500' : ''}`}
+      className={`${className} ${
+        !isValid ? "border-red-500 focus:ring-red-500" : ""
+      }`}
       {...props}
     />
   );

@@ -1,4 +1,3 @@
-// FooterStart.jsx
 import { Link } from "react-router-dom";
 import papaiaLogo from "../../assets/ic_papaia_logo_no_word.png";
 
@@ -8,9 +7,7 @@ export default function FooterStart() {
   return (
     <footer className="bg-[#2D5016] text-white px-4 sm:px-6 lg:px-10 py-8 sm:py-12">
       <div className="max-w-[1440px] mx-auto">
-        {/* Main Content Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8 sm:mb-10">
-          {/* Brand Section */}
           <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
             <Link
               to="/"
@@ -20,7 +17,7 @@ export default function FooterStart() {
                 src={papaiaLogo}
                 alt="Papaia Logo"
                 className="w-5 h-7 sm:w-6 sm:h-8"
-                loading="lazy"
+                loading="eager"
               />
               <span className="text-white text-lg sm:text-xl font-bold">
                 Papaia
@@ -32,7 +29,6 @@ export default function FooterStart() {
             </p>
           </div>
 
-          {/* Product Links */}
           <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
             <h3 className="text-white text-base font-semibold">Product</h3>
             <ul className="space-y-2 sm:space-y-3">
@@ -54,8 +50,6 @@ export default function FooterStart() {
               </li>
             </ul>
           </div>
-
-          {/* Contact Support */}
           <div className="space-y-3 sm:space-y-4 text-center sm:text-left">
             <h3 className="text-white text-base font-semibold">
               Contact Support
@@ -72,11 +66,9 @@ export default function FooterStart() {
             </ul>
           </div>
 
-          {/* Empty column for 4-column grid balance on desktop */}
           <div className="hidden lg:block"></div>
         </div>
 
-        {/* Copyright Section */}
         <div className="pt-6 border-t border-[#16A34A] text-center">
           <p className="text-gray-300 text-sm sm:text-base">
             © {currentYear} Papaia. All rights reserved.
