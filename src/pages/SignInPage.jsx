@@ -106,10 +106,69 @@ export default function SignInPage() {
       );
 
       if (!loginResponse.ok) {
-        throw new Error("Failed to log in after reactivation.");
+        const errorData = await loginResponse.json().catch(() => ({}));
+
+        if (
+          errorData?.message?.toLowerCase().includes("verify") ||
+          errorData?.message?.toLowerCase().includes("verified") ||
+          errorData?.message?.toLowerCase().includes("not verified")
+        ) {
+          showAlert(
+            "error",
+            "Email Not Verified. Please check your email and verify your account before logging in."
+          );
+        } else {
+          showAlert("error", "Invalid email/username or password.");
+        }
+        setLoading(false);
+        return;
       }
 
       const loginData = await loginResponse.json();
+
+      if (
+        loginData.user?.status &&
+        loginData.user.status.toLowerCase() === "deactivate"
+      ) {
+        setDeactivatedUserToken(loginData.token);
+        setShowReactivationModal(true);
+        setLoading(false);
+        return;
+      }
+
+      if (loginData.user?.emailVerified === false) {
+        showAlert(
+          "error",
+          "Email Not Verified. Please check your email inbox (and spam folder) to verify your account before logging in."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (
+        loginData.user?.role &&
+        loginData.user.role.toLowerCase() === "farmer"
+      ) {
+        showAlert(
+          "error",
+          "Login Failed. This is a Farmer account. Only Farm Owners can access this site."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const allowedRoles = ["owner"];
+      if (
+        loginData.user?.role &&
+        !allowedRoles.includes(loginData.user.role.toLowerCase())
+      ) {
+        showAlert(
+          "error",
+          "Login Failed. This is a Farmer account. Only Farm Owners can access this site."
+        );
+        setLoading(false);
+        return;
+      }
 
       if (loginData.token) {
         localStorage.setItem("token", loginData.token);
@@ -121,13 +180,12 @@ export default function SignInPage() {
 
       window.dispatchEvent(new Event("userUpdated"));
 
-      showAlert("success", "Account reactivated successfully!");
+      showAlert("success", "Account Reactivated! Welcome back!");
+      setShowReactivationModal(false);
 
       navigate("/dashboard", { replace: true });
     } catch (err) {
       showAlert("error", "Failed to reactivate account. Please try again.");
-      setShowReactivationModal(false);
-      setDeactivatedUserToken(null);
     } finally {
       setLoading(false);
     }

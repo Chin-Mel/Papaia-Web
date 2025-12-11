@@ -13,6 +13,9 @@ const cleanText = (text) => {
     .trim();
 };
 
+const summaryCache = new Map();
+const CACHE_TTL = 30000; // 30 seconds
+
 export default function FarmAnalyticsSummary({
   farmId,
   timeFilter,
@@ -22,7 +25,8 @@ export default function FarmAnalyticsSummary({
   const [loading, setLoading] = useState(true);
 
   const abortControllerRef = useRef(null);
-  const initialLoadRef = useRef(true);
+  const hasInitialLoad = useRef(false);
+  const pollIntervalRef = useRef(null);
 
   const getApiEndpoints = useCallback((filter, range) => {
     const endpoints = {
@@ -51,89 +55,106 @@ export default function FarmAnalyticsSummary({
     return endpoints[filter]?.[range] || endpoints.Daily["Last 11 days"];
   }, []);
 
-  const fetchData = useCallback(async () => {
-    if (!farmId) return;
+  const fetchData = useCallback(
+    async (silent = false) => {
+      if (!farmId) return;
 
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
+      const cacheKey = `summary_${farmId}_${timeFilter}_${dateRange}`;
 
-    const abortController = new AbortController();
-    abortControllerRef.current = abortController;
-
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
-
-    const endpoint = getApiEndpoints(timeFilter, dateRange);
-
-    try {
-      setLoading(true);
-
-      const summaryResponse = await fetch(
-        `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
-        { headers, signal: abortController.signal }
-      );
-
-      if (!summaryResponse.ok) {
-        setSummaryData(null);
-        return;
+      // Check cache first
+      if (!silent) {
+        const cached = summaryCache.get(cacheKey);
+        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+          setSummaryData(cached.data);
+          setLoading(false);
+          hasInitialLoad.current = true;
+          return;
+        }
       }
 
-      const summaryResult = await summaryResponse.json();
-      setSummaryData(summaryResult);
-    } catch (error) {
-      if (error.name === "AbortError") return;
-      setSummaryData(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [farmId, timeFilter, dateRange, getApiEndpoints]);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const endpoint = getApiEndpoints(timeFilter, dateRange);
+
+      try {
+        if (!silent && !hasInitialLoad.current) {
+          setLoading(true);
+        }
+
+        const timeoutId = setTimeout(() => abortController.abort(), 5000);
+
+        const summaryResponse = await fetch(
+          `https://papaiaapi.onrender.com/api/owner/${endpoint}/${farmId}`,
+          { headers, signal: abortController.signal }
+        );
+
+        clearTimeout(timeoutId);
+
+        if (!summaryResponse.ok) {
+          if (!silent) {
+            setSummaryData(null);
+          }
+          return;
+        }
+
+        const summaryResult = await summaryResponse.json();
+
+        // Update cache
+        summaryCache.set(cacheKey, {
+          data: summaryResult,
+          timestamp: Date.now(),
+        });
+
+        setSummaryData((prev) => {
+          if (JSON.stringify(prev) !== JSON.stringify(summaryResult)) {
+            return summaryResult;
+          }
+          return prev;
+        });
+      } catch (error) {
+        if (error.name !== "AbortError" && !silent) {
+          setSummaryData(null);
+        }
+      } finally {
+        if (!silent && !hasInitialLoad.current) {
+          setLoading(false);
+          hasInitialLoad.current = true;
+        }
+      }
+    },
+    [farmId, timeFilter, dateRange, getApiEndpoints]
+  );
 
   useEffect(() => {
-    fetchData();
+    const isSilent = hasInitialLoad.current;
+    fetchData(isSilent);
+
+    // Poll every 10 seconds for updates
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        fetchData(true);
+      }
+    }, 10000);
 
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
     };
   }, [fetchData]);
 
   const FIXED_HEIGHT = "420px";
-
-  if (loading) {
-    return (
-      <div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center justify-center flex-1">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!summaryData) {
-    return (
-      <div
-        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col"
-        style={{ height: FIXED_HEIGHT }}
-      >
-        <div className="flex items-center gap-2 mb-4">
-          <BarChart3 className="w-5 h-5 text-green-700" />
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">
-            Summary ({dateRange})
-          </h2>
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center">
-          <p className="text-gray-500 text-center text-sm sm:text-base">
-            No scans available
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -147,15 +168,27 @@ export default function FarmAnalyticsSummary({
         </h2>
       </div>
 
-      <div className="space-y-4 flex-1 overflow-y-auto">
-        {summaryData?.summary && (
-          <div className="pb-4">
-            <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-              {cleanText(summaryData.summary)}
-            </p>
-          </div>
-        )}
-      </div>
+      {loading && !hasInitialLoad.current ? (
+        <div className="flex items-center justify-center flex-1">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+        </div>
+      ) : !summaryData ? (
+        <div className="flex-1 flex flex-col items-center justify-center">
+          <p className="text-gray-500 text-center text-sm sm:text-base">
+            No scans available
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-4 flex-1 overflow-y-auto">
+          {summaryData?.summary && (
+            <div className="pb-4">
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                {cleanText(summaryData.summary)}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

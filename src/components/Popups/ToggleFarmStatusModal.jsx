@@ -58,12 +58,17 @@ export default function ToggleFarmStatusModal({
       );
 
       const data = await response.json();
-
       if (response.ok && data.status === "success") {
         onClose();
 
         if (window.clearFarmCache) window.clearFarmCache();
         if (window.refreshActivities) window.refreshActivities();
+        window.dispatchEvent(new Event("farmStatusChanged"));
+        if (data.newStatus === "inactive") {
+          window.dispatchEvent(new Event("farmDeactivated"));
+        } else {
+          window.dispatchEvent(new Event("farmActivated"));
+        }
 
         if (onStatusToggled) {
           onStatusToggled(data.newStatus);

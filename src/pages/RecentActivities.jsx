@@ -16,6 +16,9 @@ import {
   ClockFading,
 } from "lucide-react";
 
+const POLL_INTERVAL = 5000;
+const DEBOUNCE_DELAY = 500;
+
 const activityCache = {
   data: null,
   timestamp: 0,
@@ -69,9 +72,13 @@ const LoadingSpinner = () => (
 export default function RecentActivities({ limit = 5 }) {
   const [activities, setActivities] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const fetchedRef = useRef(false);
+
+  const hasInitialLoad = useRef(false);
   const mountedRef = useRef(true);
   const minHeightRef = useRef(0);
+  const abortControllerRef = useRef(null);
+  const pollIntervalRef = useRef(null);
+  const lastFetchTime = useRef(0);
 
   const formatTime = useCallback((timeString) => {
     if (!timeString) return "Now";
@@ -248,11 +255,17 @@ export default function RecentActivities({ limit = 5 }) {
   );
 
   const fetchActivities = useCallback(
-    async (forceRefresh = false) => {
+    async (silent = false) => {
       if (!mountedRef.current) return;
 
+      const now = Date.now();
+      if (now - lastFetchTime.current < DEBOUNCE_DELAY && silent) {
+        return;
+      }
+      lastFetchTime.current = now;
+
       try {
-        if (!forceRefresh) {
+        if (!silent) {
           const cached = activityCache.get();
           if (cached) {
             const processed = cached.slice(0, limit).map((act) => ({
@@ -272,7 +285,7 @@ export default function RecentActivities({ limit = 5 }) {
           }
         }
 
-        if (!forceRefresh) {
+        if (!silent && !hasInitialLoad.current) {
           setIsLoading(true);
         }
 
@@ -285,7 +298,13 @@ export default function RecentActivities({ limit = 5 }) {
           return;
         }
 
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
         const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const res = await fetch(
@@ -305,7 +324,9 @@ export default function RecentActivities({ limit = 5 }) {
         if (!res.ok) {
           if (mountedRef.current) {
             setActivities([getDefaultActivity()]);
-            setIsLoading(false);
+            if (!silent && !hasInitialLoad.current) {
+              setIsLoading(false);
+            }
           }
           return;
         }
@@ -328,23 +349,36 @@ export default function RecentActivities({ limit = 5 }) {
           }));
 
           if (mountedRef.current) {
-            if (processed.length === 0) {
-              setActivities([getDefaultActivity()]);
-            } else {
-              setActivities(processed);
+            setActivities((prev) => {
+              if (JSON.stringify(prev) !== JSON.stringify(processed)) {
+                return processed.length === 0
+                  ? [getDefaultActivity()]
+                  : processed;
+              }
+              return prev;
+            });
+
+            if (!silent && !hasInitialLoad.current) {
+              setIsLoading(false);
+              hasInitialLoad.current = true;
             }
-            setIsLoading(false);
           }
         } else {
           if (mountedRef.current) {
             setActivities([getDefaultActivity()]);
-            setIsLoading(false);
+            if (!silent && !hasInitialLoad.current) {
+              setIsLoading(false);
+            }
           }
         }
-      } catch {
-        if (mountedRef.current) {
-          setActivities([getDefaultActivity()]);
-          setIsLoading(false);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          if (mountedRef.current) {
+            setActivities([getDefaultActivity()]);
+            if (!silent && !hasInitialLoad.current) {
+              setIsLoading(false);
+            }
+          }
         }
       }
     },
@@ -352,15 +386,29 @@ export default function RecentActivities({ limit = 5 }) {
   );
 
   useEffect(() => {
-    if (!fetchedRef.current) {
-      fetchedRef.current = true;
-      fetchActivities(false);
-    }
+    const isSilent = hasInitialLoad.current;
+    fetchActivities(isSilent);
+
+    pollIntervalRef.current = setInterval(() => {
+      if (!document.hidden) {
+        fetchActivities(true);
+      }
+    }, POLL_INTERVAL);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchActivities]);
 
   useEffect(() => {
     const unsubscribe = activityEmitter.subscribe(() => {
-      fetchActivities(true);
+      activityCache.clear();
+      fetchActivities(false);
     });
     return unsubscribe;
   }, [fetchActivities]);

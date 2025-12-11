@@ -65,7 +65,7 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
       className="absolute top-full right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
     >
       <div className="p-4 border-b border-gray-200">
-        <h3 className="font-bold text-gray-800 text-lg">Account</h3>
+        <h3 className="font-bold text-gray-800 text-lg">Farm Owner</h3>
       </div>
 
       <div
@@ -93,7 +93,10 @@ export default function ProfileDropdown({ isOpen, onClose, onLogout, user }) {
             <h4 className="font-bold text-gray-800 text-lg truncate">
               {getDisplayName()}
             </h4>
-            <p className="text-gray-600 text-sm truncate">Enterprise</p>
+            <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-100">
+              <FileCheck className="w-4 h-4" />
+              <span>Enterprise Plan</span>
+            </div>
           </div>
         </div>
       </div>

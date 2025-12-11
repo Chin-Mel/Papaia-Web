@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import FooterStart from "../components/Footer/FooterStart";
 import HeaderStart from "../components/Header/HeaderStart";
 import TermsAndConditionsModal from "../components/Popups/TermsAndConditionsModal";
@@ -18,6 +19,7 @@ import { useAlert } from "../AlertContext";
 
 export default function SignUpPage() {
   const { showAlert } = useAlert();
+  const navigate = useNavigate();
 
   const [showRoleModal, setShowRoleModal] = useState(true);
   const [selectedRole, setSelectedRole] = useState(null);
@@ -237,12 +239,12 @@ export default function SignUpPage() {
     try {
       await registerUser(userData);
 
-      showAlert(
-        "success",
-        "Account created successfully. Please check your email to verify your account."
-      );
-
-      window.location.href = "/sign-in";
+      navigate("/sign-in", {
+        state: {
+          message:
+            "Account created successfully. Please check your email to verify your account.",
+        },
+      });
     } catch (error) {
       if (error.message?.includes("Email already exists")) {
         showAlert(

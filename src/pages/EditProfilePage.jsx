@@ -257,7 +257,7 @@ export default function EditProfilePage() {
 
       window.dispatchEvent(new Event("userUpdated"));
       showAlert("success", "Profile updated successfully!");
-      setTimeout(() => navigate("/profile"), 1000);
+      navigate("/profile");
     } catch (err) {
       showAlert(
         "error",
@@ -370,7 +370,10 @@ export default function EditProfilePage() {
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 mb-2 truncate">
                 {getFullName()}
               </h2>
-              <p className="text-slate-600 text-base mb-2">Farm Owner</p>
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-sm font-medium border border-blue-100">
+                <FileCheck className="w-4 h-4" />
+                <span>Enterprise Plan</span>
+              </div>
               <div className="flex items-center gap-2 text-slate-500 text-sm">
                 <Calendar className="w-4 h-4" />
                 <span>Joined {getJoinedDate()}</span>

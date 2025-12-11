@@ -12,6 +12,8 @@ import FarmsCount from "../assets/ic_all_farms.png";
 import DefaultFarmImage from "../assets/MainBackground.png";
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
+const POLL_INTERVAL = 5000;
+const DEBOUNCE_DELAY = 500;
 
 const persistentCache = new Map();
 const MAX_CACHE_SIZE = 50;
@@ -31,7 +33,7 @@ const cachedFetch = async (
 
   const token = localStorage.getItem("token");
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  const timeoutId = setTimeout(() => controller.abort(), 8000);
 
   try {
     const response = await fetch(url, {
@@ -217,89 +219,39 @@ export default function DashboardPage() {
     totalFarms: 0,
     todayScans: 0,
   });
-  const hasInitiallyLoaded = useRef(false);
-  const isFetching = useRef(false);
+
+  const hasInitialLoad = useRef(false);
+  const abortControllerRef = useRef(null);
   const pollIntervalRef = useRef(null);
-  const debounceTimeoutRef = useRef(null);
+  const lastFetchTime = useRef(0);
 
-  const debouncedFetchStats = useCallback(async (silent = true) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
+  const fetchDashboardStats = useCallback(async (silent = false) => {
+    const now = Date.now();
+    if (now - lastFetchTime.current < DEBOUNCE_DELAY && silent) {
+      return;
     }
-
-    debounceTimeoutRef.current = setTimeout(async () => {
-      if (isFetching.current && silent) return;
-      isFetching.current = true;
-
-      try {
-        const [farmCountData, farmerCountData, identificationData] =
-          await Promise.all([
-            cachedFetch(
-              `${API_BASE}/count-farms`,
-              "farm_count",
-              10000,
-              silent
-            ).catch(() => ({})),
-            cachedFetch(
-              `${API_BASE}/count-farmers`,
-              "farmer_count",
-              10000,
-              silent
-            ).catch(() => ({})),
-            cachedFetch(
-              `${API_BASE}/identification-history`,
-              "id_history",
-              10000,
-              silent
-            ).catch(() => []),
-          ]);
-
-        const todayScansCount = Array.isArray(identificationData)
-          ? identificationData.filter((pred) => isToday(pred.timestamp)).length
-          : 0;
-
-        setDashboardStats({
-          totalFarmers: farmerCountData.totalFarmers || 0,
-          totalFarms: farmCountData.farmCount || 0,
-          todayScans: todayScansCount,
-        });
-      } catch {
-      } finally {
-        isFetching.current = false;
-      }
-    }, 200);
-  }, []);
-
-  const fetchDashboardStats = useCallback(async (forceRefresh = false) => {
-    if (isFetching.current && !forceRefresh) return;
-    isFetching.current = true;
+    lastFetchTime.current = now;
 
     try {
-      if (forceRefresh) {
-        persistentCache.delete("farm_count");
-        persistentCache.delete("farmer_count");
-        persistentCache.delete("id_history");
-      }
-
       const [farmCountData, farmerCountData, identificationData] =
         await Promise.all([
           cachedFetch(
             `${API_BASE}/count-farms`,
             "farm_count",
             10000,
-            forceRefresh
+            !silent
           ).catch(() => ({})),
           cachedFetch(
             `${API_BASE}/count-farmers`,
             "farmer_count",
             10000,
-            forceRefresh
+            !silent
           ).catch(() => ({})),
           cachedFetch(
             `${API_BASE}/identification-history`,
             "id_history",
             10000,
-            forceRefresh
+            !silent
           ).catch(() => []),
         ]);
 
@@ -307,15 +259,19 @@ export default function DashboardPage() {
         ? identificationData.filter((pred) => isToday(pred.timestamp)).length
         : 0;
 
-      setDashboardStats({
-        totalFarmers: farmerCountData.totalFarmers || 0,
-        totalFarms: farmCountData.farmCount || 0,
-        todayScans: todayScansCount,
+      setDashboardStats((prev) => {
+        const newStats = {
+          totalFarmers: farmerCountData.totalFarmers || 0,
+          totalFarms: farmCountData.farmCount || 0,
+          todayScans: todayScansCount,
+        };
+
+        if (JSON.stringify(prev) !== JSON.stringify(newStats)) {
+          return newStats;
+        }
+        return prev;
       });
-    } catch {
-    } finally {
-      isFetching.current = false;
-    }
+    } catch {}
   }, []);
 
   const fetchFarmHealth = useCallback(async (farmId, silent = false) => {
@@ -324,7 +280,7 @@ export default function DashboardPage() {
         `${API_BASE}/farm-health/${farmId}`,
         `farm_health_${farmId}`,
         10000,
-        silent
+        !silent
       );
       return {
         health: data.healthPercentage || "0.00%",
@@ -336,24 +292,24 @@ export default function DashboardPage() {
   }, []);
 
   const fetchFarms = useCallback(
-    async (forceRefresh = false, silent = false) => {
-      if (isFetching.current && !forceRefresh) return;
-      isFetching.current = true;
+    async (silent = false) => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      if (!silent && !hasInitialLoad.current) {
+        setLoadingFarms(true);
+      }
 
       try {
-        if (!hasInitiallyLoaded.current && !silent) {
-          setLoadingFarms(true);
-        }
-
-        if (forceRefresh) {
-          persistentCache.delete("owner_farms");
-        }
-
         const data = await cachedFetch(
           `${API_BASE}/farms`,
           "owner_farms",
           10000,
-          forceRefresh || silent
+          !silent
         );
 
         if (data.status === "success" && Array.isArray(data.farms)) {
@@ -378,7 +334,15 @@ export default function DashboardPage() {
             return new Date(b.createdAt) - new Date(a.createdAt);
           });
 
-          setFarms(sortedFarms);
+          setFarms((prev) => {
+            if (
+              JSON.stringify(prev.map((f) => f.id)) !==
+              JSON.stringify(sortedFarms.map((f) => f.id))
+            ) {
+              return sortedFarms;
+            }
+            return prev;
+          });
 
           Promise.all(
             sortedFarms.map((farm) => fetchFarmHealth(farm.id, silent))
@@ -397,41 +361,50 @@ export default function DashboardPage() {
           setFarms([]);
         }
       } catch {
-        setFarms([]);
+        if (!silent) {
+          setFarms([]);
+        }
       } finally {
-        setLoadingFarms(false);
-        hasInitiallyLoaded.current = true;
-        isFetching.current = false;
+        if (!silent && !hasInitialLoad.current) {
+          setLoadingFarms(false);
+          hasInitialLoad.current = true;
+        }
       }
     },
     [fetchFarmHealth]
   );
 
   useEffect(() => {
-    if (!hasInitiallyLoaded.current) {
-      fetchFarms();
-      fetchDashboardStats();
-    }
+    const isSilent = hasInitialLoad.current;
+
+    fetchFarms(isSilent);
+    fetchDashboardStats(isSilent);
 
     pollIntervalRef.current = setInterval(() => {
-      fetchFarms(false, true);
-      debouncedFetchStats(true);
-    }, 8000);
+      if (!document.hidden) {
+        fetchFarms(true);
+        fetchDashboardStats(true);
+      }
+    }, POLL_INTERVAL);
 
     return () => {
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
       }
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-  }, [fetchFarms, fetchDashboardStats, debouncedFetchStats]);
+  }, [fetchFarms, fetchDashboardStats]);
 
   useEffect(() => {
     if (location.state?.refreshFarms) {
-      fetchFarms(true);
-      fetchDashboardStats(true);
+      persistentCache.delete("owner_farms");
+      persistentCache.delete("farm_count");
+      persistentCache.delete("farmer_count");
+      persistentCache.delete("id_history");
+      fetchFarms(false);
+      fetchDashboardStats(false);
       window.history.replaceState({}, document.title);
     }
   }, [location, fetchFarms, fetchDashboardStats]);
@@ -439,13 +412,13 @@ export default function DashboardPage() {
   useEffect(() => {
     const handleFarmUpdate = () => {
       persistentCache.delete("owner_farms");
-      fetchFarms(true, true);
-      debouncedFetchStats(true);
+      fetchFarms(true);
+      fetchDashboardStats(true);
     };
 
     window.addEventListener("farmUpdated", handleFarmUpdate);
     return () => window.removeEventListener("farmUpdated", handleFarmUpdate);
-  }, [fetchFarms, debouncedFetchStats]);
+  }, [fetchFarms, fetchDashboardStats]);
 
   const handleAddFarm = async (farmData) => {
     try {
@@ -470,7 +443,9 @@ export default function DashboardPage() {
 
       const data = await res.json();
       if (data.status === "success") {
-        await Promise.all([fetchFarms(true), fetchDashboardStats(true)]);
+        persistentCache.delete("owner_farms");
+        persistentCache.delete("farm_count");
+        await Promise.all([fetchFarms(false), fetchDashboardStats(false)]);
         if (window.refreshActivities) window.refreshActivities();
         setShowAddFarmModal(false);
         showAlert("success", "Farm added successfully!");
