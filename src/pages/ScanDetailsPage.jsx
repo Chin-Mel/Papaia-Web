@@ -334,7 +334,7 @@ export default function ScanDetailsPage() {
                             scanDetails.idNumber ||
                             "Farmer"
                           }
-                          src={scanDetails.profilePicture} // ✅ Profile picture is used here!
+                          profileImageUrl={scanDetails.profilePicture}
                           className="w-full h-full"
                         />
                       </div>
