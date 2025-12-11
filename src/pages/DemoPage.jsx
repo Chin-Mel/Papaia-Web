@@ -32,8 +32,8 @@ export default function DemoPage() {
       title: "Mobile App Tutorial",
       description:
         "Discover how to use the Papaia mobile app in the field to scan plants, get instant disease detection, and receive treatment recommendations.",
-      embedUrl: "https://www.youtube.com/embed/owlTApoDpZI?si=Cd7kwJZ4gUhNKKpG",
-      watchUrl: "https://www.youtube.com/watch?v=owlTApoDpZI",
+      embedUrl: "https://www.youtube.com/embed/7mlhoZLg_Hs?si=oLii3-wTu7GHZguX",
+      watchUrl: "https://youtu.be/7mlhoZLg_Hs",
       duration: "6:30",
       features: [
         "Take photos of affected plants",

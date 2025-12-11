@@ -15,38 +15,14 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   const [selectedScan, setSelectedScan] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filterActive, setFilterActive] = useState(false);
 
   const abortControllerRef = useRef(null);
   const pollIntervalRef = useRef(null);
   const initialLoadRef = useRef(true);
+  const lastFilterRef = useRef({ timeFilter, dateRange });
 
   const SCANS_PER_PAGE = 3;
-
-  const getEndpoint = useCallback((filter, range) => {
-    const endpointMap = {
-      Daily: {
-        "Last 7 days": "seven-days-common-diseases",
-        "Last 11 days": "eleven-days-common-diseases",
-        "Last 14 days": "fourteen-days-common-diseases",
-      },
-      Weekly: {
-        "Last 4 weeks": "three-weeks-common-diseases",
-        "Last 9 weeks": "nine-weeks-common-diseases",
-        "Last 12 weeks": "twelve-weeks-common-diseases",
-      },
-      Monthly: {
-        "Last 3 months": "three-month-common-diseases",
-        "Last 6 months": "six-month-common-diseases",
-        "Last 12 months": "twelve-month-common-diseases",
-      },
-      Yearly: {
-        "Last 3 years": "three-year-common-diseases",
-        "Last 5 years": "five-year-common-diseases",
-        "Last 7 years": "seven-year-common-diseases",
-      },
-    };
-    return endpointMap[filter]?.[range];
-  }, []);
 
   const getPeriodsFromRange = useCallback((range, filter) => {
     const periods = {
@@ -99,19 +75,39 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     [getPeriodsFromRange]
   );
 
+  // Track when user manually changes date range (skip initial load)
+  useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    setFilterActive(true);
+  }, [dateRange]);
+
+  // Track filter changes
+  useEffect(() => {
+    const filterChanged =
+      lastFilterRef.current.timeFilter !== timeFilter ||
+      lastFilterRef.current.dateRange !== dateRange;
+
+    if (filterChanged) {
+      lastFilterRef.current = { timeFilter, dateRange };
+      setLoading(true);
+    }
+  }, [timeFilter, dateRange]);
+
   const fetchData = useCallback(
     async (silent = false) => {
       if (!farmId) return;
 
-      const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}`;
+      const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}_${filterActive}`;
       const cached = dataCache.get(cacheKey);
 
       // Check cache freshness (20 seconds)
       if (cached && Date.now() - cached.timestamp < 20000) {
         setRecentScans(cached.scans);
-        if (initialLoadRef.current) {
+        if (!silent && loading) {
           setLoading(false);
-          initialLoadRef.current = false;
         }
         return;
       }
@@ -131,8 +127,7 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       abortControllerRef.current = controller;
 
       try {
-        // Only show loading on initial load
-        if (!silent && initialLoadRef.current) {
+        if (!silent) {
           setLoading(true);
         }
 
@@ -155,25 +150,25 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         const allScans = await response.json();
         const scansArray = Array.isArray(allScans) ? allScans : [];
 
-        const endpoint = getEndpoint(timeFilter, dateRange);
-        let filteredScans;
-
-        if (!endpoint) {
-          filteredScans = scansArray;
-        } else {
-          filteredScans = filterScansByDateRange(
-            scansArray,
-            timeFilter,
-            dateRange
-          );
-        }
+        // Only filter by date range if user has actively selected a range
+        const filteredScans = filterActive
+          ? filterScansByDateRange(scansArray, timeFilter, dateRange)
+          : scansArray;
 
         // Only update state if data has changed
         setRecentScans((prev) => {
-          if (JSON.stringify(prev) !== JSON.stringify(filteredScans)) {
+          if (prev.length !== filteredScans.length) {
             return filteredScans;
           }
-          return prev;
+
+          // If lengths are same, check if content is different
+          const isDifferent = filteredScans.some(
+            (scan, index) =>
+              scan.id !== prev[index]?.id ||
+              scan.timestamp !== prev[index]?.timestamp
+          );
+
+          return isDifferent ? filteredScans : prev;
         });
 
         // Update cache
@@ -188,13 +183,19 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
           console.error("Recent scans fetch error:", error);
         }
       } finally {
-        if (!silent && initialLoadRef.current) {
+        if (!silent) {
           setLoading(false);
-          initialLoadRef.current = false;
         }
       }
     },
-    [farmId, timeFilter, dateRange, getEndpoint, filterScansByDateRange]
+    [
+      farmId,
+      timeFilter,
+      dateRange,
+      filterScansByDateRange,
+      filterActive,
+      loading,
+    ]
   );
 
   const checkForNewScans = useCallback(async () => {
@@ -220,21 +221,13 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
         const allScans = await response.json();
         const scansArray = Array.isArray(allScans) ? allScans : [];
 
-        const endpoint = getEndpoint(timeFilter, dateRange);
-        let filteredScans;
-
-        if (!endpoint) {
-          filteredScans = scansArray;
-        } else {
-          filteredScans = filterScansByDateRange(
-            scansArray,
-            timeFilter,
-            dateRange
-          );
-        }
+        // Only filter by date range if user has actively selected a range
+        const filteredScans = filterActive
+          ? filterScansByDateRange(scansArray, timeFilter, dateRange)
+          : scansArray;
 
         if (filteredScans.length !== lastScanCount) {
-          const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}`;
+          const cacheKey = `recent_scans_${farmId}_${timeFilter}_${dateRange}_${filterActive}`;
           dataCache.delete(cacheKey);
           fetchData(true); // Silent update
         }
@@ -244,9 +237,9 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
     farmId,
     timeFilter,
     dateRange,
-    getEndpoint,
     filterScansByDateRange,
     fetchData,
+    filterActive,
   ]);
 
   // Initial fetch
@@ -365,14 +358,14 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
 
   const FIXED_HEIGHT = "420px";
 
-  if (loading) {
+  if (loading && !recentScans.length) {
     return (
       <div
         className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
         style={{ height: FIXED_HEIGHT }}
       >
         <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-          Scans ({dateRange})
+          Scans{filterActive ? ` (${dateRange})` : ""}
         </h2>
         <div className="flex justify-center items-center flex-1">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -387,15 +380,21 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
       style={{ height: FIXED_HEIGHT }}
     >
       <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-        Scans ({dateRange})
+        Scans{filterActive ? ` (${dateRange})` : ""}
       </h2>
 
       <div className="flex-1 flex flex-col justify-between">
         {recentScans.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center">
             <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
-            <p className="text-sm sm:text-base text-gray-500">No scans yet</p>
-            <p className="text-xs text-gray-400 mt-1">Scans will appear here</p>
+            <p className="text-sm sm:text-base text-gray-500">
+              {filterActive ? "No scans in selected range" : "No scans yet"}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">
+              {filterActive
+                ? `Scans from ${dateRange.toLowerCase()} will appear here`
+                : "Scans will appear here"}
+            </p>
           </div>
         ) : (
           <>

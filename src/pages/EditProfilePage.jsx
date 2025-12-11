@@ -111,12 +111,12 @@ export default function EditProfilePage() {
     if (!file) return;
 
     if (file.size > 10485760) {
-      showAlert("File size exceeds 10MB limit", "error");
+      showAlert("error", "File size exceeds 10MB limit");
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      showAlert("Please select a valid image file", "error");
+      showAlert("error", "Please select a valid image file");
       return;
     }
 
@@ -135,27 +135,27 @@ export default function EditProfilePage() {
 
   const handleSaveChanges = async () => {
     if (!formValues.firstName?.trim()) {
-      showAlert("First name is required", "error");
+      showAlert("error", "First name is required");
       return;
     }
 
     if (!formValues.lastName?.trim()) {
-      showAlert("Last name is required", "error");
+      showAlert("error", "Last name is required");
       return;
     }
 
     if (!formValues.username?.trim()) {
-      showAlert("Username is required", "error");
+      showAlert("error", "Username is required");
       return;
     }
 
     if (!formValues.email?.trim()) {
-      showAlert("Email is required", "error");
+      showAlert("error", "Email is required");
       return;
     }
 
     if (!formValues.contactNumber?.trim()) {
-      showAlert("Contact number is required", "error");
+      showAlert("error", "Contact number is required");
       return;
     }
 
@@ -203,7 +203,7 @@ export default function EditProfilePage() {
       });
 
       if (Object.keys(updatedData).length === 0 && !selectedImage) {
-        showAlert("No changes detected", "info");
+        showAlert("info", "No changes detected");
         setLoading(false);
         return;
       }
@@ -256,12 +256,12 @@ export default function EditProfilePage() {
       });
 
       window.dispatchEvent(new Event("userUpdated"));
-      showAlert("Profile updated successfully!", "success");
+      showAlert("success", "Profile updated successfully!");
       setTimeout(() => navigate("/profile"), 1000);
     } catch (err) {
       showAlert(
-        err.message || "Error updating profile. Please try again.",
-        "error"
+        "error",
+        err.message || "Error updating profile. Please try again."
       );
     } finally {
       setLoading(false);
