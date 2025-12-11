@@ -139,7 +139,6 @@ export default function AboutHomePage() {
                       src={EyeIcon}
                       alt=""
                       className="w-5 sm:w-7 h-5 sm:h-6"
-                      loading="eager"
                     />
                   </div>
                   <h3 className="text-xl sm:text-2xl font-bold text-[#2D5016]">
@@ -257,7 +256,7 @@ export default function AboutHomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10">
               {developers.map((dev, index) => (
                 <div key={index} className="text-center">
-                  <img src={dev.image} alt={dev.name} loading="eager" />
+                  <img src={dev.image} alt={dev.name} />
                   <h3 className="text-lg sm:text-xl font-bold text-[#2D5016] mb-2">
                     {dev.name}
                   </h3>

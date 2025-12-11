@@ -55,7 +55,6 @@ const DeveloperCard = memoAbout(({ name, role, image, description }) => (
       src={image}
       alt={name}
       className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover mx-auto mb-4 sm:mb-6"
-      loading="eager"
       width="128"
       height="128"
     />
