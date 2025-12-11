@@ -18,26 +18,13 @@ import { getLoggedInUser } from "../utils/security";
 import { useAlert } from "../AlertContext";
 import UserAvatar from "../components/UserAvatar";
 
-const API_BASE = "https://papaiaapi.onrender.com/api";
-
 export default function EditProfilePage() {
   const { showAlert } = useAlert();
   const navigate = useNavigate();
-
-  // Initialize with cached data immediately
-  const [userData, setUserData] = useState(() => getLoggedInUser());
-  const [formValues, setFormValues] = useState(() => {
-    const user = getLoggedInUser();
-    return {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      username: user?.username || "",
-      email: user?.email || "",
-      contactNumber: user?.contactNumber || "",
-    };
-  });
-
+  const [userData, setUserData] = useState(null);
+  const [formValues, setFormValues] = useState({});
   const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef();
   const [selectedImage, setSelectedImage] = useState(null);
@@ -46,39 +33,59 @@ export default function EditProfilePage() {
   const [showDeactivateAccountModal, setShowDeactivateAccountModal] =
     useState(false);
 
+  const getUserFromStorage = () => {
+    try {
+      const user = getLoggedInUser();
+      const token = localStorage.getItem("token");
+
+      if (!user || !token) {
+        return { user: null, token: null, error: "Not authenticated" };
+      }
+
+      if (!user.id) {
+        return {
+          user: null,
+          token: null,
+          error: "User ID not found in stored data",
+        };
+      }
+
+      return { user, userId: user.id, token, error: null };
+    } catch (err) {
+      return { user: null, token: null, error: "Invalid user data in storage" };
+    }
+  };
+
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const fetchUserData = async () => {
+      const { user, userId, token, error: authError } = getUserFromStorage();
 
-    if (!userData || !token) {
-      setError("Not authenticated");
-      return;
-    }
+      if (authError) {
+        setError(authError);
+        setInitialLoad(false);
+        return;
+      }
 
-    if (!userData.id) {
-      setError("User ID not found");
-      return;
-    }
+      setUserData(user);
+      setFormValues({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        username: user.username || "",
+        email: user.email || "",
+        contactNumber: user.contactNumber || "",
+      });
 
-    // Fetch fresh data in the background
-    const fetchFreshData = async () => {
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const res = await fetch(`${API_BASE}/user/${userData.id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache",
-          },
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         if (res.ok) {
           const data = await res.json();
           const freshUser = data.user || data;
-
           setUserData(freshUser);
           setFormValues({
             firstName: freshUser.firstName || "",
@@ -87,20 +94,18 @@ export default function EditProfilePage() {
             email: freshUser.email || "",
             contactNumber: freshUser.contactNumber || "",
           });
-
-          // Update localStorage with fresh data
-          const storedUser = getLoggedInUser();
-          const updatedUser = { ...storedUser, ...freshUser };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
+          localStorage.setItem("user", JSON.stringify(freshUser));
           setError(null);
         }
       } catch (err) {
-        console.debug("Error fetching user data:", err);
+        console.error("Error fetching user data:", err);
+      } finally {
+        setInitialLoad(false);
       }
     };
 
-    fetchFreshData();
-  }, [userData?.id]);
+    fetchUserData();
+  }, []);
 
   const handleProfilePictureSelect = (e) => {
     const file = e.target.files[0];
@@ -130,96 +135,103 @@ export default function EditProfilePage() {
   };
 
   const handleSaveChanges = async () => {
+    if (!formValues.firstName?.trim()) {
+      showAlert("error", "First name is required");
+      return;
+    }
+
+    if (!formValues.lastName?.trim()) {
+      showAlert("error", "Last name is required");
+      return;
+    }
+
+    if (!formValues.username?.trim()) {
+      showAlert("error", "Username is required");
+      return;
+    }
+
+    if (!formValues.email?.trim()) {
+      showAlert("error", "Email is required");
+      return;
+    }
+
+    if (!formValues.contactNumber?.trim()) {
+      showAlert("error", "Contact number is required");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const { userId, token } = getUserFromStorage();
 
-      if (!userData?.id || !token) {
+      if (!userId || !token) {
         throw new Error("Authentication error. Please log in again.");
       }
 
       let updatedProfilePicture = userData.profilePicture;
-
-      // Upload profile picture first if selected
       if (selectedImage) {
         const formData = new FormData();
         formData.append("profilePicture", selectedImage);
 
-        const res = await fetch(`${API_BASE}/profile-picture`, {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
+        const res = await fetch(
+          "https://papaiaapi.onrender.com/api/profile-picture",
+          {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}` },
+            body: formData,
+          }
+        );
 
         if (res.ok) {
           const data = await res.json();
           updatedProfilePicture = data.profilePicture;
         } else {
-          const errorData = await res.json().catch(() => ({}));
-          throw new Error(
-            errorData.message || "Failed to upload profile picture"
-          );
+          throw new Error("Failed to upload profile picture");
         }
       }
 
-      // Prepare update data - only send fields that changed
       const updatedData = {};
+      Object.keys(formValues).forEach((key) => {
+        let newValue = formValues[key];
+        if (typeof newValue === "string") {
+          newValue = newValue.trim();
+        }
+        const oldValue = userData[key];
+        if (newValue !== oldValue) {
+          updatedData[key] = newValue;
+        }
+      });
 
-      if (formValues.firstName.trim() !== userData.firstName) {
-        updatedData.firstName = formValues.firstName.trim();
-      }
-      if (formValues.lastName.trim() !== userData.lastName) {
-        updatedData.lastName = formValues.lastName.trim();
-      }
-      if (formValues.username.trim() !== userData.username) {
-        updatedData.username = formValues.username.trim();
-      }
-      if (formValues.email.trim() !== userData.email) {
-        updatedData.email = formValues.email.trim();
-      }
-      if (formValues.contactNumber.trim() !== userData.contactNumber) {
-        updatedData.contactNumber = formValues.contactNumber.trim();
-      }
-
-      // Check if any data actually changed
-      const hasChanges = Object.keys(updatedData).length > 0;
-
-      if (!hasChanges && !selectedImage) {
+      if (Object.keys(updatedData).length === 0 && !selectedImage) {
         showAlert("info", "No changes detected");
         setLoading(false);
         return;
       }
 
-      // Update profile data if there are changes
-      if (hasChanges) {
-        console.log("Updating user with data:", updatedData);
-        console.log("User ID:", userData.id);
-
-        const res = await fetch(`${API_BASE}/user/${userData.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(updatedData),
-        });
+      if (Object.keys(updatedData).length > 0) {
+        const res = await fetch(
+          `https://papaiaapi.onrender.com/api/user/${userId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(updatedData),
+          }
+        );
 
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({}));
-          console.error("Update error response:", errorData);
           throw new Error(
             errorData.error ||
               errorData.message ||
               `Failed to update profile (Status: ${res.status})`
           );
         }
-
-        const responseData = await res.json();
-        console.log("Update response:", responseData);
       }
 
-      // Merge all updates
       const mergedData = {
         ...userData,
         ...updatedData,
@@ -228,15 +240,12 @@ export default function EditProfilePage() {
 
       setUserData(mergedData);
       localStorage.setItem("user", JSON.stringify(mergedData));
-
-      // Reset image selection
       setSelectedImage(null);
       setPreviewUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
 
-      // Update form values with saved data
       setFormValues({
         firstName: mergedData.firstName || "",
         lastName: mergedData.lastName || "",
@@ -245,16 +254,10 @@ export default function EditProfilePage() {
         contactNumber: mergedData.contactNumber || "",
       });
 
-      // Dispatch event to update other components
       window.dispatchEvent(new Event("userUpdated"));
       showAlert("success", "Profile updated successfully!");
-
-      // Navigate back to profile page after a short delay
-      setTimeout(() => {
-        navigate("/profile");
-      }, 500);
+      setTimeout(() => navigate("/profile"), 1000);
     } catch (err) {
-      console.error("Save error:", err);
       showAlert(
         "error",
         err.message || "Error updating profile. Please try again."
@@ -290,7 +293,21 @@ export default function EditProfilePage() {
     return date.toLocaleString("default", { month: "long", year: "numeric" });
   };
 
-  // Show error state if authentication fails
+  if (initialLoad) {
+    return (
+      <div className="bg-gray-50 min-h-screen flex flex-col">
+        <HeaderMain />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading your profile...</p>
+          </div>
+        </main>
+        <FooterMain />
+      </div>
+    );
+  }
+
   if (error) {
     return (
       <div className="bg-gray-50 min-h-screen flex flex-col">
@@ -384,7 +401,7 @@ export default function EditProfilePage() {
                   Personal Information
                 </h3>
                 <p className="text-sm text-slate-600 mt-1">
-                  Update your personal details (all fields optional)
+                  Update your personal details
                 </p>
               </div>
               <button
