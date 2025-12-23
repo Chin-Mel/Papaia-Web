@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
-import ScanDetailModal from "./ScanDetailModal"; // Import your modal component
+import ScanDetailModal from "../components/Popups/ScanDetailModal"; // Import your modal component
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const DEBOUNCE_DELAY = 500;
