@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Leaf, ChevronLeft, ChevronRight } from "lucide-react";
+import ScanDetailModal from "./ScanDetailModal"; // Import your modal component
 
 const API_BASE = "https://papaiaapi.onrender.com/api/owner";
 const DEBOUNCE_DELAY = 500;
@@ -374,138 +375,112 @@ export default function RecentScans({ farmId, timeFilter, dateRange }) {
   }
 
   return (
-    <div
-      className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
-      style={{ height: FIXED_HEIGHT }}
-    >
-      <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
-        Scans{filterActive ? ` (${dateRange})` : ""}
-      </h2>
+    <>
+      <div
+        className="bg-white rounded-lg shadow-sm p-4 sm:p-6 flex flex-col"
+        style={{ height: FIXED_HEIGHT }}
+      >
+        <h2 className="text-base sm:text-lg font-bold text-gray-800 mb-4">
+          Scans{filterActive ? ` (${dateRange})` : ""}
+        </h2>
 
-      <div className="flex-1 flex flex-col justify-between">
-        {recentScans.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
-            <p className="text-sm sm:text-base text-gray-500">
-              {filterActive ? "No scans in selected range" : "No scans yet"}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">
-              {filterActive
-                ? `Scans from ${dateRange.toLowerCase()} will appear here`
-                : "Scans will appear here"}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="space-y-2.5 mb-3">
-              {currentScans.map((scan, index) => {
-                const cardStyle = getCardStyle(scan.prediction);
-                const { date, time } = formatDateTime(scan.timestamp);
-                return (
-                  <div
-                    key={`${scan.id || scan.timestamp}-${index}`}
-                    onClick={() => handleScanClick(scan)}
-                    className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <img
-                        src={scan.imageUrl}
-                        alt="Scan"
-                        className="w-14 h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0"
-                        onError={(e) => {
-                          e.target.src =
-                            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect fill='%23e5e7eb' width='56' height='56'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
-                        }}
-                        loading="eager"
-                      />
+        <div className="flex-1 flex flex-col justify-between">
+          {recentScans.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center">
+              <Leaf className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mb-2" />
+              <p className="text-sm sm:text-base text-gray-500">
+                {filterActive ? "No scans in selected range" : "No scans yet"}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                {filterActive
+                  ? `Scans from ${dateRange.toLowerCase()} will appear here`
+                  : "Scans will appear here"}
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-2.5 mb-3">
+                {currentScans.map((scan, index) => {
+                  const cardStyle = getCardStyle(scan.prediction);
+                  const { date, time } = formatDateTime(scan.timestamp);
+                  return (
+                    <div
+                      key={`${scan.id || scan.timestamp}-${index}`}
+                      onClick={() => handleScanClick(scan)}
+                      className={`${cardStyle.bg} ${cardStyle.border} rounded-lg p-3 transition-all hover:shadow-md cursor-pointer hover:scale-[1.01]`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={scan.imageUrl}
+                          alt="Scan"
+                          className="w-14 h-14 rounded-lg object-cover border border-gray-200 flex-shrink-0"
+                          onError={(e) => {
+                            e.target.src =
+                              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Crect fill='%23e5e7eb' width='56' height='56'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%239ca3af' font-size='10'%3ENo Image%3C/text%3E%3C/svg%3E";
+                          }}
+                          loading="eager"
+                        />
 
-                      <div className="flex-1 min-w-0 flex justify-between items-start">
-                        <div className="flex-1">
-                          <p
-                            className={`font-bold text-sm mb-1 ${cardStyle.textColor}`}
-                          >
-                            {scan.prediction}
-                          </p>
-                          <p className="text-xs text-slate-500 truncate">
-                            By: {getFarmerName(scan)}
-                          </p>
-                        </div>
+                        <div className="flex-1 min-w-0 flex justify-between items-start">
+                          <div className="flex-1">
+                            <p
+                              className={`font-bold text-sm mb-1 ${cardStyle.textColor}`}
+                            >
+                              {scan.prediction}
+                            </p>
+                            <p className="text-xs text-slate-500 truncate">
+                              By: {getFarmerName(scan)}
+                            </p>
+                          </div>
 
-                        <div className="text-right flex-shrink-0 ml-3">
-                          <p className="text-xs text-slate-700 font-medium">
-                            {date}
-                          </p>
-                          <p className="text-xs text-slate-500">{time}</p>
+                          <div className="text-right flex-shrink-0 ml-3">
+                            <p className="text-xs text-slate-700 font-medium">
+                              {date}
+                            </p>
+                            <p className="text-xs text-slate-500">{time}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                <div className="text-xs text-gray-600">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+                  );
+                })}
               </div>
-            )}
-          </>
-        )}
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+                  <div className="text-xs text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="p-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      {showDetailModal && selectedScan && (
-        <div className="fixed inset-0 bg-black/50 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-4">
-              <h3 className="text-xl font-bold">Scan Details</h3>
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="space-y-4">
-              <img
-                src={selectedScan.imageUrl}
-                alt="Scan"
-                className="w-full h-64 object-cover rounded-lg"
-                loading="eager"
-              />
-              <div>
-                <p className="text-sm text-gray-600">Prediction</p>
-                <p className="font-semibold">{selectedScan.prediction}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Farmer</p>
-                <p className="font-semibold">{getFarmerName(selectedScan)}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600">Timestamp</p>
-                <p className="font-semibold">{selectedScan.timestamp}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Use the imported ScanDetailModal component */}
+      <ScanDetailModal
+        isOpen={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        scan={selectedScan}
+        farmerName={selectedScan ? getFarmerName(selectedScan) : ""}
+      />
+    </>
   );
 }
