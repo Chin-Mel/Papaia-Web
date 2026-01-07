@@ -90,7 +90,7 @@ export default function AboutHomePage() {
       <HeaderStart />
 
       <main>
-        <section className="relative h-[50vh] sm:h-[55vh] md:h-[60vh] lg:h-[70vh] overflow-hidden">
+        <section className="relative h-[50vh] sm:h-[45vh] md:h-[55vh] lg:h-[60vh] overflow-hidden">
           <div className="absolute inset-0">
             <img
               src={HeroBackground}
@@ -100,12 +100,12 @@ export default function AboutHomePage() {
             />
           </div>
 
-          <div className="relative max-w-[1440px] mx-auto px-4 sm:px-6 md:px-12 h-full flex items-center justify-center mt-5">
-            <div className="text-center w-full max-w-[842px] backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg p-6 sm:p-8 md:p-12">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 sm:mb-6 leading-tight">
+          <div className="relative max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 lg:px-10 h-full flex items-center justify-center">
+            <div className="text-center w-full max-w-[700px] mx-4 sm:mx-6 lg:mx-auto backdrop-blur-sm bg-white/5 border border-white/10 rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl p-6 sm:p-8 md:p-12 mt-8 sm:mt-12 lg:mt-16">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 leading-tight">
                 About Papaia
               </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white/90 leading-relaxed max-w-[719px] mx-auto">
                 Revolutionizing agriculture through intelligent crop disease
                 detection and smart farming solutions
               </p>

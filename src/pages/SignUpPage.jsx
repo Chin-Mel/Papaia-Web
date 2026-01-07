@@ -278,7 +278,7 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen w-full overflow-x-hidden">
       <HeaderStart />
 
       {showRoleModal && (
@@ -286,286 +286,297 @@ export default function SignUpPage() {
       )}
       <UserRoleModal isOpen={showRoleModal} onSelect={handleRoleSelect} />
 
-      <main className="flex-1 relative flex justify-center py-12 px-4">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 filter brightness-110"
-          style={{
-            backgroundImage: `url(${MainBackground})`,
-          }}
-        ></div>
+      <main>
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-5 sm:py-7 lg:py-9">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-10 brightness-110"
+            style={{ backgroundImage: `url(${MainBackground})` }}
+            role="img"
+            aria-label="Agricultural background"
+          />
 
-        <form
-          onSubmit={handleSubmit}
-          className="w-full max-w-6xl relative z-10 my-12"
-        >
-          <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0">
-            <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-6 px-6">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-xl mb-3 ring-4 ring-white/30">
-                  <img
-                    src={papaiaLogo}
-                    alt="Papaia Logo"
-                    className="w-4 h-6 sm:w-5 sm:h-7 md:w-6 md:h-8"
-                    loading="eager"
-                  />
-                </div>
-                <h1 className="text-2xl font-bold text-white mb-1">Welcome!</h1>
-                <p className="text-white/90 text-sm text-center max-w-md">
-                  Create your farm dashboard account
-                </p>
-              </div>
-            </div>
-
-            <div className="p-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <form
+            onSubmit={handleSubmit}
+            className="relative z-10 w-full max-w-2xl sm:max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto px-4 sm:px-6 mt-16"
+          >
+            <div className="bg-white/98 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border-0">
+              <div className="bg-gradient-to-r from-[#00712D] to-[#F97316] py-3 px-4">
+                <div className="flex flex-col items-center">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl mb-2 ring-4 ring-white/30">
                     <img
-                      src={UserIcon}
-                      className="w-4 h-4"
-                      alt=""
+                      src={papaiaLogo}
+                      alt="Papaia Logo"
+                      className="w-3 h-5 sm:w-4 sm:h-6 md:w-5 md:h-7 lg:w-6 lg:h-8"
                       loading="eager"
                     />
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={firstName}
-                    onChange={(e) =>
-                      handleFieldChange(
-                        "firstName",
-                        e.target.value,
-                        setFirstName
-                      )
-                    }
-                    onBlur={() => handleBlur("firstName")}
-                    placeholder="First name"
-                    autoComplete="given-name"
-                    className={`w-full h-10 px-4 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-1">
+                    Welcome!
+                  </h1>
+                  <p className="text-white/90 text-sm sm:text-base text-center max-w-md">
+                    Create your farm dashboard account
+                  </p>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-6 md:p-6 lg:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img
+                        src={UserIcon}
+                        className="w-4 h-4"
+                        alt=""
+                        loading="eager"
+                      />
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={firstName}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "firstName",
+                          e.target.value,
+                          setFirstName
+                        )
+                      }
+                      onBlur={() => handleBlur("firstName")}
+                      placeholder="First name"
+                      autoComplete="given-name"
+                      className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
           "firstName",
           firstName
         )}`}
-                  />
-                </div>
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={UserIcon} className="w-4 h-4" alt="" />
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={lastName}
-                    onChange={(e) =>
-                      handleFieldChange("lastName", e.target.value, setLastName)
-                    }
-                    onBlur={() => handleBlur("lastName")}
-                    placeholder="Last name"
-                    autoComplete="family-name"
-                    className={`w-full h-10 px-4 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={UserIcon} className="w-4 h-4" alt="" />
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={lastName}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "lastName",
+                          e.target.value,
+                          setLastName
+                        )
+                      }
+                      onBlur={() => handleBlur("lastName")}
+                      placeholder="Last name"
+                      autoComplete="family-name"
+                      className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
           "lastName",
           lastName
         )}`}
-                  />
-                </div>
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={UserIcon} className="w-4 h-4" alt="" />
-                    Username <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) =>
-                      handleFieldChange("username", e.target.value, setUsername)
-                    }
-                    onBlur={() => handleBlur("username")}
-                    placeholder="Username"
-                    autoComplete="username"
-                    className={`w-full h-10 px-4 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={UserIcon} className="w-4 h-4" alt="" />
+                      Username <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "username",
+                          e.target.value,
+                          setUsername
+                        )
+                      }
+                      onBlur={() => handleBlur("username")}
+                      placeholder="Username"
+                      autoComplete="username"
+                      className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
           "username",
           username
         )}`}
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={MailIcon} className="w-4 h-4" alt="" />
-                    Email Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) =>
-                      handleFieldChange("email", e.target.value, setEmail)
-                    }
-                    onBlur={() => handleBlur("email")}
-                    placeholder="Email address"
-                    autoComplete="email"
-                    className={`w-full h-10 px-4 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mt-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={MailIcon} className="w-4 h-4" alt="" />
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) =>
+                        handleFieldChange("email", e.target.value, setEmail)
+                      }
+                      onBlur={() => handleBlur("email")}
+                      placeholder="Email address"
+                      autoComplete="email"
+                      className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
       focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
         "email",
         email
       )}`}
-                  />
-                </div>
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={PhoneIcon} className="w-4 h-4" alt="" />
-                    Phone Number <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={phoneNumber}
-                    onChange={(e) =>
-                      handleFieldChange(
-                        "phoneNumber",
-                        e.target.value,
-                        setPhoneNumber
-                      )
-                    }
-                    onBlur={() => handleBlur("phoneNumber")}
-                    placeholder="Phone number"
-                    autoComplete="tel"
-                    className={`w-full h-10 px-4 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={PhoneIcon} className="w-4 h-4" alt="" />
+                      Phone Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      value={phoneNumber}
+                      onChange={(e) =>
+                        handleFieldChange(
+                          "phoneNumber",
+                          e.target.value,
+                          setPhoneNumber
+                        )
+                      }
+                      onBlur={() => handleBlur("phoneNumber")}
+                      placeholder="Phone number"
+                      autoComplete="tel"
+                      className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
       focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
         "phoneNumber",
         phoneNumber
       )}`}
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={LockIcon} className="w-4 h-4" alt="" />
-                    Password <span className="text-red-500">*</span>
-                  </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={LockIcon} className="w-4 h-4" alt="" />
+                      Password <span className="text-red-500">*</span>
+                    </label>
 
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "password",
-                          e.target.value,
-                          setPassword
-                        )
-                      }
-                      onBlur={() => handleBlur("password")}
-                      placeholder="Password"
-                      autoComplete="new-password"
-                      className={`w-full h-10 px-4 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "password",
+                            e.target.value,
+                            setPassword
+                          )
+                        }
+                        onBlur={() => handleBlur("password")}
+                        placeholder="Password"
+                        autoComplete="new-password"
+                        className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
           "password",
           password
         )}`}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <img
-                        src={showPassword ? EyeOffIcon : EyeIcon}
-                        className="w-5 h-5"
-                        alt=""
-                        loading="eager"
                       />
-                    </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <img
+                          src={showPassword ? EyeOffIcon : EyeIcon}
+                          className="w-5 h-5"
+                          alt=""
+                          loading="eager"
+                        />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <img src={LockIcon} className="w-4 h-4" alt="" />
-                    Confirm Password <span className="text-red-500">*</span>
-                  </label>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                      <img src={LockIcon} className="w-4 h-4" alt="" />
+                      Confirm Password <span className="text-red-500">*</span>
+                    </label>
 
-                  <div className="relative">
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          "confirmPassword",
-                          e.target.value,
-                          setConfirmPassword
-                        )
-                      }
-                      onBlur={() => handleBlur("confirmPassword")}
-                      placeholder="Confirm password"
-                      autoComplete="new-password"
-                      className={`w-full h-10 px-4 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "confirmPassword",
+                            e.target.value,
+                            setConfirmPassword
+                          )
+                        }
+                        onBlur={() => handleBlur("confirmPassword")}
+                        placeholder="Confirm password"
+                        autoComplete="new-password"
+                        className={`w-[calc(100%-2px)] h-9 md:h-10 lg:h-10 px-3 pr-10 text-sm bg-gray-50 border rounded-lg transition-all placeholder:text-gray-400
         focus:outline-none focus:ring-2 focus:ring-orange-500 ${getBorderClass(
           "confirmPassword",
           confirmPassword
         )}`}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      <img
-                        src={showConfirmPassword ? EyeOffIcon : EyeIcon}
-                        className="w-5 h-5"
-                        alt=""
-                        loading="eager"
                       />
-                    </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        <img
+                          src={showConfirmPassword ? EyeOffIcon : EyeIcon}
+                          className="w-5 h-5"
+                          alt=""
+                          loading="eager"
+                        />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-start gap-3 p-5 mt-7 bg-gradient-to-r from-green-50 to-orange-50 mb-5 rounded-2xl border-2 border-orange-200">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  checked={isChecked}
-                  onChange={(e) => setIsChecked(e.target.checked)}
-                  className="w-5 h-5 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer"
-                />
-                <p className="text-sm text-gray-700">
-                  I agree to the{" "}
-                  <button
-                    type="button"
-                    className="text-green-700 font-semibold underline hover:text-green-900"
-                    onClick={() => setShowTermsModal(true)}
-                  >
-                    Terms and Conditions
-                  </button>{" "}
-                  and{" "}
-                  <button
-                    type="button"
-                    className="text-orange-700 font-semibold underline hover:text-orange-900"
-                    onClick={() => setShowPrivacyModal(true)}
-                  >
-                    Privacy Policy
-                  </button>
-                  .
-                </p>
-              </div>
+                <div className="flex items-start gap-3 p-3 mt-3 bg-gradient-to-r from-green-50 to-orange-50 mb-3 rounded-2xl border-2 border-orange-200">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={isChecked}
+                    onChange={(e) => setIsChecked(e.target.checked)}
+                    className="w-4 h-4 mt-0.5 border-2 border-gray-300 rounded-lg cursor-pointer"
+                  />
+                  <p className="text-sm sm:text-xs text-gray-700">
+                    I agree to the{" "}
+                    <button
+                      type="button"
+                      className="text-green-700 font-semibold underline hover:text-green-900"
+                      onClick={() => setShowTermsModal(true)}
+                    >
+                      Terms and Conditions
+                    </button>{" "}
+                    and{" "}
+                    <button
+                      type="button"
+                      className="text-orange-700 font-semibold underline hover:text-orange-900"
+                      onClick={() => setShowPrivacyModal(true)}
+                    >
+                      Privacy Policy
+                    </button>
+                    .
+                  </p>
+                </div>
 
-              <button
-                type="submit"
-                disabled={!isChecked || isLoading}
-                className={`
-                  w-full h-12
+                <button
+                  type="submit"
+                  disabled={!isChecked || isLoading}
+                  className={`
+                  w-full h-11 sm:h-12
                   bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700
                   text-base font-bold text-white
                   rounded-xl shadow-lg
@@ -577,35 +588,36 @@ export default function SignUpPage() {
                       : "hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98]"
                   }
                 `}
-              >
-                <img src={CreateUserIcon} alt="Create" className="w-5 h-5" />
-                {isLoading ? "Creating Account..." : "Create Account"}
-              </button>
-
-              <p className="text-center text-sm text-gray-600 pt-2">
-                Already have an account?{" "}
-                <Link
-                  to="/sign-in"
-                  className="text-orange-600 hover:text-orange-700 font-bold hover:underline underline-offset-2 transition-colors"
                 >
-                  Sign in here
-                </Link>
-              </p>
+                  <img src={CreateUserIcon} alt="Create" className="w-5 h-5" />
+                  {isLoading ? "Creating Account..." : "Create Account"}
+                </button>
+
+                <p className="text-center text-sm text-gray-600 pt-2">
+                  Already have an account?{" "}
+                  <Link
+                    to="/sign-in"
+                    className="text-orange-600 hover:text-orange-700 font-bold hover:underline underline-offset-2 transition-colors"
+                  >
+                    Sign in here
+                  </Link>
+                </p>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
 
-        <TermsAndConditionsModal
-          isOpen={showTermsModal}
-          onClose={() => setShowTermsModal(false)}
-          onAgree={handleModalAgree}
-        />
+          <TermsAndConditionsModal
+            isOpen={showTermsModal}
+            onClose={() => setShowTermsModal(false)}
+            onAgree={handleModalAgree}
+          />
 
-        <PrivacyPolicyModal
-          isOpen={showPrivacyModal}
-          onClose={() => setShowPrivacyModal(false)}
-          onAgree={handleModalAgree}
-        />
+          <PrivacyPolicyModal
+            isOpen={showPrivacyModal}
+            onClose={() => setShowPrivacyModal(false)}
+            onAgree={handleModalAgree}
+          />
+        </section>
       </main>
 
       <FooterStart />
