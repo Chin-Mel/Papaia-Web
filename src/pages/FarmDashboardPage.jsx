@@ -71,7 +71,6 @@ export default function FarmDashboardPage() {
   useEffect(() => {
     if (!farmId) return;
 
-    // Check if farm data was passed from navigation state
     const navigationFarmData = location.state?.farmData;
     if (navigationFarmData) {
       setFarmData(navigationFarmData);
