@@ -38,8 +38,10 @@ export default function FarmerDetailModal({
     if (!farmer) return null;
 
     const firstName = farmer.firstname || farmer.firstName || "";
+    const middleName = farmer.middlename || farmer.middleName || "";
     const lastName = farmer.lastname || farmer.lastName || "";
-    const fullName = [firstName, lastName].filter(Boolean).join(" ") || "N/A";
+    const fullName =
+      [firstName, middleName, lastName].filter(Boolean).join(" ") || "N/A";
     const isArchived =
       farmer.isArchived || farmer.status?.toLowerCase() === "archived";
 
