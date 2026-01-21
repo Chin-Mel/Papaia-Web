@@ -172,6 +172,8 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         setLoading(true);
       }
 
+      const startTime = performance.now(); // ADD THIS
+
       try {
         const response = await fetch(
           `https://papaiaapi.onrender.com/api/owner/identification-history/${farmId}`,
@@ -180,8 +182,11 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             signal: controller.signal,
-          }
+          },
         );
+
+        const endTime = performance.now(); // ADD THIS
+        console.log(`API Response Time: ${(endTime - startTime).toFixed(2)}ms`); // ADD THIS
 
         if (!response.ok) {
           throw new Error("Failed to fetch scans");
@@ -202,7 +207,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
           const isDifferent = filteredScans.some(
             (scan, index) =>
               scan.id !== prevScans[index]?.id ||
-              scan.timestamp !== prevScans[index]?.timestamp
+              scan.timestamp !== prevScans[index]?.timestamp,
           );
 
           return isDifferent ? filteredScans : prevScans;
@@ -218,7 +223,7 @@ export default function ScansBreakdown({ farmId, timeFilter, dateRange }) {
         }
       }
     },
-    [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive]
+    [farmId, timeFilter, dateRange, filterScansByDateRange, filterActive],
   );
 
   useEffect(() => {
