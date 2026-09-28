@@ -52,7 +52,7 @@ export default function RemoveFarmerModal({
     if (confirmationText !== "REMOVE") {
       showAlert(
         "warning",
-        'Please type "REMOVE" in capital letters to confirm'
+        'Please type "REMOVE" in capital letters to confirm',
       );
       return;
     }
